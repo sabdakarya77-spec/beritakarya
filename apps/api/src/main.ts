@@ -28,6 +28,7 @@ import { errorMiddleware } from './middleware/error.middleware'
 import { sanitizeMiddleware } from './middleware/sanitize.middleware'
 import { securityHeadersMiddleware } from './middleware/security.middleware'
 import { performanceMiddleware } from './middleware/performance.middleware'
+import { jwtVerify } from './middleware/jwtVerification.middleware'
 import { authLimiter, apiLimiter } from './lib/rateLimit'
 import { prisma } from './db/client'
 import { logger, httpLogger } from './lib/logger'
@@ -125,6 +126,7 @@ app.options('*', cors(corsOptions))
 app.use(cors(corsOptions))
 
 app.use(securityHeadersMiddleware)
+app.use(jwtVerify)
 
 app.use(express.json({ limit: '10mb' }))
 app.use(sanitizeMiddleware)
