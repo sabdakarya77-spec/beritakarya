@@ -53,8 +53,18 @@ export function errorMiddleware(
   }
 
   if (err.message?.includes('salah') ||
-      err.message?.includes('terdaftar') ||
-      err.message?.includes('tidak valid')) {
+      err.message?.includes('tidak valid') && req.path.includes('auth')) {
+    const isAuthError = err.message?.includes('salah')
+    return res.status(isAuthError ? 401 : 400).json({
+      success: false,
+      error: { 
+        code: isAuthError ? 'UNAUTHORIZED' : 'BAD_REQUEST', 
+        message: err.message 
+      }
+    })
+  }
+
+  if (err.message?.includes('terdaftar')) {
     return res.status(400).json({
       success: false,
       error: { code: 'BAD_REQUEST', message: err.message }

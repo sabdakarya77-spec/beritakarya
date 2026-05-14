@@ -12,17 +12,22 @@ const PURIFY_CONFIG = {
   FORCE_BODY: true
 }
 
-function sanitizeValue(value: any): any {
+function sanitizeValue(value: any, key?: string): any {
+  // Jangan sanitize field password atau email untuk mencegah kerusakan data kredensial
+  if (key === 'password' || key === 'email') {
+    return value
+  }
+
   if (typeof value === 'string') {
     return purify.sanitize(value, PURIFY_CONFIG)
   }
   if (Array.isArray(value)) {
-    return value.map(sanitizeValue)
+    return value.map(v => sanitizeValue(v))
   }
   if (value && typeof value === 'object') {
     const result: Record<string, any> = {}
     for (const [k, v] of Object.entries(value)) {
-      result[k] = sanitizeValue(v)
+      result[k] = sanitizeValue(v, k)
     }
     return result
   }

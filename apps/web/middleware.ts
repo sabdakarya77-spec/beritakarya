@@ -42,6 +42,9 @@ export function middleware(req: NextRequest) {
     }
   }
 
+  // Sanitize siteId: only alphanumeric and hyphens allowed to prevent issues like 'pusat:1'
+  siteId = siteId.replace(/[^a-zA-Z0-9-]/g, '') || 'pusat'
+
   const res = NextResponse.next()
   res.cookies.set('siteId', siteId, {
     httpOnly: false,

@@ -16,7 +16,8 @@ api.interceptors.request.use((config) => {
       .split('; ')
       .find(r => r.startsWith('siteId='))
       ?.split('=')[1]
-    if (siteId) {
+    const isAuthRoute = config.url?.startsWith('/auth/') || config.url?.includes('/auth/')
+    if (siteId && !isAuthRoute) {
       config.headers['X-Site-ID'] = siteId
       if (!config.params) config.params = {}
       config.params.site = siteId
