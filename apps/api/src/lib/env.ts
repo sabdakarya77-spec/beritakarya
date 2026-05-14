@@ -16,6 +16,8 @@ const envSchema = z.object({
   MEILISEARCH_HOST: z.string().default('http://localhost:7700'),
   MEILISEARCH_KEY: z.string().default(''),
   SENTRY_DSN: z.string().optional(),
+  // Centralized log aggregation — set to Logstash/ELK HTTP endpoint (e.g. http://logstash:5044)
+  LOG_HTTP_HOST: z.string().url().optional(),
 })
 
 const parsed = envSchema.safeParse(process.env)

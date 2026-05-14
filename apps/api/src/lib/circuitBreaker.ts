@@ -1,46 +1,86 @@
 import CircuitBreaker from 'opossum'
+import { logger } from './logger'
 
-// OpenAI Circuit Breaker - wraps any async function that returns string
-export const openaiBreaker = new CircuitBreaker(
-  async () => {
-    // This will be implemented where OpenAI is called
-    // The actual OpenAI call should import and use this breaker
-    throw new Error('OpenAI circuit breaker: not yet wired to actual service')
-  },
-  {
-    timeout: 10000, // 10 seconds
-    errorThresholdPercentage: 50, // Trip after 50% failure rate
-    resetTimeout: 30000 // Try to recover after 30 seconds
-  }
-)
+// ─── Types ───────────────────────────────────────────────────────────────────
 
-// Meilisearch Circuit Breaker - wraps any async function
-export const meilisearchBreaker = new CircuitBreaker(
-  async () => {
-    // This will be implemented where Meilisearch is called
-    throw new Error('Meilisearch circuit breaker: not yet wired to actual service')
-  },
-  {
-    timeout: 5000, // 5 seconds
-    errorThresholdPercentage: 50, // Trip after 50% failure rate
-    resetTimeout: 30000 // Try to recover after 30 seconds
-  }
-)
+type AsyncFn<TArgs extends unknown[], TReturn> = (...args: TArgs) => Promise<TReturn>
 
-// Fallback functions for when circuit is open
-export const openaiFallback = async (prompt: string) => {
-  return {
-    success: false,
-    message: 'AI service temporarily unavailable. Please try again later.',
-    fallback: true
-  }
+// ─── Factory: OpenAI Circuit Breaker ─────────────────────────────────────────
+
+/**
+ * Creates a circuit breaker for an OpenAI-backed async function.
+ * Timeout: 10s | Trip at: 50% error rate | Reset after: 30s
+ */
+export function createOpenAIBreaker<TArgs extends unknown[], TReturn>(
+  fn: AsyncFn<TArgs, TReturn>
+): CircuitBreaker<TArgs, TReturn> {
+  const breaker = new CircuitBreaker(fn, {
+    timeout: 10000,
+    errorThresholdPercentage: 50,
+    resetTimeout: 30000,
+    name: 'openai',
+  })
+
+  breaker.on('open', () =>
+    logger.warn('[CircuitBreaker] OpenAI circuit OPEN — calls are being short-circuited')
+  )
+  breaker.on('halfOpen', () =>
+    logger.info('[CircuitBreaker] OpenAI circuit HALF-OPEN — testing recovery')
+  )
+  breaker.on('close', () =>
+    logger.info('[CircuitBreaker] OpenAI circuit CLOSED — service recovered')
+  )
+  breaker.on('fallback', () =>
+    logger.warn('[CircuitBreaker] OpenAI fallback triggered')
+  )
+
+  return breaker
 }
 
-export const meilisearchFallback = async (query: string) => {
-  return {
-    success: false,
-    message: 'Search service temporarily unavailable. Please try again later.',
-    fallback: true,
-    results: []
-  }
+// ─── Factory: Meilisearch Circuit Breaker ────────────────────────────────────
+
+/**
+ * Creates a circuit breaker for a Meilisearch-backed async function.
+ * Timeout: 5s | Trip at: 50% error rate | Reset after: 30s
+ */
+export function createMeilisearchBreaker<TArgs extends unknown[], TReturn>(
+  fn: AsyncFn<TArgs, TReturn>,
+  name: string
+): CircuitBreaker<TArgs, TReturn> {
+  const breaker = new CircuitBreaker(fn, {
+    timeout: 5000,
+    errorThresholdPercentage: 50,
+    resetTimeout: 30000,
+    name: `meilisearch:${name}`,
+  })
+
+  breaker.on('open', () =>
+    logger.warn(`[CircuitBreaker] Meilisearch:${name} circuit OPEN — search degraded`)
+  )
+  breaker.on('halfOpen', () =>
+    logger.info(`[CircuitBreaker] Meilisearch:${name} circuit HALF-OPEN — testing recovery`)
+  )
+  breaker.on('close', () =>
+    logger.info(`[CircuitBreaker] Meilisearch:${name} circuit CLOSED — search recovered`)
+  )
+  breaker.on('fallback', () =>
+    logger.warn(`[CircuitBreaker] Meilisearch:${name} fallback triggered`)
+  )
+
+  return breaker
+}
+
+// ─── Standard Fallbacks ───────────────────────────────────────────────────────
+
+export const openaiFallbackResult = {
+  success: false,
+  message: 'AI service temporarily unavailable. Please try again later.',
+  fallback: true,
+}
+
+export const meilisearchSearchFallback = {
+  success: false,
+  message: 'Search service temporarily unavailable. Please try again later.',
+  fallback: true,
+  results: [] as unknown[],
 }

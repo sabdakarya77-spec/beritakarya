@@ -34,6 +34,7 @@ import { logger, httpLogger } from './lib/logger'
 import { metrics } from './lib/monitoring'
 import { asyncHandler } from './utils/asyncHandler'
 import timeout from 'connect-timeout'
+import { getMeilisearchCircuitStatus } from './modules/article/search.service'
 
 // Import global type augmentation (must be before other imports)
 import './types/express'
@@ -171,13 +172,22 @@ app.get('/health', asyncHandler(async (_, res) => {
     logger.error('Database health check failed:', e)
   }
 
-  const status = databaseHealth ? 'healthy' : 'unhealthy'
+  const meilisearchCircuit = getMeilisearchCircuitStatus()
+  const meilisearchDegraded = Object.values(meilisearchCircuit).some(
+    (s) => s.enabled && s.state === 'open'
+  )
+
+  const status = databaseHealth ? (meilisearchDegraded ? 'degraded' : 'healthy') : 'unhealthy'
   res.status(databaseHealth ? 200 : 503).json({
     status,
     timestamp: new Date().toISOString(),
     services: {
-      database: databaseHealth ? 'healthy' : 'unhealthy'
-    }
+      database: databaseHealth ? 'healthy' : 'unhealthy',
+      meilisearch: {
+        status: meilisearchDegraded ? 'degraded' : 'healthy',
+        circuitBreakers: meilisearchCircuit,
+      },
+    },
   })
 }))
 
