@@ -10,6 +10,7 @@ import { FileValidator } from '../../services/file-validator.service'
 import { WatermarkService } from '../../services/watermark.service'
 import { StorageService } from '../../services/storage.service'
 import { sendNotification } from '../notification/notification.controller'
+import { emailService } from '../../services/email.service'
 import { logger } from '../../lib/logger'
 
 export const kycRouter = Router()

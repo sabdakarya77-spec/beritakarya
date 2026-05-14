@@ -3,6 +3,7 @@ import { prisma } from '../../db/client'
 import { requireAuth, requireRole } from '../../middleware/auth.middleware'
 import { requireSiteAccess } from '../../middleware/site-scope.middleware'
 import { asyncHandler } from '../../utils/asyncHandler'
+import { emailService } from '../../services/email.service'
 
 export const userRouter = Router() as any
 
