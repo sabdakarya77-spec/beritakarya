@@ -74,6 +74,9 @@ userRouter.put('/:id/role',
       })
     }
 
+    // Get old role for audit log
+    const oldRole = user.role
+
     const updated = await prisma.user.update({
       where: { id },
       data: { role },
@@ -85,6 +88,22 @@ userRouter.put('/:id/role',
         siteId: true
       }
     })
+
+    // Audit log for role change
+    await prisma.auditLog.create({
+      data: {
+        userId: req.user!.userId,
+        siteId: req.site!,
+        action: 'user.role_change',
+        entityType: 'user',
+        entityId: id,
+        oldValue: { role: oldRole },
+        newValue: { role: role }
+      }
+    })
+
+    // TODO: Send email notification to user about role change (when email service is ready)
+
     res.json({ success: true, data: updated })
   })
 )
