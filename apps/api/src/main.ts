@@ -19,6 +19,7 @@ import { analyticsRouter } from './modules/analytics/analytics.controller'
 import { notificationRouter } from './modules/notification/notification.controller'
 import { commentRouter } from './modules/comment/comment.controller'
 import { kycRouter } from './modules/kyc/kyc.controller'
+import { invitationRouter } from './modules/invitation/invitation.controller'
 import adminRouter from './admin/admin.router'
 import cron from 'node-cron'
 import { runKYCCleanup } from './cron/kyc-cleanup'
@@ -163,6 +164,7 @@ app.use('/api/v1/analytics', analyticsRouter)
 app.use('/api/v1/notifications', notificationRouter)
 app.use('/api/v1/comments', commentRouter)
 app.use('/api/v1/kyc', kycRouter)
+app.use('/api/v1/invitations', invitationRouter)
 app.use('/api/v1/admin', adminRouter)
 
 app.get('/health', asyncHandler(async (_, res) => {
