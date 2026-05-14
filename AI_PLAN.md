@@ -713,4 +713,36 @@ Feedback: https://github.com/sabdakarya77-spec/beritakarya/issues
 
 ---
 
+## **🔧 Additional Features Implemented (May 2026)**
+
+### **KYC Verification System**
+- ✅ KYC document upload (KTP, KK, bio)
+- ✅ Admin approval/rejection workflow
+- ✅ Email notifications for KYC status changes
+- ✅ Audit logging for all KYC actions
+- ✅ KYC retry limit (max 3 attempts) with account lock
+- ✅ Automatic document cleanup after retention period (GDPR compliance)
+
+### **Invitation System**
+- ✅ Admin can invite users via email with predefined roles
+- ✅ Token-based invitation acceptance (7-day expiry)
+- ✅ Role-based access control (superadmin, wapimred, journalist)
+- ✅ Email notifications for invitation creation and acceptance
+- ✅ Soft-deleted user restoration on invitation accept
+- ✅ Comprehensive audit logging
+
+### **Automated Maintenance**
+- ✅ Daily cron job for KYC document cleanup (runs at 2 AM)
+- ✅ Automatic deletion of expired KYC documents from cloud/local storage
+- ✅ User KYC status reset after cleanup
+- ✅ Error handling and graceful degradation
+
+### **Enhanced Security & Compliance**
+- ✅ Email notifications for role changes
+- ✅ Complete audit trail for all administrative actions
+- ✅ GDPR-compliant data retention policies
+- ✅ Automated cleanup of sensitive documents
+
+---
+
 **"Great journalism with AI assistance, not AI replacement."**

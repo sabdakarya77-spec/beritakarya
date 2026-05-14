@@ -330,16 +330,23 @@ invitationRouter.post('/:token/accept',
       data: { acceptedAt: new Date() }
     })
 
-    // Audit log
+    // Determine siteId for audit log (fallback to 'pusat' if both are null)
+    const auditSiteId = invitation.siteId || invitation.invitedByUser.siteId || 'pusat'
+
+    // Audit log - Prisma expects actual JSON object, not string, for JSON fields
     await prisma.auditLog.create({
       data: {
         userId: user.id,
-        siteId: invitation.siteId || invitation.invitedByUser.siteId,
+        siteId: auditSiteId,
         action: 'invitation.accept',
         entityType: 'user',
         entityId: user.id,
-        oldValue: undefined,
-        newValue: { email: user.email, role: user.role, invitedBy: invitation.invitedBy }
+        oldValue: undefined, // Will be stored as JSON null
+        newValue: { 
+          email: user.email, 
+          role: user.role, 
+          invitedBy: invitation.invitedBy 
+        }
       }
     })
 

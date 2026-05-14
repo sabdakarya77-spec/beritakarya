@@ -55,11 +55,14 @@ class EmailService {
     }
 
     try {
+      // Build from address - prefer EMAIL_FROM_ADDRESS, fallback to SMTP_USER
+      const fromAddress = process.env.EMAIL_FROM_ADDRESS || process.env.SMTP_USER
+      if (!fromAddress) {
+        throw new Error('No from address configured. Set EMAIL_FROM_ADDRESS or SMTP_USER')
+      }
+
       const result = await this.transporter.sendMail({
-        from: {
-          name: process.env.EMAIL_FROM_NAME || 'BeritaKarya',
-          address: process.env.EMAIL_FROM_ADDRESS || process.env.SMTP_USER
-        },
+        from: fromAddress,
         to,
         subject,
         html,
@@ -154,7 +157,7 @@ class EmailService {
           <p>Perubahan ini berlaku langsung. Anda mungkin perlu login ulang untuk melihat perubahan izin akses.</p>
           
           <p style="font-size: 14px; color: #666;">
-            Jika Anda merch武道 perubahan ini, hubungi administrator.
+            Jika Anda merasa tidak menyetujui perubahan ini, hubungi administrator.
           </p>
         </div>
         
