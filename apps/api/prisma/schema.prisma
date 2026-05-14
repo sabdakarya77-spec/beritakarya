@@ -80,6 +80,7 @@ model User {
   refreshTokens RefreshToken[]
   comments      Comment[]
   kycViewLogs   KYCViewLog[]
+  invitations   Invitation[]  // Invitations sent by this user
 
   @@index([siteId])
   @@index([email])
@@ -375,4 +376,25 @@ model RoleQuota {
   modelRestriction   String?   // Force specific model (e.g., 'gpt-3.5-turbo')
 
   @@map("RoleQuota")
+}
+
+// Invitation system for admin to invite users with predefined roles
+model Invitation {
+  id         String   @id @default(uuid())
+  email      String   // Email yang diundang
+  token      String   @unique // Token untuk accept invitation
+  role       String   @default("reader") // Role yang akan diberikan
+  siteId     String?  // Site yang diundang (null = all sites / superadmin context)
+  invitedBy  String   // Admin yang mengundang
+  expiresAt  DateTime // Token expiry (usually 7 days)
+  acceptedAt DateTime? // Waktu invitation diterima
+  createdAt  DateTime @default(now())
+
+  invitedByUser User @relation(fields: [invitedBy], references: [id], onDelete: Cascade)
+
+  @@index([email])
+  @@index([token])
+  @@index([expiresAt])
+  @@index([siteId])
+  @@index([invitedBy])
 }
