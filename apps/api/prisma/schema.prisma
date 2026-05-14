@@ -60,6 +60,8 @@ model User {
   kycReviewedAt    DateTime?
   kycConsentGivenAt DateTime? // Waktu user setuju kebijakan data
   kycDataExpiresAt DateTime?  // Auto-delete after X years (GDPR compliance)
+  kycAttempts      Int       @default(0)  // Number of failed KYC attempts (max 3)
+  kycLockedUntil   DateTime?              // Account lock until this timestamp
 
   // AI Quota Fields
   aiEnabled          Boolean     @default(true)
@@ -83,6 +85,8 @@ model User {
   @@index([email])
   @@index([isVerified])
   @@index([kycSubmittedAt])
+  @@index([kycAttempts])
+  @@index([kycLockedUntil])
   @@index([deletedAt])
   @@index([aiEnabled])
 }
