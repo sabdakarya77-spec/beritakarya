@@ -1,6 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express'
 import { requireAuth, requireRole } from '../middleware/auth.middleware'
 import { prisma } from '../db/client'
+import { Role } from '@prisma/client'
 import { asyncHandler } from '../utils/asyncHandler'
 
 const adminRouter = Router()
@@ -301,7 +302,16 @@ adminRouter.patch('/users/:userId/quota', requireAuth, requireAdmin, asyncHandle
 
 // ── ROLE QUOTA MANAGEMENT ──────────────────────────────────────────────
 adminRouter.patch('/roles/:role/quota', requireAuth, requireAdmin, asyncHandler(async (req, res) => {
-  const role = req.params.role
+  const role = req.params.role as Role
+  
+  // Basic validation to prevent Prisma errors with invalid role strings
+  const validRoles: Role[] = ['reader', 'jurnalis', 'wapimred', 'superadmin']
+  if (!validRoles.includes(role)) {
+    return res.status(400).json({
+      success: false,
+      message: `Invalid role: ${role}. Must be one of: ${validRoles.join(', ')}`
+    })
+  }
   const {
     dailyRequests,
     dailyTokens,
