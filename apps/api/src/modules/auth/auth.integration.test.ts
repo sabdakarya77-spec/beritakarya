@@ -21,7 +21,17 @@ app.use(errorMiddleware)
 const mockTokens = {
   accessToken: 'mock-access-token',
   refreshToken: 'mock-refresh-token',
-  user: { id: 'u-1', email: 'test@test.com', name: 'Test', role: 'journalist', siteId: 'bandung' }
+  user: { 
+    id: 'u-1', 
+    email: 'test@test.com', 
+    name: 'Test', 
+    role: 'journalist', 
+    siteId: 'bandung',
+    isVerified: true,
+    kycStatus: 'APPROVED',
+    kycNotes: null,
+    kycSubmittedAt: null
+  }
 }
 
 describe('POST /api/v1/auth/login', () => {
