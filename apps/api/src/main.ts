@@ -30,6 +30,7 @@ import { sanitizeMiddleware } from './middleware/sanitize.middleware'
 import { securityHeadersMiddleware } from './middleware/security.middleware'
 import { performanceMiddleware } from './middleware/performance.middleware'
 import { jwtVerify } from './middleware/jwtVerification.middleware'
+import { requireSuperadmin } from './middleware/auth.middleware'
 import { authLimiter, apiLimiter } from './lib/rateLimit'
 import { prisma } from './db/client'
 import { logger, httpLogger } from './lib/logger'
@@ -151,6 +152,8 @@ app.delete('/api/v1/categories/:id', asyncHandler(categoryController.deleteCateg
 
 // Site routes - using functions directly
 app.get('/api/v1/sites', asyncHandler(siteController.getSites))
+app.get('/api/v1/sites/settings', asyncHandler(siteController.getSiteSettings))
+app.patch('/api/v1/sites/settings', asyncHandler(siteController.updateSiteSettings))
 app.get('/api/v1/sites/:id', asyncHandler(siteController.getSiteById))
 app.post('/api/v1/sites', asyncHandler(siteController.createSite))
 app.put('/api/v1/sites/:id', asyncHandler(siteController.updateSite))
@@ -195,7 +198,7 @@ app.get('/health', asyncHandler(async (_, res) => {
   })
 }))
 
-app.get('/metrics', (_, res) => {
+app.get('/metrics', requireSuperadmin, (_, res) => {
   res.json({
     uptime: process.uptime(),
     memory: process.memoryUsage(),

@@ -27,6 +27,70 @@ export async function getSites(req: Request, res: Response) {
 }
 
 /**
+ * GET /api/v1/sites/settings
+ * Get current site settings (siteId from query or header)
+ */
+export async function getSiteSettings(req: Request, res: Response) {
+  try {
+    const siteId = (req.query.site as string) || (req.headers['x-site-id'] as string)
+    if (!siteId) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'MISSING_SITE_ID', message: 'Parameter site required' }
+      })
+    }
+    
+    const settings = await siteService.getSiteSettings(siteId)
+    res.json({ success: true, data: settings })
+  } catch (error: any) {
+    const statusCode = error.statusCode || 500
+    res.status(statusCode).json({
+      success: false,
+      error: { code: 'SITE_SETTINGS_FETCH_FAILED', message: error.message }
+    })
+  }
+}
+
+/**
+ * PATCH /api/v1/sites/settings
+ * Update current site settings (siteId from query or header)
+ */
+export async function updateSiteSettings(req: Request, res: Response) {
+  try {
+    const siteId = (req.query.site as string) || (req.headers['x-site-id'] as string)
+    if (!siteId) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'MISSING_SITE_ID', message: 'Parameter site required' }
+      })
+    }
+
+    // Role check: Only superadmin or wapimred of the site can update settings
+    const userRole = (req as any).user?.role
+    const userSiteId = (req as any).user?.siteId
+    
+    if (userRole !== 'superadmin') {
+      if (userRole !== 'wapimred' || userSiteId !== siteId) {
+        return res.status(403).json({
+          success: false,
+          error: { code: 'FORBIDDEN', message: 'Anda tidak memiliki akses untuk mengubah pengaturan situs ini' }
+        })
+      }
+    }
+
+    const actorUserId = (req as any).user?.userId
+    const settings = await siteService.updateSiteSettings(siteId, req.body, actorUserId)
+    res.json({ success: true, data: settings })
+  } catch (error: any) {
+    const statusCode = error.statusCode || 500
+    res.status(statusCode).json({
+      success: false,
+      error: { code: 'SITE_SETTINGS_UPDATE_FAILED', message: error.message }
+    })
+  }
+}
+
+/**
  * GET /api/v1/sites/:id
  * Get single site by ID (superadmin only)
  */

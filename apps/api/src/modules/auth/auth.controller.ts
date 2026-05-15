@@ -22,6 +22,16 @@ const registerSchema = z.object({
   siteId: z.string().nullable().default(null)
 })
 
+const forgotPasswordSchema = z.object({
+  email: z.string().email('Email tidak valid')
+})
+
+const resetPasswordSchema = z.object({
+  email: z.string().email('Email tidak valid'),
+  token: z.string(),
+  newPassword: z.string()
+})
+
 authRouter.post('/login', asyncHandler(async (req: Request, res: Response) => {
   const { email, password } = loginSchema.parse(req.body)
   
@@ -70,4 +80,16 @@ authRouter.post('/logout', asyncHandler(async (req: Request, res: Response) => {
   }).parse(req.body)
   await authService.logoutUser(userId, refreshToken)
   res.json({ success: true, message: 'Logout berhasil' })
+}))
+
+authRouter.post('/forgot-password', asyncHandler(async (req: Request, res: Response) => {
+  const { email } = forgotPasswordSchema.parse(req.body)
+  const result = await authService.forgotPassword(email)
+  res.json(result)
+}))
+
+authRouter.post('/reset-password', asyncHandler(async (req: Request, res: Response) => {
+  const { email, token, newPassword } = resetPasswordSchema.parse(req.body)
+  const result = await authService.resetPassword(email, token, newPassword)
+  res.json(result)
 }))

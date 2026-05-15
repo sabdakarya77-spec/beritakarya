@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken'
 import { prisma } from '../../db/client'
 import { env } from '../../lib/env'
 import type { JWTPayload } from '@beritakarya/types'
+import { emailService } from '../../services/email.service'
 
 const ACCESS_SECRET = env.JWT_SECRET
 const ACCESS_EXPIRES = env.JWT_ACCESS_EXPIRES
@@ -87,6 +88,61 @@ export async function logoutUser(userId: string, refreshToken: string) {
       where: { id: refreshTokenRecord.id }
     })
   }
+}
+
+export async function forgotPassword(email: string) {
+  const user = await prisma.user.findUnique({ where: { email } })
+  if (!user) {
+    // Return success to prevent email enumeration
+    return { success: true }
+  }
+
+  const secret = ACCESS_SECRET! + user.passwordHash
+  const token = jwt.sign({ userId: user.id, purpose: 'reset-password' }, secret, { expiresIn: '1h' })
+
+  // Define frontend URL, assuming a web application runs somewhere
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000'
+  const resetLink = `${frontendUrl}/auth/reset-password?token=${token}&email=${encodeURIComponent(email)}`
+
+  await emailService.sendPasswordResetEmail(user.email, user.name, resetLink)
+
+  return { success: true, message: 'Instruksi reset password telah dikirim ke email Anda' }
+}
+
+export async function resetPassword(email: string, token: string, newPassword: string) {
+  const user = await prisma.user.findUnique({ where: { email } })
+  if (!user) throw new Error('Token tidak valid atau sudah expired')
+
+  const secret = ACCESS_SECRET! + user.passwordHash
+  
+  try {
+    const decoded = jwt.verify(token, secret) as any
+    if (decoded.userId !== user.id || decoded.purpose !== 'reset-password') {
+      throw new Error('Token tidak valid')
+    }
+  } catch (error) {
+    throw new Error('Token tidak valid atau sudah expired')
+  }
+
+  if (!validatePassword(newPassword)) {
+    throw new Error('Password harus minimal 8 karakter, mengandung huruf besar, huruf kecil, angka, dan karakter khusus (!@#$%^&*)')
+  }
+
+  const newHash = await bcrypt.hash(newPassword, 10)
+  
+  await prisma.$transaction(async (tx) => {
+    await tx.user.update({
+      where: { id: user.id },
+      data: { passwordHash: newHash }
+    })
+
+    // Invalidate all refresh tokens for security
+    await tx.refreshToken.deleteMany({
+      where: { userId: user.id }
+    })
+  })
+
+  return { success: true, message: 'Password berhasil diubah' }
 }
 
 async function generateTokenPair(user: any) {

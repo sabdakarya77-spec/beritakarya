@@ -278,9 +278,9 @@ Tabel ada di schema dan migration tapi tidak ada kode yang membaca/menulis tabel
 | Modul | Endpoint | Status |
 |---|---|---|
 | Auth | POST /login, /register, /refresh, /logout | ✅ |
-| Auth | POST /forgot-password, /reset-password | ❌ Belum ada |
-| User | GET /users, GET /users/:id | ✅ |
-| User | PUT /users/:id/role | ⚠️ Tanpa whitelist |
+| Auth | POST /forgot-password, /reset-password | ✅ Tersedia via JWT |
+| User | GET /users, GET /users/:id, GET /users/stats | ✅ Tersedia |
+| User | PUT /users/:id/role | ✅ Whitelist role |
 | User | DELETE /users/:id | ❌ Belum ada |
 | Article | CRUD, publish, versioning | ✅ |
 | Article | GET /public, GET /slug/:slug | ⚠️ Terblokir JWT global |
@@ -310,10 +310,10 @@ Tabel ada di schema dan migration tapi tidak ada kode yang membaca/menulis tabel
 | Kategori | `api` ✅ | CRUD | ✅ Auth fixed + delete modal |
 | Iklan & Banner | Belum diverifikasi | — | ❓ |
 | Komentar | `api` ✅ | Approve/reject | ⚠️ Filter tidak berfungsi |
-| Monitor Tim | `api` ✅ | Stats wartawan | ⚠️ isOnline fake |
+| Monitor Tim | `api` ✅ | Stats wartawan | ✅ Endpoint users/stats tersedia |
 | Pengguna | `api` ✅ | List user | ✅ Auth fixed + useParams() |
 | Audit Log | `api` ✅ | Log + filter + detail | ✅ Terbaik |
-| Pengaturan | `api` ✅ | Form settings | 🚨 Endpoint tidak ada |
+| Pengaturan | `api` ✅ | Form settings | ✅ Endpoint settings tersedia |
 | Manajemen Situs | `api` ✅ | CRUD situs | ✅ Auth fixed + toast + modal |
 | AI Dashboard | `api` ✅ | Quota + usage | ✅ |
 
@@ -354,11 +354,11 @@ Tabel ada di schema dan migration tapi tidak ada kode yang membaca/menulis tabel
 ### ⚠️ SPRINT 2 — FUNGSI INTI YANG RUSAK (1 minggu)
 
 **Backend (Buat Endpoint Baru):**
-- [ ] `[A-8]` Buat `GET/PATCH /api/v1/sites/settings` — halaman settings bisa berfungsi
-- [ ] `[A-9]` Proteksi `GET /metrics` dengan middleware superadmin
-- [ ] `[B-1]` Tambahkan whitelist role di `PUT /users/:id/role`
-- [ ] `[B-5]` Implementasi `POST /forgot-password` + `POST /reset-password`
-- [ ] `[B-10]` Konfirmasi/buat endpoint `GET /users/stats` dengan format yang benar
+- [x] `[A-8]` ✅ Buat `GET/PATCH /api/v1/sites/settings` — halaman settings bisa berfungsi
+- [x] `[A-9]` ✅ Proteksi `GET /metrics` dengan middleware superadmin
+- [x] `[B-1]` ✅ Tambahkan whitelist role di `PUT /users/:id/role`
+- [x] `[B-5]` ✅ Implementasi `POST /forgot-password` + `POST /reset-password`
+- [x] `[B-10]` ✅ Konfirmasi/buat endpoint `GET /users/stats` dengan format yang benar
 
 **Frontend (Fungsi Kritis):**
 - [ ] `[B-7]` Tambahkan tombol "Tolak" di Antrian Review

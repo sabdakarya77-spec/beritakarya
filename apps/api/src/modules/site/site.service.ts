@@ -240,6 +240,89 @@ export class SiteService {
     }
   }
 
+  async getSiteSettings(siteId: string) {
+    const site = await prisma.site.findUnique({
+      where: { id: siteId }
+    })
+
+    if (!site) {
+      throw Object.assign(new Error('Site not found'), { statusCode: 404 })
+    }
+
+    return {
+      name: site.name,
+      domain: site.domain,
+      description: site.description,
+      logoUrl: site.logoUrl,
+      footerText: site.footerText,
+      address: site.address,
+      contactEmail: site.contactEmail,
+      phone: site.phone,
+      aboutUs: site.aboutUs,
+      codeOfEthics: site.codeOfEthics,
+      editorial: site.editorial,
+      advertising: site.advertising,
+      socialLinks: site.socialLinks,
+      appearance: site.appearance,
+      trendingTopics: site.trendingTopics
+    }
+  }
+
+  async updateSiteSettings(siteId: string, data: any, actorUserId: string) {
+    const existing = await prisma.site.findUnique({
+      where: { id: siteId }
+    })
+
+    if (!existing) {
+      throw Object.assign(new Error('Site not found'), { statusCode: 404 })
+    }
+
+    if (data.domain && data.domain !== existing.domain) {
+      const domainExists = await prisma.site.findFirst({
+        where: {
+          domain: data.domain,
+          id: { not: siteId }
+        }
+      })
+      if (domainExists) {
+        throw Object.assign(
+          new Error(`Domain ${data.domain} already in use by another site`),
+          { statusCode: 409 }
+        )
+      }
+    }
+
+    const updateData: any = {}
+    const allowedFields = [
+      'name', 'domain', 'description', 'logoUrl', 'footerText', 
+      'address', 'contactEmail', 'phone', 'aboutUs', 'codeOfEthics', 
+      'editorial', 'advertising', 'socialLinks', 'appearance', 'trendingTopics'
+    ]
+    
+    for (const field of allowedFields) {
+      if (data[field] !== undefined) {
+        if (['socialLinks', 'appearance', 'trendingTopics'].includes(field) && typeof data[field] === 'object') {
+          // Prisma handles objects natively for JSON fields in Postgres
+          updateData[field] = data[field]
+        } else {
+          updateData[field] = data[field]
+        }
+      }
+    }
+
+    const updated = await prisma.site.update({
+      where: { id: siteId },
+      data: updateData
+    })
+
+    await this.logAudit(actorUserId, 'site.settings_updated', {
+      siteId,
+      changes: updateData
+    })
+
+    return this.getSiteSettings(siteId) // return standardized format
+  }
+
   async deleteSite(siteId: string, actorUserId: string) {
     const site = await prisma.site.findUnique({
       where: { id: siteId }
