@@ -127,7 +127,7 @@ export async function resetPassword(email: string, token: string, newPassword: s
     if (decoded.userId !== user.id || decoded.purpose !== 'reset-password') {
       throw new AppError('Token tidak valid', 401, 'UNAUTHORIZED')
     }
-  } catch (error) {
+  } catch {
     throw new AppError('Token tidak valid atau sudah expired', 401, 'UNAUTHORIZED')
   }
 

@@ -62,7 +62,7 @@ export async function getActiveReaderCount(siteId: string): Promise<number> {
     // Cleanup first to be accurate
     await redis.zremrangebyscore(key, 0, now - 300000)
     return await redis.zcard(key)
-  } catch (e) {
+  } catch {
     return 0
   }
 }

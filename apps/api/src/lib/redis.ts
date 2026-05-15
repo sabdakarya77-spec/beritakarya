@@ -24,7 +24,7 @@ export async function getCache<T>(key: string): Promise<T | null> {
     const data = await redis.get(key)
     if (!data) return null
     return JSON.parse(data)
-  } catch (e) {
+  } catch {
     return null
   }
 }
@@ -33,14 +33,14 @@ export async function setCache(key: string, value: any, ttlSeconds: number = 360
   if (!process.env.REDIS_HOST) return
   try {
     await redis.set(key, JSON.stringify(value), 'EX', ttlSeconds)
-  } catch (e) {}
+  } catch {}
 }
 
 export async function deleteCache(key: string) {
   if (!process.env.REDIS_HOST) return
   try {
     await redis.del(key)
-  } catch (e) {}
+  } catch {}
 }
 
 export async function clearPattern(pattern: string) {
@@ -50,5 +50,5 @@ export async function clearPattern(pattern: string) {
     if (keys.length > 0) {
       await redis.del(...keys)
     }
-  } catch (e) {}
+  } catch {}
 }

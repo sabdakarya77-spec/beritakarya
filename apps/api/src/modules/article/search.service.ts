@@ -1,6 +1,6 @@
 import { MeiliSearch } from 'meilisearch'
 import { env } from '../../lib/env'
-import { createMeilisearchBreaker, meilisearchSearchFallback } from '../../lib/circuitBreaker'
+import { createMeilisearchBreaker } from '../../lib/circuitBreaker'
 import { logger } from '../../lib/logger'
 
 // ─── Client Setup ─────────────────────────────────────────────────────────────

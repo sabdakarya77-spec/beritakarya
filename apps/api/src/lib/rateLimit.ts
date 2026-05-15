@@ -2,7 +2,7 @@ import rateLimit from 'express-rate-limit'
 import RedisStore from 'rate-limit-redis'
 import { redis } from './redis'
 
-// @ts-ignore - ioredis type signature mismatch with spread operator
+// @ts-expect-error - ioredis type signature mismatch with spread operator
 const store = process.env.REDIS_HOST ? new RedisStore({ sendCommand: (...args: string[]) => redis.call(...args) }) : undefined
 
 export const authLimiter = rateLimit({

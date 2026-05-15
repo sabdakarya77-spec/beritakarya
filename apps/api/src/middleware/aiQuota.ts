@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
 import { prisma } from '../db/client'
 import { getCache, setCache } from '../lib/redis'
-import { asyncHandler } from '../utils/asyncHandler'
 
 interface QuotaCheckResult {
   allowed: boolean
@@ -45,7 +44,7 @@ export async function checkAIPermissions(
       ;(req as any).aiUserId = userId
       next()
     })
-    .catch(error => {
+    .catch(_error => {
       res.status(500).json({ error: 'Quota check failed' })
     })
 }

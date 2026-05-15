@@ -214,7 +214,6 @@ async function accountAIUsage(
   const userId = req?.aiUserId || req?.user?.userId
   const siteId = req?.user?.siteId || 'pusat'
   const model = req?.body?.model || process.env.AI_MODEL || 'gpt-4o'
-  const quota = req?.aiQuota
 
   if (!userId) return
 

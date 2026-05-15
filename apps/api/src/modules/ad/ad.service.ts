@@ -14,7 +14,7 @@ export async function upsertAd(siteId: string, slot: string, data: any) {
   })
 }
 
-export async function deleteAd(id: string, siteId: string) {
+export async function deleteAd(id: string, _siteId: string) {
   return prisma.advertisement.delete({
     where: { id }
   })

@@ -33,7 +33,7 @@ export async function rejectComment(id: string) {
   return repo.updateCommentStatus(id, 'spam')
 }
 
-export async function deleteComment(id: string, siteId: string, user: JWTPayload) {
+export async function deleteComment(id: string, _siteId: string, _user: JWTPayload) {
   // Logic to ensure user has access (author of article or pimred/superadmin)
   return repo.deleteComment(id)
 }

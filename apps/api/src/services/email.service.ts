@@ -1,15 +1,6 @@
 import nodemailer from 'nodemailer'
 import { logger } from '../lib/logger'
 
-interface EmailConfig {
-  host: string
-  port: number
-  secure: boolean
-  auth: {
-    user: string
-    pass: string
-  }
-}
 
 class EmailService {
   private transporter: nodemailer.Transporter | null = null
@@ -61,7 +52,7 @@ class EmailService {
         throw new Error('No from address configured. Set EMAIL_FROM_ADDRESS or SMTP_USER')
       }
 
-      const result = await this.transporter.sendMail({
+      await this.transporter.sendMail({
         from: fromAddress,
         to,
         subject,

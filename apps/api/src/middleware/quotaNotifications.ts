@@ -51,7 +51,7 @@ async function createQuotaNotification(
   userId: string,
   title: string,
   message: string,
-  type: 'warning' | 'error' | 'info'
+  _type: 'warning' | 'error' | 'info'
 ) {
   try {
     const user = await prisma.user.findUnique({
@@ -84,8 +84,6 @@ async function createQuotaNotification(
  */
 export async function checkAllQuotas() {
   const now = new Date()
-  const today = now.toISOString().split('T')[0]
-  const currentMonth = now.toISOString().slice(0, 7)
 
   logger.info('Starting hourly quota check...')
 

@@ -2,7 +2,6 @@ import { PrismaClient } from '@prisma/client'
 import fs from 'fs/promises'
 import path from 'path'
 import { StorageService } from '../services/storage.service'
-import { logger } from '../lib/logger'
 
 const prisma = new PrismaClient()
 

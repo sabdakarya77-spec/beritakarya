@@ -310,7 +310,7 @@ export class SiteService {
       }
     }
 
-    const updated = await prisma.site.update({
+    await prisma.site.update({
       where: { id: siteId },
       data: updateData
     })
@@ -356,7 +356,7 @@ export class SiteService {
   }
 
   async assignWapimred(siteId: string, wapimredId: string, actorUserId: string) {
-    const site = await this.getSiteById(siteId)
+    await this.getSiteById(siteId)
 
     const user = await prisma.user.findUnique({
       where: { id: wapimredId }

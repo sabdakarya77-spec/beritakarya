@@ -19,7 +19,7 @@ export class FileValidator {
 
   static async validateFile(
     filePath: string,
-    originalName: string
+    _originalName: string
   ): Promise<{ valid: boolean; error?: string; metadata?: any }> {
     try {
       const stats = await fs.stat(filePath)
@@ -61,7 +61,7 @@ export class FileValidator {
     }
   }
 
-  private static async scanWithClamAV(filePath: string): Promise<boolean> {
+  private static async scanWithClamAV(_filePath: string): Promise<boolean> {
     return true // Placeholder
   }
 }

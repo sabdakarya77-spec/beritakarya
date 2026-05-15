@@ -116,7 +116,6 @@ export async function getSiteById(req: Request, res: Response) {
 export async function createSite(req: Request, res: Response) {
   try {
     const { id, domain, name, wapimredId, logoUrl, contactEmail, phone, address, description } = req.body
-    const actorUserId = (req as any).user?.userId
 
     const site = await siteService.createSite({
       id,

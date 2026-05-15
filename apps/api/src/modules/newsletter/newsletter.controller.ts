@@ -1,4 +1,4 @@
-import { Router, Request, Response, NextFunction } from 'express'
+import { Router } from 'express'
 import { z } from 'zod'
 import * as service from './newsletter.service'
 import { siteMiddleware } from '../../middleware/site.middleware'

@@ -1,4 +1,4 @@
-import { Router, Request, Response, NextFunction } from 'express'
+import { Router, Request, Response } from 'express'
 import { requireAuth, requireRole } from '../middleware/auth.middleware'
 import { prisma } from '../db/client'
 import { Role } from '@prisma/client'

@@ -1,5 +1,4 @@
 import { prisma } from '../../db/client'
-import { generateSlug } from '@beritakarya/utils'
 
 export class CategoryService {
   async getSiteCategories(siteId: string) {
@@ -43,7 +42,7 @@ export class CategoryService {
     slug: string
     siteId?: string | null
     description?: string
-  }, actorUserId: string) {
+  }, _actorUserId: string) {
     const isGlobal = data.siteId === null
     const effectiveSiteId = data.siteId === '' ? null : data.siteId
 
@@ -80,7 +79,7 @@ export class CategoryService {
       description: string
       siteId?: string | null
     }>,
-    actorUserId: string
+    _actorUserId: string
   ) {
     const existing = await prisma.category.findUnique({
       where: { id: categoryId }
@@ -130,7 +129,7 @@ export class CategoryService {
     return category
   }
 
-  async deleteCategory(categoryId: string, actorUserId: string) {
+  async deleteCategory(categoryId: string, _actorUserId: string) {
     const existing = await prisma.category.findUnique({
       where: { id: categoryId }
     })
