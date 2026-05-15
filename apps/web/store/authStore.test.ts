@@ -17,7 +17,7 @@ const mockResponse = {
       user: {
         id: 'u-1', email: 'test@bandung.com',
         name: 'Test', role: 'journalist', siteId: 'bandung',
-        isVerified: false, kycSubmittedAt: null
+        isVerified: false, kycStatus: 'UNSUBMITTED', kycNotes: null, kycSubmittedAt: null
       }
     }
   }
@@ -56,7 +56,7 @@ describe('authStore', () => {
   it('logout menghapus token dari localStorage', async () => {
     localStorage.setItem('accessToken',  'access-token')
     localStorage.setItem('refreshToken', 'refresh-token')
-    useAuthStore.setState({ user: { id: 'u-1', email: 'x', name: 'x', role: 'journalist', siteId: 'bandung', isVerified: false, kycSubmittedAt: null } })
+    useAuthStore.setState({ user: { id: 'u-1', email: 'x', name: 'x', role: 'journalist', siteId: 'bandung', isVerified: false, kycStatus: 'UNSUBMITTED', kycNotes: null, kycSubmittedAt: null } })
     vi.mocked(api.post).mockResolvedValue({ data: {} })
 
     await useAuthStore.getState().logout()
