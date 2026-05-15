@@ -1,19 +1,27 @@
-const MAX_ATTEMPTS = 5
-const LOCKOUT_DURATION = 15 * 60 * 1000 // 15 minutes
+import { redis } from './redis'
 
+const MAX_ATTEMPTS = 5
+const LOCKOUT_DURATION = 15 * 60 // 15 minutes in seconds
+
+// Fallback in-memory map jika Redis belum tersedia
 interface FailedAttempt {
   count: number
   lastAttempt: Date
 }
-
 const failedAttempts = new Map<string, FailedAttempt>()
 
-export function checkAccountLockout(email: string): boolean {
+export async function checkAccountLockout(email: string): Promise<boolean> {
+  if (process.env.REDIS_HOST) {
+    const attempts = await redis.get(`lockout:${email}`)
+    return attempts ? parseInt(attempts) >= MAX_ATTEMPTS : false
+  }
+
+  // Fallback memory
   const attempt = failedAttempts.get(email)
   if (!attempt) return false
   
   const timeSinceLastAttempt = Date.now() - attempt.lastAttempt.getTime()
-  if (timeSinceLastAttempt > LOCKOUT_DURATION) {
+  if (timeSinceLastAttempt > LOCKOUT_DURATION * 1000) {
     failedAttempts.delete(email)
     return false
   }
@@ -21,13 +29,30 @@ export function checkAccountLockout(email: string): boolean {
   return attempt.count >= MAX_ATTEMPTS
 }
 
-export function recordFailedAttempt(email: string): void {
+export async function recordFailedAttempt(email: string): Promise<void> {
+  if (process.env.REDIS_HOST) {
+    const key = `lockout:${email}`
+    const current = await redis.incr(key)
+    if (current === 1) {
+      // Set TTL hanya saat pertama kali insert
+      await redis.expire(key, LOCKOUT_DURATION)
+    }
+    return
+  }
+
+  // Fallback memory
   const attempt = failedAttempts.get(email) || { count: 0, lastAttempt: new Date() }
   attempt.count++
   attempt.lastAttempt = new Date()
   failedAttempts.set(email, attempt)
 }
 
-export function resetFailedAttempts(email: string): void {
+export async function resetFailedAttempts(email: string): Promise<void> {
+  if (process.env.REDIS_HOST) {
+    await redis.del(`lockout:${email}`)
+    return
+  }
+
+  // Fallback memory
   failedAttempts.delete(email)
 }

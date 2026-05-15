@@ -23,6 +23,7 @@ import { invitationRouter } from './modules/invitation/invitation.controller'
 import adminRouter from './admin/admin.router'
 import cron from 'node-cron'
 import { runKYCCleanup } from './cron/kyc-cleanup'
+import { runTokenCleanup } from './cron/token-cleanup'
 import { checkAllQuotas } from './middleware/quotaNotifications'
 import { requestIdMiddleware } from './middleware/requestId.middleware'
 import { errorMiddleware } from './middleware/error.middleware'
@@ -30,7 +31,8 @@ import { sanitizeMiddleware } from './middleware/sanitize.middleware'
 import { securityHeadersMiddleware } from './middleware/security.middleware'
 import { performanceMiddleware } from './middleware/performance.middleware'
 import { jwtVerify } from './middleware/jwtVerification.middleware'
-import { requireSuperadmin } from './middleware/auth.middleware'
+import { requireAuth, requireRole, requireSuperadmin } from './middleware/auth.middleware'
+import { siteMiddleware, requireSiteAccess } from './middleware/site.middleware'
 import { authLimiter, apiLimiter } from './lib/rateLimit'
 import { prisma } from './db/client'
 import { logger, httpLogger } from './lib/logger'
@@ -145,20 +147,45 @@ app.use('/api/v1/media', mediaRouter)
 app.use('/api/v1/ai', aiRouter)
 
 // Category routes - using functions directly (not routers)
+// GET: public (anyone can read categories)
 app.get('/api/v1/categories', asyncHandler(categoryController.getCategories))
-app.post('/api/v1/categories', asyncHandler(categoryController.createCategory))
-app.put('/api/v1/categories/:id', asyncHandler(categoryController.updateCategory))
-app.delete('/api/v1/categories/:id', asyncHandler(categoryController.deleteCategory))
+// POST/PUT/DELETE: requires auth + site scope + role wapimred/superadmin
+app.post('/api/v1/categories',
+  requireAuth, siteMiddleware, requireSiteAccess,
+  requireRole(['superadmin', 'wapimred']),
+  asyncHandler(categoryController.createCategory))
+app.put('/api/v1/categories/:id',
+  requireAuth, siteMiddleware, requireSiteAccess,
+  requireRole(['superadmin', 'wapimred']),
+  asyncHandler(categoryController.updateCategory))
+app.delete('/api/v1/categories/:id',
+  requireAuth, siteMiddleware, requireSiteAccess,
+  requireRole(['superadmin', 'wapimred']),
+  asyncHandler(categoryController.deleteCategory))
 
 // Site routes - using functions directly
+// GET: public (anyone can read site info)
 app.get('/api/v1/sites', asyncHandler(siteController.getSites))
 app.get('/api/v1/sites/settings', asyncHandler(siteController.getSiteSettings))
-app.patch('/api/v1/sites/settings', asyncHandler(siteController.updateSiteSettings))
 app.get('/api/v1/sites/:id', asyncHandler(siteController.getSiteById))
-app.post('/api/v1/sites', asyncHandler(siteController.createSite))
-app.put('/api/v1/sites/:id', asyncHandler(siteController.updateSite))
-app.delete('/api/v1/sites/:id', asyncHandler(siteController.deleteSite))
-app.post('/api/v1/sites/:id/wapimred', asyncHandler(siteController.assignWapimred))
+// PATCH settings: requires auth + site scope + role wapimred/superadmin
+app.patch('/api/v1/sites/settings',
+  requireAuth, siteMiddleware, requireSiteAccess,
+  requireRole(['superadmin', 'wapimred']),
+  asyncHandler(siteController.updateSiteSettings))
+// POST/PUT/DELETE/assignWapimred: superadmin only
+app.post('/api/v1/sites',
+  requireAuth, requireRole(['superadmin']),
+  asyncHandler(siteController.createSite))
+app.put('/api/v1/sites/:id',
+  requireAuth, requireRole(['superadmin']),
+  asyncHandler(siteController.updateSite))
+app.delete('/api/v1/sites/:id',
+  requireAuth, requireRole(['superadmin']),
+  asyncHandler(siteController.deleteSite))
+app.post('/api/v1/sites/:id/wapimred',
+  requireAuth, requireRole(['superadmin']),
+  asyncHandler(siteController.assignWapimred))
 
 app.use('/api/v1/ads', adRouter)
 app.use('/api/v1/newsletter', newsletterRouter)
@@ -236,6 +263,24 @@ cron.schedule('0 * * * *', async () => {
     await checkAllQuotas()
   } catch (err) {
     logger.error('Hourly quota check failed:', err)
+  }
+})
+
+// Daily at midnight: KYC cleanup
+cron.schedule('0 0 * * *', async () => {
+  try {
+    await runKYCCleanup()
+  } catch (err) {
+    logger.error('KYC cleanup failed:', err)
+  }
+})
+
+// Daily at 1 AM: Expired token cleanup
+cron.schedule('0 1 * * *', async () => {
+  try {
+    await runTokenCleanup()
+  } catch (err) {
+    logger.error('Token cleanup failed:', err)
   }
 })
 

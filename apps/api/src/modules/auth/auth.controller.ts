@@ -46,7 +46,7 @@ authRouter.post('/login', asyncHandler(async (req: Request, res: Response) => {
   const { email, password } = loginSchema.parse(req.body)
   
   // Check account lockout
-  if (checkAccountLockout(email)) {
+  if (await checkAccountLockout(email)) {
     return res.status(429).json({
       success: false,
       error: {
@@ -58,10 +58,10 @@ authRouter.post('/login', asyncHandler(async (req: Request, res: Response) => {
   
   try {
     const result = await authService.loginUser(email, password)
-    resetFailedAttempts(email)
+    await resetFailedAttempts(email)
     res.json({ success: true, data: result })
   } catch (error) {
-    recordFailedAttempt(email)
+    await recordFailedAttempt(email)
     throw error
   }
 }))
@@ -83,12 +83,12 @@ authRouter.post('/refresh', asyncHandler(async (req: Request, res: Response) => 
   res.json({ success: true, data: result })
 }))
 
-authRouter.post('/logout', asyncHandler(async (req: Request, res: Response) => {
-  const { userId, refreshToken } = z.object({
-    userId: z.string(),
+authRouter.post('/logout', requireAuth, asyncHandler(async (req: any, res: Response) => {
+  const { refreshToken } = z.object({
     refreshToken: z.string()
   }).parse(req.body)
-  await authService.logoutUser(userId, refreshToken)
+  // userId diambil dari JWT yang sudah diverifikasi — bukan dari body
+  await authService.logoutUser(req.user.userId, refreshToken)
   res.json({ success: true, message: 'Logout berhasil' })
 }))
 

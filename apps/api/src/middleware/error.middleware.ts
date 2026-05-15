@@ -3,6 +3,7 @@ import { ZodError } from 'zod'
 import multer from 'multer'
 import { logger } from '../lib/logger'
 import { env } from '../lib/env'
+import { AppError } from '../utils/AppError'
 // Import type augmentation to recognize `site` property on Request
 import '../types/express'
 
@@ -44,30 +45,10 @@ export function errorMiddleware(
     })
   }
 
-  // File type rejection from fileFilter callback
-  if (err?.message?.includes('Tipe file tidak didukung')) {
-    return res.status(400).json({
+  if (err instanceof AppError) {
+    return res.status(err.statusCode).json({
       success: false,
-      error: { code: 'INVALID_FILE_TYPE', message: err.message }
-    })
-  }
-
-  if (err.message?.includes('salah') ||
-      err.message?.includes('tidak valid') && req.path.includes('auth')) {
-    const isAuthError = err.message?.includes('salah')
-    return res.status(isAuthError ? 401 : 400).json({
-      success: false,
-      error: { 
-        code: isAuthError ? 'UNAUTHORIZED' : 'BAD_REQUEST', 
-        message: err.message 
-      }
-    })
-  }
-
-  if (err.message?.includes('terdaftar')) {
-    return res.status(400).json({
-      success: false,
-      error: { code: 'BAD_REQUEST', message: err.message }
+      error: { code: err.code, message: err.message }
     })
   }
 

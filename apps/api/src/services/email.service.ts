@@ -34,7 +34,7 @@ class EmailService {
           secure: port === 465, // true for 465, false for other ports
           auth: { user, pass },
           tls: {
-            rejectUnauthorized: false // For self-signed certs in dev
+            rejectUnauthorized: process.env.NODE_ENV !== 'production'
           }
         })
         this.isEnabled = true

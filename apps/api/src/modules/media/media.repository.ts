@@ -30,6 +30,10 @@ export async function findMediaBySite(siteId: string, page: number = 1, limit: n
   return { items, total, page, limit, totalPages: Math.ceil(total / limit) }
 }
 
+export async function findMediaById(id: string) {
+  return prisma.media.findUnique({ where: { id } })
+}
+
 export async function updateMedia(id: string, data: Partial<{ altText: string; caption: string; credit: string }>) {
   return prisma.media.update({
     where: { id },

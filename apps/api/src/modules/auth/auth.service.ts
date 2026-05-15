@@ -4,6 +4,7 @@ import { prisma } from '../../db/client'
 import { env } from '../../lib/env'
 import type { JWTPayload } from '@beritakarya/types'
 import { emailService } from '../../services/email.service'
+import { AppError } from '../../utils/AppError'
 
 const ACCESS_SECRET = env.JWT_SECRET
 const ACCESS_EXPIRES = env.JWT_ACCESS_EXPIRES
@@ -29,10 +30,10 @@ export async function loginUser(email: string, password: string) {
   const user = await prisma.user.findFirst({ 
     where: { email, deletedAt: null } 
   })
-  if (!user) throw new Error('Email atau password salah')
+  if (!user) throw new AppError('Email atau password salah', 401, 'UNAUTHORIZED')
 
   const valid = await bcrypt.compare(password, user.passwordHash)
-  if (!valid) throw new Error('Email atau password salah')
+  if (!valid) throw new AppError('Email atau password salah', 401, 'UNAUTHORIZED')
 
   return generateTokenPair(user)
 }
@@ -44,10 +45,10 @@ export async function registerUser(
   const exists = await prisma.user.findFirst({ 
     where: { email, deletedAt: null } 
   })
-  if (exists) throw new Error('Email sudah terdaftar')
+  if (exists) throw new AppError('Email sudah terdaftar', 400, 'BAD_REQUEST')
 
   if (!validatePassword(password)) {
-    throw new Error('Password harus minimal 8 karakter, mengandung huruf besar, huruf kecil, angka, dan karakter khusus (!@#$%^&*)')
+    throw new AppError('Password harus minimal 8 karakter, mengandung huruf besar, huruf kecil, angka, dan karakter khusus (!@#$%^&*)', 400, 'BAD_REQUEST')
   }
 
   const passwordHash = await bcrypt.hash(password, 10)
@@ -62,7 +63,7 @@ export async function refreshAccessToken(refreshToken: string) {
     where: { token: refreshToken }
   })
   if (isBlacklisted) {
-    throw new Error('Refresh token tidak valid atau sudah expired')
+    throw new AppError('Refresh token tidak valid atau sudah expired', 401, 'UNAUTHORIZED')
   }
 
   const record = await prisma.refreshToken.findUnique({
@@ -70,7 +71,7 @@ export async function refreshAccessToken(refreshToken: string) {
     include: { user: true }
   })
   if (!record || record.expiresAt < new Date()) {
-    throw new Error('Refresh token tidak valid atau sudah expired')
+    throw new AppError('Refresh token tidak valid atau sudah expired', 401, 'UNAUTHORIZED')
   }
   return generateTokenPair(record.user)
 }
@@ -117,21 +118,21 @@ export async function forgotPassword(email: string) {
 
 export async function resetPassword(email: string, token: string, newPassword: string) {
   const user = await prisma.user.findUnique({ where: { email } })
-  if (!user) throw new Error('Token tidak valid atau sudah expired')
+  if (!user) throw new AppError('Token tidak valid atau sudah expired', 401, 'UNAUTHORIZED')
 
   const secret = ACCESS_SECRET! + user.passwordHash
   
   try {
     const decoded = jwt.verify(token, secret) as any
     if (decoded.userId !== user.id || decoded.purpose !== 'reset-password') {
-      throw new Error('Token tidak valid')
+      throw new AppError('Token tidak valid', 401, 'UNAUTHORIZED')
     }
   } catch (error) {
-    throw new Error('Token tidak valid atau sudah expired')
+    throw new AppError('Token tidak valid atau sudah expired', 401, 'UNAUTHORIZED')
   }
 
   if (!validatePassword(newPassword)) {
-    throw new Error('Password harus minimal 8 karakter, mengandung huruf besar, huruf kecil, angka, dan karakter khusus (!@#$%^&*)')
+    throw new AppError('Password harus minimal 8 karakter, mengandung huruf besar, huruf kecil, angka, dan karakter khusus (!@#$%^&*)', 400, 'BAD_REQUEST')
   }
 
   const newHash = await bcrypt.hash(newPassword, 10)

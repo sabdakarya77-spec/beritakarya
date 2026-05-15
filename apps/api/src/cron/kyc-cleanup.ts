@@ -1,8 +1,6 @@
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '../db/client'
 import { StorageService } from '../services/storage.service'
 import { logger } from '../lib/logger'
-
-const prisma = new PrismaClient()
 
 /**
  * KYC Cleanup Task
@@ -97,7 +95,4 @@ async function purgeKYCData(user: any, reason: string) {
 // If run directly (e.g. via ts-node)
 if (require.main === module) {
   runKYCCleanup()
-    .finally(async () => {
-      await prisma.$disconnect()
-    })
 }

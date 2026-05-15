@@ -5,9 +5,10 @@ import fs from 'fs'
 import { v4 as uuidv4 } from 'uuid'
 import { requireAuth } from '../../middleware/auth.middleware'
 import { asyncHandler } from '../../utils/asyncHandler'
-import { siteMiddleware } from '../../middleware/site.middleware'
+import { siteMiddleware, requireSiteAccess } from '../../middleware/site.middleware'
 import { env } from '../../lib/env'
 import * as repo from './media.repository'
+import { AppError } from '../../utils/AppError'
 
 export const mediaRouter: Router = Router()
 
@@ -25,7 +26,7 @@ function ensureDirectories() {
       }
     } catch (err) {
       console.error(`[Media] Failed to create directory ${dir}:`, err)
-      throw new Error(`Failed to create upload directory: ${dir}`)
+      throw new AppError(`Failed to create upload directory: ${dir}`, 500)
     }
   }
 }
@@ -41,7 +42,7 @@ const upload = multer({
   fileFilter: (_, file, cb) => {
     const allowed = ['image/jpeg','image/png','image/webp','image/gif']
     if (allowed.includes(file.mimetype)) cb(null, true)
-    else cb(new Error('Tipe file tidak didukung. Gunakan JPG, PNG, WebP, atau GIF'))
+    else cb(new AppError('Tipe file tidak didukung. Gunakan JPG, PNG, WebP, atau GIF', 400, 'INVALID_FILE_TYPE'))
   }
 })
 
@@ -207,7 +208,18 @@ mediaRouter.get(
 mediaRouter.patch(
   '/:id',
   requireAuth,
+  siteMiddleware,
+  requireSiteAccess,
   asyncHandler(async (req: Request, res: Response) => {
+    const media = await repo.findMediaById(req.params.id)
+    if (!media) return res.status(404).json({ success: false, error: { message: 'Media tidak ditemukan' } })
+    
+    // Hanya pemilik atau admin/wapimred yang bisa mengupdate
+    const isAdmin = ['superadmin','wapimred'].includes(req.user!.role)
+    if (media.userId !== req.user!.userId && !isAdmin) {
+      return res.status(403).json({ success: false, error: { message: 'Akses ditolak' } })
+    }
+
     const { altText, caption, credit } = req.body
     const updated = await repo.updateMedia(req.params.id, { altText, caption, credit })
     res.json({ success: true, data: updated })
@@ -218,7 +230,18 @@ mediaRouter.patch(
 mediaRouter.delete(
   '/:id',
   requireAuth,
+  siteMiddleware,
+  requireSiteAccess,
   asyncHandler(async (req: Request, res: Response) => {
+    const media = await repo.findMediaById(req.params.id)
+    if (!media) return res.status(404).json({ success: false, error: { message: 'Media tidak ditemukan' } })
+    
+    // Hanya pemilik atau admin/wapimred yang bisa menghapus
+    const isAdmin = ['superadmin','wapimred'].includes(req.user!.role)
+    if (media.userId !== req.user!.userId && !isAdmin) {
+      return res.status(403).json({ success: false, error: { message: 'Akses ditolak' } })
+    }
+
     await repo.deleteMedia(req.params.id)
     res.json({ success: true, message: 'Media berhasil dihapus' })
   })

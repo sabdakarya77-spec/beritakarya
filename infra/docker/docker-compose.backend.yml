@@ -30,6 +30,8 @@ services:
       - NODE_ENV=production
       - PORT=3001
       - API_URL=https://api.beritakarya.co
+      - REDIS_HOST=redis
+      - MEILISEARCH_HOST=http://meilisearch:7700
     env_file:
       - ../../.env.production
     expose:
@@ -41,6 +43,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:3001/health"]
@@ -48,6 +52,34 @@ services:
       timeout: 10s
       retries: 3
 
+  # ── CACHE & SEARCH ──────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: beritakarya_redis
+    expose:
+      - "6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  meilisearch:
+    image: getmeili/meilisearch:v1.6
+    container_name: beritakarya_meili
+    environment:
+      - MEILI_MASTER_KEY=${MEILISEARCH_KEY:-beritakarya_search_secret}
+    expose:
+      - "7700"
+    volumes:
+      - meili_data:/meili_data
+    restart: unless-stopped
+
 volumes:
   postgres_data:
   uploads_data:
+  redis_data:
+  meili_data:
