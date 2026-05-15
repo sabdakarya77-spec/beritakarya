@@ -309,7 +309,7 @@ Tabel ada di schema dan migration tapi tidak ada kode yang membaca/menulis tabel
 | Kalender | — | Jadwal publikasi | ❌ Belum diimplementasi |
 | Kategori | `api` ✅ | CRUD | ✅ Auth fixed + delete modal |
 | Iklan & Banner | Belum diverifikasi | — | ❓ |
-| Komentar | `api` ✅ | Approve/reject | ⚠️ Filter tidak berfungsi |
+| Komentar | `api` ✅ | Approve/reject | ✅ Filter berfungsi dengan API |
 | Monitor Tim | `api` ✅ | Stats wartawan | ✅ Endpoint users/stats tersedia |
 | Pengguna | `api` ✅ | List user | ✅ Auth fixed + useParams() |
 | Audit Log | `api` ✅ | Log + filter + detail | ✅ Terbaik |
@@ -361,8 +361,8 @@ Tabel ada di schema dan migration tapi tidak ada kode yang membaca/menulis tabel
 - [x] `[B-10]` ✅ Konfirmasi/buat endpoint `GET /users/stats` dengan format yang benar
 
 **Frontend (Fungsi Kritis):**
-- [ ] `[B-7]` Tambahkan tombol "Tolak" di Antrian Review
-- [ ] `[B-8]` Hubungkan Filter & Search komentar ke API
+- [x] `[B-7]` ✅ Tambahkan tombol "Tolak" di Antrian Review
+- [x] `[B-8]` ✅ Hubungkan Filter & Search komentar ke API
 - [ ] `[B-11]` Tambahkan form Edit Kategori (rename)
 - [ ] `[B-12]` Tambahkan aksi di tabel Pengguna (edit role, suspend)
 - [ ] `[B-13]` Tambahkan menu Undangan di sidebar + halaman invitation

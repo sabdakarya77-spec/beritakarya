@@ -23,6 +23,80 @@ commentRouter.get('/',
   })
 )
 
+commentRouter.get('/moderation',
+  requireAuth,
+  requireSiteAccess,
+  asyncHandler(async (req: any, res: any) => {
+    const { siteId } = req
+    const { status, search } = req.query
+    
+    const where: any = { siteId }
+    if (status && status !== 'all') {
+      where.status = status
+    } else if (!status) {
+      where.status = 'pending'
+    }
+    
+    if (search) {
+      where.OR = [
+        { content: { contains: search as string, mode: 'insensitive' } },
+        { authorName: { contains: search as string, mode: 'insensitive' } },
+        { authorEmail: { contains: search as string, mode: 'insensitive' } },
+        { user: { name: { contains: search as string, mode: 'insensitive' } } }
+      ]
+    }
+
+    const comments = await prisma.comment.findMany({
+      where,
+      include: {
+        user: { select: { id: true, name: true, email: true } },
+        article: { select: { id: true, title: true, slug: true } }
+      },
+      orderBy: { createdAt: 'desc' }
+    })
+    
+    res.json({ success: true, data: comments })
+  })
+)
+
+commentRouter.patch('/:id/approve',
+  requireAuth,
+  requireSiteAccess,
+  asyncHandler(async (req: any, res: any) => {
+    const { id } = req.params
+    const siteId = req.site
+    
+    const updated = await prisma.comment.updateMany({
+      where: { id, siteId },
+      data: { status: 'approved' }
+    })
+    
+    if (updated.count === 0) {
+      return res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Comment not found' } })
+    }
+    res.json({ success: true, message: 'Comment approved' })
+  })
+)
+
+commentRouter.patch('/:id/reject',
+  requireAuth,
+  requireSiteAccess,
+  asyncHandler(async (req: any, res: any) => {
+    const { id } = req.params
+    const siteId = req.site
+    
+    const updated = await prisma.comment.updateMany({
+      where: { id, siteId },
+      data: { status: 'spam' }
+    })
+    
+    if (updated.count === 0) {
+      return res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Comment not found' } })
+    }
+    res.json({ success: true, message: 'Comment rejected' })
+  })
+)
+
 commentRouter.get('/:id',
   requireAuth,
   requireSiteAccess,

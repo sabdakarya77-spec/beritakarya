@@ -268,6 +268,21 @@ export default function ReviewQueuePage() {
                           Revisi
                         </button>
                         <button
+                          onClick={() => {
+                            if (window.confirm('Apakah Anda yakin ingin menolak post ini? Post akan diarsipkan.')) {
+                              handleAction(article.id, 'reject')
+                            }
+                          }}
+                          disabled={!!actionLoading}
+                          className="flex items-center gap-1.5 px-3 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 text-[10px] font-black uppercase tracking-widest rounded-lg hover:bg-red-100 transition-all disabled:opacity-50"
+                        >
+                          {actionLoading === article.id + 'reject'
+                            ? <Loader2 size={12} className="animate-spin" />
+                            : <XCircle size={12} />
+                          }
+                          Tolak
+                        </button>
+                        <button
                           onClick={() => { setReviewModal(article); setReviewNotes(''); }}
                           disabled={!!actionLoading}
                           className="flex items-center gap-1.5 px-3 py-2 bg-emerald-600 text-white text-[10px] font-black uppercase tracking-widest rounded-lg hover:bg-emerald-700 transition-all disabled:opacity-50 shadow-sm"

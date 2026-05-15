@@ -34,10 +34,15 @@ export default function ModerationPage() {
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
+  const [status, setStatus] = useState('pending');
 
   const fetchQueue = async () => {
+    setLoading(true);
     try {
-      const { data } = await api.get('/comments/moderation');
+      const { data } = await api.get('/comments/moderation', {
+        params: { search, status }
+      });
       setComments(data.data);
     } catch (err) {
       console.error('Failed to fetch moderation queue:', err);
@@ -47,8 +52,11 @@ export default function ModerationPage() {
   };
 
   useEffect(() => {
-    fetchQueue();
-  }, []);
+    const timer = setTimeout(() => {
+      fetchQueue();
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [search, status]);
 
   const handleApprove = async (id: string) => {
     setProcessingId(id);
@@ -86,13 +94,26 @@ export default function ModerationPage() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-lg text-[10px] font-black uppercase tracking-widest text-gray-500">
-            <Filter size={14} /> Filter
+          <div className="flex items-center bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-lg overflow-hidden">
+            <button 
+              onClick={() => setStatus('pending')}
+              className={cn("px-3 py-2 text-[10px] font-black uppercase tracking-widest transition-colors", status === 'pending' ? "bg-brand-red text-white" : "text-gray-500 hover:bg-gray-50 dark:hover:bg-white/5")}
+            >Pending</button>
+            <button 
+              onClick={() => setStatus('approved')}
+              className={cn("px-3 py-2 text-[10px] font-black uppercase tracking-widest border-l border-gray-100 dark:border-white/10 transition-colors", status === 'approved' ? "bg-emerald-600 text-white" : "text-gray-500 hover:bg-gray-50 dark:hover:bg-white/5")}
+            >Disetujui</button>
+            <button 
+              onClick={() => setStatus('spam')}
+              className={cn("px-3 py-2 text-[10px] font-black uppercase tracking-widest border-l border-gray-100 dark:border-white/10 transition-colors", status === 'spam' ? "bg-red-600 text-white" : "text-gray-500 hover:bg-gray-50 dark:hover:bg-white/5")}
+            >Spam/Ditolak</button>
           </div>
           <div className="relative">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300" />
             <input 
               type="text" 
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
               placeholder="Cari komentar..."
               className="pl-9 pr-4 py-2 bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-lg text-xs outline-none focus:border-brand-red/30 transition-all w-48 md:w-64"
             />
