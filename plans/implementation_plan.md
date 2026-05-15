@@ -304,7 +304,7 @@ Tambah volumes: `redis_data:` dan `meili_data:`
 
 ## Sprint 4: IMPROVEMENT — UX & Code Quality (Hari 8-10)
 
-### Task 4.1: Perbaiki Error Middleware
+### ✅ Task 4.1: Perbaiki Error Middleware
 **Temuan:** API-5 — Fragile string matching  
 **File:** `apps/api/src/middleware/error.middleware.ts`  
 Refactor ke custom error class:
@@ -335,7 +335,7 @@ Kemudian update semua service: `throw new AppError('Email atau password salah', 
 
 ---
 
-### Task 4.2: Fix TLS rejectUnauthorized
+### ✅ Task 4.2: Fix TLS rejectUnauthorized
 **Temuan:** SEC-5  
 **File:** `apps/api/src/services/email.service.ts`  
 ```diff
@@ -377,7 +377,7 @@ Kemudian update semua service: `throw new AppError('Email atau password salah', 
 
 ---
 
-### Task 4.5: Migrasi Token ke httpOnly Cookie & Next.js Middleware
+### ✅ Task 4.5: Migrasi Token ke httpOnly Cookie & Next.js Middleware
 **Temuan:** SEC-2 — Token di localStorage (XSS Risk)
 **File:** `apps/api/src/modules/auth/auth.controller.ts`, `apps/web/src/middleware.ts`, `apps/web/src/lib/api.ts`
 **Implementasi:**
@@ -388,7 +388,7 @@ Kemudian update semua service: `throw new AppError('Email atau password salah', 
 
 ---
 
-### Task 4.6: Relasi Foreign Key untuk AIUsage, AuditLog, & Notification
+### ✅ Task 4.6: Relasi Foreign Key untuk AIUsage, AuditLog, & Notification
 **Temuan:** DB-4/5 — Orphan data  
 **File:** `apps/api/prisma/schema.prisma`  
 **Implementasi:**
@@ -417,7 +417,7 @@ Kemudian update semua service: `throw new AppError('Email atau password salah', 
 | **4** | 4.2 Fix TLS config | 5m | ✅ |
 | **4** | 4.3 Pecah dashboard page | 2h | ✅ |
 | **4** | 4.4 Sanitize Meili filter | 15m | ✅ |
-| **4** | 4.5 Migrasi Token (httpOnly & Next Middleware) | 3h | ⬜ |
-| **4** | 4.6 FK AIUsage, AuditLog, Notification | 30m | ⬜ |
+| **4** | 4.5 Migrasi Token (httpOnly & Next Middleware) | 3h | ✅ |
+| **4** | 4.6 FK AIUsage, AuditLog, Notification | 30m | ✅ |
 
 **Total estimasi: ~14.5 jam kerja (~8-10 hari dengan testing & review)**
