@@ -6,6 +6,7 @@ import { prisma } from '../../db/client'
 import { requireAuth, requireRole } from '../../middleware/auth.middleware'
 import { siteMiddleware, requireSiteAccess } from '../../middleware/site.middleware'
 import { asyncHandler } from '../../utils/asyncHandler'
+import { anonymizeIP } from '@beritakarya/utils'
 import { FileValidator } from '../../services/file-validator.service'
 import { WatermarkService } from '../../services/watermark.service'
 import { StorageService } from '../../services/storage.service'
@@ -521,7 +522,7 @@ kycRouter.get('/view/:userId/:type',
         viewerId: req.user!.userId,
         siteId: targetUser.siteId!,
         fileType: type === 'idCard' ? 'ktp' : 'kk',
-        ipAddress: req.ip,
+        ipAddress: anonymizeIP(req.ip),
         userAgent: req.headers['user-agent']
       }
     })

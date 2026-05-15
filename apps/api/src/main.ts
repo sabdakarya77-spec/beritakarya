@@ -70,7 +70,8 @@ if (env.SENTRY_DSN) {
 }
 
 const app = express()
-app.set('trust proxy', 1)
+// Enable trust proxy for Nginx/Load Balancer (PDP & Security)
+app.set('trust proxy', env.TRUST_PROXY || 'loopback, linklocal, uniquelocal')
 const PORT = env.PORT
 
 // Request timeout middleware (30 seconds)

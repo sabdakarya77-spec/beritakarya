@@ -26,6 +26,7 @@ import {
   MessageSquare,
   Mail
 } from 'lucide-react'
+import { ROLE_LABELS } from '../../../lib/constants'
 import { useState, useEffect } from 'react'
 import { cn } from '../../../lib/utils'
 import { useRouter } from 'next/navigation'
@@ -109,12 +110,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }] : [])
   ]
 
-  const ROLE_LABELS: Record<string, string> = {
-    superadmin: 'Superadmin',
-    wapimred: 'Wapimred',
-    journalist: 'Wartawan',
-    reader: 'Pembaca',
-  }
+
 
   const initials = user?.name
     ?.split(' ')

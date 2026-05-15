@@ -4,6 +4,7 @@ import { createArticleSchema, updateArticleSchema, articleQuerySchema } from './
 import { requireAuth } from '../../middleware/auth.middleware'
 import { siteMiddleware, requireSiteAccess } from '../../middleware/site.middleware'
 import { asyncHandler } from '../../utils/asyncHandler'
+import { anonymizeIP } from '@beritakarya/utils'
 
 export const articleRouter: Router = Router()
 
@@ -11,7 +12,7 @@ const withSite = [requireAuth, siteMiddleware, requireSiteAccess]
 
 articleRouter.get('/slug/:slug', siteMiddleware, asyncHandler(async (req: Request, res: Response) => {
   const article = await service.getPublishedArticleBySlug(req.params.slug, req.site!, {
-    ipAddress: req.ip,
+    ipAddress: anonymizeIP(req.ip),
     userAgent: req.headers['user-agent'],
     referrer: req.headers['referer'] as string
   })

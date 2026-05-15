@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { Mail, FileText } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { ROLE_LABELS } from '../../lib/constants';
 
 interface AuthorCardProps {
   author: {
@@ -18,12 +19,7 @@ interface AuthorCardProps {
   className?: string;
 }
 
-const ROLE_LABELS: Record<string, string> = {
-  superadmin: 'Superadmin',
-  wapimred: 'Wapimred',
-  journalist: 'Wartawan',
-  reader: 'Pembaca',
-};
+
 
 export default function AuthorCard({ author, site, variant = 'card', className }: AuthorCardProps) {
   const initials = author.name

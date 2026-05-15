@@ -1,5 +1,6 @@
 import { prisma } from '../../db/client'
 import { redis } from '../../lib/redis'
+import { anonymizeIP } from '@beritakarya/utils'
 import crypto from 'crypto'
 
 export async function recordView(data: {
@@ -18,7 +19,7 @@ export async function recordView(data: {
         articleId: data.articleId,
         path: data.path,
         referrer: data.referrer,
-        ipAddress: data.ipAddress,
+        ipAddress: anonymizeIP(data.ipAddress),
         userAgent: data.userAgent
       }
     })

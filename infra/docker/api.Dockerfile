@@ -36,8 +36,15 @@ WORKDIR /app
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser  --system --uid 1001 apiuser
 
-# Salin seluruh struktur folder /app agar symlink pnpm tidak putus
-COPY --from=builder --chown=apiuser:nodejs /app /app
+# Hanya salin file yang diperlukan untuk menjalankan aplikasi (dist, node_modules, prisma)
+# Ini mengurangi ukuran image secara signifikan (~300MB -> ~100MB)
+COPY --from=builder --chown=apiuser:nodejs /app/node_modules /app/node_modules
+COPY --from=builder --chown=apiuser:nodejs /app/packages /app/packages
+COPY --from=builder --chown=apiuser:nodejs /app/apps/api/dist /app/apps/api/dist
+COPY --from=builder --chown=apiuser:nodejs /app/apps/api/package.json /app/apps/api/package.json
+COPY --from=builder --chown=apiuser:nodejs /app/apps/api/prisma /app/apps/api/prisma
+COPY --from=builder --chown=apiuser:nodejs /app/package.json /app/package.json
+COPY --from=builder --chown=apiuser:nodejs /app/pnpm-workspace.yaml /app/pnpm-workspace.yaml
 
 # Berikan izin akses ke apiuser
 # Pastikan folder uploads ada dan punya izin yang benar
