@@ -16,6 +16,7 @@ export default function CategoriesDashboard() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [name, setName] = useState('');
   const [slug, setSlug] = useState('');
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [loading, setLoading] = useState(false);
   const [isGlobalView, setIsGlobalView] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
@@ -65,21 +66,30 @@ export default function CategoriesDashboard() {
     if (!name.trim()) return;
     setLoading(true);
     try {
-      // For superadmin creating global category, send siteId: null
-      const payload = isGlobalView ? { name, slug, siteId: null } : { name, slug, siteId: siteId };
-      
-      // [A-5c] Fix: use api instead of bare fetch()
-      await api.post('/categories', payload);
+      if (editingCategory) {
+        await api.put(`/categories/${editingCategory.id}`, { name });
+        showToast('Kategori berhasil diperbarui');
+      } else {
+        const payload = isGlobalView ? { name, slug, siteId: null } : { name, slug, siteId: siteId };
+        await api.post('/categories', payload);
+        showToast('Kategori berhasil dibuat');
+      }
       
       setName('');
       setSlug('');
-      showToast('Kategori berhasil dibuat');
+      setEditingCategory(null);
       fetchCategories();
     } catch (error: any) {
-      showToast(error.response?.data?.error?.message || 'Gagal membuat kategori', 'error');
+      showToast(error.response?.data?.error?.message || (editingCategory ? 'Gagal memperbarui kategori' : 'Gagal membuat kategori'), 'error');
     } finally {
       setLoading(false);
     }
+  };
+
+  const cancelEdit = () => {
+    setEditingCategory(null);
+    setName('');
+    setSlug('');
   };
 
   const handleDeleteRequest = (cat: Category) => {
@@ -154,8 +164,17 @@ export default function CategoriesDashboard() {
         {/* Form Add */}
         <div className="lg:col-span-1 space-y-6">
           <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 shadow-sm">
-            <h2 className="text-sm font-bold uppercase tracking-widest text-gray-500 mb-6 flex items-center gap-2">
-              Tambah Kategori Baru
+            <h2 className="text-sm font-bold uppercase tracking-widest text-gray-500 mb-6 flex items-center justify-between">
+              {editingCategory ? 'Edit Kategori' : 'Tambah Kategori Baru'}
+              {editingCategory && (
+                <button 
+                  type="button" 
+                  onClick={cancelEdit}
+                  className="text-[10px] bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 px-2 py-1 rounded"
+                >
+                  BATAL
+                </button>
+              )}
             </h2>
             <form onSubmit={handleCreate} className="space-y-5">
               <div>
@@ -178,8 +197,9 @@ export default function CategoriesDashboard() {
                     type="text" 
                     value={slug}
                     onChange={(e) => setSlug(e.target.value)}
+                    disabled={!!editingCategory}
                     placeholder="politik-lokal"
-                    className="w-full pl-7 pr-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm outline-none font-mono text-red-600"
+                    className="w-full pl-7 pr-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm outline-none font-mono text-red-600 disabled:opacity-60 disabled:cursor-not-allowed"
                     required
                   />
                 </div>
@@ -222,7 +242,7 @@ export default function CategoriesDashboard() {
                 disabled={loading}
                 className="w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-lg font-bold shadow-lg hover:shadow-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2"
               >
-                {loading ? 'Menyimpan...' : 'Tambah Kategori'}
+                {loading ? 'Menyimpan...' : (editingCategory ? 'Simpan Perubahan' : 'Tambah Kategori')}
               </button>
             </form>
           </div>
@@ -296,6 +316,26 @@ export default function CategoriesDashboard() {
                         </code>
                       </td>
                       <td className="px-6 py-4 text-right">
+                        <button 
+                          onClick={() => {
+                            if (cat.isGlobal) {
+                              showToast('Kategori global tidak dapat diedit dari sini', 'error');
+                              return;
+                            }
+                            setEditingCategory(cat);
+                            setName(cat.name);
+                            setSlug(cat.slug);
+                          }}
+                          className={`p-2 rounded-lg transition-colors mr-1 ${
+                            cat.isGlobal 
+                              ? 'text-gray-300 cursor-not-allowed' 
+                              : 'text-gray-500 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20'
+                          }`}
+                          title={cat.isGlobal ? 'Kategori global tidak dapat diedit' : 'Edit Kategori'}
+                          disabled={cat.isGlobal}
+                        >
+                          ✏️
+                        </button>
                         <button 
                           onClick={() => handleDeleteRequest(cat)}
                           className={`p-2 rounded-lg transition-colors ${

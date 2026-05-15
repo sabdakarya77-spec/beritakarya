@@ -166,6 +166,9 @@ export default function UsersDashboard() {
               <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-500">
                 Bergabung
               </th>
+              <th className="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-gray-500">
+                Aksi
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -224,6 +227,28 @@ export default function UsersDashboard() {
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500">
                     {new Date(user.createdAt).toLocaleDateString('id-ID')}
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <select
+                      value={user.role}
+                      onChange={async (e) => {
+                        const newRole = e.target.value;
+                        if (confirm(`Ubah peran ${user.name} menjadi ${newRole}?`)) {
+                          try {
+                            await api.put(`/users/${user.id}/role`, { role: newRole });
+                            fetchUsers();
+                          } catch (err: any) {
+                            alert(err.response?.data?.error?.message || 'Gagal mengubah peran');
+                          }
+                        }
+                      }}
+                      className="text-xs bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-2 py-1 outline-none"
+                    >
+                      <option value="reader">Reader (Suspend)</option>
+                      <option value="journalist">Wartawan</option>
+                      <option value="wapimred">Wapimred</option>
+                      <option value="superadmin">Superadmin</option>
+                    </select>
                   </td>
                 </tr>
               ))

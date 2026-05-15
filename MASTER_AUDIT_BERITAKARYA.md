@@ -363,9 +363,9 @@ Tabel ada di schema dan migration tapi tidak ada kode yang membaca/menulis tabel
 **Frontend (Fungsi Kritis):**
 - [x] `[B-7]` ✅ Tambahkan tombol "Tolak" di Antrian Review
 - [x] `[B-8]` ✅ Hubungkan Filter & Search komentar ke API
-- [ ] `[B-11]` Tambahkan form Edit Kategori (rename)
-- [ ] `[B-12]` Tambahkan aksi di tabel Pengguna (edit role, suspend)
-- [ ] `[B-13]` Tambahkan menu Undangan di sidebar + halaman invitation
+- [x] `[B-11]` ✅ Tambahkan form Edit Kategori (rename)
+- [x] `[B-12]` ✅ Tambahkan aksi di tabel Pengguna (edit role, suspend)
+- [x] `[B-13]` ✅ Tambahkan menu Undangan di sidebar + halaman invitation
 
 ---
 
