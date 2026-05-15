@@ -4,50 +4,49 @@ import { JWTPayload } from '@beritakarya/types'
 import { env } from '../lib/env'
 
 /**
- * Middleware to verify JWT token from Authorization header
- * Sets req.user with the decoded token payload
+ * OPTIONAL Auth Middleware — diaplikasikan secara global.
+ *
+ * Perilaku:
+ * - Token ADA dan VALID   → set req.user, lanjutkan ✅
+ * - Token ADA tapi RUSAK  → return 401 (token palsu/dimanipulasi) 🚫
+ * - Token ADA tapi EXPIRED → return 401 (minta refresh) 🚫
+ * - Token TIDAK ADA       → lanjutkan tanpa req.user ✅ (route publik boleh lewat)
+ *
+ * Route yang memerlukan login wajib menggunakan middleware `requireAuth`
+ * secara eksplisit di definisi route masing-masing.
  */
 export function jwtVerify(req: Request, res: Response, next: NextFunction) {
-  // Skip auth routes to allow login/register/refresh
-  const isAuthRoute = req.path.startsWith('/api/v1/auth') || req.path.includes('/auth')
-  if (isAuthRoute) {
+  const authHeader = req.headers.authorization
+
+  // Tidak ada token — izinkan lewat (route publik tidak memerlukan auth)
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return next()
   }
 
-  const authHeader = req.headers.authorization
-
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({
-      success: false,
-      error: {
-        code: 'UNAUTHORIZED',
-        message: 'No authentication token provided'
-      }
-    })
-  }
-
-  const token = authHeader.substring(7) // Remove 'Bearer ' prefix
+  const token = authHeader.substring(7) // Hapus prefix 'Bearer '
 
   try {
     const decoded = jwt.verify(token, env.JWT_SECRET) as JWTPayload
     req.user = decoded
     next()
   } catch (error) {
+    // Token ada tapi expired — minta client untuk refresh
     if (error instanceof jwt.TokenExpiredError) {
       return res.status(401).json({
         success: false,
         error: {
-          code: 'UNAUTHORIZED',
-          message: 'Token expired'
+          code: 'TOKEN_EXPIRED',
+          message: 'Token telah kadaluarsa, silakan refresh token Anda'
         }
       })
     }
 
+    // Token ada tapi tidak valid / dimanipulasi — tolak
     return res.status(401).json({
       success: false,
       error: {
-        code: 'UNAUTHORIZED',
-        message: 'Invalid token'
+        code: 'INVALID_TOKEN',
+        message: 'Token tidak valid'
       }
     })
   }

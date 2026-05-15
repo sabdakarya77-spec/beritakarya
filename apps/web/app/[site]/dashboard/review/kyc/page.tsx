@@ -3,6 +3,16 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Cell
+} from 'recharts'
+import { 
   ClipboardCheck, 
   Search, 
   CheckCircle2, 
@@ -15,7 +25,8 @@ import {
 } from 'lucide-react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import axios from 'axios'
+// [A-5d] Fix: use api (axios with auth interceptor + auto token refresh) instead of raw axios with manual token
+import { api } from '../../../../../lib/api'
 import { cn } from '../../../../../lib/utils'
 
 interface KYCUser {
@@ -29,13 +40,22 @@ interface KYCUser {
   kycNotes: string | null
 }
 
+interface KYCStats {
+  totalPending: number
+  approvedThisWeek: number
+  rejectedThisWeek: number
+  avgApprovalTime: number
+  conversionRate: number
+  trendData?: { date: string; count: number }[]
+}
+
 export default function KYCReviewPage() {
   const params = useParams()
   const siteId = params.site as string
   const router = useRouter()
 
   const [users, setUsers] = useState<KYCUser[]>([])
-  const [stats, setStats] = useState({ totalPending: 0, approvedThisWeek: 0, rejectedThisWeek: 0, avgApprovalTime: 0, conversionRate: 0 })
+  const [stats, setStats] = useState<KYCStats>({ totalPending: 0, approvedThisWeek: 0, rejectedThisWeek: 0, avgApprovalTime: 0, conversionRate: 0 })
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [search, setSearch] = useState('')
@@ -43,12 +63,10 @@ export default function KYCReviewPage() {
   const [page, setPage] = useState(1)
   const [meta, setMeta] = useState({ total: 0, totalPages: 1, limit: 20, page: 1 })
 
+  // [A-5d] Fix: use api instead of axios + manual localStorage token + hardcoded localhost:4000
   const fetchStats = async () => {
     try {
-      const token = localStorage.getItem('accessToken')
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/v1/kyc/stats?site=${siteId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      const response = await api.get('/kyc/stats')
       if (response.data.success) {
         setStats(response.data.data)
       }
@@ -62,16 +80,14 @@ export default function KYCReviewPage() {
     else setLoading(true)
 
     try {
-      const token = localStorage.getItem('accessToken')
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/v1/kyc`, {
+      // [A-5d] Fix: api interceptor auto-injects site query param from cookie + auth token
+      const response = await api.get('/kyc', {
         params: {
-          site: siteId,
           page,
           limit: 20,
           search,
           status: filter
-        },
-        headers: { Authorization: `Bearer ${token}` }
+        }
       })
       if (response.data.success) {
         setUsers(response.data.data)
@@ -88,9 +104,8 @@ export default function KYCReviewPage() {
   useEffect(() => {
     fetchUsers()
     fetchStats()
-  }, [siteId, page, filter]) // Removed 'search' from deps to avoid excessive API calls while typing
+  }, [siteId, page, filter])
 
-  // Debounced search could be added here, but for now we'll use a search button or manual trigger
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     setPage(1)
@@ -103,9 +118,6 @@ export default function KYCReviewPage() {
     { label: 'Ditolak (7h)', value: stats.rejectedThisWeek, color: 'text-red-600', bg: 'bg-red-50' },
     { label: 'Rata-rata Waktu', value: `${stats.avgApprovalTime} Jam`, color: 'text-slate-600', bg: 'bg-slate-50' }
   ]
-
-  // Recharts components
-  const { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } = require('recharts')
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -150,7 +162,7 @@ export default function KYCReviewPage() {
           ))}
         </div>
 
-        {/* Trend Chart */}
+        {/* Trend Chart — [A-5d] Fix: recharts imported as ES modules at top (not require() inside function body) */}
         <div className="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm">
           <div className="flex justify-between items-center mb-6">
             <div>
@@ -160,7 +172,7 @@ export default function KYCReviewPage() {
           </div>
           <div className="h-[240px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={(stats as any).trendData || []}>
+              <BarChart data={stats.trendData || []}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
                 <XAxis 
                   dataKey="date" 
@@ -175,7 +187,7 @@ export default function KYCReviewPage() {
                   contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', fontSize: '12px', fontWeight: 'bold' }}
                 />
                 <Bar dataKey="count" radius={[4, 4, 0, 0]}>
-                  {((stats as any).trendData || []).map((entry: any, index: number) => (
+                  {(stats.trendData || []).map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={index === 6 ? '#e11d48' : '#cbd5e1'} />
                   ))}
                 </Bar>
@@ -335,4 +347,3 @@ export default function KYCReviewPage() {
     </div>
   )
 }
-

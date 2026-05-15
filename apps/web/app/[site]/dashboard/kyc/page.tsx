@@ -16,7 +16,7 @@ import {
 } from 'lucide-react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import axios from 'axios'
+import { api } from '../../../../lib/api'
 import { useAuthStore } from '../../../../store/authStore'
 import { cn } from '../../../../lib/utils'
 
@@ -90,10 +90,8 @@ export default function KYCPage() {
     formData.append('consent', 'true')
 
     try {
-      const token = localStorage.getItem('accessToken')
-      await axios.post(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/v1/kyc/submit?site=${siteId}`, formData, {
+      await api.post('/kyc/submit', formData, {
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'multipart/form-data'
         }
       })
@@ -121,7 +119,7 @@ export default function KYCPage() {
           Selamat! Identitas Anda telah berhasil diverifikasi. Anda sekarang memiliki akses penuh untuk menerbitkan berita sebagai Jurnalis.
         </p>
         <button 
-          onClick={() => router.push(`/${siteId}/dashboard/articles/create`)}
+          onClick={() => router.push(`/${siteId}/dashboard/articles/new`)}
           className="mt-8 bg-brand-red text-white px-6 py-3 rounded-xl font-bold uppercase tracking-widest text-xs shadow-lg shadow-brand-red/20 hover:scale-105 transition-transform"
         >
           Buat Berita Pertama

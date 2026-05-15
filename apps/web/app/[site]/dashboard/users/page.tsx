@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
+import { api } from '../../../../lib/api';
 
 interface User {
   id: string;
@@ -16,31 +17,29 @@ export default function UsersDashboard() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAll, setShowAll] = useState(false);
-  const [siteId, setSiteId] = useState<string>('pusat');
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
-  // Get site from URL
-  useEffect(() => {
-    const path = window.location.pathname;
-    const match = path.match(/^[^/]+/);
-    if (match) {
-      setSiteId(match[0].slice(1));
-    }
-  }, []);
+  // [A-5b] Fix: use useParams() instead of window.location.pathname regex (which always returned empty string)
+  const params = useParams();
+  const siteId = (params.site as string) || 'pusat';
 
   const fetchUsers = async () => {
+    setError(null);
     try {
-      const params = new URLSearchParams();
+      const params: Record<string, string> = {};
       if (showAll) {
-        params.append('site', 'all');
+        params.site = 'all';
       }
-      const response = await fetch(`/api/v1/users?${params.toString()}`);
-      const data = await response.json();
+      // [A-5b] Fix: use api (axios with auth interceptor) instead of bare fetch()
+      const { data } = await api.get('/users', { params });
       if (data.success) {
         setUsers(data.data);
       }
-    } catch (error) {
-      console.error('Gagal mengambil users', error);
+    } catch (err: any) {
+      const msg = err.response?.data?.error?.message || 'Gagal mengambil data pengguna';
+      setError(msg);
+      console.error('Gagal mengambil users', err);
     } finally {
       setLoading(false);
     }
@@ -114,6 +113,13 @@ export default function UsersDashboard() {
         </div>
       </div>
 
+      {/* Error Banner */}
+      {error && (
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl px-4 py-3 text-sm text-red-700 dark:text-red-400">
+          ⚠️ {error}
+        </div>
+      )}
+
       {/* Stats Summary */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
@@ -164,11 +170,13 @@ export default function UsersDashboard() {
           </thead>
           <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
             {loading ? (
-              <tr>
-                <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
-                  Loading...
-                </td>
-              </tr>
+              [...Array(5)].map((_, i) => (
+                <tr key={i}>
+                  <td colSpan={5} className="px-6 py-4">
+                    <div className="h-8 bg-gray-100 dark:bg-gray-700 rounded animate-pulse" />
+                  </td>
+                </tr>
+              ))
             ) : visibleUsers.length === 0 ? (
               <tr>
                 <td colSpan={5} className="px-6 py-12 text-center">

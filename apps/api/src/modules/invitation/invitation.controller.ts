@@ -5,6 +5,8 @@ import { siteMiddleware, requireSiteAccess } from '../../middleware/site.middlew
 import { asyncHandler } from '../../utils/asyncHandler'
 import { emailService } from '../../services/email.service'
 import { logger } from '../../lib/logger'
+import bcrypt from 'bcryptjs'
+import crypto from 'crypto'
 
 export const invitationRouter = Router()
 
@@ -293,8 +295,8 @@ invitationRouter.post('/:token/accept',
       })
     }
 
-    // Hash password (todo: implement proper password hashing)
-    const passwordHash = password // FIXME: Should be hashed with bcrypt
+    // Hash password with bcrypt (cost factor 12 untuk keamanan optimal)
+    const passwordHash = await bcrypt.hash(password, 12)
 
     // Create user or restore soft-deleted user
     let user
@@ -428,14 +430,10 @@ invitationRouter.get('/:token/verify',
   })
 )
 
-// Helper function to generate secure token
+// Helper function to generate cryptographically secure token
+// Menggunakan crypto.randomBytes() — jauh lebih aman dari Math.random()
 function generateInvitationToken(): string {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-  let token = ''
-  for (let i = 0; i < 32; i++) {
-    token += chars[Math.floor(Math.random() * chars.length)]
-  }
-  return token
+  return crypto.randomBytes(32).toString('hex') // 64 karakter hex, 256-bit entropy
 }
 
 export default invitationRouter

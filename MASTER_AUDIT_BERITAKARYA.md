@@ -303,18 +303,18 @@ Tabel ada di schema dan migration tapi tidak ada kode yang membaca/menulis tabel
 | Kelola Post | `api` ✅ | List, filter, search, kanban | ✅ |
 | Editor Artikel | `api` ✅ | Block editor, AI, versioning | ✅ |
 | Media | `api` ✅ | Upload/list | ⚠️ Belum diverifikasi |
-| KYC Submit (User) | `axios` ❌ | Form upload KTP | ⚠️ Bypass interceptor |
+| KYC Submit (User) | `api` ✅ | Form upload KTP | ✅ Auth fixed |
 | Antrian Review | `api` ✅ | Approve/revisi/publish | ⚠️ Filter frontend |
-| Antrian KYC (Admin) | `axios` ❌ | List + stats + chart | ⚠️ localhost hardcode |
+| Antrian KYC (Admin) | `api` ✅ | List + stats + chart | ✅ Auth fixed, ES imports |
 | Kalender | — | Jadwal publikasi | ❌ Belum diimplementasi |
-| Kategori | `fetch` ❌ | CRUD | 🚨 Auth gagal |
+| Kategori | `api` ✅ | CRUD | ✅ Auth fixed + delete modal |
 | Iklan & Banner | Belum diverifikasi | — | ❓ |
 | Komentar | `api` ✅ | Approve/reject | ⚠️ Filter tidak berfungsi |
 | Monitor Tim | `api` ✅ | Stats wartawan | ⚠️ isOnline fake |
-| Pengguna | `fetch` ❌ | List user | 🚨 Auth gagal + regex salah |
+| Pengguna | `api` ✅ | List user | ✅ Auth fixed + useParams() |
 | Audit Log | `api` ✅ | Log + filter + detail | ✅ Terbaik |
 | Pengaturan | `api` ✅ | Form settings | 🚨 Endpoint tidak ada |
-| Manajemen Situs | `fetch` ❌ | CRUD situs | 🚨 Auth gagal |
+| Manajemen Situs | `api` ✅ | CRUD situs | ✅ Auth fixed + toast + modal |
 | AI Dashboard | `api` ✅ | Quota + usage | ✅ |
 
 ---
@@ -342,12 +342,12 @@ Tabel ada di schema dan migration tapi tidak ada kode yang membaca/menulis tabel
 - [x] `[A-4]` ✅ Tambahkan select `kycAttempts`, `kycLockedUntil` + logic lockout di KYC submit
 
 **Frontend — Auth Fix (4 file):**
-- [ ] `[A-5a]` `admin/page.tsx` → ganti `fetch()` → `api` (3 fungsi: list, CRUD, delete)
-- [ ] `[A-5b]` `users/page.tsx` → ganti `fetch()` → `api` + fix `useParams()`
-- [ ] `[A-5c]` `categories/page.tsx` → ganti `fetch()` → `api` + fix `useParams()`
-- [ ] `[A-5d]` `review/kyc/page.tsx` → ganti `axios` → `api`, hapus `localhost` hardcode
-- [ ] `[A-6]` `kyc/page.tsx` (user) → ganti `axios.post` → `api.post`
-- [ ] `[A-7]` Fix redirect `/articles/create` → `/articles/new`
+- [x] `[A-5a]` ✅ `admin/page.tsx` → ganti `fetch()` → `api` (list, create, edit, delete) + toast + delete modal
+- [x] `[A-5b]` ✅ `users/page.tsx` → ganti `fetch()` → `api` + fix `useParams()` + skeleton loading
+- [x] `[A-5c]` ✅ `categories/page.tsx` → ganti `fetch()` → `api` + fix `useParams()` + toast + delete modal
+- [x] `[A-5d]` ✅ `review/kyc/page.tsx` → ganti `axios` → `api`, hapus `localhost` hardcode, fix `require('recharts')` → ES import
+- [x] `[A-6]` ✅ `kyc/page.tsx` (user) → ganti `axios.post` → `api.post`
+- [x] `[A-7]` ✅ Fix redirect `/articles/create` → `/articles/new`
 
 ---
 

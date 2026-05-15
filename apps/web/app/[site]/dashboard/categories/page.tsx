@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
+import { api } from '../../../../lib/api';
 
 interface Category {
   id: string;
@@ -16,32 +17,32 @@ export default function CategoriesDashboard() {
   const [name, setName] = useState('');
   const [slug, setSlug] = useState('');
   const [loading, setLoading] = useState(false);
-  const [syncing, setSyncing] = useState(false);
   const [isGlobalView, setIsGlobalView] = useState(false);
-  const [siteId, setSiteId] = useState<string>('pusat');
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<Category | null>(null);
   const router = useRouter();
 
-  // Get site from URL
-  useEffect(() => {
-    const path = window.location.pathname;
-    const match = path.match(/^[^/]+/);
-    if (match) {
-      setSiteId(match[0].slice(1));
-    }
-  }, []);
+  // [A-5c] Fix: use useParams() instead of window.location.pathname regex (which always returned empty string)
+  const params = useParams();
+  const siteId = (params.site as string) || 'pusat';
+
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3500);
+  };
 
   const fetchCategories = async () => {
     try {
-      const params = new URLSearchParams();
+      const queryParams: Record<string, string> = {};
       if (isGlobalView) {
-        params.append('view', 'all');
+        queryParams.view = 'all';
       }
-      const response = await fetch(`/api/v1/categories?${params.toString()}`);
-      const data = await response.json();
+      // [A-5c] Fix: use api (axios with auth interceptor) instead of bare fetch()
+      const { data } = await api.get('/categories', { params: queryParams });
       if (data.success) {
         setCategories(data.data);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Gagal mengambil kategori', error);
     }
   };
@@ -67,53 +68,55 @@ export default function CategoriesDashboard() {
       // For superadmin creating global category, send siteId: null
       const payload = isGlobalView ? { name, slug, siteId: null } : { name, slug, siteId: siteId };
       
-      const response = await fetch('/api/v1/categories', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error?.message || 'Gagal membuat kategori');
-      }
+      // [A-5c] Fix: use api instead of bare fetch()
+      await api.post('/categories', payload);
       
       setName('');
       setSlug('');
+      showToast('Kategori berhasil dibuat');
       fetchCategories();
     } catch (error: any) {
-      alert(error.message);
+      showToast(error.response?.data?.error?.message || 'Gagal membuat kategori', 'error');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDelete = async (id: string, isGlobal: boolean) => {
-    if (isGlobal) {
-      alert('Kategori global tidak dapat dihapus');
+  const handleDeleteRequest = (cat: Category) => {
+    if (cat.isGlobal) {
+      showToast('Kategori global tidak dapat dihapus', 'error');
       return;
     }
+    setDeleteConfirm(cat);
+  };
 
-    if (!confirm('Hapus kategori ini? Menghapus kategori dapat memengaruhi post yang sudah ada.')) {
-      return;
-    }
-
+  const confirmDelete = async () => {
+    if (!deleteConfirm) return;
     try {
-      const response = await fetch(`/api/v1/categories/${id}`, { method: 'DELETE' });
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.error?.message || 'Gagal menghapus kategori');
-      }
-
+      // [A-5c] Fix: use api instead of bare fetch()
+      await api.delete(`/categories/${deleteConfirm.id}`);
+      showToast('Kategori berhasil dihapus');
       fetchCategories();
     } catch (error: any) {
-      alert(error.message);
+      showToast(error.response?.data?.error?.message || 'Gagal menghapus kategori', 'error');
+    } finally {
+      setDeleteConfirm(null);
     }
   };
 
   return (
     <div className="max-w-5xl mx-auto space-y-6 pb-20">
+      {/* Toast Notification */}
+      {toast && (
+        <div className={`fixed top-6 right-6 z-[100] px-5 py-4 rounded-xl shadow-2xl text-sm font-semibold transition-all animate-fade-in ${
+          toast.type === 'success' 
+            ? 'bg-green-600 text-white' 
+            : 'bg-red-600 text-white'
+        }`}>
+          {toast.message}
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
@@ -294,7 +297,7 @@ export default function CategoriesDashboard() {
                       </td>
                       <td className="px-6 py-4 text-right">
                         <button 
-                          onClick={() => handleDelete(cat.id, cat.isGlobal || false)}
+                          onClick={() => handleDeleteRequest(cat)}
                           className={`p-2 rounded-lg transition-colors ${
                             cat.isGlobal 
                               ? 'text-gray-300 cursor-not-allowed' 
@@ -325,6 +328,34 @@ export default function CategoriesDashboard() {
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full p-6 shadow-2xl">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
+              Hapus Kategori?
+            </h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+              Menghapus kategori <strong>&quot;{deleteConfirm.name}&quot;</strong> dapat memengaruhi post yang sudah ada. Tindakan ini tidak dapat dibatalkan.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setDeleteConfirm(null)}
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-sm"
+              >
+                Batal
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold text-sm"
+              >
+                Ya, Hapus
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
