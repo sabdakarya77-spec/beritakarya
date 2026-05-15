@@ -90,6 +90,26 @@ export async function createArticle(
   input: { title: string; blocks?: any[]; categoryId?: string | null; tags?: string[] },
   user: JWTPayload, siteId: string
 ) {
+  // Fetch fresh user data to check KYC status and current role
+  const dbUser = await prisma.user.findUnique({
+    where: { id: user.userId },
+    select: { role: true, kycStatus: true }
+  })
+
+  if (!dbUser) {
+    throw Object.assign(new Error('User tidak ditemukan'), { statusCode: 404 })
+  }
+
+  // Role validation: Readers cannot create articles
+  if (dbUser.role === 'reader') {
+    throw Object.assign(new Error('Akses ditolak: Pembaca tidak dapat membuat artikel'), { statusCode: 403 })
+  }
+
+  // KYC validation: Journalists must be APPROVED to create articles
+  if (dbUser.role === 'journalist' && dbUser.kycStatus !== 'APPROVED') {
+    throw Object.assign(new Error('Akses ditolak: Verifikasi identitas (KYC) Anda belum disetujui'), { statusCode: 403 })
+  }
+
   let slug = generateSlug(input.title)
   let counter = 2
   while (await repo.slugExists(slug, siteId)) {
@@ -130,6 +150,26 @@ export async function updateArticle(
   }>,
   user: JWTPayload
 ) {
+  // Fetch fresh user data to check KYC status and current role
+  const dbUser = await prisma.user.findUnique({
+    where: { id: user.userId },
+    select: { role: true, kycStatus: true }
+  })
+
+  if (!dbUser) {
+    throw Object.assign(new Error('User tidak ditemukan'), { statusCode: 404 })
+  }
+
+  // Role validation: Readers cannot update articles
+  if (dbUser.role === 'reader') {
+    throw Object.assign(new Error('Akses ditolak: Pembaca tidak dapat mengubah artikel'), { statusCode: 403 })
+  }
+
+  // KYC validation: Journalists must be APPROVED to update articles
+  if (dbUser.role === 'journalist' && dbUser.kycStatus !== 'APPROVED') {
+    throw Object.assign(new Error('Akses ditolak: Verifikasi identitas (KYC) Anda belum disetujui'), { statusCode: 403 })
+  }
+
   const article = await repo.findArticleById(id, siteId)
   if (!article) throw Object.assign(new Error('Post tidak ditemukan'), { statusCode: 404 })
   
