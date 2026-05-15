@@ -149,7 +149,7 @@ export default function KYCPage() {
         
         <div className="mt-6 p-6 bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/20 rounded-2xl max-w-md w-full">
           <p className="text-sm font-bold text-red-700 dark:text-red-400 italic">
-            "{user?.kycNotes || 'Dokumen kurang jelas atau tidak sesuai ketentuan.'}"
+            &quot;{user?.kycNotes || 'Dokumen kurang jelas atau tidak sesuai ketentuan.'}&quot;
           </p>
         </div>
 
