@@ -31,29 +31,23 @@ interface Article {
 
 // ─── Mini Sparkline ──────────────────────────────────────────────
 // ─── Real-time Pulse Indicator ──────────────────────────────────
-function RealTimePulse({ totalViews }: { totalViews: number }) {
+function RealTimePulse() {
   const [count, setCount] = useState(0);
   
   useEffect(() => {
-    // If we have total views, simulate active readers as a small fraction (e.g. 0.5% - 2%)
-    // If 0 views, stay 0. This is more "real" for a new site.
-    if (totalViews === 0) {
-      setCount(0);
-      return;
-    }
+    const fetchCount = async () => {
+      try {
+        const { data } = await api.get('/analytics/active-readers');
+        setCount(data.data.count || 0);
+      } catch (e) {
+        console.error('Failed to fetch active readers:', e);
+      }
+    };
 
-    const base = Math.max(1, Math.floor(totalViews / 500));
-    setCount(base);
-
-    const interval = setInterval(() => {
-      setCount(prev => {
-        if (prev === 0) return 0;
-        const change = Math.floor(Math.random() * 3) - 1; // -1, 0, 1
-        return Math.max(1, prev + change);
-      });
-    }, 5000);
+    fetchCount();
+    const interval = setInterval(fetchCount, 30000);
     return () => clearInterval(interval);
-  }, [totalViews]);
+  }, []);
 
   return (
     <div className="flex items-center gap-3 bg-brand-red/5 px-4 py-2 rounded-2xl border border-brand-red/10">
@@ -244,6 +238,7 @@ export default function DashboardOverview() {
   const [articles, setArticles] = useState<Article[]>([]);
   const [trafficData, setTrafficData] = useState<any[]>([]);
   const [topContent, setTopContent] = useState<any[]>([]);
+  const [engagementStats, setEngagementStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [greeting, setGreeting] = useState('Selamat');
   const [currentDate, setCurrentDate] = useState('');
@@ -258,15 +253,17 @@ export default function DashboardOverview() {
     const loadData = async () => {
       setLoading(true);
       try {
-        const [artRes, trafficRes, topRes] = await Promise.all([
+        const [artRes, trafficRes, topRes, engRes] = await Promise.all([
           api.get('/articles', { params: { limit: 50 } }),
           api.get('/analytics/traffic', { params: { days: 7 } }),
-          api.get('/analytics/top-content', { params: { limit: 5 } })
+          api.get('/analytics/top-content', { params: { limit: 5 } }),
+          api.get('/analytics/engagement')
         ]);
         
         setArticles(artRes.data.data.articles || artRes.data.data.items || []);
         setTrafficData(trafficRes.data.data);
         setTopContent(topRes.data.data);
+        setEngagementStats(engRes.data.data);
       } catch (err) {
         console.error('Failed to load dashboard data:', err);
       } finally {
@@ -340,7 +337,7 @@ export default function DashboardOverview() {
           </p>
         </div>
         <div className="flex items-center gap-4">
-          <RealTimePulse totalViews={articles.reduce((s, a) => s + (a.viewCount || 0), 0)} />
+          <RealTimePulse />
           <Link 
             href={`/${site}/dashboard/articles/new`}
             className="flex items-center gap-2 px-5 py-2.5 bg-brand-red text-white text-[11px] font-black uppercase tracking-widest rounded-lg hover:bg-red-700 transition-all shadow-lg shadow-brand-red/20"
@@ -436,8 +433,13 @@ export default function DashboardOverview() {
             </div>
             <div>
               <p className="dash-label mb-1">Engagement Rate</p>
-              <p className="text-xl font-black text-gray-400 dark:text-gray-500 tabular-nums flex items-center gap-2">
-                N/A
+              <p className="text-xl font-black text-brand-black dark:text-white tabular-nums flex items-center gap-2">
+                {engagementStats ? `${engagementStats.rate}%` : '0%'}
+                {engagementStats && engagementStats.rate > 2 ? (
+                  <TrendingUp size={16} className="text-emerald-500" />
+                ) : (
+                  <TrendingUp size={16} className="text-gray-300" />
+                )}
               </p>
             </div>
           </div>

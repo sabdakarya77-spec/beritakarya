@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { api } from '../../../../lib/api';
 import { useAuthStore } from '../../../../store/authStore';
+import { useToastStore } from '../../../../store/toastStore';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   AlertCircle, CheckCircle, XCircle, Clock, ChevronRight,
@@ -38,7 +39,9 @@ const EMPTY_STATES: Record<string, { icon: React.ElementType; msg: string }> = {
 export default function ReviewQueuePage() {
   const { site } = useParams() as { site: string };
   const { user } = useAuthStore();
+  const { addToast } = useToastStore();
   const [articles, setArticles] = useState<Article[]>([]);
+  const [stats, setStats] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'submitted' | 'review' | 'revision' | 'approved'>('submitted');
   const [actionLoading, setActionLoading] = useState<string | null>(null);
@@ -48,8 +51,17 @@ export default function ReviewQueuePage() {
    const load = async () => {
      setLoading(true);
      try {
-       const { data } = await api.get('/articles', { params: { limit: 100 } });
-       setArticles(data.data.articles || data.data.items || []);
+       const [artRes, statsRes] = await Promise.all([
+         api.get('/articles', { 
+           params: { 
+             limit: 50, 
+             status: activeTab 
+           } 
+         }),
+         api.get('/articles/stats')
+       ]);
+       setArticles(artRes.data.data.articles || artRes.data.data.items || []);
+       setStats(statsRes.data.data || {});
      } catch (e) {
        console.error(e);
      } finally {
@@ -57,9 +69,9 @@ export default function ReviewQueuePage() {
      }
    };
 
-  useEffect(() => { load(); }, [site]);
+  useEffect(() => { load(); }, [site, activeTab]);
 
-  const tabArticles = articles.filter(a => a.status === activeTab);
+  const tabArticles = articles;
 
   const tabs = [
     { key: 'submitted', label: 'Menunggu Review', color: 'text-blue-500' },
@@ -84,8 +96,9 @@ export default function ReviewQueuePage() {
       setReviewModal(null);
       setReviewNotes('');
       await load();
+      addToast(`Berhasil memproses artikel`, 'success');
     } catch (e: any) {
-      alert(e.response?.data?.error?.message || 'Gagal memproses post');
+      addToast(e.response?.data?.error?.message || 'Gagal memproses post', 'error');
     } finally {
       setActionLoading(null);
     }
@@ -132,17 +145,17 @@ export default function ReviewQueuePage() {
       <div className="dash-card p-4">
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
           {[
-            { label: 'Draft', color: 'bg-amber-100 text-amber-700', count: articles.filter(a=>a.status==='draft').length },
+            { label: 'Draft', color: 'bg-amber-100 text-amber-700', count: stats.draft || 0 },
             { label: '→', color: 'text-gray-300', count: null },
-            { label: 'Dikirim', color: 'bg-blue-100 text-blue-700', count: articles.filter(a=>a.status==='submitted').length },
+            { label: 'Dikirim', color: 'bg-blue-100 text-blue-700', count: stats.submitted || 0 },
             { label: '→', color: 'text-gray-300', count: null },
-            { label: 'Review', color: 'bg-violet-100 text-violet-700', count: articles.filter(a=>a.status==='review').length },
+            { label: 'Review', color: 'bg-violet-100 text-violet-700', count: stats.review || 0 },
             { label: '→', color: 'text-gray-300', count: null },
-            { label: 'Revisi', color: 'bg-orange-100 text-orange-700', count: articles.filter(a=>a.status==='revision').length },
+            { label: 'Revisi', color: 'bg-orange-100 text-orange-700', count: stats.revision || 0 },
             { label: '→', color: 'text-gray-300', count: null },
-            { label: 'Disetujui', color: 'bg-emerald-100 text-emerald-700', count: articles.filter(a=>a.status==='approved').length },
+            { label: 'Disetujui', color: 'bg-emerald-100 text-emerald-700', count: stats.approved || 0 },
             { label: '→', color: 'text-gray-300', count: null },
-            { label: 'Terbit', color: 'bg-green-100 text-green-700', count: articles.filter(a=>a.status==='published').length },
+            { label: 'Terbit', color: 'bg-green-100 text-green-700', count: stats.published || 0 },
           ].map((step, i) => (
             step.label === '→'
               ? <ChevronRight key={i} size={16} className="text-gray-300 flex-shrink-0" />
@@ -162,7 +175,7 @@ export default function ReviewQueuePage() {
       <div className="border-b border-gray-100 dark:border-white/5">
         <div className="flex gap-6 overflow-x-auto no-scrollbar">
           {tabs.map(tab => {
-            const count = articles.filter(a => a.status === tab.key).length;
+            const count = stats[tab.key] || 0;
             return (
               <button
                 key={tab.key}

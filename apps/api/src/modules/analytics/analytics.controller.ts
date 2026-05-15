@@ -3,6 +3,7 @@ import { requireAuth } from '../../middleware/auth.middleware'
 import { siteMiddleware, requireSiteAccess } from '../../middleware/site.middleware'
 import { asyncHandler } from '../../utils/asyncHandler'
 import * as repo from './analytics.repository'
+import { getActiveReaderCount } from './analytics.service'
 
 export const analyticsRouter: Router = Router()
 
@@ -18,4 +19,14 @@ analyticsRouter.get('/top-content', ...withSite, asyncHandler(async (req: Reques
   const limit = req.query.limit ? parseInt(req.query.limit as string) : 5
   const content = await repo.getTopContent(req.site!, limit)
   res.json({ success: true, data: content })
+}))
+
+analyticsRouter.get('/active-readers', ...withSite, asyncHandler(async (req: Request, res: Response) => {
+  const count = await getActiveReaderCount(req.site!)
+  res.json({ success: true, data: { count } })
+}))
+
+analyticsRouter.get('/engagement', ...withSite, asyncHandler(async (req: Request, res: Response) => {
+  const stats = await repo.getEngagementStats(req.site!)
+  res.json({ success: true, data: stats })
 }))

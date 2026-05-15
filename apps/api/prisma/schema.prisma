@@ -9,6 +9,13 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+enum KycStatus {
+  UNSUBMITTED
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 model Site {
   id        String   @id
   name      String
@@ -54,6 +61,7 @@ model User {
   idCardPath       String?
   familyCardPath   String?
   isVerified       Boolean  @default(false)
+  kycStatus        KycStatus @default(UNSUBMITTED)
   kycSubmittedAt   DateTime?
   kycNotes         String?
   kycReviewedBy    String?   // userId admin yang approval
@@ -85,11 +93,14 @@ model User {
   @@index([siteId])
   @@index([email])
   @@index([isVerified])
+  @@index([kycStatus])
   @@index([kycSubmittedAt])
   @@index([kycAttempts])
   @@index([kycLockedUntil])
   @@index([deletedAt])
   @@index([aiEnabled])
+  @@index([siteId, isVerified, kycSubmittedAt])
+  @@index([siteId, kycStatus, kycSubmittedAt])
 }
 
 model Category {
@@ -397,4 +408,5 @@ model Invitation {
   @@index([expiresAt])
   @@index([siteId])
   @@index([invitedBy])
+  @@unique([email, siteId])
 }

@@ -29,18 +29,23 @@ export default function TeamMonitoring() {
   const [search, setSearch] = useState('');
 
    useEffect(() => {
-     const fetchTeam = async () => {
-       setLoading(true);
+     const fetchTeam = async (isInitial = false) => {
+       if (isInitial) setLoading(true);
        try {
          const { data } = await api.get('/users/stats');
          setTeam(data.data);
        } catch (e) {
          console.error(e);
        } finally {
-         setLoading(false);
+         if (isInitial) setLoading(false);
        }
      };
-     fetchTeam();
+
+     fetchTeam(true);
+
+     // Refresh status every 30 seconds to keep online indicators accurate
+     const interval = setInterval(() => fetchTeam(false), 30000);
+     return () => clearInterval(interval);
    }, [site]);
 
   const filteredTeam = team.filter(m => 

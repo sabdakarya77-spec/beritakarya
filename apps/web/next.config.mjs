@@ -43,6 +43,15 @@ const nextConfig = {
     ],
     unoptimized: false,
   },
+  async redirects() {
+    return [
+      {
+        source: '/:site/dashboard/articles/create',
+        destination: '/:site/dashboard/articles/new',
+        permanent: true,
+      },
+    ]
+  },
 }
 
 export default withBundleAnalyzer(nextConfig)

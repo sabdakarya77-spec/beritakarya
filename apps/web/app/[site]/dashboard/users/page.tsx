@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { api } from '../../../../lib/api';
+import { useToastStore } from '../../../../store/toastStore';
 
 interface User {
   id: string;
@@ -19,6 +20,7 @@ export default function UsersDashboard() {
   const [showAll, setShowAll] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const { addToast } = useToastStore();
 
   // [A-5b] Fix: use useParams() instead of window.location.pathname regex (which always returned empty string)
   const params = useParams();
@@ -233,12 +235,13 @@ export default function UsersDashboard() {
                       value={user.role}
                       onChange={async (e) => {
                         const newRole = e.target.value;
-                        if (confirm(`Ubah peran ${user.name} menjadi ${newRole}?`)) {
+                        if (window.confirm(`Ubah peran ${user.name} menjadi ${newRole}?`)) {
                           try {
                             await api.put(`/users/${user.id}/role`, { role: newRole });
+                            addToast(`Berhasil mengubah peran ${user.name}`, 'success');
                             fetchUsers();
                           } catch (err: any) {
-                            alert(err.response?.data?.error?.message || 'Gagal mengubah peran');
+                            addToast(err.response?.data?.error?.message || 'Gagal mengubah peran', 'error');
                           }
                         }
                       }}

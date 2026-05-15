@@ -36,12 +36,12 @@ kycRouter.get('/',
   asyncHandler(async (req: any, res: any) => {
     const { siteId } = req
     const page = parseInt(req.query.page as string) || 1
-    const limit = parseInt(req.query.limit as string) || 20
+    const limit = Math.min(parseInt(req.query.limit as string) || 20, 100)
     const search = req.query.search as string
     const status = req.query.status as string
     const skip = (page - 1) * limit
 
-    const where: any = { siteId }
+    const where: any = { siteId, deletedAt: null }
 
     if (search) {
       where.OR = [
@@ -51,13 +51,11 @@ kycRouter.get('/',
     }
 
     if (status === 'pending') {
-      where.kycSubmittedAt = { not: null }
-      where.isVerified = false
-      where.kycNotes = { not: { contains: 'REJECTED' } }
+      where.kycStatus = 'PENDING'
     } else if (status === 'verified') {
-      where.isVerified = true
+      where.kycStatus = 'APPROVED'
     } else if (status === 'rejected') {
-      where.kycNotes = { contains: 'REJECTED' }
+      where.kycStatus = 'REJECTED'
     }
 
     const [users, total] = await Promise.all([
@@ -74,6 +72,7 @@ kycRouter.get('/',
           isVerified: true,
           kycSubmittedAt: true,
           kycReviewedAt: true,
+          kycStatus: true,
           kycNotes: true,
         }
       }),
@@ -110,19 +109,19 @@ kycRouter.get('/stats',
     ] = await Promise.all([
       // Total Pending (Submitted but not verified and not rejected)
       prisma.user.count({
-        where: { siteId, kycSubmittedAt: { not: null }, isVerified: false, kycNotes: { not: { contains: 'REJECTED' } } }
+        where: { siteId, kycStatus: 'PENDING', deletedAt: null }
       }),
       // Approved This Week
       prisma.user.count({
-        where: { siteId, isVerified: true, kycReviewedAt: { gte: oneWeekAgo } }
+        where: { siteId, kycStatus: 'APPROVED', kycReviewedAt: { gte: oneWeekAgo }, deletedAt: null }
       }),
       // Rejected This Week
       prisma.user.count({
-        where: { siteId, isVerified: false, kycNotes: { contains: 'REJECTED' }, kycReviewedAt: { gte: oneWeekAgo } }
+        where: { siteId, kycStatus: 'REJECTED', kycReviewedAt: { gte: oneWeekAgo }, deletedAt: null }
       }),
       // All Verified Users (for avg time calculation)
       prisma.user.findMany({
-        where: { siteId, isVerified: true, kycSubmittedAt: { not: null }, kycReviewedAt: { not: null } },
+        where: { siteId, kycStatus: 'APPROVED', kycSubmittedAt: { not: null }, kycReviewedAt: { not: null }, deletedAt: null },
         select: { kycSubmittedAt: true, kycReviewedAt: true }
       })
     ])
@@ -138,24 +137,31 @@ kycRouter.get('/stats',
     }
 
     // NEW: Calculate Trend Data (Last 7 Days)
+    // [B-2] Optimized: use raw query for GROUP BY DATE to avoid N+1
+    const trendDataRaw = await prisma.$queryRaw<any[]>`
+      SELECT 
+        DATE("kycSubmittedAt") as date, 
+        COUNT(*)::int as count 
+      FROM "User" 
+      WHERE "siteId" = ${siteId} 
+        AND "kycSubmittedAt" >= ${oneWeekAgo}
+      GROUP BY DATE("kycSubmittedAt") 
+      ORDER BY date ASC
+    `
+
+    // Format for frontend (fill gaps if any)
     const trendData = []
     for (let i = 6; i >= 0; i--) {
       const date = new Date(now)
       date.setDate(date.getDate() - i)
       const dateStr = date.toISOString().split('T')[0]
       
-      const startOfDay = new Date(dateStr)
-      const endOfDay = new Date(dateStr)
-      endOfDay.setHours(23, 59, 59, 999)
-
-      const count = await prisma.user.count({
-        where: { 
-          siteId, 
-          kycSubmittedAt: { gte: startOfDay, lte: endOfDay } 
-        }
+      const found = trendDataRaw.find(d => {
+        const dStr = new Date(d.date).toISOString().split('T')[0]
+        return dStr === dateStr
       })
       
-      trendData.push({ date: dateStr, count })
+      trendData.push({ date: dateStr, count: found ? found.count : 0 })
     }
 
     res.json({
@@ -178,7 +184,7 @@ kycRouter.get('/:id',
   asyncHandler(async (req: any, res: any) => {
     const { id } = req.params
     const user = await prisma.user.findFirst({
-      where: { id },
+      where: { id, deletedAt: null },
       select: {
         id: true,
         email: true,
@@ -187,6 +193,7 @@ kycRouter.get('/:id',
         isVerified: true,
         kycSubmittedAt: true,
         kycReviewedAt: true,
+        kycStatus: true,
         kycNotes: true,
         kycDataExpiresAt: true,
         idCardPath: true,
@@ -337,6 +344,7 @@ kycRouter.post('/submit',
             kycConsentGivenAt: new Date(),
             kycDataExpiresAt: new Date(Date.now() + 5 * 365 * 24 * 60 * 60 * 1000), // 5 years
             isVerified: false,
+            kycStatus: 'PENDING',
             kycNotes: `SUBMITTED at ${new Date().toISOString()}`
           }
         })
@@ -418,7 +426,7 @@ kycRouter.patch('/:userId/verify',
     }
 
     const targetUser = await prisma.user.findUnique({
-      where: { id: userId },
+      where: { id: userId, deletedAt: null },
       select: { siteId: true, kycNotes: true, name: true }
     })
 
@@ -438,6 +446,7 @@ kycRouter.patch('/:userId/verify',
         where: { id: userId },
         data: {
           isVerified: isApproved,
+          kycStatus: isApproved ? 'APPROVED' : 'REJECTED',
           kycNotes: `${status.toUpperCase()} at ${new Date().toISOString()}${notes ? ` - ${notes}` : ''}`,
           kycReviewedBy: req.user!.userId,
           kycReviewedAt: new Date(),
@@ -486,7 +495,7 @@ kycRouter.get('/view/:userId/:type',
     }
 
     const targetUser = await prisma.user.findUnique({
-      where: { id: userId },
+      where: { id: userId, deletedAt: null },
       select: { siteId: true, idCardPath: true, familyCardPath: true }
     })
 

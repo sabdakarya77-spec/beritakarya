@@ -15,7 +15,7 @@ import {
 } from 'lucide-react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import axios from 'axios'
+import { api } from '../../../../../../lib/api'
 import { cn } from '../../../../../../lib/utils'
 
 interface KYCUser {
@@ -25,6 +25,7 @@ interface KYCUser {
   role: string
   bio: string | null
   isVerified: boolean
+  kycStatus: string
   kycSubmittedAt: string | null
   kycReviewedAt: string | null
   kycNotes: string | null
@@ -48,10 +49,7 @@ export default function KYCDetailReviewPage() {
   const fetchUser = async () => {
     setLoading(true)
     try {
-      const token = localStorage.getItem('accessToken')
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/v1/kyc/${userId}?site=${siteId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      const response = await api.get(`/kyc/${userId}`)
       if (response.data.success) {
         setUser(response.data.data)
       }
@@ -77,12 +75,9 @@ export default function KYCDetailReviewPage() {
     setError(null)
 
     try {
-      const token = localStorage.getItem('accessToken')
-      await axios.patch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/v1/kyc/${userId}/verify?site=${siteId}`, {
+      await api.patch(`/kyc/${userId}/verify`, {
         status,
         notes
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
       })
       router.push(`/${siteId}/dashboard/review/kyc`)
     } catch (err: any) {

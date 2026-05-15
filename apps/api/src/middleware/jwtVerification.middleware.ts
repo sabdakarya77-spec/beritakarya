@@ -30,24 +30,9 @@ export function jwtVerify(req: Request, res: Response, next: NextFunction) {
     req.user = decoded
     next()
   } catch (error) {
-    // Token ada tapi expired — minta client untuk refresh
-    if (error instanceof jwt.TokenExpiredError) {
-      return res.status(401).json({
-        success: false,
-        error: {
-          code: 'TOKEN_EXPIRED',
-          message: 'Token telah kadaluarsa, silakan refresh token Anda'
-        }
-      })
-    }
-
-    // Token ada tapi tidak valid / dimanipulasi — tolak
-    return res.status(401).json({
-      success: false,
-      error: {
-        code: 'INVALID_TOKEN',
-        message: 'Token tidak valid'
-      }
-    })
+    // Simpan error di request tetapi izinkan lanjut ke middleware berikutnya
+    // Security akan ditangani oleh requireAuth jika diperlukan
+    (req as any).authError = error
+    next()
   }
 }

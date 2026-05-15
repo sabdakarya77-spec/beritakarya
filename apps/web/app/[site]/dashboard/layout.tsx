@@ -39,6 +39,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const [theme, setTheme] = useState<'light' | 'dark'>('light')
+  const [globalSearch, setGlobalSearch] = useState('')
   const router = useRouter()
 
   useEffect(() => {
@@ -314,7 +315,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300" />
               <input 
                 type="text" 
-                placeholder="Cari di dashboard..."
+                placeholder="Cari artikel..."
+                value={globalSearch}
+                onChange={(e) => setGlobalSearch(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && globalSearch) {
+                    router.push(`/${site}/dashboard/articles?search=${encodeURIComponent(globalSearch)}`)
+                    setGlobalSearch('')
+                  }
+                }}
                 className="pl-9 pr-4 py-2 bg-gray-50 dark:bg-white/5 border border-transparent focus:border-brand-red/20 rounded-lg text-xs w-64 outline-none transition-all text-brand-black dark:text-white placeholder:text-gray-300"
               />
             </div>

@@ -24,6 +24,11 @@ articleRouter.get('/public', siteMiddleware, asyncHandler(async (req: Request, r
   res.json({ success: true, data: result })
 }))
 
+articleRouter.get('/stats', ...withSite, asyncHandler(async (req: any, res: any) => {
+  const stats = await service.getArticleStats(req.site!)
+  res.json({ success: true, data: stats })
+}))
+
 articleRouter.get('/', ...withSite, asyncHandler(async (req: Request, res: Response) => {
   const query = articleQuerySchema.parse(req.query)
   const result = await service.getArticles(req.site!, query, req.user!)

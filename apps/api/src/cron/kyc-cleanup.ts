@@ -37,8 +37,8 @@ export async function runKYCCleanup() {
     const rejectedUsers = await prisma.user.findMany({
       where: {
         isVerified: false,
+        kycStatus: 'REJECTED',
         kycSubmittedAt: { lt: thirtyDaysAgo },
-        kycNotes: { contains: 'REJECTED' },
         OR: [
           { idCardPath: { not: null } },
           { familyCardPath: { not: null } }

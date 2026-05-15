@@ -20,7 +20,7 @@ auditRouter.get('/', ...withSite, asyncHandler(async (req: Request, res: Respons
     entityType: entityType as string,
     userId: userId as string,
     page: page ? parseInt(page as string) : 1,
-    limit: limit ? parseInt(limit as string) : 30,
+    limit: limit ? Math.min(parseInt(limit as string), 100) : 30,
   })
 
   res.json({ success: true, data: result })
@@ -34,4 +34,24 @@ auditRouter.get('/stats', ...withSite, asyncHandler(async (req: Request, res: Re
 
   const stats = await repo.getAuditStats(req.site!)
   res.json({ success: true, data: stats })
+}))
+
+// GET /api/v1/audit/export — download CSV
+auditRouter.get('/export', ...withSite, asyncHandler(async (req: Request, res: Response) => {
+  if (!['superadmin', 'wapimred'].includes(req.user!.role)) {
+    return res.status(403).json({ success: false, message: 'Akses ditolak' })
+  }
+
+  const logs = await repo.findAllAuditLogsForExport(req.site!)
+  
+  let csv = 'ID,Timestamp,User,Action,Entity,EntityID\n'
+  logs.forEach(log => {
+    const ts = log.createdAt.toISOString()
+    const userName = log.user?.name || log.userId
+    csv += `"${log.id}","${ts}","${userName}","${log.action}","${log.entityType || ''}","${log.entityId || ''}"\n`
+  })
+
+  res.setHeader('Content-Type', 'text/csv')
+  res.setHeader('Content-Disposition', `attachment; filename=audit-log-${req.site}-${new Date().toISOString().split('T')[0]}.csv`)
+  res.status(200).send(csv)
 }))

@@ -10,6 +10,7 @@ interface AuthState {
   login: (email: string, password: string) => Promise<void>
   register: (name: string, email: string, password: string, siteId?: string) => Promise<void>
   logout: () => Promise<void>
+  checkAuth: () => Promise<void>
   clearError: () => void
 }
 
@@ -59,6 +60,24 @@ export const useAuthStore = create<AuthState>()(
     localStorage.removeItem('accessToken')
     localStorage.removeItem('refreshToken')
     set({ user: null })
+  },
+
+  checkAuth: async () => {
+    const token = localStorage.getItem('accessToken')
+    if (!token) {
+      set({ user: null })
+      return
+    }
+
+    try {
+      const { data } = await api.get('/auth/me')
+      set({ user: data.data.user })
+    } catch (err) {
+      // If unauthorized, clear everything
+      localStorage.removeItem('accessToken')
+      localStorage.removeItem('refreshToken')
+      set({ user: null })
+    }
   },
 
   clearError: () => set({ error: null })

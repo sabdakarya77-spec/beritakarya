@@ -8,6 +8,12 @@ import { logger } from '../../lib/logger'
 import bcrypt from 'bcryptjs'
 import crypto from 'crypto'
 
+// Helper function to generate cryptographically secure token
+// Menggunakan crypto.randomBytes() — jauh lebih aman dari Math.random()
+function generateInvitationToken(): string {
+  return crypto.randomBytes(32).toString('hex') // 64 karakter hex, 256-bit entropy
+}
+
 export const invitationRouter = Router()
 
 const withSite = [requireAuth, siteMiddleware, requireSiteAccess]
@@ -186,7 +192,7 @@ invitationRouter.get('/',
   adminOnly,
   asyncHandler(async (req: Request, res: Response) => {
     const page = parseInt(req.query.page as string) || 1
-    const limit = parseInt(req.query.limit as string) || 20
+    const limit = Math.min(parseInt(req.query.limit as string) || 20, 100)
     const status = req.query.status as string // 'pending' | 'accepted' | 'expired'
     const skip = (page - 1) * limit
 
@@ -429,11 +435,5 @@ invitationRouter.get('/:token/verify',
     })
   })
 )
-
-// Helper function to generate cryptographically secure token
-// Menggunakan crypto.randomBytes() — jauh lebih aman dari Math.random()
-function generateInvitationToken(): string {
-  return crypto.randomBytes(32).toString('hex') // 64 karakter hex, 256-bit entropy
-}
 
 export default invitationRouter

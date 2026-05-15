@@ -26,7 +26,9 @@ export function validatePassword(password: string): boolean {
 }
 
 export async function loginUser(email: string, password: string) {
-  const user = await prisma.user.findUnique({ where: { email } })
+  const user = await prisma.user.findFirst({ 
+    where: { email, deletedAt: null } 
+  })
   if (!user) throw new Error('Email atau password salah')
 
   const valid = await bcrypt.compare(password, user.passwordHash)
@@ -39,7 +41,9 @@ export async function registerUser(
   email: string, password: string, name: string,
   role: string, siteId: string | null
 ) {
-  const exists = await prisma.user.findUnique({ where: { email } })
+  const exists = await prisma.user.findFirst({ 
+    where: { email, deletedAt: null } 
+  })
   if (exists) throw new Error('Email sudah terdaftar')
 
   if (!validatePassword(password)) {
@@ -91,7 +95,9 @@ export async function logoutUser(userId: string, refreshToken: string) {
 }
 
 export async function forgotPassword(email: string) {
-  const user = await prisma.user.findUnique({ where: { email } })
+  const user = await prisma.user.findFirst({ 
+    where: { email, deletedAt: null } 
+  })
   if (!user) {
     // Return success to prevent email enumeration
     return { success: true }
@@ -172,7 +178,11 @@ async function generateTokenPair(user: any) {
       email: user.email,
       name: user.name,
       role: user.role,
-      siteId: user.siteId
+      siteId: user.siteId,
+      isVerified: user.isVerified,
+      kycStatus: user.kycStatus,
+      kycNotes: user.kycNotes,
+      kycSubmittedAt: user.kycSubmittedAt
     }
   }
 }

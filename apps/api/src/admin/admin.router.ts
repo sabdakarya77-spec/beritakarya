@@ -346,13 +346,9 @@ adminRouter.patch('/roles/:role/quota', requireAuth, requireAdmin, asyncHandler(
 
 // ── ALERT HISTORY ──────────────────────────────────────────────────────
 adminRouter.get('/alerts', requireAuth, requireAdmin, asyncHandler(async (req, res) => {
-  const { 
-    limit = 50, 
-    offset = 0, 
-    type,       // e.g. 'quota_warning' | filter by type
-    isRead,     // 'true' | 'false' | undefined = all
-    userId      // filter by specific user
-  } = req.query
+  const limit = Math.min(parseInt(req.query.limit as string) || 50, 100)
+  const offset = parseInt(req.query.offset as string) || 0
+  const { type, isRead, userId } = req.query
 
   const where: any = {}
 

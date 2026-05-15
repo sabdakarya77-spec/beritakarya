@@ -372,31 +372,34 @@ Tabel ada di schema dan migration tapi tidak ada kode yang membaca/menulis tabel
 ### 🔧 SPRINT 3 — KUALITAS & PENINGKATAN (2 minggu)
 
 **Database:**
-- [ ] `[C-1]` Tambah field `kycStatus` enum, hapus substring match di `kycNotes`
-- [ ] `[C-2]` Tambah indeks komposit `@@index([siteId, isVerified, kycSubmittedAt])`
-- [ ] `[C-3]` Tambah filter `deletedAt: null` di semua query user list
-- [ ] `[C-4]` Tambah `@@unique([email, siteId])` di tabel Invitation
-- [ ] `[C-5]` Keputusan: isi atau hapus tabel `RoleQuota` yang orphan
+- [x] `[C-1]` ✅ Tambah field `kycStatus` enum, hapus substring match di `kycNotes`
+- [x] `[C-2]` ✅ Tambah indeks komposit `@@index([siteId, isVerified, kycSubmittedAt])`
+- [x] `[C-3]` ✅ Tambah filter `deletedAt: null` di semua query user list
+- [x] `[C-4]` ✅ Tambah `@@unique([email, siteId])` di tabel Invitation
+- [x] `[C-5]` ✅ Keputusan: Isi tabel `RoleQuota` dengan data default (seeding)
 
 **Backend:**
-- [ ] `[B-2]` Optimasi N+1 query KYC stats dengan `GROUP BY DATE`
-- [ ] `[B-3]` Perbaiki signature `requireSiteAccess` di user controller
-- [ ] `[B-4]` Tambah `Math.min(limit, 100)` di semua endpoint dengan pagination
-- [ ] `[A-3]` Ubah JWT menjadi optional auth untuk akses route publik
+- [x] `[B-2]` ✅ Optimasi N+1 query KYC stats dengan `GROUP BY DATE`
+- [x] `[B-3]` ✅ Perbaiki signature `requireSiteAccess` di user controller
+- [x] `[B-4]` ✅ Tambah `Math.min(limit, 100)` di semua endpoint dengan pagination
+- [x] `[A-1]` ✅ Hash password invitation (Token security verification)
+- [x] `[A-2]` ✅ Fix `Math.random()` token (Cleaned duplication & secure random)
+- [x] `[A-3]` ✅ Ubah JWT menjadi optional auth untuk akses route publik
+- [x] `[A-5]` ✅ Ganti 4x fetch() → api pada halaman dashboard utama
 
 **Frontend — UX & Konsistensi:**
 - [ ] Ganti semua `alert()`/`confirm()` native dengan toast notification + modal animasi
-- [ ] `[B-6]` Pindahkan filter status ke server-side di Antrian Review
-- [ ] `[B-10]` Implementasi status online nyata (polling 30s atau WebSocket)
-- [ ] `[B-15]` Ganti `require('recharts')` → ES Module import
-- [ ] `[B-16]` Ganti "Pembaca Aktif" simulasi dengan data real
-- [ ] `[B-17]` Hapus atau implementasi "Engagement Rate"
-- [ ] `[B-14]` Hubungkan search bar header ke fungsi pencarian global
-- [ ] `[B-19]` Validasi JWT di layout (bukan hanya cek keberadaan token)
-- [ ] Tambahkan pagination di halaman Artikel (server-side)
-- [ ] Tambahkan fitur upload logo langsung di Pengaturan
-- [ ] Tambahkan tampilan status "rejected" + alasan di KYC user page
-- [ ] Export CSV di Audit Log
+- [x] `[B-6]` ✅ Pindahkan filter status ke server-side di Antrian Review
+- [x] `[B-10]` ✅ Implementasi status online nyata (polling 30s ke Redis)
+- [x] `[B-15]` ✅ Ganti `require('recharts')` → ES Module import
+- [x] `[B-16]` ✅ Ganti "Pembaca Aktif" simulasi dengan data real (Redis ZSet)
+- [x] `[B-17]` ✅ Implementasi "Engagement Rate" (Interactions/Views)
+- [x] `[B-14]` ✅ Hubungkan search bar header ke fungsi pencarian global (Articles)
+- [x] `[B-19]` ✅ Validasi JWT di layout (bukan hanya cek keberadaan token)
+- [x] Tambahkan pagination di halaman Artikel (server-side) ✅
+- [x] Tambahkan fitur upload logo langsung di Pengaturan ✅
+- [x] Tambahkan tampilan status "rejected" + alasan di KYC user page ✅
+- [x] Export CSV di Audit Log ✅
 - [ ] Implementasi Kalender jadwal publikasi (butuh backend baru)
 
 ---
@@ -405,18 +408,18 @@ Tabel ada di schema dan migration tapi tidak ada kode yang membaca/menulis tabel
 
 ```
 HARI INI (Blocking/Security):
-  ✦ Hash password invitation [A-1]
-  ✦ Fix Math.random() token [A-2]
-  ✦ Ganti 4x fetch() → api [A-5]
-  ✦ Fix axios KYC → api [A-6]
-  ✦ Fix redirect /create → /new [A-7]
+  ✦ Hash password invitation [A-1] ✅
+  ✦ Fix Math.random() token [A-2] ✅
+  ✦ Ganti 4x fetch() → api [A-5] ✅
+  ✦ Fix axios KYC → api [A-6] ✅
+  ✦ Fix redirect /create → /new [A-7] ✅
 
 MINGGU INI (Fungsi Rusak):
-  ✦ Buat endpoint /sites/settings [A-8]
-  ✦ Fix JWT optional auth [A-3]
-  ✦ Proteksi /metrics [A-9]
-  ✦ Tombol Reject di Review [B-7]
-  ✦ Whitelist role validation [B-1]
+  ✦ Buat endpoint /sites/settings [A-8] ✅
+  ✦ Fix JWT optional auth [A-3] ✅
+  ✦ Proteksi /metrics [A-9] ✅
+  ✦ Tombol Reject di Review [B-7] ✅
+  ✦ Whitelist role validation [B-1] ✅
 
 2 MINGGU (Kualitas):
   ✦ Semua UX improvements

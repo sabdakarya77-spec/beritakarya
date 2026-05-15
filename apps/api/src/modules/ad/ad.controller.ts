@@ -11,11 +11,30 @@ adRouter.get('/',
   requireRole(['superadmin', 'wapimred']),
   requireSiteAccess,
   asyncHandler(async (req: Request, res: Response) => {
-    const ads = await prisma.advertisement.findMany({
-      where: { siteId: req.site! },
-      orderBy: { slot: 'asc' }
+    const page = parseInt(req.query.page as string) || 1
+    const limit = Math.min(parseInt(req.query.limit as string) || 50, 100)
+    const skip = (page - 1) * limit
+
+    const [ads, total] = await Promise.all([
+      prisma.advertisement.findMany({
+        where: { siteId: req.site! },
+        skip,
+        take: limit,
+        orderBy: { slot: 'asc' }
+      }),
+      prisma.advertisement.count({ where: { siteId: req.site! } })
+    ])
+
+    res.json({ 
+      success: true, 
+      data: ads,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit)
+      }
     })
-    res.json({ success: true, data: ads })
   })
 )
 

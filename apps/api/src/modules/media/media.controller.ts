@@ -45,7 +45,7 @@ const upload = multer({
   }
 })
 
-async function processImage(buffer: Buffer, filename: string) {
+async function processImage(buffer: Buffer, filename: string, options: { skipWatermark?: boolean } = {}) {
   // Import sharp with better error handling
   let sharp: any
   try {
@@ -72,35 +72,38 @@ async function processImage(buffer: Buffer, filename: string) {
     processedBuffer = await sharp(buffer).resize(maxW).toBuffer()
   }
 
-  // Generate SVG Watermark
-  const currentMeta = await sharp(processedBuffer).metadata()
-  const currentW = currentMeta.width || maxW
-  const fontSize = Math.max(16, Math.floor(currentW * 0.025))
-  const svgWidth = fontSize * 10
-  const svgHeight = fontSize * 2
-  
-  const watermarkSvg = `<svg width="${svgWidth}" height="${svgHeight}">
-    <style>
-      .title { 
-        fill: rgba(255, 255, 255, 0.4); 
-        font-size: ${fontSize}px; 
-        font-weight: 800; 
-        font-family: Arial, sans-serif; 
-        filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.6)); 
-      }
-    </style>
-    <text x="${svgWidth - 20}" y="${svgHeight - 10}" text-anchor="end" class="title">BeritaKarya</text>
-  </svg>`
-
-  // Full size → Composite Watermark → WebP
+  // Full size → Composite Watermark (Optional) → WebP
   const fullName = `${filename}.webp`
   const fullPath = path.join(UPLOAD_DIR, fullName)
   
   try {
-    await sharp(processedBuffer)
-      .composite([{ input: Buffer.from(watermarkSvg), gravity: 'southeast' }])
-      .webp({ quality: 82 })
-      .toFile(fullPath)
+    let pipeline = sharp(processedBuffer)
+
+    if (!options.skipWatermark) {
+      // Generate SVG Watermark
+      const currentMeta = await sharp(processedBuffer).metadata()
+      const currentW = currentMeta.width || maxW
+      const fontSize = Math.max(16, Math.floor(currentW * 0.025))
+      const svgWidth = fontSize * 10
+      const svgHeight = fontSize * 2
+      
+      const watermarkSvg = `<svg width="${svgWidth}" height="${svgHeight}">
+        <style>
+          .title { 
+            fill: rgba(255, 255, 255, 0.4); 
+            font-size: ${fontSize}px; 
+            font-weight: 800; 
+            font-family: Arial, sans-serif; 
+            filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.6)); 
+          }
+        </style>
+        <text x="${svgWidth - 20}" y="${svgHeight - 10}" text-anchor="end" class="title">BeritaKarya</text>
+      </svg>`
+      
+      pipeline = pipeline.composite([{ input: Buffer.from(watermarkSvg), gravity: 'southeast' }])
+    }
+
+    await pipeline.webp({ quality: 82 }).toFile(fullPath)
   } catch (err) {
     console.error('[Media] Failed to save full image:', err)
     throw new Error('Failed to save processed image')
@@ -146,11 +149,13 @@ mediaRouter.post(
       })
     }
 
-    console.log(`[Media] Uploading file: ${req.file.originalname} (${req.file.size} bytes)`)
+    const isLogo = req.query.type === 'logo'
+
+    console.log(`[Media] Uploading file: ${req.file.originalname} (${req.file.size} bytes), Type: ${req.query.type || 'standard'}`)
     const id = uuidv4()
     let processed;
     try {
-      processed = await processImage(req.file.buffer, id)
+      processed = await processImage(req.file.buffer, id, { skipWatermark: isLogo })
     } catch (err: any) {
       console.error('[Media] Image processing failed:', err)
       return res.status(500).json({
@@ -173,7 +178,7 @@ mediaRouter.post(
       size: req.file.size,
       userId: req.user!.userId,
       siteId: req.site,
-      altText: req.body.altText,
+      altText: req.body.altText || (isLogo ? 'Logo Situs' : ''),
       caption: req.body.caption,
       credit: req.body.credit
     })
@@ -192,7 +197,7 @@ mediaRouter.get(
   siteMiddleware,
   asyncHandler(async (req: Request, res: Response) => {
     const page = parseInt(req.query.page as string) || 1
-    const limit = parseInt(req.query.limit as string) || 30
+    const limit = Math.min(parseInt(req.query.limit as string) || 30, 100)
     const result = await repo.findMediaBySite(req.site!, page, limit)
     res.json({ success: true, data: result })
   })

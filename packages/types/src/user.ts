@@ -14,6 +14,8 @@ export interface User {
   updatedAt: string
 }
 
+export type KycStatus = 'UNSUBMITTED' | 'PENDING' | 'APPROVED' | 'REJECTED'
+
 export interface AuthUser {
   id: string
   email: string
@@ -22,6 +24,8 @@ export interface AuthUser {
   siteId: string | null
   isVerified: boolean
   kycSubmittedAt: string | null
+  kycStatus: KycStatus
+  kycNotes: string | null
 }
 
 export interface JWTPayload {

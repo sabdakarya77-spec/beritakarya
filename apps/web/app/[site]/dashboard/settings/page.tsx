@@ -40,6 +40,26 @@ export default function SettingsPage() {
   })
   
   const [newTag, setNewTag] = useState('')
+  const [uploadingLogo, setUploadingLogo] = useState(false)
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setUploadingLogo(true)
+    const formData = new FormData()
+    formData.append('file', file)
+
+    try {
+      const { data } = await api.post('/media/upload?type=logo', formData)
+      setSettings({ ...settings, logoUrl: data.data.url })
+    } catch (err: any) {
+      console.error('Failed to upload logo', err)
+      alert(err.response?.data?.error?.message || 'Gagal mengunggah logo')
+    } finally {
+      setUploadingLogo(false)
+    }
+  }
 
   const fetchSettings = async () => {
     try {
@@ -208,15 +228,49 @@ export default function SettingsPage() {
             </h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="space-y-2">
-                <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">URL Logo Situs</label>
-                <input 
-                  type="text" 
-                  value={settings.logoUrl}
-                  onChange={(e) => setSettings({...settings, logoUrl: e.target.value})}
-                  placeholder="https://.../logo.png"
-                  className="w-full bg-slate-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 px-4 py-3 text-xs text-brand-black dark:text-white outline-none focus:border-brand-red transition-colors font-medium"
-                />
+              <div className="space-y-4">
+                <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Logo Situs</label>
+                <div className="flex flex-col gap-4">
+                  {settings.logoUrl && (
+                    <div className="w-full h-32 bg-slate-50 dark:bg-white/5 rounded-sm border border-dashed border-gray-200 dark:border-white/10 flex items-center justify-center p-4 relative group">
+                      <img src={settings.logoUrl} alt="Logo Preview" className="max-w-full max-h-full object-contain" />
+                      <button 
+                        type="button"
+                        onClick={() => setSettings({...settings, logoUrl: ''})}
+                        className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X size={12} />
+                      </button>
+                    </div>
+                  )}
+                  
+                  <div className="flex gap-3">
+                    <input 
+                      type="text" 
+                      value={settings.logoUrl}
+                      onChange={(e) => setSettings({...settings, logoUrl: e.target.value})}
+                      placeholder="https://.../logo.png"
+                      className="flex-1 bg-slate-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 px-4 py-3 text-xs text-brand-black dark:text-white outline-none focus:border-brand-red transition-colors font-medium"
+                    />
+                    <div className="relative">
+                      <input 
+                        type="file" 
+                        accept="image/*"
+                        onChange={handleLogoUpload}
+                        className="absolute inset-0 opacity-0 cursor-pointer disabled:cursor-not-allowed z-10"
+                        disabled={uploadingLogo}
+                      />
+                      <button 
+                        type="button"
+                        disabled={uploadingLogo}
+                        className="h-full bg-brand-black dark:bg-white/10 hover:bg-brand-red text-white px-6 text-[10px] font-black uppercase tracking-widest transition-all rounded-sm flex items-center gap-2"
+                      >
+                        {uploadingLogo ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
+                        {uploadingLogo ? 'Unggah...' : 'Pilih File'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <div className="space-y-2">

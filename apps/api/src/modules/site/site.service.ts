@@ -394,9 +394,16 @@ export class SiteService {
     details: Record<string, any>
   ) {
     try {
-      // This will be implemented properly with auditLog insertion
-      // For now, just log to console
-      console.log(`[AUDIT] ${userId} - ${action}:`, details)
+      await prisma.auditLog.create({
+        data: {
+          userId: userId || 'system',
+          siteId: details.siteId || 'pusat',
+          action,
+          entityType: 'site',
+          entityId: details.siteId || 'system',
+          newValue: details
+        }
+      })
     } catch (error) {
       console.error('Audit log failed:', error)
     }

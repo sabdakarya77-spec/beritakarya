@@ -66,3 +66,23 @@ export async function getAuditStats(siteId: string) {
     byAction: byAction.map((a: any) => ({ action: a.action, count: a._count.action })),
   }
 }
+
+export async function findAllAuditLogsForExport(siteId: string) {
+  const items = await prisma.auditLog.findMany({
+    where: { siteId },
+    orderBy: { createdAt: 'desc' },
+    take: 1000 // Limit to 1000 for safety
+  })
+
+  const userIds = [...new Set(items.map((i: any) => i.userId))]
+  const users = await prisma.user.findMany({
+    where: { id: { in: userIds } },
+    select: { id: true, name: true }
+  })
+  const userMap = Object.fromEntries(users.map((u: any) => [u.id, u]))
+
+  return items.map((log: any) => ({
+    ...log,
+    user: userMap[log.userId]
+  }))
+}

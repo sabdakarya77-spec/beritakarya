@@ -3,8 +3,18 @@ import { z } from 'zod'
 import * as authService from './auth.service'
 import { asyncHandler } from '../../utils/asyncHandler'
 import { checkAccountLockout, recordFailedAttempt, resetFailedAttempts } from '../../lib/accountLockout'
+import { requireAuth } from '../../middleware/auth.middleware'
+import { prisma } from '../../db/client'
 
 export const authRouter: Router = Router()
+
+authRouter.get('/me', requireAuth, asyncHandler(async (req: any, res: Response) => {
+  const user = await prisma.user.findUnique({
+    where: { id: req.user.userId },
+    select: { id: true, name: true, email: true, role: true, siteId: true, isVerified: true, kycStatus: true, kycNotes: true, kycSubmittedAt: true }
+  })
+  res.json({ success: true, data: { user } })
+}))
 
 const loginSchema = z.object({
   email: z.string().email('Email tidak valid'),

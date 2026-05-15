@@ -206,6 +206,15 @@ export async function updateArticle(
       message: `Editor meminta revisi untuk post "${updated.title}". Catatan: ${input.reviewNotes || 'Cek dashboard.'}`,
       link: `/${siteId}/dashboard/articles/${id}`
     })
+  } else if (input.status === 'archived') {
+    await sendNotification({
+      userId: updated.authorId,
+      siteId,
+      type: 'post_reviewed',
+      title: 'Post Ditolak',
+      message: `Maaf, post "${updated.title}" Anda telah ditolak/diarsipkan oleh editor.`,
+      link: `/${siteId}/dashboard/articles/${id}`
+    })
   }
 
   await repo.createAuditLog({
@@ -335,4 +344,25 @@ export async function restoreArticleVersion(versionId: string, siteId: string, u
   })
 
   return updated
+}
+
+export async function getArticleStats(siteId: string) {
+  const counts = await prisma.article.groupBy({
+    by: ['status'],
+    where: { siteId },
+    _count: { id: true }
+  })
+  
+  const stats = counts.reduce((acc, curr) => {
+    acc[curr.status] = curr._count.id
+    return acc
+  }, {} as Record<string, number>)
+
+  // Ensure all relevant statuses exist even if 0
+  const statuses = ['draft', 'submitted', 'review', 'revision', 'approved', 'published', 'archived']
+  statuses.forEach(s => {
+    if (stats[s] === undefined) stats[s] = 0
+  })
+
+  return stats
 }

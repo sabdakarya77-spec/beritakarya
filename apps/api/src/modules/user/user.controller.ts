@@ -1,40 +1,67 @@
 import { Router } from 'express'
 import { prisma } from '../../db/client'
 import { requireAuth, requireRole } from '../../middleware/auth.middleware'
-import { requireSiteAccess } from '../../middleware/site-scope.middleware'
+import { siteMiddleware, requireSiteAccess } from '../../middleware/site.middleware'
 import { asyncHandler } from '../../utils/asyncHandler'
 import { emailService } from '../../services/email.service'
+import { redis } from '../../lib/redis'
 
 export const userRouter = Router() as any
 
 userRouter.get('/',
   requireAuth,
+  siteMiddleware,
   requireSiteAccess,
   asyncHandler(async (req: any, res: any) => {
     const { siteId } = req
-    const users = await prisma.user.findMany({
-      where: { siteId },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        isVerified: true,
-        createdAt: true
-      },
-      orderBy: { createdAt: 'desc' }
+    const page = parseInt(req.query.page as string) || 1
+    const limit = Math.min(parseInt(req.query.limit as string) || 20, 100)
+    const skip = (page - 1) * limit
+    const [users, total] = await Promise.all([
+      prisma.user.findMany({
+        where: { siteId, deletedAt: null },
+        skip,
+        take: limit,
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          role: true,
+          isVerified: true,
+          createdAt: true
+        },
+        orderBy: { createdAt: 'desc' }
+      }),
+      prisma.user.count({ where: { siteId, deletedAt: null } })
+    ])
+
+    // Fetch online status from Redis for each user
+    const usersWithOnlineStatus = await Promise.all(users.map(async (u) => {
+      const isOnline = await redis.get(`user:online:${u.id}`)
+      return { ...u, isOnline: !!isOnline }
+    }))
+
+    res.json({ 
+      success: true, 
+      data: usersWithOnlineStatus,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit)
+      }
     })
-    res.json({ success: true, data: users })
   })
 )
 
 userRouter.get('/stats',
   requireAuth,
+  siteMiddleware,
   requireSiteAccess,
   asyncHandler(async (req: any, res: any) => {
     const siteId = req.site
     const users = await prisma.user.findMany({
-      where: { siteId },
+      where: { siteId, deletedAt: null },
       select: {
         id: true,
         name: true,
@@ -61,7 +88,7 @@ userRouter.get('/stats',
         name: user.name,
         email: user.email,
         role: user.role,
-        isOnline: Math.random() > 0.5,
+        isOnline: false, // Placeholder, will be updated below
         publishedCount,
         totalViews,
         avgWords,
@@ -69,17 +96,24 @@ userRouter.get('/stats',
       }
     })
 
-    res.json({ success: true, data: stats })
+    // Fetch real online status from Redis
+    const statsWithOnlineStatus = await Promise.all(stats.map(async (s) => {
+      const isOnline = await redis.get(`user:online:${s.id}`)
+      return { ...s, isOnline: !!isOnline }
+    }))
+
+    res.json({ success: true, data: statsWithOnlineStatus })
   })
 )
 
 userRouter.get('/:id',
   requireAuth,
+  siteMiddleware,
   requireSiteAccess,
   asyncHandler(async (req: any, res: any) => {
     const { id } = req.params
     const user = await prisma.user.findFirst({
-      where: { id },
+      where: { id, deletedAt: null },
       select: {
         id: true,
         email: true,
@@ -102,6 +136,7 @@ userRouter.get('/:id',
 
 userRouter.put('/:id/role',
   requireAuth,
+  siteMiddleware,
   requireSiteAccess,
   requireRole(['superadmin', 'wapimred']),
   asyncHandler(async (req: any, res: any) => {
@@ -126,7 +161,7 @@ userRouter.put('/:id/role',
 
     // Verify user belongs to same site
     const user = await prisma.user.findFirst({
-      where: { id, siteId }
+      where: { id, siteId, deletedAt: null }
     })
     if (!user) {
       return res.status(404).json({
@@ -166,5 +201,21 @@ userRouter.put('/:id/role',
     // TODO: Send email notification to user about role change (when email service is ready)
 
     res.json({ success: true, data: updated })
+  })
+)
+
+/**
+ * POST /api/v1/users/heartbeat
+ * Update user's online status in Redis
+ */
+userRouter.post('/heartbeat',
+  requireAuth,
+  asyncHandler(async (req: any, res: any) => {
+    const userId = req.user.userId
+    // Set online status in Redis with 60s expiration
+    // This supports a 30s polling interval from the frontend
+    await redis.set(`user:online:${userId}`, '1', 'EX', 60)
+    
+    res.json({ success: true })
   })
 )

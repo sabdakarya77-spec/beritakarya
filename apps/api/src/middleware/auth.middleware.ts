@@ -1,12 +1,14 @@
 import { Request, Response, NextFunction } from 'express'
+import jwt from 'jsonwebtoken'
 import { JWTPayload } from '@beritakarya/types'
 
-// Extend Express Request type to include user and site
+// Extend Express Request type to include user, site and auth error
 declare global {
   namespace Express {
     interface Request {
       user?: JWTPayload
       site?: string
+      authError?: any
     }
   }
 }
@@ -16,6 +18,28 @@ declare global {
  */
 export function requireAuth(req: Request, res: Response, next: NextFunction) {
   if (!req.user) {
+    const error = req.authError
+
+    if (error instanceof jwt.TokenExpiredError) {
+      return res.status(401).json({
+        success: false,
+        error: {
+          code: 'TOKEN_EXPIRED',
+          message: 'Token telah kadaluarsa, silakan refresh token Anda'
+        }
+      })
+    }
+
+    if (error) {
+      return res.status(401).json({
+        success: false,
+        error: {
+          code: 'INVALID_TOKEN',
+          message: 'Token tidak valid'
+        }
+      })
+    }
+
     return res.status(401).json({
       success: false,
       error: { code: 'UNAUTHORIZED', message: 'Authentication required' }

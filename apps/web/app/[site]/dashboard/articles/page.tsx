@@ -1,14 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { api } from '../../../../lib/api';
 import { useAuthStore } from '../../../../store/authStore';
 import { motion } from 'framer-motion';
 import { 
   Plus, Search, Eye, Edit3, Trash2, Calendar,
-  FileText, Loader2, Send
+  FileText, Loader2, Send, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import StatusBadge from '../../../../components/ui/StatusBadge';
 import EditorialBadge from '../../../../components/ui/EditorialBadge';
@@ -47,11 +47,15 @@ interface Article {
 export default function ArticlesPage() {
   const router = useRouter();
   const { site } = useParams<{ site: string }>();
+  const searchParams = useSearchParams();
   const { user } = useAuthStore();
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
   const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list');
   const [isCreating, setIsCreating] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
@@ -61,11 +65,17 @@ export default function ArticlesPage() {
     try {
       const params: any = { 
         site,
-        search: searchQuery // Tambahkan parameter search ke API
+        search: searchQuery,
+        page,
+        limit: 10
       };
       if (filter) params.status = filter;
       const { data } = await api.get('/articles', { params });
-      setArticles(data.data.articles || data.data.items || []);
+      
+      const items = data.data.articles || data.data.items || [];
+      setArticles(items);
+      setTotalPages(data.data.totalPages || 1);
+      setTotalItems(data.data.total || 0);
     } catch (e) {
       console.error(e);
     } finally {
@@ -79,7 +89,12 @@ export default function ArticlesPage() {
       load();
     }, 500);
     return () => clearTimeout(timer);
-  }, [site, filter, searchQuery]);
+  }, [site, filter, searchQuery, page]);
+
+  // Reset page when filter/search changes
+  useEffect(() => {
+    setPage(1);
+  }, [filter, searchQuery]);
 
   const handleNew = async () => {
     setIsCreating(true);
@@ -384,6 +399,54 @@ export default function ArticlesPage() {
               )}
             </tbody>
           </table>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-4 bg-gray-50/30 dark:bg-white/[0.01] border-t border-gray-100 dark:border-white/5">
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                Menampilkan {(page - 1) * 10 + 1} - {Math.min(page * 10, totalItems)} dari {totalItems} post
+              </p>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  className="p-2 text-gray-400 hover:text-brand-red disabled:opacity-30 transition-colors"
+                >
+                  <ChevronLeft size={18} />
+                </button>
+                <div className="flex items-center gap-1">
+                  {[...Array(totalPages)].map((_, i) => {
+                    // Show current page, and few pages around it
+                    if (totalPages > 5) {
+                      if (i + 1 !== 1 && i + 1 !== totalPages && Math.abs(page - (i + 1)) > 1) {
+                        if (Math.abs(page - (i + 1)) === 2) return <span key={i} className="text-gray-300">...</span>
+                        return null
+                      }
+                    }
+                    return (
+                      <button
+                        key={i}
+                        onClick={() => setPage(i + 1)}
+                        className={cn(
+                          "w-8 h-8 rounded-lg text-[10px] font-black transition-all",
+                          page === i + 1 ? "bg-brand-red text-white shadow-md shadow-brand-red/20" : "text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5"
+                        )}
+                      >
+                        {i + 1}
+                      </button>
+                    )
+                  })}
+                </div>
+                <button
+                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                  disabled={page === totalPages}
+                  className="p-2 text-gray-400 hover:text-brand-red disabled:opacity-30 transition-colors"
+                >
+                  <ChevronRight size={18} />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

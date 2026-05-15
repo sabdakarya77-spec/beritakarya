@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Shield, FileText, User, Settings, Search,
   ChevronLeft, ChevronRight, RefreshCw,
-  BarChart3, Activity, Eye, X
+  BarChart3, Activity, Eye, X, Download
 } from 'lucide-react';
 import { api } from '../../../../lib/api';
 import { useAuthStore } from '../../../../store/authStore';
@@ -202,6 +202,26 @@ export default function AuditLogPage() {
           </div>
         </div>
         <div className="flex items-center gap-3">
+          <button
+            onClick={async () => {
+              try {
+                const response = await api.get('/audit/export', { responseType: 'blob' });
+                const url = window.URL.createObjectURL(new Blob([response.data]));
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', `audit-log-${site}-${new Date().toISOString().split('T')[0]}.csv`);
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+              } catch (e) {
+                console.error('Export failed', e);
+                alert('Gagal mengekspor data');
+              }
+            }}
+            className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/20"
+          >
+            <Download size={14} /> Ekspor CSV
+          </button>
           <button
             onClick={fetchLogs}
             className="flex items-center gap-2 px-4 py-2.5 bg-gray-50 dark:bg-white/5 text-gray-500 dark:text-gray-400 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 transition-all border border-gray-100 dark:border-white/5"

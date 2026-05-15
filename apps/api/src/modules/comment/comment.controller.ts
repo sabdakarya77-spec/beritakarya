@@ -1,34 +1,58 @@
 import { Router, Request, Response } from 'express'
 import { prisma } from '../../db/client'
 import { requireAuth } from '../../middleware/auth.middleware'
-import { requireSiteAccess } from '../../middleware/site-scope.middleware'
+import { siteMiddleware, requireSiteAccess } from '../../middleware/site.middleware'
 import { asyncHandler } from '../../utils/asyncHandler'
 
 export const commentRouter = Router() as any
 
 commentRouter.get('/',
   requireAuth,
+  siteMiddleware,
   requireSiteAccess,
   asyncHandler(async (req: any, res: any) => {
     const { siteId } = req
-    const comments = await prisma.comment.findMany({
-      where: { siteId },
-      include: {
-        user: { select: { id: true, name: true, email: true } },
-        article: { select: { id: true, title: true, slug: true } }
-      },
-      orderBy: { createdAt: 'desc' }
+    const page = parseInt(req.query.page as string) || 1
+    const limit = Math.min(parseInt(req.query.limit as string) || 20, 100)
+    const skip = (page - 1) * limit
+
+    const [comments, total] = await Promise.all([
+      prisma.comment.findMany({
+        where: { siteId },
+        skip,
+        take: limit,
+        include: {
+          user: { select: { id: true, name: true, email: true } },
+          article: { select: { id: true, title: true, slug: true } }
+        },
+        orderBy: { createdAt: 'desc' }
+      }),
+      prisma.comment.count({ where: { siteId } })
+    ])
+
+    res.json({ 
+      success: true, 
+      data: comments,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit)
+      }
     })
-    res.json({ success: true, data: comments })
   })
 )
 
 commentRouter.get('/moderation',
   requireAuth,
+  siteMiddleware,
   requireSiteAccess,
   asyncHandler(async (req: any, res: any) => {
     const { siteId } = req
     const { status, search } = req.query
+    const page = parseInt(req.query.page as string) || 1
+    const limit = Math.min(parseInt(req.query.limit as string) || 20, 100)
+    const skip = (page - 1) * limit
     
     const where: any = { siteId }
     if (status && status !== 'all') {
@@ -46,16 +70,30 @@ commentRouter.get('/moderation',
       ]
     }
 
-    const comments = await prisma.comment.findMany({
-      where,
-      include: {
-        user: { select: { id: true, name: true, email: true } },
-        article: { select: { id: true, title: true, slug: true } }
-      },
-      orderBy: { createdAt: 'desc' }
-    })
+    const [comments, total] = await Promise.all([
+      prisma.comment.findMany({
+        where,
+        skip,
+        take: limit,
+        include: {
+          user: { select: { id: true, name: true, email: true } },
+          article: { select: { id: true, title: true, slug: true } }
+        },
+        orderBy: { createdAt: 'desc' }
+      }),
+      prisma.comment.count({ where })
+    ])
     
-    res.json({ success: true, data: comments })
+    res.json({ 
+      success: true, 
+      data: comments,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit)
+      }
+    })
   })
 )
 

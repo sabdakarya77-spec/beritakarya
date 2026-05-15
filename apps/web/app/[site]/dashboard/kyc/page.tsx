@@ -28,7 +28,7 @@ export default function KYCPage() {
 
   const [loading, setLoading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
-  const [status, setStatus] = useState<'none' | 'pending' | 'verified'>('none')
+  const [status, setStatus] = useState<'none' | 'pending' | 'verified' | 'rejected'>('none')
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
 
@@ -43,8 +43,12 @@ export default function KYCPage() {
   const [familyPreview, setFamilyPreview] = useState<string | null>(null)
 
   useEffect(() => {
-    if (user?.isVerified) {
+    if (user?.kycStatus === 'APPROVED') {
       setStatus('verified')
+    } else if (user?.kycStatus === 'REJECTED') {
+      setStatus('rejected')
+    } else if (user?.kycStatus === 'PENDING') {
+      setStatus('pending')
     } else if (user?.kycSubmittedAt) {
       setStatus('pending')
     }
@@ -123,6 +127,37 @@ export default function KYCPage() {
           className="mt-8 bg-brand-red text-white px-6 py-3 rounded-xl font-bold uppercase tracking-widest text-xs shadow-lg shadow-brand-red/20 hover:scale-105 transition-transform"
         >
           Buat Berita Pertama
+        </button>
+      </div>
+    )
+  }
+
+  if (status === 'rejected') {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4 animate-in fade-in zoom-in duration-500">
+        <motion.div 
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="w-20 h-20 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mb-6"
+        >
+          <AlertCircle className="w-10 h-10 text-red-600 dark:text-red-400" />
+        </motion.div>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Pengajuan Ditolak</h1>
+        <p className="text-slate-600 dark:text-slate-400 max-w-md">
+          Maaf, pengajuan verifikasi identitas Anda belum dapat kami setujui karena alasan berikut:
+        </p>
+        
+        <div className="mt-6 p-6 bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/20 rounded-2xl max-w-md w-full">
+          <p className="text-sm font-bold text-red-700 dark:text-red-400 italic">
+            "{user?.kycNotes || 'Dokumen kurang jelas atau tidak sesuai ketentuan.'}"
+          </p>
+        </div>
+
+        <button 
+          onClick={() => setStatus('none')}
+          className="mt-8 bg-brand-black text-white px-8 py-3 rounded-xl font-bold uppercase tracking-widest text-xs shadow-lg hover:bg-brand-red transition-all"
+        >
+          Ajukan Ulang Verifikasi
         </button>
       </div>
     )

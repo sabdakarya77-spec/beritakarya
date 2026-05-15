@@ -8,6 +8,9 @@ const playfair = Playfair_Display({ subsets: ['latin'], variable: '--font-playfa
 
 export const metadata = constructMetadata()
 
+import { Toaster } from '../components/ui/Toaster'
+import { AuthInit } from '../components/AuthInit'
+
 export default function RootLayout({
   children,
 }: {
@@ -38,7 +41,9 @@ export default function RootLayout({
         />
       </head>
       <body className={`${inter.variable} ${outfit.variable} ${playfair.variable} font-sans antialiased`}>
+        <AuthInit />
         {children}
+        <Toaster />
       </body>
     </html>
   )

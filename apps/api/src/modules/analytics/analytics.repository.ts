@@ -57,3 +57,30 @@ export async function getTopContent(siteId: string, limit: number = 5) {
     }
   })
 }
+
+export async function getEngagementStats(siteId: string) {
+  const [viewStats, shareStats, totalComments] = await Promise.all([
+    prisma.article.aggregate({
+      where: { siteId, deletedAt: null },
+      _sum: { viewCount: true }
+    }),
+    prisma.article.aggregate({
+      where: { siteId, deletedAt: null },
+      _sum: { shareCount: true }
+    }),
+    prisma.comment.count({
+      where: { siteId, status: 'approved' }
+    })
+  ])
+
+  const views = viewStats._sum.viewCount || 0
+  const interactions = (shareStats._sum.shareCount || 0) + totalComments
+  const rate = views > 0 ? (interactions / views) * 100 : 0
+
+  return {
+    views,
+    shares: shareStats._sum.shareCount || 0,
+    comments: totalComments,
+    rate: parseFloat(rate.toFixed(2))
+  }
+}
