@@ -23,7 +23,11 @@ export default function LoginPage() {
         .find(row => row.startsWith('siteId='))
         ?.split('=')[1] || 'pusat';
       
-      router.push(`/${siteId}/dashboard`);
+      if (user.role === 'reader') {
+        router.push(`/${siteId}`);
+      } else {
+        router.push(`/${siteId}/dashboard`);
+      }
     }
   }, [user, router]);
 

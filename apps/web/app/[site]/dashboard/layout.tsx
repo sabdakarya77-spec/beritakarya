@@ -53,7 +53,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       if (!token) {
         router.push('/login')
       } else if (user) {
-        const allowedRoles = ['superadmin', 'wapimred', 'journalist', 'reader']
+        const allowedRoles = ['superadmin', 'wapimred', 'journalist']
         if (!allowedRoles.includes(user.role)) {
           router.push(`/${site}`)
         }
@@ -76,7 +76,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             { name: 'Ringkasan', href: `/${site}/dashboard`, icon: LayoutDashboard, roles: ['superadmin', 'wapimred', 'journalist'] },
             { name: 'Post', href: `/${site}/dashboard/articles`, icon: FileText, roles: ['superadmin', 'wapimred', 'journalist'] },
             { name: 'Media', href: `/${site}/dashboard/media`, icon: ImageIcon, roles: ['superadmin', 'wapimred', 'journalist'] },
-            ...(user && !user.isVerified ? [{ name: 'Verifikasi KYC', href: `/${site}/dashboard/kyc`, icon: ClipboardCheck, roles: ['superadmin', 'wapimred', 'journalist', 'reader'] }] : []),
+            ...(user && !user.isVerified ? [{ name: 'Verifikasi KYC', href: `/${site}/dashboard/kyc`, icon: ClipboardCheck, roles: ['superadmin', 'wapimred', 'journalist'] }] : []),
           ]
         },
     {
