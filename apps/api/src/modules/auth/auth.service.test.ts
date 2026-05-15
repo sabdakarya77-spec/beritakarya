@@ -5,6 +5,7 @@ vi.mock('../../db/client', () => ({
   prisma: {
     user: {
       findUnique: vi.fn(),
+      findFirst:  vi.fn(),
       create:     vi.fn()
     },
     refreshToken: {
@@ -46,7 +47,7 @@ describe('loginUser', () => {
   })
 
   it('berhasil dengan kredensial valid', async () => {
-    vi.mocked(prisma.user.findUnique).mockResolvedValue(await mockUser() as any)
+    vi.mocked(prisma.user.findFirst).mockResolvedValue(await mockUser() as any)
     vi.mocked(prisma.refreshToken.create).mockResolvedValue({ token: 'rt' } as any)
 
     const result = await loginUser('test@bandung.com', 'password123')
@@ -57,13 +58,13 @@ describe('loginUser', () => {
   })
 
   it('gagal: email tidak ditemukan', async () => {
-    vi.mocked(prisma.user.findUnique).mockResolvedValue(null)
+    vi.mocked(prisma.user.findFirst).mockResolvedValue(null)
     await expect(loginUser('tidak@ada.com', 'password123'))
       .rejects.toThrow('Email atau password salah')
   })
 
   it('gagal: password salah', async () => {
-    vi.mocked(prisma.user.findUnique).mockResolvedValue(await mockUser() as any)
+    vi.mocked(prisma.user.findFirst).mockResolvedValue(await mockUser() as any)
     await expect(loginUser('test@bandung.com', 'salah'))
       .rejects.toThrow('Email atau password salah')
   })
@@ -75,13 +76,13 @@ describe('registerUser', () => {
   })
 
   it('gagal jika email sudah terdaftar', async () => {
-    vi.mocked(prisma.user.findUnique).mockResolvedValue(await mockUser() as any)
+    vi.mocked(prisma.user.findFirst).mockResolvedValue(await mockUser() as any)
     await expect(registerUser('test@bandung.com', 'pass123', 'User', 'journalist', 'bandung'))
       .rejects.toThrow('Email sudah terdaftar')
   })
 
   it('berhasil register user baru', async () => {
-    vi.mocked(prisma.user.findUnique).mockResolvedValue(null)
+    vi.mocked(prisma.user.findFirst).mockResolvedValue(null)
     vi.mocked(prisma.user.create).mockResolvedValue(await mockUser() as any)
     vi.mocked(prisma.refreshToken.create).mockResolvedValue({ token: 'rt' } as any)
     

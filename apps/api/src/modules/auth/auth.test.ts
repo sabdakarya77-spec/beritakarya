@@ -4,6 +4,7 @@ vi.mock('../../db/client', () => ({
   prisma: {
     user: {
       findUnique: vi.fn(),
+      findFirst: vi.fn(),
       create: vi.fn()
     },
     refreshToken: {
@@ -27,7 +28,7 @@ describe('auth.service', () => {
 
   it('login berhasil dengan kredensial valid', async () => {
     const hash = await bcrypt.hash('password123', 10)
-    vi.mocked(prisma.user.findUnique).mockResolvedValue({
+    vi.mocked(prisma.user.findFirst).mockResolvedValue({
       id: 'user-1', email: 'test@test.com', name: 'Test',
       role: 'journalist', siteId: 'bandung', passwordHash: hash,
       createdAt: new Date(), updatedAt: new Date()
@@ -41,7 +42,7 @@ describe('auth.service', () => {
 
   it('login gagal dengan password salah', async () => {
     const hash = await bcrypt.hash('benar123', 10)
-    vi.mocked(prisma.user.findUnique).mockResolvedValue({
+    vi.mocked(prisma.user.findFirst).mockResolvedValue({
       id: 'user-1', email: 'test@test.com', passwordHash: hash
     } as any)
 
@@ -50,7 +51,7 @@ describe('auth.service', () => {
   })
 
   it('login gagal jika user tidak ditemukan', async () => {
-    vi.mocked(prisma.user.findUnique).mockResolvedValue(null)
+    vi.mocked(prisma.user.findFirst).mockResolvedValue(null)
     await expect(loginUser('tidak@ada.com', 'password123'))
       .rejects.toThrow('Email atau password salah')
   })
