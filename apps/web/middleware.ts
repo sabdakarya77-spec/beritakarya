@@ -45,6 +45,17 @@ export function middleware(req: NextRequest) {
   // Sanitize siteId: only alphanumeric and hyphens allowed to prevent issues like 'pusat:1'
   siteId = siteId.replace(/[^a-zA-Z0-9-]/g, '') || 'pusat'
 
+  const url = req.nextUrl.clone()
+
+  // --- Auth Guard ---
+  const token = req.cookies.get('accessToken')?.value
+  const isDashboardRoute = url.pathname.startsWith('/dashboard')
+  
+  if (isDashboardRoute && !token) {
+    const loginUrl = new URL('/login', req.url)
+    return NextResponse.redirect(loginUrl)
+  }
+
   const res = NextResponse.next()
   res.cookies.set('siteId', siteId, {
     httpOnly: false,
@@ -53,8 +64,6 @@ export function middleware(req: NextRequest) {
   })
   res.headers.set('x-site-id', siteId)
 
-  const url = req.nextUrl.clone()
-  
   // Internal Rewrite: 
   // Point '/', '/dashboard', '/sitemap.xml', '/robots.txt' ke '/[siteId]/...' secara internal
   const shouldRewrite = 

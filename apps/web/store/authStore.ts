@@ -25,9 +25,8 @@ export const useAuthStore = create<AuthState>()(
     set({ isLoading: true, error: null })
     try {
       const { data } = await api.post('/auth/login', { email, password })
-      const { accessToken, refreshToken, user } = data.data
-      localStorage.setItem('accessToken', accessToken)
-      localStorage.setItem('refreshToken', refreshToken)
+      // Tokens are now set in httpOnly cookies by the backend
+      const { user } = data.data
       set({ user, isLoading: false })
     } catch (err: any) {
       const msg = err.response?.data?.error?.message || 'Login gagal'
@@ -40,9 +39,8 @@ export const useAuthStore = create<AuthState>()(
     set({ isLoading: true, error: null })
     try {
       const { data } = await api.post('/auth/register', { name, email, password, siteId })
-      const { accessToken, refreshToken, user } = data.data
-      localStorage.setItem('accessToken', accessToken)
-      localStorage.setItem('refreshToken', refreshToken)
+      // Tokens are now set in httpOnly cookies by the backend
+      const { user } = data.data
       set({ user, isLoading: false })
     } catch (err: any) {
       const msg = err.response?.data?.error?.message || 'Pendaftaran gagal'
@@ -52,31 +50,24 @@ export const useAuthStore = create<AuthState>()(
   },
 
   logout: async () => {
-    const refreshToken = localStorage.getItem('refreshToken')
-    const userId = get().user?.id
-    if (userId && refreshToken) {
-      await api.post('/auth/logout', { userId, refreshToken }).catch(() => {})
+    try {
+      // Backend handles cookie clearing and token blacklisting
+      await api.post('/auth/logout')
+    } catch (err) {
+      console.error('Logout error:', err)
+    } finally {
+      set({ user: null })
     }
-    localStorage.removeItem('accessToken')
-    localStorage.removeItem('refreshToken')
-    set({ user: null })
   },
 
   checkAuth: async () => {
-    const token = localStorage.getItem('accessToken')
-    if (!token) {
-      set({ user: null })
-      return
-    }
-
+    set({ isLoading: true })
     try {
+      // Just try to fetch current user, if cookies are valid it will succeed
       const { data } = await api.get('/auth/me')
-      set({ user: data.data.user })
+      set({ user: data.data.user, isLoading: false })
     } catch (err) {
-      // If unauthorized, clear everything
-      localStorage.removeItem('accessToken')
-      localStorage.removeItem('refreshToken')
-      set({ user: null })
+      set({ user: null, isLoading: false })
     }
   },
 

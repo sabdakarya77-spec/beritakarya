@@ -43,9 +43,11 @@ async function _searchArticles(
   filters: { siteId: string; status?: string }
 ): Promise<any> {
   if (!index) return null
-  let filter = `siteId = "${filters.siteId}"`
+  const safeSiteId = filters.siteId.replace(/[^a-zA-Z0-9-]/g, '')
+  let filter = `siteId = "${safeSiteId}"`
   if (filters.status) {
-    filter += ` AND status = "${filters.status}"`
+    const safeStatus = filters.status.replace(/[^a-zA-Z]/g, '')
+    filter += ` AND status = "${safeStatus}"`
   }
   return index.search(query, {
     filter,

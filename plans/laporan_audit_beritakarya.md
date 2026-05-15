@@ -469,7 +469,7 @@ app/
 
 | # | Temuan | Impact |
 |---|--------|--------|
-| 4 | **SEC-2**: Token di localStorage | XSS → token theft |
+| 4 | **SEC-2**: Token di localStorage | XSS → token theft ✅ |
 | 5 | **API-3/4**: Media tanpa ownership check | Data manipulation ✅ |
 | 6 | **DB-3**: PrismaClient baru di cron | Connection leak ✅ |
 | 7 | **SEC-3/4**: In-memory lockout & rate-limit | Bypass setelah restart ✅ |
@@ -484,8 +484,8 @@ app/
 | 11 | **INFRA-4**: Media CORS wildcard | Hotlinking ✅ |
 | 12 | **INFRA-5**: Domain redirect ke /health | UX ✅ |
 | 13 | **INFRA-6**: Tidak ada gzip | Performance ✅ |
-| 14 | **DB-4/5**: AIUsage/AuditLog tanpa FK | Orphan data |
-| 15 | **FE-1/2**: Large component & client-only auth | UX/performance |
+| 14 | **DB-4/5**: AIUsage/AuditLog tanpa FK | Orphan data ✅ |
+| 15 | **FE-1/2**: Large component & client-only auth | UX/performance ✅ |
 
 ---
 

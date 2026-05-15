@@ -16,14 +16,19 @@ import { env } from '../lib/env'
  * secara eksplisit di definisi route masing-masing.
  */
 export function jwtVerify(req: Request, res: Response, next: NextFunction) {
+  let token: string | undefined
   const authHeader = req.headers.authorization
 
-  // Tidak ada token — izinkan lewat (route publik tidak memerlukan auth)
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return next()
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    token = authHeader.substring(7)
+  } else if (req.cookies && req.cookies.accessToken) {
+    token = req.cookies.accessToken
   }
 
-  const token = authHeader.substring(7) // Hapus prefix 'Bearer '
+  // Tidak ada token — izinkan lewat (route publik tidak memerlukan auth)
+  if (!token) {
+    return next()
+  }
 
   try {
     const decoded = jwt.verify(token, env.JWT_SECRET) as JWTPayload

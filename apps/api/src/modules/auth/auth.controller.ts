@@ -59,7 +59,22 @@ authRouter.post('/login', asyncHandler(async (req: Request, res: Response) => {
   try {
     const result = await authService.loginUser(email, password)
     await resetFailedAttempts(email)
-    res.json({ success: true, data: result })
+    
+    // Set httpOnly cookies
+    res.cookie('accessToken', result.accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 15 * 60 * 1000 // 15 mins
+    })
+    res.cookie('refreshToken', result.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+    })
+
+    res.json({ success: true, data: { user: result.user } })
   } catch (error) {
     await recordFailedAttempt(email)
     throw error
@@ -72,23 +87,60 @@ authRouter.post('/register', asyncHandler(async (req: Request, res: Response) =>
     input.email, input.password, input.name,
     'reader', input.siteId
   )
-  res.status(201).json({ success: true, data: result })
+  
+  // Set httpOnly cookies
+  res.cookie('accessToken', result.accessToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 15 * 60 * 1000
+  })
+  res.cookie('refreshToken', result.refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 30 * 24 * 60 * 60 * 1000
+  })
+
+  res.status(201).json({ success: true, data: { user: result.user } })
 }))
 
 authRouter.post('/refresh', asyncHandler(async (req: Request, res: Response) => {
-  const { refreshToken } = z.object({
-    refreshToken: z.string()
-  }).parse(req.body)
+  let refreshToken = req.body.refreshToken || (req.cookies ? req.cookies.refreshToken : undefined)
+  
+  if (!refreshToken) {
+    return res.status(400).json({ success: false, message: 'Refresh token is required' })
+  }
+
   const result = await authService.refreshAccessToken(refreshToken)
-  res.json({ success: true, data: result })
+  
+  // Update cookies
+  res.cookie('accessToken', result.accessToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 15 * 60 * 1000
+  })
+  res.cookie('refreshToken', result.refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 30 * 24 * 60 * 60 * 1000
+  })
+
+  res.json({ success: true, data: { user: result.user } })
 }))
 
 authRouter.post('/logout', requireAuth, asyncHandler(async (req: any, res: Response) => {
-  const { refreshToken } = z.object({
-    refreshToken: z.string()
-  }).parse(req.body)
-  // userId diambil dari JWT yang sudah diverifikasi — bukan dari body
-  await authService.logoutUser(req.user.userId, refreshToken)
+  const refreshToken = req.body.refreshToken || (req.cookies ? req.cookies.refreshToken : undefined)
+  
+  // Clear cookies
+  res.clearCookie('accessToken')
+  res.clearCookie('refreshToken')
+
+  if (refreshToken) {
+    await authService.logoutUser(req.user.userId, refreshToken)
+  }
   res.json({ success: true, message: 'Logout berhasil' })
 }))
 

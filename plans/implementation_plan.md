@@ -348,7 +348,7 @@ Kemudian update semua service: `throw new AppError('Email atau password salah', 
 
 ---
 
-### Task 4.3: Pecah Dashboard page.tsx
+### ✅ Task 4.3: Pecah Dashboard page.tsx
 **Temuan:** FE-1 — File 28KB terlalu besar  
 **Langkah:**
 1. Extract `StatsCards` component
@@ -360,7 +360,7 @@ Kemudian update semua service: `throw new AppError('Email atau password salah', 
 
 ---
 
-### Task 4.4: Sanitize Meilisearch Filter
+### ✅ Task 4.4: Sanitize Meilisearch Filter
 **Temuan:** API-6  
 **File:** `apps/api/src/modules/article/search.service.ts`  
 ```diff
@@ -415,8 +415,8 @@ Kemudian update semua service: `throw new AppError('Email atau password salah', 
 | **3** | 3.4 Fix Nginx (gzip, CORS, redirect) | 30m | ✅ |
 | **4** | 4.1 Custom AppError class | 2h | ✅ |
 | **4** | 4.2 Fix TLS config | 5m | ✅ |
-| **4** | 4.3 Pecah dashboard page | 2h | ⬜ |
-| **4** | 4.4 Sanitize Meili filter | 15m | ⬜ |
+| **4** | 4.3 Pecah dashboard page | 2h | ✅ |
+| **4** | 4.4 Sanitize Meili filter | 15m | ✅ |
 | **4** | 4.5 Migrasi Token (httpOnly & Next Middleware) | 3h | ⬜ |
 | **4** | 4.6 FK AIUsage, AuditLog, Notification | 30m | ⬜ |
 

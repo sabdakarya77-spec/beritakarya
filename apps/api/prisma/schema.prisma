@@ -64,6 +64,10 @@ model Site {
   comments              Comment[]
   pageViews             PageView[]
   kycViewLogs           KYCViewLog[]
+  aiUsage               AIUsage[]
+  media                 Media[]
+  auditLogs             AuditLog[]
+  notifications         Notification[]
 }
 
 model User {
@@ -108,6 +112,10 @@ model User {
   comments      Comment[]
   kycViewLogs   KYCViewLog[]
   invitations   Invitation[] // Invitations sent by this user
+  aiUsage       AIUsage[]
+  media         Media[]
+  auditLogs     AuditLog[]
+  notifications Notification[]
 
   @@index([siteId])
   @@index([email])
@@ -252,6 +260,9 @@ model AIUsage {
   tokensOutput  Int? // Output tokens (if available from API)
   createdAt     DateTime @default(now())
 
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  site Site @relation(fields: [siteId], references: [id])
+
   @@index([userId, action])
   @@index([siteId])
   @@index([userId, createdAt])
@@ -285,6 +296,9 @@ model Media {
   userId         String
   siteId         String?
   createdAt      DateTime @default(now())
+
+  user User  @relation(fields: [userId], references: [id])
+  site Site? @relation(fields: [siteId], references: [id])
 
   @@index([siteId])
 }
@@ -357,6 +371,9 @@ model AuditLog {
   userAgent  String?
   createdAt  DateTime @default(now())
 
+  user User @relation(fields: [userId], references: [id])
+  site Site @relation(fields: [siteId], references: [id])
+
   @@index([userId])
   @@index([siteId, action])
   @@index([entityId])
@@ -372,6 +389,9 @@ model Notification {
   link      String?
   isRead    Boolean  @default(false)
   createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  site Site @relation(fields: [siteId], references: [id])
 
   @@index([userId])
   @@index([siteId])

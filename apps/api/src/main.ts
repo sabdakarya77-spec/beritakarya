@@ -38,7 +38,7 @@ import { prisma } from './db/client'
 import { logger, httpLogger } from './lib/logger'
 import { metrics } from './lib/monitoring'
 import { asyncHandler } from './utils/asyncHandler'
-import timeout from 'connect-timeout'
+import cookieParser from 'cookie-parser'
 import { getMeilisearchCircuitStatus } from './modules/article/search.service'
 
 // Import global type augmentation (must be before other imports)
@@ -130,6 +130,7 @@ app.options('*', cors(corsOptions))
 app.use(cors(corsOptions))
 
 app.use(securityHeadersMiddleware)
+app.use(cookieParser())
 app.use(jwtVerify)
 
 app.use(express.json({ limit: '10mb' }))
