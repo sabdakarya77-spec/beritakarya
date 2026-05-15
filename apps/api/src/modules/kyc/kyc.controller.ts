@@ -247,13 +247,44 @@ kycRouter.post('/submit',
     // 2. Check if already verified
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { isVerified: true }
+      select: { isVerified: true, kycAttempts: true, kycLockedUntil: true }
     })
 
     if (user?.isVerified) {
       await fs.unlink(idCard.path).catch(() => {})
       if (familyCard) await fs.unlink(familyCard.path).catch(() => {})
       return res.status(400).json({ success: false, error: { message: 'KYC sudah disetujui' } })
+    }
+
+    // 2b. [A-4] Check if account is locked due to too many failed KYC attempts
+    const now = new Date()
+    if (user?.kycLockedUntil && user.kycLockedUntil > now) {
+      const remainingMs = user.kycLockedUntil.getTime() - now.getTime()
+      const remainingHours = Math.ceil(remainingMs / (1000 * 60 * 60))
+      const remainingMinutes = Math.ceil(remainingMs / (1000 * 60))
+      await fs.unlink(idCard.path).catch(() => {})
+      if (familyCard) await fs.unlink(familyCard.path).catch(() => {})
+      logger.warn(`KYC submit blocked for userId=${userId}: account locked for ${remainingHours}h`)
+      return res.status(429).json({
+        success: false,
+        error: {
+          code: 'KYC_LOCKED',
+          message: remainingHours >= 1
+            ? `Akun Anda dikunci sementara karena terlalu banyak percobaan KYC yang gagal. Coba lagi dalam ${remainingHours} jam.`
+            : `Akun Anda dikunci sementara. Coba lagi dalam ${remainingMinutes} menit.`,
+          lockedUntil: user.kycLockedUntil.toISOString()
+        }
+      })
+    }
+
+    // 2c. Reset attempts if lock has expired (grace period reset)
+    if (user?.kycLockedUntil && user.kycLockedUntil <= now) {
+      await prisma.user.update({
+        where: { id: userId },
+        data: { kycAttempts: 0, kycLockedUntil: null }
+      })
+      user.kycAttempts = 0
+      user.kycLockedUntil = null
     }
 
     // 3. Process and Save
@@ -348,6 +379,27 @@ kycRouter.post('/submit',
       res.status(200).json({ success: true, data: { message: 'KYC submitted successfully' } })
     } catch (error: any) {
       logger.error('KYC submission failed:', error)
+
+      // [A-4] Increment failed attempts on processing error; lock after 3 failures
+      try {
+        const currentAttempts = (user?.kycAttempts ?? 0) + 1
+        const shouldLock = currentAttempts >= 3
+        await prisma.user.update({
+          where: { id: userId },
+          data: {
+            kycAttempts: { increment: 1 },
+            ...(shouldLock
+              ? { kycLockedUntil: new Date(Date.now() + 24 * 60 * 60 * 1000) } // Lock 24 hours
+              : {})
+          }
+        })
+        if (shouldLock) {
+          logger.warn(`KYC account locked for userId=${userId} after ${currentAttempts} failed attempts`)
+        }
+      } catch (updateError) {
+        logger.error('Failed to update kycAttempts:', updateError)
+      }
+
       res.status(500).json({ success: false, error: { message: 'Gagal memproses pengajuan KYC' } })
     }
   })
