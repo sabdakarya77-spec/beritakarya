@@ -184,11 +184,11 @@ Reader registers → Submit KYC (KTP + KK + Consent)
 > `kyc-cleanup.ts` baris 5 membuat `new PrismaClient()` terpisah alih-alih menggunakan singleton dari `db/client.ts`. Ini bisa menyebabkan connection leak.
 
 > [!WARNING]
-> **DB-4: AIUsage Tanpa FK ke User/Site**
+> ✅ **DB-4: AIUsage Tanpa FK ke User/Site**
 > Tabel `AIUsage` menyimpan `userId` dan `siteId` sebagai String tanpa foreign key. Data bisa menjadi orphan.
 
 > [!WARNING]
-> **DB-5: AuditLog dan Notification Tanpa FK**
+> ✅ **DB-5: AuditLog dan Notification Tanpa FK**
 > Sama seperti AIUsage, kedua tabel ini tidak memiliki relasi FK. Integritas referensial bergantung sepenuhnya pada application layer.
 
 > [!NOTE]
@@ -261,11 +261,11 @@ Semua endpoint sudah teridentifikasi dan teraudit. Pola konsisten: `requireAuth 
 > `PATCH /api/v1/media/:id` hanya memerlukan `requireAuth` tanpa validasi kepemilikan atau siteMiddleware.
 
 > [!WARNING]
-> **API-5: Error Handling Fragile String Matching**
+> ✅ **API-5: Error Handling Fragile String Matching**
 > `error.middleware.ts` menggunakan `err.message?.includes('salah')` untuk menentukan status code. Ini rapuh dan mudah bypass jika pesan error berubah.
 
 > [!NOTE]
-> **API-6: Meilisearch Filter Injection**
+> ✅ **API-6: Meilisearch Filter Injection**
 > `search.service.ts` baris 46 membangun filter string dengan interpolasi langsung:
 > ```ts
 > let filter = `siteId = "${filters.siteId}"`
@@ -273,7 +273,7 @@ Semua endpoint sudah teridentifikasi dan teraudit. Pola konsisten: `requireAuth 
 > Jika siteId mengandung karakter khusus, ini bisa menjadi injection vector.
 
 > [!WARNING]
-> **API-7: Admin Router requireAdmin Duplikasi**
+> ✅ **API-7: Admin Router requireAdmin Duplikasi**
 > `admin.router.ts` mendefinisikan `requireAdmin` sendiri (baris 9-15) alih-alih menggunakan `requireRole(['superadmin','wapimred'])` dari auth.middleware. Inkonsistensi maintenance.
 
 ---
@@ -305,7 +305,7 @@ Semua endpoint sudah teridentifikasi dan teraudit. Pola konsisten: `requireAuth 
 > File `.env` root (1167 bytes) berisi placeholder credential dan **ada di working tree**. Meskipun berisi placeholder, file ini seharusnya di `.gitignore`. Demikian juga `apps/api/.env` dan `apps/web/.env`.
 
 > [!CAUTION]
-> **SEC-2: Token Disimpan di localStorage**
+> ✅ **SEC-2: Token Disimpan di localStorage**
 > `lib/api.ts` menyimpan `accessToken` dan `refreshToken` di `localStorage`. Ini rentan terhadap XSS. Sebaiknya gunakan httpOnly cookie.
 
 > [!WARNING]
@@ -317,7 +317,7 @@ Semua endpoint sudah teridentifikasi dan teraudit. Pola konsisten: `requireAuth 
 > `express-rate-limit` default menggunakan in-memory store. Dalam cluster/multi-instance, rate limit tidak efektif. Gunakan `rate-limit-redis`.
 
 > [!WARNING]
-> **SEC-5: TLS `rejectUnauthorized: false`**
+> ✅ **SEC-5: TLS `rejectUnauthorized: false`**
 > `email.service.ts` baris 37 menonaktifkan TLS certificate validation. Ini hanya boleh di development.
 
 > [!WARNING]
@@ -442,11 +442,11 @@ app/
 ### 7.3 Temuan Frontend
 
 > [!WARNING]
-> **FE-1: Dashboard page.tsx 28KB**
+> ✅ **FE-1: Dashboard page.tsx 28KB**
 > File ini terlalu besar. Perlu dipecah menjadi komponen yang lebih kecil.
 
 > [!WARNING]
-> **FE-2: Auth Check Client-Side Only**
+> ✅ **FE-2: Auth Check Client-Side Only**
 > Dashboard layout melakukan auth check di `useEffect`. User yang tidak login bisa melihat flash of dashboard content sebelum redirect.
 
 > [!NOTE]
