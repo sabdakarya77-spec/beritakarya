@@ -192,7 +192,7 @@ Reader registers → Submit KYC (KTP + KK + Consent)
 > Sama seperti AIUsage, kedua tabel ini tidak memiliki relasi FK. Integritas referensial bergantung sepenuhnya pada application layer.
 
 > [!NOTE]
-> **DB-6: PageView Menyimpan IP Address**
+> ✅ **DB-6: PageView Menyimpan IP Address**
 > `ipAddress` disimpan tanpa enkripsi/hashing. Untuk kepatuhan UU PDP Indonesia, pertimbangkan hashing atau anonimisasi.
 
 > [!WARNING]
@@ -321,7 +321,7 @@ Semua endpoint sudah teridentifikasi dan teraudit. Pola konsisten: `requireAuth 
 > `email.service.ts` baris 37 menonaktifkan TLS certificate validation. Ini hanya boleh di development.
 
 > [!WARNING]
-> **SEC-6: `trust proxy` Tanpa Konfigurasi Spesifik**
+> ✅ **SEC-6: `trust proxy` Tanpa Konfigurasi Spesifik**
 > `app.set('trust proxy', 1)` sudah benar untuk 1 proxy, tapi pastikan ini match dengan jumlah proxy di production.
 
 ---
@@ -344,11 +344,11 @@ Semua endpoint sudah teridentifikasi dan teraudit. Pola konsisten: `requireAuth 
 > `docker-compose.backend.yml` hanya berisi PostgreSQL dan API. Redis dan Meilisearch tidak di-deploy, padahal API menggunakannya. Cache/search akan selalu fallback ke null.
 
 > [!WARNING]
-> **INFRA-2: Volume `uploads_data` Didefinisikan Tapi Tidak Dipakai**
+> ✅ **INFRA-2: Volume `uploads_data` Didefinisikan Tapi Tidak Dipakai**
 > Baris 53 mendefinisikan named volume `uploads_data` tapi API container menggunakan bind mount ke `/opt/beritakarya/uploads`.
 
 > [!NOTE]
-> **INFRA-3: Full COPY di Runner Stage**
+> ✅ **INFRA-3: Full COPY di Runner Stage**
 > `COPY --from=builder --chown=apiuser:nodejs /app /app` menyalin seluruh monorepo (~300MB+). Pertimbangkan hanya copy `dist/`, `node_modules/`, dan `prisma/`.
 
 ### 6.2 Nginx
@@ -450,7 +450,7 @@ app/
 > Dashboard layout melakukan auth check di `useEffect`. User yang tidak login bisa melihat flash of dashboard content sebelum redirect.
 
 > [!NOTE]
-> **FE-3: Hardcoded Role Labels**
+> ✅ **FE-3: Hardcoded Role Labels**
 > Role labels (`superadmin → Superadmin`, `wapimred → Wapimred`) diduplikasi di multiple files.
 
 ---
@@ -486,6 +486,10 @@ app/
 | 13 | **INFRA-6**: Tidak ada gzip | Performance ✅ |
 | 14 | **DB-4/5**: AIUsage/AuditLog tanpa FK | Orphan data ✅ |
 | 15 | **FE-1/2**: Large component & client-only auth | UX/performance ✅ |
+| 16 | **DB-6**: IP Address Anonymization | PDP Compliance ✅ |
+| 17 | **SEC-6**: Hardened trust proxy | Proxy security ✅ |
+| 18 | **INFRA-2/3**: Docker optimization | Image size & volumes ✅ |
+| 19 | **FE-3**: Centralized Role Labels | Maintainability ✅ |
 
 ---
 
