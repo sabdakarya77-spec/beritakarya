@@ -113,14 +113,14 @@ export default function DashboardOverview() {
   const ROLE_LABELS: Record<string, string> = {
     superadmin: 'Superadmin',
     wapimred: 'Wapimred',
-    journalist: 'Wartawan',
+    jurnalis: 'Wartawan',
   };
 
   return (
     <div className="space-y-8">
       <DashboardHeader 
         greeting={greeting}
-        roleLabel={ROLE_LABELS[user?.role || 'journalist']}
+        roleLabel={ROLE_LABELS[user?.role || 'jurnalis']}
         userName={user?.name || 'Redaktur'}
         site={site}
         currentDate={currentDate}

@@ -142,7 +142,7 @@ userRouter.put('/:id/role',
     const { id } = req.params
     const { role } = req.body
 
-    const validRoles = ['reader', 'journalist', 'wapimred', 'superadmin']
+    const validRoles = ['reader', 'jurnalis', 'wapimred', 'superadmin']
     if (!validRoles.includes(role)) {
       return res.status(400).json({
         success: false,

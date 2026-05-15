@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient, Role } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
@@ -7,7 +7,7 @@ async function main() {
 
   const quotas = [
     {
-      role: 'superadmin',
+      role: Role.superadmin,
       dailyRequests: 1000,
       dailyTokens: 500000,
       monthlyBudget: 100.00,
@@ -15,7 +15,7 @@ async function main() {
       modelRestriction: null
     },
     {
-      role: 'wapimred',
+      role: Role.wapimred,
       dailyRequests: 500,
       dailyTokens: 200000,
       monthlyBudget: 50.00,
@@ -23,7 +23,7 @@ async function main() {
       modelRestriction: null
     },
     {
-      role: 'journalist',
+      role: Role.jurnalis,
       dailyRequests: 100,
       dailyTokens: 50000,
       monthlyBudget: 20.00,
@@ -31,7 +31,7 @@ async function main() {
       modelRestriction: 'gpt-3.5-turbo'
     },
     {
-      role: 'reader',
+      role: Role.reader,
       dailyRequests: 10,
       dailyTokens: 5000,
       monthlyBudget: 2.00,
@@ -43,7 +43,13 @@ async function main() {
   for (const q of quotas) {
     await prisma.roleQuota.upsert({
       where: { role: q.role },
-      update: q,
+      update: {
+        dailyRequests: q.dailyRequests,
+        dailyTokens: q.dailyTokens,
+        monthlyBudget: q.monthlyBudget,
+        allowedFeatures: q.allowedFeatures,
+        modelRestriction: q.modelRestriction
+      },
       create: q
     })
     console.log(`✅ Quota for ${q.role} seeded/updated.`)

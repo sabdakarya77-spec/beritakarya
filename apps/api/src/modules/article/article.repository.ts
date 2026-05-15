@@ -1,5 +1,5 @@
 import { prisma } from '../../db/client'
-import type { Prisma } from '@prisma/client'
+import type { Prisma, ArticleStatus } from '@prisma/client'
 
 export async function findArticlesBySite(
   siteId: string,
@@ -8,7 +8,7 @@ export async function findArticlesBySite(
   const { status, search, category, page = 1, limit = 20, authorId } = opts
   const where: Prisma.ArticleWhereInput = {
     siteId,
-    ...(status && { status }),
+    ...(status && { status: status as ArticleStatus }),
     ...(authorId && { authorId }),
     ...(category && { category: { name: { equals: category, mode: 'insensitive' } } }),
     ...(search && { 
@@ -86,7 +86,7 @@ export async function updateArticle(
     featuredImage: string;
   }>
 ) {
-  return prisma.article.update({ where: { id }, data })
+  return prisma.article.update({ where: { id }, data: data as any })
 }
 
 export async function deleteArticle(id: string) {

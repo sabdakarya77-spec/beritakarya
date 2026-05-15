@@ -63,7 +63,7 @@ export function requireSiteAccess(
   if (!req.user) return next()
 
   if (
-    ['journalist', 'wapimred'].includes(req.user.role) &&
+    ['jurnalis', 'wapimred'].includes(req.user.role) &&
     req.user.siteId !== req.site
   ) {
     return res.status(403).json({

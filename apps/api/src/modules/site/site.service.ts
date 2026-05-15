@@ -25,7 +25,7 @@ export class SiteService {
         const userCount = await prisma.user.count({
           where: {
             siteId: site.id,
-            role: { in: ['wapimred', 'journalist'] }
+            role: { in: ['wapimred', 'jurnalis'] }
           }
         })
         const articleCount = await prisma.article.count({
@@ -70,7 +70,7 @@ export class SiteService {
       prisma.user.count({
         where: {
           siteId: site.id,
-          role: { in: ['wapimred', 'journalist'] }
+          role: { in: ['wapimred', 'jurnalis'] }
         }
       }),
       prisma.article.count({

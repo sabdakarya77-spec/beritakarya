@@ -35,7 +35,7 @@ export async function getArticles(
   const opts: any = { ...query }
   
   // If user is a journalist, they can only see their own articles
-  if (user?.role === 'journalist') {
+  if (user?.role === 'jurnalis') {
     opts.authorId = user.userId
   }
 
@@ -106,7 +106,7 @@ export async function createArticle(
   }
 
   // KYC validation: Journalists must be APPROVED to create articles
-  if (dbUser.role === 'journalist' && dbUser.kycStatus !== 'APPROVED') {
+  if (dbUser.role === 'jurnalis' && dbUser.kycStatus !== 'APPROVED') {
     throw Object.assign(new Error('Akses ditolak: Verifikasi identitas (KYC) Anda belum disetujui'), { statusCode: 403 })
   }
 
@@ -166,7 +166,7 @@ export async function updateArticle(
   }
 
   // KYC validation: Journalists must be APPROVED to update articles
-  if (dbUser.role === 'journalist' && dbUser.kycStatus !== 'APPROVED') {
+  if (dbUser.role === 'jurnalis' && dbUser.kycStatus !== 'APPROVED') {
     throw Object.assign(new Error('Akses ditolak: Verifikasi identitas (KYC) Anda belum disetujui'), { statusCode: 403 })
   }
 
@@ -179,7 +179,7 @@ export async function updateArticle(
   }
 
   // Prevent journalists from setting certain statuses directly
-  if (user.role === 'journalist' && input.status && !['draft', 'submitted'].includes(input.status)) {
+  if (user.role === 'jurnalis' && input.status && !['draft', 'submitted'].includes(input.status)) {
      if (article.status !== 'revision' && input.status !== 'submitted') {
         throw Object.assign(new Error('Hanya Wapimred yang dapat mengubah status ke ' + input.status), { statusCode: 403 })
      }

@@ -140,7 +140,7 @@ export default function ArticlesPage() {
   const countByStatus = (s: string) => articles.filter(a => a.status === s).length;
 
   // Tabs to show based on role
-  const visibleStatuses = user?.role === 'journalist'
+  const visibleStatuses = user?.role === 'jurnalis'
     ? ['', 'draft', 'submitted', 'revision', 'published']
     : ['', 'draft', 'submitted', 'review', 'revision', 'approved', 'scheduled', 'published'];
 
@@ -328,7 +328,7 @@ export default function ArticlesPage() {
                   <td className="px-4 py-4">
                     <div className="flex justify-end items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       {/* Journalist: kirim ke editor jika masih draft */}
-                      {article.status === 'draft' && (user?.role === 'journalist' || user?.role === 'wapimred' || user?.role === 'superadmin') && (
+                      {article.status === 'draft' && (user?.role === 'jurnalis' || user?.role === 'wapimred' || user?.role === 'superadmin') && (
                         <button
                           onClick={() => handleSubmitToReview(article.id)}
                           disabled={actionLoading === article.id}

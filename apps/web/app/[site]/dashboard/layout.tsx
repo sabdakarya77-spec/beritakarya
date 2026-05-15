@@ -54,7 +54,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       if (!token) {
         router.push('/login')
       } else if (user) {
-        const allowedRoles = ['superadmin', 'wapimred', 'journalist']
+        const allowedRoles = ['superadmin', 'wapimred', 'jurnalis']
         if (!allowedRoles.includes(user.role)) {
           router.push(`/${site}`)
         }
@@ -74,10 +74,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {
           label: 'Utama',
           items: [
-            { name: 'Ringkasan', href: `/${site}/dashboard`, icon: LayoutDashboard, roles: ['superadmin', 'wapimred', 'journalist'] },
-            { name: 'Post', href: `/${site}/dashboard/articles`, icon: FileText, roles: ['superadmin', 'wapimred', 'journalist'] },
-            { name: 'Media', href: `/${site}/dashboard/media`, icon: ImageIcon, roles: ['superadmin', 'wapimred', 'journalist'] },
-            ...(user && !user.isVerified ? [{ name: 'Verifikasi KYC', href: `/${site}/dashboard/kyc`, icon: ClipboardCheck, roles: ['superadmin', 'wapimred', 'journalist'] }] : []),
+            { name: 'Ringkasan', href: `/${site}/dashboard`, icon: LayoutDashboard, roles: ['superadmin', 'wapimred', 'jurnalis'] },
+            { name: 'Post', href: `/${site}/dashboard/articles`, icon: FileText, roles: ['superadmin', 'wapimred', 'jurnalis'] },
+            { name: 'Media', href: `/${site}/dashboard/media`, icon: ImageIcon, roles: ['superadmin', 'wapimred', 'jurnalis'] },
+            ...(user && !user.isVerified ? [{ name: 'Verifikasi KYC', href: `/${site}/dashboard/kyc`, icon: ClipboardCheck, roles: ['superadmin', 'wapimred', 'jurnalis'] }] : []),
           ]
         },
     {

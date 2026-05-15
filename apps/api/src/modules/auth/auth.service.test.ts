@@ -23,6 +23,7 @@ vi.mock('../../db/client', () => ({
 
 
 
+import { Role } from '@prisma/client'
 import { prisma } from '../../db/client'
 import { loginUser, registerUser, refreshAccessToken, logoutUser } from './auth.service'
 
@@ -32,7 +33,7 @@ const mockUser = async (overrides = {}) => {
     id: 'u-1', 
     email: 'test@bandung.com', 
     name: 'Test User',
-    role: 'journalist', 
+    role: Role.jurnalis, 
     siteId: 'bandung', 
     passwordHash: hash,
     createdAt: new Date(), 
@@ -77,7 +78,7 @@ describe('registerUser', () => {
 
   it('gagal jika email sudah terdaftar', async () => {
     vi.mocked(prisma.user.findFirst).mockResolvedValue(await mockUser() as any)
-    await expect(registerUser('test@bandung.com', 'pass123', 'User', 'journalist', 'bandung'))
+    await expect(registerUser('test@bandung.com', 'pass123', 'User', Role.jurnalis, 'bandung'))
       .rejects.toThrow('Email sudah terdaftar')
   })
 
@@ -86,7 +87,7 @@ describe('registerUser', () => {
     vi.mocked(prisma.user.create).mockResolvedValue(await mockUser() as any)
     vi.mocked(prisma.refreshToken.create).mockResolvedValue({ token: 'rt' } as any)
     
-    const result = await registerUser('baru@bandung.com', 'Pass123!', 'Baru', 'journalist', 'bandung')
+    const result = await registerUser('baru@bandung.com', 'Pass123!', 'Baru', Role.jurnalis, 'bandung')
     expect(result.accessToken).toBeDefined()
   })
 })

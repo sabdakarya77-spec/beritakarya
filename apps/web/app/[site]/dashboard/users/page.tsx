@@ -9,7 +9,7 @@ interface User {
   id: string;
   name: string;
   email: string;
-  role: 'superadmin' | 'wapimred' | 'journalist' | 'reader';
+  role: 'superadmin' | 'wapimred' | 'jurnalis' | 'reader';
   siteId?: string | null;
   createdAt: string;
 }
@@ -55,7 +55,7 @@ export default function UsersDashboard() {
     const styles = {
       superadmin: 'bg-red-100 text-red-800 border-red-300',
       wapimred: 'bg-blue-100 text-blue-800 border-blue-300',
-      journalist: 'bg-green-100 text-green-800 border-green-300',
+      jurnalis: 'bg-green-100 text-green-800 border-green-300',
       reader: 'bg-gray-100 text-gray-800 border-gray-300'
     };
     return styles[role as keyof typeof styles] || styles.reader;
@@ -65,7 +65,7 @@ export default function UsersDashboard() {
     const labels = {
       superadmin: 'Superadmin',
       wapimred: 'Wapimred',
-      journalist: 'Wartawan',
+      jurnalis: 'Wartawan',
       reader: 'Pembaca'
     };
     return labels[role as keyof typeof labels] || role;
@@ -143,7 +143,7 @@ export default function UsersDashboard() {
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
           <p className="text-xs text-gray-500 uppercase tracking-widest">Wartawan</p>
           <p className="text-2xl font-bold text-green-600 mt-1">
-            {visibleUsers.filter(u => u.role === 'journalist').length}
+            {visibleUsers.filter(u => u.role === 'jurnalis').length}
           </p>
         </div>
       </div>
@@ -248,7 +248,7 @@ export default function UsersDashboard() {
                       className="text-xs bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-2 py-1 outline-none"
                     >
                       <option value="reader">Reader (Suspend)</option>
-                      <option value="journalist">Wartawan</option>
+                      <option value="jurnalis">Wartawan</option>
                       <option value="wapimred">Wapimred</option>
                       <option value="superadmin">Superadmin</option>
                     </select>

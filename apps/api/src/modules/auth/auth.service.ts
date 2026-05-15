@@ -4,6 +4,7 @@ import { prisma } from '../../db/client'
 import { env } from '../../lib/env'
 import type { JWTPayload } from '@beritakarya/types'
 import { emailService } from '../../services/email.service'
+import { Role } from '@prisma/client'
 import { AppError } from '../../utils/AppError'
 
 const ACCESS_SECRET = env.JWT_SECRET
@@ -40,7 +41,7 @@ export async function loginUser(email: string, password: string) {
 
 export async function registerUser(
   email: string, password: string, name: string,
-  role: string, siteId: string | null
+  role: Role, siteId: string | null
 ) {
   const exists = await prisma.user.findFirst({ 
     where: { email, deletedAt: null } 

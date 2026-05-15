@@ -1,5 +1,4 @@
-import { PrismaClient } from '@prisma/client'
-import { argv } from 'process'
+import { PrismaClient, Role } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
@@ -8,7 +7,7 @@ async function seedQuotas() {
 
   const quotas = [
     {
-      role: 'superadmin',
+      role: Role.superadmin,
       dailyRequests: 999999,
       dailyTokens: 999999,
       monthlyBudget: 99999.00,
@@ -19,7 +18,7 @@ async function seedQuotas() {
       modelRestriction: null
     },
     {
-      role: 'wapimred',
+      role: Role.wapimred,
       dailyRequests: 500,
       dailyTokens: 100000,
       monthlyBudget: 500.00,
@@ -30,18 +29,7 @@ async function seedQuotas() {
       modelRestriction: null
     },
     {
-      role: 'editor',
-      dailyRequests: 200,
-      dailyTokens: 50000,
-      monthlyBudget: 50.00,
-      allowedFeatures: JSON.stringify([
-        'rewrite', 'expand', 'headline', 'seo',
-        'grammar', 'readability', 'layout', 'caption'
-      ]),
-      modelRestriction: null
-    },
-    {
-      role: 'reporter',
+      role: Role.jurnalis,
       dailyRequests: 100,
       dailyTokens: 25000,
       monthlyBudget: 25.00,
@@ -51,7 +39,7 @@ async function seedQuotas() {
       modelRestriction: 'gpt-3.5-turbo'
     },
     {
-      role: 'reader',
+      role: Role.reader,
       dailyRequests: 5,
       dailyTokens: 1000,
       monthlyBudget: 0.00,
@@ -63,7 +51,13 @@ async function seedQuotas() {
   for (const quota of quotas) {
     await prisma.roleQuota.upsert({
       where: { role: quota.role },
-      update: quota,
+      update: {
+        dailyRequests: quota.dailyRequests,
+        dailyTokens: quota.dailyTokens,
+        monthlyBudget: quota.monthlyBudget,
+        allowedFeatures: quota.allowedFeatures,
+        modelRestriction: quota.modelRestriction
+      },
       create: quota
     })
     console.log(`  ✅ Seeded quota for role: ${quota.role}`)

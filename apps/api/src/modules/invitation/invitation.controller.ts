@@ -37,7 +37,7 @@ invitationRouter.post('/',
     }
 
     // Validate role
-    const allowedRoles = ['reader', 'journalist', 'wapimred']
+    const allowedRoles = ['reader', 'jurnalis', 'wapimred']
     if (!allowedRoles.includes(role)) {
       return res.status(400).json({
         success: false,

@@ -24,7 +24,7 @@ export default function InvitationsDashboard() {
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState('');
-  const [role, setRole] = useState('journalist');
+  const [role, setRole] = useState('jurnalis');
   const [siteScope, setSiteScope] = useState<'current' | 'global'>('current');
   const [submitLoading, setSubmitLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -144,7 +144,7 @@ export default function InvitationsDashboard() {
                   onChange={(e) => setRole(e.target.value)}
                   className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm outline-none focus:border-red-500"
                 >
-                  <option value="journalist">Wartawan</option>
+                  <option value="jurnalis">Wartawan</option>
                   <option value="wapimred">Wapimred</option>
                   <option value="reader">Pembaca</option>
                 </select>

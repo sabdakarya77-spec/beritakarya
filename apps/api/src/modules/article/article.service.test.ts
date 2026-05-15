@@ -21,10 +21,10 @@ import {
 import type { JWTPayload } from '@beritakarya/types'
 
 const jurnalisBandung: JWTPayload = {
-  userId: 'u-1', role: 'journalist', siteId: 'bandung', iat: 0, exp: 0
+  userId: 'u-1', role: 'jurnalis', siteId: 'bandung', iat: 0, exp: 0
 }
 const jurnalisSurabaya: JWTPayload = {
-  userId: 'u-2', role: 'journalist', siteId: 'surabaya', iat: 0, exp: 0
+  userId: 'u-2', role: 'jurnalis', siteId: 'surabaya', iat: 0, exp: 0
 }
 const editorPusat: JWTPayload = {
   userId: 'u-3', role: 'wapimred', siteId: null, iat: 0, exp: 0
