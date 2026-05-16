@@ -626,7 +626,7 @@ Sebelum go-live, pastikan semua item ini sudah selesai:
 - [ ] Docker & Docker Compose terinstall
 - [ ] UFW firewall aktif (hanya port 22, 80, 443)
 - [ ] Fail2Ban aktif
-- [ ] DNS domain sudah diarahkan ke IP VPS
+- [x] DNS domain sudah diarahkan ke IP VPS
 - [ ] Nginx terinstall dan berjalan
 - [ ] SSL certificate sudah terpasang dan valid
 - [ ] Auto-renewal SSL sudah dikonfigurasi
@@ -636,7 +636,7 @@ Sebelum go-live, pastikan semua item ini sudah selesai:
 - [ ] HTTPS berfungsi untuk `api.beritakarya.co`
 - [ ] Backup database sudah dikonfigurasi
 - [ ] Log rotation sudah dikonfigurasi
-- [ ] `JWT_SECRET` dan `RESET_SECRET` sudah menggunakan nilai acak yang kuat
+- [x] `JWT_SECRET` dan `RESET_SECRET` sudah menggunakan nilai acak yang kuat
 
 ---
 
