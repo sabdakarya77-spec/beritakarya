@@ -44,7 +44,7 @@ describe('POST /api/v1/auth/login', () => {
     expect(res.status).toBe(200)
     expect(res.body.success).toBe(true)
     
-    const setCookie = res.headers['set-cookie']
+    const setCookie = res.headers['set-cookie'] as unknown as string[]
     expect(setCookie).toBeDefined()
     expect(setCookie.some((c: string) => c.includes('accessToken='))).toBe(true)
     expect(setCookie.some((c: string) => c.includes('refreshToken='))).toBe(true)
