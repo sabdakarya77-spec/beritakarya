@@ -18,6 +18,7 @@ import {
   getArticleById, createArticle, updateArticle,
   publishArticle, deleteArticle
 } from './article.service'
+import { prisma } from '../../db/client'
 import type { JWTPayload } from '@beritakarya/types'
 
 const jurnalisBandung: JWTPayload = {
@@ -41,6 +42,7 @@ const mockArticle = (overrides = {}) => ({
 describe('getArticleById — multi-site isolation', () => {
   beforeEach(async () => {
     vi.clearAllMocks()
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({ role: 'jurnalis', kycStatus: 'APPROVED' } as any)
   })
 
   it('throw 404 jika artikel tidak ditemukan di site', async () => {
@@ -60,6 +62,7 @@ describe('getArticleById — multi-site isolation', () => {
 describe('createArticle — siteId injection', () => {
   beforeEach(async () => {
     vi.clearAllMocks()
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({ role: 'jurnalis', kycStatus: 'APPROVED' } as any)
   })
 
   it('inject siteId dari request, bukan dari body', async () => {
@@ -91,6 +94,7 @@ describe('createArticle — siteId injection', () => {
 describe('updateArticle — ownership', () => {
   beforeEach(async () => {
     vi.clearAllMocks()
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({ role: 'jurnalis', kycStatus: 'APPROVED' } as any)
   })
 
   it('journalist hanya bisa edit artikel miliknya', async () => {
@@ -102,6 +106,7 @@ describe('updateArticle — ownership', () => {
   })
 
   it('editor pusat bisa edit artikel siapapun', async () => {
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({ role: 'wapimred', kycStatus: 'APPROVED' } as any)
     vi.mocked(repo.findArticleById).mockResolvedValue(
       mockArticle({ authorId: 'user-lain' }) as any
     )
@@ -117,6 +122,7 @@ describe('updateArticle — ownership', () => {
 describe('publishArticle', () => {
   beforeEach(async () => {
     vi.clearAllMocks()
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({ role: 'wapimred', kycStatus: 'APPROVED' } as any)
   })
 
   it('set status published dan publishedAt', async () => {
@@ -135,6 +141,7 @@ describe('publishArticle', () => {
 describe('deleteArticle — permission', () => {
   beforeEach(async () => {
     vi.clearAllMocks()
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({ role: 'jurnalis', kycStatus: 'APPROVED' } as any)
   })
 
   it('journalist dari site lain tidak bisa delete', async () => {

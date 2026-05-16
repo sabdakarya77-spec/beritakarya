@@ -14,7 +14,8 @@ vi.mock('../../middleware/site.middleware', () => ({
   siteMiddleware: (_: any, __: any, next: any) => {
     _.site = 'bandung'
     next()
-  }
+  },
+  requireSiteAccess: (_: any, __: any, next: any) => next()
 }))
 
 // Mock sharp so we don't need real images or binary dependencies in test

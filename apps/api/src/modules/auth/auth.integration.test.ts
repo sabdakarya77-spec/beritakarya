@@ -43,8 +43,12 @@ describe('POST /api/v1/auth/login', () => {
     
     expect(res.status).toBe(200)
     expect(res.body.success).toBe(true)
-    expect(res.body.data.accessToken).toBeDefined()
-    expect(res.body.data.refreshToken).toBeDefined()
+    
+    const setCookie = res.headers['set-cookie']
+    expect(setCookie).toBeDefined()
+    expect(setCookie.some((c: string) => c.includes('accessToken='))).toBe(true)
+    expect(setCookie.some((c: string) => c.includes('refreshToken='))).toBe(true)
+    
     expect(res.body.data.user).toBeDefined()
   })
 
