@@ -31,7 +31,7 @@ export const authLimiter = rateLimit({
 export const apiLimiter = rateLimit({
   store: createStore('api'),
   windowMs: 60 * 1000,
-  max: 100,
+  max: 1000,
   message: {
     success: false,
     error: {
