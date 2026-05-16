@@ -46,6 +46,7 @@ COPY --from=builder --chown=apiuser:nodejs /app/apps/api/package.json /app/apps/
 COPY --from=builder --chown=apiuser:nodejs /app/apps/api/prisma /app/apps/api/prisma
 COPY --from=builder --chown=apiuser:nodejs /app/package.json /app/package.json
 COPY --from=builder --chown=apiuser:nodejs /app/pnpm-workspace.yaml /app/pnpm-workspace.yaml
+COPY --from=builder --chown=apiuser:nodejs /app/apps/api/node_modules /app/apps/api/node_modules
 
 # Berikan izin akses ke apiuser
 # Pastikan folder uploads ada dan punya izin yang benar
@@ -59,4 +60,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
 
 # Jalankan dari folder apps/api menggunakan pnpm
 WORKDIR /app/apps/api
-CMD ["sh", "-c", "/app/node_modules/.bin/prisma migrate deploy && node dist/apps/api/src/main.js"]
+CMD ["sh", "-c", "pnpm run db:migrate:deploy && node dist/apps/api/src/main.js"]
