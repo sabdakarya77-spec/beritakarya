@@ -40,6 +40,7 @@ import { logger, httpLogger } from './lib/logger'
 import { metrics } from './lib/monitoring'
 import { asyncHandler } from './utils/asyncHandler'
 import cookieParser from 'cookie-parser'
+import csurf from 'csurf'
 import { getMeilisearchCircuitStatus } from './modules/article/search.service'
 
 // Import global type augmentation (must be before other imports)
@@ -135,6 +136,19 @@ app.use(securityHeadersMiddleware)
 app.use(cookieParser())
 app.use(jwtVerify)
 
+// [M-005] CSRF Protection setup
+const csrfProtection = csurf({ 
+  cookie: { 
+    httpOnly: true, 
+    secure: env.NODE_ENV === 'production',
+    sameSite: 'lax'
+  } 
+})
+
+app.get('/api/v1/csrf-token', csrfProtection, (req, res) => {
+  res.json({ success: true, data: { csrfToken: req.csrfToken() } })
+})
+
 app.use(express.json({ limit: '10mb' }))
 app.use(sanitizeMiddleware)
 app.use(requestIdMiddleware)
@@ -144,9 +158,9 @@ app.use(performanceMiddleware)
 app.use('/api/v1', apiLimiter)
 
 app.use('/api/v1/auth', authLimiter, authRouter)
-app.use('/api/v1/users', userRouter)
-app.use('/api/v1/articles', articleRouter)
-app.use('/api/v1/media', mediaRouter)
+app.use('/api/v1/users', csrfProtection, userRouter)
+app.use('/api/v1/articles', csrfProtection, articleRouter)
+app.use('/api/v1/media', csrfProtection, mediaRouter)
 app.use('/api/v1/ai', aiRouter)
 
 // Category routes - using functions directly (not routers)
@@ -154,15 +168,15 @@ app.use('/api/v1/ai', aiRouter)
 app.get('/api/v1/categories', asyncHandler(categoryController.getCategories))
 // POST/PUT/DELETE: requires auth + site scope + role wapimred/superadmin
 app.post('/api/v1/categories',
-  requireAuth, siteMiddleware, requireSiteAccess,
+  requireAuth, csrfProtection, siteMiddleware, requireSiteAccess,
   requireRole(['superadmin', 'wapimred']),
   asyncHandler(categoryController.createCategory))
 app.put('/api/v1/categories/:id',
-  requireAuth, siteMiddleware, requireSiteAccess,
+  requireAuth, csrfProtection, siteMiddleware, requireSiteAccess,
   requireRole(['superadmin', 'wapimred']),
   asyncHandler(categoryController.updateCategory))
 app.delete('/api/v1/categories/:id',
-  requireAuth, siteMiddleware, requireSiteAccess,
+  requireAuth, csrfProtection, siteMiddleware, requireSiteAccess,
   requireRole(['superadmin', 'wapimred']),
   asyncHandler(categoryController.deleteCategory))
 
@@ -173,32 +187,32 @@ app.get('/api/v1/sites/settings', asyncHandler(siteController.getSiteSettings))
 app.get('/api/v1/sites/:id', asyncHandler(siteController.getSiteById))
 // PATCH settings: requires auth + site scope + role wapimred/superadmin
 app.patch('/api/v1/sites/settings',
-  requireAuth, siteMiddleware, requireSiteAccess,
+  requireAuth, csrfProtection, siteMiddleware, requireSiteAccess,
   requireRole(['superadmin', 'wapimred']),
   asyncHandler(siteController.updateSiteSettings))
 // POST/PUT/DELETE/assignWapimred: superadmin only
 app.post('/api/v1/sites',
-  requireAuth, requireRole(['superadmin']),
+  requireAuth, csrfProtection, requireRole(['superadmin']),
   asyncHandler(siteController.createSite))
 app.put('/api/v1/sites/:id',
-  requireAuth, requireRole(['superadmin']),
+  requireAuth, csrfProtection, requireRole(['superadmin']),
   asyncHandler(siteController.updateSite))
 app.delete('/api/v1/sites/:id',
-  requireAuth, requireRole(['superadmin']),
+  requireAuth, csrfProtection, requireRole(['superadmin']),
   asyncHandler(siteController.deleteSite))
 app.post('/api/v1/sites/:id/wapimred',
-  requireAuth, requireRole(['superadmin']),
+  requireAuth, csrfProtection, requireRole(['superadmin']),
   asyncHandler(siteController.assignWapimred))
 
-app.use('/api/v1/ads', adRouter)
-app.use('/api/v1/newsletter', newsletterRouter)
-app.use('/api/v1/audit', auditRouter)
-app.use('/api/v1/analytics', analyticsRouter)
-app.use('/api/v1/notifications', notificationRouter)
-app.use('/api/v1/comments', commentRouter)
-app.use('/api/v1/kyc', kycRouter)
-app.use('/api/v1/invitations', invitationRouter)
-app.use('/api/v1/admin', adminRouter)
+app.use('/api/v1/ads', csrfProtection, adRouter)
+app.use('/api/v1/newsletter', csrfProtection, newsletterRouter)
+app.use('/api/v1/audit', csrfProtection, auditRouter)
+app.use('/api/v1/analytics', csrfProtection, analyticsRouter)
+app.use('/api/v1/notifications', csrfProtection, notificationRouter)
+app.use('/api/v1/comments', csrfProtection, commentRouter)
+app.use('/api/v1/kyc', csrfProtection, kycRouter)
+app.use('/api/v1/invitations', csrfProtection, invitationRouter)
+app.use('/api/v1/admin', csrfProtection, adminRouter)
 
 app.get('/health', asyncHandler(async (_, res) => {
   let databaseHealth = false

@@ -9,6 +9,7 @@ import { siteMiddleware, requireSiteAccess } from '../../middleware/site.middlew
 import { env } from '../../lib/env'
 import * as repo from './media.repository'
 import { AppError } from '../../utils/AppError'
+import { logger } from '../../lib/logger'
 
 export const mediaRouter: Router = Router()
 
@@ -29,10 +30,10 @@ function ensureDirectories() {
     try {
       if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true })
-        console.log(`[Media] Created directory: ${dir}`)
+        logger.info(`[Media] Created directory: ${dir}`)
       }
     } catch (err) {
-      console.error(`[Media] Failed to create directory ${dir}:`, err)
+      logger.error(`[Media] Failed to create directory ${dir}:`, err)
       throw new AppError(`Failed to create upload directory: ${dir}`, 500)
     }
   }
@@ -59,7 +60,7 @@ async function processImage(buffer: Buffer, filename: string, options: { skipWat
   try {
     sharp = (await import('sharp')).default
   } catch (err) {
-    console.error('[Media] Failed to import sharp:', err)
+    logger.error('[Media] Failed to import sharp:', err)
     throw new Error('Sharp library not available. Please install sharp: npm install sharp')
   }
 
@@ -67,7 +68,7 @@ async function processImage(buffer: Buffer, filename: string, options: { skipWat
   try {
     meta = await sharp(buffer).metadata()
   } catch (err) {
-    console.error('[Media] Failed to read image metadata:', err)
+    logger.error('[Media] Failed to read image metadata:', err)
     throw new Error('Invalid image file or corrupted data')
   }
 
@@ -117,7 +118,7 @@ async function processImage(buffer: Buffer, filename: string, options: { skipWat
 
     await pipeline.webp({ quality: 82 }).toFile(fullPath)
   } catch (err) {
-    console.error('[Media] Failed to save full image:', err)
+    logger.error('[Media] Failed to save full image:', err)
     throw new Error('Failed to save processed image')
   }
 
@@ -132,14 +133,14 @@ async function processImage(buffer: Buffer, filename: string, options: { skipWat
   try {
     await sharp(buffer).resize(400).webp({ quality: 70 }).toFile(thumbPath)
   } catch (err) {
-    console.error('[Media] Failed to save thumbnail:', err)
+    logger.error('[Media] Failed to save thumbnail:', err)
     // Clean up full image if thumbnail fails
     try {
       if (fs.existsSync(fullPath)) {
         fs.unlinkSync(fullPath)
       }
     } catch (cleanupErr) {
-      console.error('[Media] Failed to cleanup after thumbnail error:', cleanupErr)
+      logger.error('[Media] Failed to cleanup after thumbnail error:', cleanupErr)
     }
     throw new Error('Failed to save thumbnail')
   }
@@ -168,13 +169,13 @@ mediaRouter.post(
 
     const isLogo = req.query.type === 'logo'
 
-    console.log(`[Media] Uploading file: ${req.file.originalname} (${req.file.size} bytes), Type: ${req.query.type || 'standard'}`)
+    logger.info(`[Media] Uploading file: ${req.file.originalname} (${req.file.size} bytes), Type: ${req.query.type || 'standard'}`)
     const id = uuidv4()
     let processed;
     try {
       processed = await processImage(req.file.buffer, id, { skipWatermark: isLogo })
     } catch (err: any) {
-      console.error('[Media] Image processing failed:', err)
+      logger.error('[Media] Image processing failed:', err)
       return res.status(500).json({
         success: false,
         error: { message: `Gagal memproses gambar: ${err.message}` }

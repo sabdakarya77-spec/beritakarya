@@ -18,10 +18,16 @@ redis.on('error', (err: Error) => {
   }
 })
 
+const KEY_PREFIX = process.env.REDIS_KEY_PREFIX || 'app:'
+
+function getFullKey(key: string): string {
+  return key.startsWith(KEY_PREFIX) ? key : `${KEY_PREFIX}${key}`
+}
+
 export async function getCache<T>(key: string): Promise<T | null> {
   if (!process.env.REDIS_HOST) return null
   try {
-    const data = await redis.get(key)
+    const data = await redis.get(getFullKey(key))
     if (!data) return null
     return JSON.parse(data)
   } catch {
@@ -32,21 +38,22 @@ export async function getCache<T>(key: string): Promise<T | null> {
 export async function setCache(key: string, value: any, ttlSeconds: number = 3600) {
   if (!process.env.REDIS_HOST) return
   try {
-    await redis.set(key, JSON.stringify(value), 'EX', ttlSeconds)
+    await redis.set(getFullKey(key), JSON.stringify(value), 'EX', ttlSeconds)
   } catch {}
 }
 
 export async function deleteCache(key: string) {
   if (!process.env.REDIS_HOST) return
   try {
-    await redis.del(key)
+    await redis.del(getFullKey(key))
   } catch {}
 }
 
 export async function clearPattern(pattern: string): Promise<void> {
   if (!process.env.REDIS_HOST) return
   try {
-    const keys = await redis.keys(pattern)
+    const fullPattern = pattern.startsWith(KEY_PREFIX) ? pattern : `${KEY_PREFIX}${pattern}`
+    const keys = await redis.keys(fullPattern)
     if (keys.length === 0) return
 
     // [H-008] Batch deletion to avoid blocking Redis

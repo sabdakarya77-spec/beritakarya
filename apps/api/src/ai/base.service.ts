@@ -3,7 +3,7 @@ import { logger } from '../lib/logger'
 import { env } from '../lib/env'
 import { getCache, setCache } from '../lib/redis'
 import { createHash } from 'crypto'
-import CircuitBreaker from 'opossum'
+import { createOpenAIBreaker } from '../lib/circuitBreaker'
 import { prisma } from '../db/client'
 
 const client = new OpenAI({
@@ -32,7 +32,7 @@ function getCacheKey(
 }
 
 // Circuit breaker for OpenAI with fallback
-const openaiBreaker = new CircuitBreaker(
+const openaiBreaker = createOpenAIBreaker(
   async (systemPrompt: string, userPrompt: string, opts: { 
     maxTokens?: number; 
     temperature?: number; 
@@ -48,11 +48,6 @@ const openaiBreaker = new CircuitBreaker(
       ]
     })
     return res.choices[0]?.message?.content?.trim() ?? ''
-  },
-  {
-    timeout: 10000,
-    errorThresholdPercentage: 50,
-    resetTimeout: 30000
   }
 )
 

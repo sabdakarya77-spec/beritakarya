@@ -71,7 +71,7 @@ export async function refreshAccessToken(refreshToken: string) {
     where: { token: refreshToken },
     include: { user: true }
   })
-  if (!record || record.expiresAt < new Date()) {
+  if (!record || record.expiresAt.getTime() < Date.now()) {
     throw new AppError('Refresh token tidak valid atau sudah expired', 401, 'UNAUTHORIZED')
   }
 

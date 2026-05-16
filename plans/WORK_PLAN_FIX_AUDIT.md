@@ -615,7 +615,7 @@ if (!fileType || !['image/jpeg', 'image/png', 'image/webp'].includes(fileType.mi
 
 ---
 
-### TASK 3.4: Ganti Console.log dengan Logger (M-004)
+### ✅ TASK 3.4: Ganti Console.log dengan Logger (M-004)
 **File:** `apps/api/src/modules/media/media.controller.ts`
 **Lines:** 24, 154, 160
 
@@ -635,7 +635,7 @@ logger.info(`[Media] Uploading file:...`)
 
 ---
 
-### TASK 3.5: Tambah CSRF Protection (M-005)
+### ✅ TASK 3.5: Tambah CSRF Protection (M-005)
 **File:** `apps/api/src/main.ts`
 
 **Step 3.5.1:** Install csurf
@@ -660,7 +660,7 @@ app.post('/api/articles', requireAuth, csrfProtection, asyncHandler(...))
 
 ---
 
-### TASK 3.6: Deduplicate AI Circuit Breaker (M-006)
+### ✅ TASK 3.6: Deduplicate AI Circuit Breaker (M-006)
 **File:** `apps/api/src/ai/base.service.ts`, `apps/api/src/lib/circuitBreaker.ts`
 
 **Step 3.6.1:** Hapus duplikat di base.service.ts
@@ -687,7 +687,7 @@ const openaiBreaker = createOpenAIBreaker(...)
 
 ---
 
-### TASK 3.8: Tambah Rate Limiting Site Routes (M-008)
+### ✅ TASK 3.8: Tambah Rate Limiting Site Routes (M-008)
 **File:** `apps/api/src/main.ts`
 **Lines:** 148-161
 
@@ -722,7 +722,7 @@ const safeName = DOMPurify.sanitize(invitation.invitedByUser.name)
 
 ---
 
-### TASK 3.10: Configurable Redis Key Prefix (M-010)
+### ✅ TASK 3.10: Configurable Redis Key Prefix (M-010)
 **File:** `apps/api/src/lib/redis.ts`
 
 **Step 3.10.1:** Tambahkan env variable
@@ -739,7 +739,7 @@ const KEY_PREFIX = process.env.REDIS_KEY_PREFIX || 'app:'
 
 ---
 
-### TASK 3.11: Perbaiki Token Expiry Comparison (M-011)
+### ✅ TASK 3.11: Perbaiki Token Expiry Comparison (M-011)
 **File:** `apps/api/src/modules/auth/auth.service.ts`
 **Line:** 72
 
