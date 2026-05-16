@@ -119,6 +119,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     .toUpperCase()
     .slice(0, 2) || 'U'
 
+  const allNavItems = navSections.flatMap(s => s.items)
+  const activeItem = allNavItems
+    .filter(item => pathname === item.href || (item.href !== `/${site}/dashboard` && pathname.startsWith(item.href + '/')))
+    .sort((a, b) => b.href.length - a.href.length)[0]
+  const activeHref = activeItem?.href
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-[#0a0f1a] flex flex-col md:flex-row font-sans text-brand-black dark:text-white transition-colors duration-500">
       
@@ -172,7 +178,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 )}
                 <div className="space-y-0.5">
                   {filteredItems.map((item) => {
-                    const isActive = pathname === item.href || (item.href !== `/${site}/dashboard` && pathname.startsWith(item.href))
+                    const isActive = item.href === activeHref
                     const Icon = item.icon
                     return (
                       <Link 
@@ -267,7 +273,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <div key={section.label} className="mb-6">
                 <p className="px-3 text-[9px] font-black text-gray-600 uppercase tracking-[0.2em] mb-2">{section.label}</p>
                 {filteredItems.map((item) => {
-                  const isActive = pathname === item.href || (item.href !== `/${site}/dashboard` && pathname.startsWith(item.href))
+                  const isActive = item.href === activeHref
                   const Icon = item.icon
                   return (
                     <Link 
