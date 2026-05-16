@@ -20,12 +20,15 @@ vi.mock('openai', () => {
 })
 
 vi.mock('opossum', () => {
+  const MockBreaker = vi.fn().mockImplementation(function (this: any, action: any) {
+    this.fire = vi.fn().mockImplementation((...args: any[]) => action(...args))
+    this.on = vi.fn().mockReturnThis()
+    this.stats = { state: 'closed' }
+    return this
+  })
   return {
-    default: vi.fn().mockImplementation(function (this: any, action: (...args: any[]) => any) {
-      this.fire = (...args: any[]) => action(...args)
-      this.stats = { state: 'closed' }
-      return this
-    })
+    default: MockBreaker,
+    __esModule: true
   }
 })
 
