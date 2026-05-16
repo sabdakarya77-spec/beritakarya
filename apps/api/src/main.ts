@@ -157,7 +157,11 @@ app.use(requestIdMiddleware)
 app.use(httpLogger)
 app.use(performanceMiddleware)
 
-app.use('/api/v1', apiLimiter)
+// apiLimiter untuk semua route KECUALI /api/v1/auth (auth punya limiter sendiri)
+app.use('/api/v1', (req, res, next) => {
+  if (req.path.startsWith('/auth')) return next() // skip, authLimiter yang handle
+  return apiLimiter(req, res, next)
+})
 
 app.use('/api/v1/auth', authLimiter, authRouter)
 app.use('/api/v1/users', csrfProtection, userRouter)

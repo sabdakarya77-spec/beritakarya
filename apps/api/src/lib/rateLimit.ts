@@ -14,13 +14,14 @@ const createStore = (prefix: string) =>
 
 export const authLimiter = rateLimit({
   store: createStore('auth'),
-  windowMs: 1 * 60 * 1000, // 1 minute
-  max: 10,
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 30, // 30 percobaan per 15 menit per IP
+  skipSuccessfulRequests: true, // hanya hitung request yang gagal (4xx/5xx)
   message: {
     success: false,
     error: {
       code: 'RATE_LIMITED',
-      message: 'Terlalu banyak percobaan login. Coba lagi dalam 1 menit.'
+      message: 'Terlalu banyak percobaan login. Coba lagi dalam 15 menit.'
     }
   },
   standardHeaders: true,
