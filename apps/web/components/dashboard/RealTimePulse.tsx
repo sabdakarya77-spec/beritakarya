@@ -3,24 +3,29 @@
 import { useEffect, useState } from 'react';
 import { api } from '../../lib/api';
 import { cn } from '../../lib/utils';
+import { useAuthStore } from '../../store/authStore';
 
 export function RealTimePulse() {
   const [count, setCount] = useState(0);
+  const { user } = useAuthStore();
   
   useEffect(() => {
+    // Jangan polling jika user belum login
+    if (!user) return;
+
     const fetchCount = async () => {
       try {
         const { data } = await api.get('/analytics/active-readers');
         setCount(data.data.count || 0);
       } catch (e) {
-        console.error('Failed to fetch active readers:', e);
+        // Silently ignore - user mungkin sudah logout
       }
     };
 
     fetchCount();
     const interval = setInterval(fetchCount, 30000);
     return () => clearInterval(interval);
-  }, []);
+  }, [user]);
 
   return (
     <div className="flex items-center gap-3 bg-brand-red/5 px-4 py-2 rounded-2xl border border-brand-red/10">

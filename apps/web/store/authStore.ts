@@ -54,9 +54,13 @@ export const useAuthStore = create<AuthState>()(
       // Backend handles cookie clearing and token blacklisting
       await api.post('/auth/logout')
     } catch (err) {
-      console.error('Logout error:', err)
+      // Ignore - cookies may already be expired/invalid
     } finally {
       set({ user: null })
+      // Redirect ke login setelah clear state
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login'
+      }
     }
   },
 

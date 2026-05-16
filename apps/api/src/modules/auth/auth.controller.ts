@@ -131,15 +131,20 @@ authRouter.post('/refresh', asyncHandler(async (req: Request, res: Response) => 
   res.json({ success: true, data: { user: result.user } })
 }))
 
-authRouter.post('/logout', requireAuth, asyncHandler(async (req: any, res: Response) => {
+authRouter.post('/logout', asyncHandler(async (req: any, res: Response) => {
   const refreshToken = req.body.refreshToken || (req.cookies ? req.cookies.refreshToken : undefined)
   
-  // Clear cookies
-  res.clearCookie('accessToken')
-  res.clearCookie('refreshToken')
+  // Clear cookies regardless of auth status
+  res.clearCookie('accessToken', { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'none' as const })
+  res.clearCookie('refreshToken', { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'none' as const })
 
-  if (refreshToken) {
-    await authService.logoutUser(req.user.userId, refreshToken)
+  // If we have user info from jwtVerify middleware, blacklist the token
+  if (refreshToken && req.user?.userId) {
+    try {
+      await authService.logoutUser(req.user.userId, refreshToken)
+    } catch (err) {
+      // Silently ignore - cookie is already cleared
+    }
   }
   res.json({ success: true, message: 'Logout berhasil' })
 }))

@@ -47,21 +47,8 @@ export default function NotificationBell() {
 
     fetchNotifications();
 
-    // Setup SSE
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-    const token = localStorage.getItem('accessToken');
-    const eventSource = new EventSource(`${apiUrl}/api/v1/notifications/stream?token=${token}`);
-
-    eventSource.onmessage = (event) => {
-      const newNotif = JSON.parse(event.data);
-      setNotifications(prev => [newNotif, ...prev].slice(0, 20));
-      setUnreadCount(prev => prev + 1);
-      
-      // Play a subtle sound or trigger a toast if needed
-      if ('Notification' in window && Notification.permission === 'granted') {
-         new window.Notification(newNotif.title, { body: newNotif.message });
-      }
-    };
+    // Polling setiap 30 detik — EventSource tidak bisa kirim httpOnly cookies
+    const interval = setInterval(fetchNotifications, 30000);
 
     // Close on click outside
     const handleClickOutside = (e: MouseEvent) => {
@@ -72,7 +59,7 @@ export default function NotificationBell() {
     document.addEventListener('mousedown', handleClickOutside);
 
     return () => {
-      eventSource.close();
+      clearInterval(interval);
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [user, site]);
