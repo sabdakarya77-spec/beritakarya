@@ -141,7 +141,7 @@ const csrfProtection = csurf({
   cookie: { 
     httpOnly: true, 
     secure: env.NODE_ENV === 'production',
-    sameSite: 'lax'
+    sameSite: 'none'
   } 
 })
 

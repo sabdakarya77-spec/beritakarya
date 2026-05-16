@@ -64,13 +64,13 @@ authRouter.post('/login', asyncHandler(async (req: Request, res: Response) => {
     res.cookie('accessToken', result.accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: 'none',
       maxAge: 15 * 60 * 1000 // 15 mins
     })
     res.cookie('refreshToken', result.refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: 'none',
       maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
     })
 
@@ -92,13 +92,13 @@ authRouter.post('/register', asyncHandler(async (req: Request, res: Response) =>
   res.cookie('accessToken', result.accessToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    sameSite: 'none',
     maxAge: 15 * 60 * 1000
   })
   res.cookie('refreshToken', result.refreshToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    sameSite: 'none',
     maxAge: 30 * 24 * 60 * 60 * 1000
   })
 
@@ -118,13 +118,13 @@ authRouter.post('/refresh', asyncHandler(async (req: Request, res: Response) => 
   res.cookie('accessToken', result.accessToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    sameSite: 'none',
     maxAge: 15 * 60 * 1000
   })
   res.cookie('refreshToken', result.refreshToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    sameSite: 'none',
     maxAge: 30 * 24 * 60 * 60 * 1000
   })
 
