@@ -62,6 +62,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }
   }, [user, router, site])
 
+  // Menambahkan pemisah visual di console setiap kali pindah halaman
+  // untuk memudahkan membedakan error antar halaman
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      console.log(`%c[NAVIGASI] Pindah ke halaman: ${pathname}`, 'color: #10b981; font-weight: bold; font-size: 12px; padding: 4px; border: 1px solid #10b981; border-radius: 4px;');
+    }
+  }, [pathname])
+
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light'
     setTheme(newTheme)
