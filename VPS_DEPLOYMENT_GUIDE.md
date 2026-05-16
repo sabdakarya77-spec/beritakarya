@@ -630,7 +630,7 @@ Sebelum go-live, pastikan semua item ini sudah selesai:
 - [ ] Nginx terinstall dan berjalan
 - [ ] SSL certificate sudah terpasang dan valid
 - [ ] Auto-renewal SSL sudah dikonfigurasi
-- [ ] File `infra/docker/.env` sudah diisi dengan nilai production yang aman
+- [x] File `infra/docker/.env` sudah diisi dengan nilai production yang aman
 - [ ] Semua Docker containers berstatus `Up (healthy)`
 - [ ] Health check endpoint mengembalikan `{"status":"healthy"}`
 - [ ] HTTPS berfungsi untuk `api.beritakarya.co`
