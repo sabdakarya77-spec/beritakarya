@@ -9,22 +9,30 @@ export const api = axios.create({
 })
 
 let csrfToken: string | null = null;
+let csrfTokenPromise: Promise<void> | null = null;
 
 export const fetchCsrfToken = async () => {
   if (typeof window === 'undefined') return;
-  try {
-    const res = await axios.get(`${API_URL}/api/v1/csrf-token`, { withCredentials: true });
-    csrfToken = res.data.data.csrfToken;
-  } catch (e) {
-    console.error('Failed to fetch CSRF token', e);
-  }
+  if (csrfTokenPromise) return csrfTokenPromise;
+
+  csrfTokenPromise = (async () => {
+    try {
+      const res = await axios.get(`${API_URL}/api/v1/csrf-token`, { withCredentials: true });
+      csrfToken = res.data.data.csrfToken;
+    } catch (e) {
+      console.error('Failed to fetch CSRF token', e);
+      csrfTokenPromise = null; // Allow retry on failure
+    }
+  })();
+
+  return csrfTokenPromise;
 }
 
 if (typeof window !== 'undefined') {
   fetchCsrfToken();
 }
 
-api.interceptors.request.use((config) => {
+api.interceptors.request.use(async (config) => {
   if (typeof window !== 'undefined') {
     const siteId = document.cookie
       .split('; ')
@@ -40,6 +48,9 @@ api.interceptors.request.use((config) => {
     // CSRF Injection
     const methodsRequiringCsrf = ['post', 'put', 'delete', 'patch'];
     if (methodsRequiringCsrf.includes(config.method?.toLowerCase() || '')) {
+      if (!csrfToken) {
+        await fetchCsrfToken();
+      }
       if (csrfToken) {
         config.headers['X-CSRF-Token'] = csrfToken;
       }
