@@ -50,17 +50,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         setTheme(savedTheme)
         document.documentElement.classList.toggle('dark', savedTheme === 'dark')
       }
-      const token = localStorage.getItem('accessToken')
-      if (!token) {
-        router.push('/login')
-      } else if (user) {
+      // Token disimpan di httpOnly cookie — tidak bisa diakses via JS
+      // Jika user null setelah AuthInit selesai checkAuth, 
+      // middleware.ts (Next.js) sudah handle redirect ke /login via cookie check
+      if (user) {
         const allowedRoles = ['superadmin', 'wapimred', 'jurnalis']
         if (!allowedRoles.includes(user.role)) {
           router.push(`/${site}`)
         }
       }
     }
-  }, [user, router])
+  }, [user, router, site])
 
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light'

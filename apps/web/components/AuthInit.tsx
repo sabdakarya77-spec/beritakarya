@@ -1,15 +1,21 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useAuthStore } from '../store/authStore';
 import { api } from '../lib/api';
 
 export function AuthInit() {
   const { user, checkAuth } = useAuthStore();
+  const hasChecked = useRef(false);
 
   useEffect(() => {
+    // Hanya jalankan checkAuth SEKALI saat initial mount
+    // Gunakan ref untuk mencegah double-call di React StrictMode
+    if (hasChecked.current) return;
+    hasChecked.current = true;
+    
     checkAuth();
-  }, [checkAuth]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Heartbeat system for real online status
   useEffect(() => {

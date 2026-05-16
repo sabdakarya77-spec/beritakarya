@@ -48,19 +48,55 @@ api.interceptors.request.use((config) => {
   return config
 })
 
+// Mutex untuk mencegah multiple refresh calls bersamaan
+let isRefreshing = false
+let failedQueue: Array<{ resolve: (value?: unknown) => void; reject: (reason?: unknown) => void }> = []
+
+const processQueue = (error: unknown) => {
+  failedQueue.forEach(prom => {
+    if (error) {
+      prom.reject(error)
+    } else {
+      prom.resolve()
+    }
+  })
+  failedQueue = []
+}
+
+// Daftar endpoint auth yang TIDAK boleh trigger auto-refresh
+// karena kegagalannya sudah di-handle langsung oleh pemanggil
+const AUTH_SKIP_REFRESH_URLS = ['/auth/me', '/auth/refresh', '/auth/login', '/auth/register']
+
 api.interceptors.response.use(
   (res) => res,
   async (error) => {
     const original = error.config
-    if (error.response?.status === 401 && !original._retry) {
+
+    // Jangan auto-refresh untuk auth endpoints — biarkan callernya yang handle
+    const isAuthEndpoint = AUTH_SKIP_REFRESH_URLS.some(url => original.url?.includes(url))
+    
+    if (error.response?.status === 401 && !original._retry && !isAuthEndpoint) {
+      if (isRefreshing) {
+        // Sudah ada refresh yang sedang berjalan, antri request ini
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject })
+        }).then(() => api(original))
+      }
+
       original._retry = true
+      isRefreshing = true
+
       try {
-        // Refresh token sekarang dikirim via cookie secara otomatis
         await axios.post(`${API_URL}/api/v1/auth/refresh`, {}, { withCredentials: true })
+        processQueue(null)
         return api(original)
       } catch (refreshError) {
-        window.location.href = '/login'
+        processQueue(refreshError)
+        // Jangan redirect di sini — biarkan komponen/store yang menangani
+        // Ini mencegah redirect loop pada halaman publik
         return Promise.reject(refreshError)
+      } finally {
+        isRefreshing = false
       }
     }
     return Promise.reject(error)
