@@ -123,7 +123,9 @@ const corsOptions: CorsOptions = {
     'X-Site-ID',
     'x-site-id',
     'X-API-Key',
-    'x-api-key'
+    'x-api-key',
+    'X-CSRF-Token',
+    'x-csrf-token'
   ],
   exposedHeaders: ['X-Request-ID'],
   maxAge: 86400

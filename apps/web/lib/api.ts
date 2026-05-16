@@ -8,6 +8,22 @@ export const api = axios.create({
   withCredentials: true
 })
 
+let csrfToken: string | null = null;
+
+export const fetchCsrfToken = async () => {
+  if (typeof window === 'undefined') return;
+  try {
+    const res = await axios.get(`${API_URL}/api/v1/csrf-token`, { withCredentials: true });
+    csrfToken = res.data.data.csrfToken;
+  } catch (e) {
+    console.error('Failed to fetch CSRF token', e);
+  }
+}
+
+if (typeof window !== 'undefined') {
+  fetchCsrfToken();
+}
+
 api.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
     const siteId = document.cookie
@@ -19,6 +35,14 @@ api.interceptors.request.use((config) => {
       config.headers['X-Site-ID'] = siteId
       if (!config.params) config.params = {}
       config.params.site = siteId
+    }
+    
+    // CSRF Injection
+    const methodsRequiringCsrf = ['post', 'put', 'delete', 'patch'];
+    if (methodsRequiringCsrf.includes(config.method?.toLowerCase() || '')) {
+      if (csrfToken) {
+        config.headers['X-CSRF-Token'] = csrfToken;
+      }
     }
   }
   return config
