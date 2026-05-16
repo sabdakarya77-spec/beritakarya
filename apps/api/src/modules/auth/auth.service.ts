@@ -74,6 +74,10 @@ export async function refreshAccessToken(refreshToken: string) {
   if (!record || record.expiresAt < new Date()) {
     throw new AppError('Refresh token tidak valid atau sudah expired', 401, 'UNAUTHORIZED')
   }
+
+  // [H-010] Refresh Token Rotation: Delete used token
+  await prisma.refreshToken.delete({ where: { token: refreshToken } })
+
   return generateTokenPair(record.user)
 }
 
@@ -105,7 +109,7 @@ export async function forgotPassword(email: string) {
     return { success: true }
   }
 
-  const secret = ACCESS_SECRET! + user.passwordHash
+  const secret = env.RESET_SECRET || ACCESS_SECRET!
   const token = jwt.sign({ userId: user.id, purpose: 'reset-password' }, secret, { expiresIn: '1h' })
 
   // Define frontend URL, assuming a web application runs somewhere
@@ -121,7 +125,7 @@ export async function resetPassword(email: string, token: string, newPassword: s
   const user = await prisma.user.findUnique({ where: { email } })
   if (!user) throw new AppError('Token tidak valid atau sudah expired', 401, 'UNAUTHORIZED')
 
-  const secret = ACCESS_SECRET! + user.passwordHash
+  const secret = env.RESET_SECRET || ACCESS_SECRET!
   
   try {
     const decoded = jwt.verify(token, secret) as any

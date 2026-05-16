@@ -43,12 +43,21 @@ export async function deleteCache(key: string) {
   } catch {}
 }
 
-export async function clearPattern(pattern: string) {
+export async function clearPattern(pattern: string): Promise<void> {
   if (!process.env.REDIS_HOST) return
   try {
     const keys = await redis.keys(pattern)
-    if (keys.length > 0) {
-      await redis.del(...keys)
+    if (keys.length === 0) return
+
+    // [H-008] Batch deletion to avoid blocking Redis
+    const BATCH_SIZE = 1000
+    for (let i = 0; i < keys.length; i += BATCH_SIZE) {
+      const batch = keys.slice(i, i + BATCH_SIZE)
+      if (batch.length > 0) {
+        await redis.del(...batch)
+      }
     }
-  } catch {}
+  } catch (err) {
+    console.error(`[Redis] Failed to clear pattern ${pattern}:`, err)
+  }
 }

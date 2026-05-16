@@ -11,7 +11,7 @@ export const prisma =
   new PrismaClient({
     datasources: {
       db: {
-        url: env.DATABASE_URL,
+        url: env.DIRECT_URL || env.DATABASE_URL,
       },
     },
     log: env.NODE_ENV === 'development'

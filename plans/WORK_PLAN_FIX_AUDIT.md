@@ -22,7 +22,7 @@
 
 ---
 
-### TASK 1.1: Perbaiki Token Reset Password (C-001)
+### ✅ TASK 1.1: Perbaiki Token Reset Password (C-001)
 **File:** `apps/api/src/modules/auth/auth.service.ts`
 **Line:** ~106
 
@@ -49,7 +49,7 @@ RESET_SECRET=<minimum-32-character-random-string>
 
 ---
 
-### TASK 1.2: Validasi Akses Site di User Controller (C-002)
+### ✅ TASK 1.2: Validasi Akses Site di User Controller (C-002)
 **File:** `apps/api/src/modules/user/user.controller.ts`
 
 **Step 1.2.1:** Tambahkan middleware requireSiteAccess
@@ -79,7 +79,7 @@ if (user.siteId !== req.site && req.user.role !== 'superadmin') {
 
 ---
 
-### TASK 1.3: Validasi Reviewer KYC (C-003)
+### ✅ TASK 1.3: Validasi Reviewer KYC (C-003)
 **File:** `apps/api/src/modules/kyc/kyc.controller.ts`
 
 **Step 1.3.1:** Temukan function review KYC (sekitar line 336-365)
@@ -109,7 +109,7 @@ if (reviewingUser.role !== 'superadmin' &&
 
 ---
 
-### TASK 1.4: Perbaiki Race Condition Invitation (C-004)
+### ✅ TASK 1.4: Perbaiki Race Condition Invitation (C-004)
 **File:** `apps/api/src/modules/invitation/invitation.controller.ts`
 **Lines:** 65-78
 
@@ -163,7 +163,7 @@ try {
 
 ---
 
-### TASK 1.5: Perbaiki Audit Trail Article (C-005)
+### ✅ TASK 1.5: Perbaiki Audit Trail Article (C-005)
 **File:** `apps/api/src/modules/article/article.repository.ts`
 **Lines:** 108-115
 
@@ -200,7 +200,7 @@ npx prisma generate
 
 ---
 
-### TASK 2.1: Perbaiki AI Model Fallback (H-001)
+### ✅ TASK 2.1: Perbaiki AI Model Fallback (H-001)
 **File:** `apps/api/src/middleware/aiQuota.ts`
 **Line:** ~114
 
@@ -220,7 +220,7 @@ const requestedModel = (req.body as any)?.model || env.AI_MODEL
 
 ---
 
-### TASK 2.2: Standarisasi Site ID Property (H-002)
+### ✅ TASK 2.2: Standarisasi Site ID Property (H-002)
 **File:** `apps/api/src/modules/user/user.controller.ts`
 
 **Step 2.2.1:** Identifikasi semua penggunaan req.siteId vs req.site
@@ -242,7 +242,7 @@ interface Request {
 
 ---
 
-### TASK 2.3: Perbaiki Logic Decrement Kuota AI (H-003)
+### ✅ TASK 2.3: Perbaiki Logic Decrement Kuota AI (H-003)
 **File:** `apps/api/src/middleware/aiQuota.ts`
 **Lines:** 123-150
 
@@ -270,7 +270,7 @@ return result
 
 ---
 
-### TASK 2.4: Perbaiki Zod Schema PORT (H-004)
+### ✅ TASK 2.4: Perbaiki Zod Schema PORT (H-004)
 **File:** `apps/api/src/lib/env.ts`
 **Line:** ~5
 
@@ -291,7 +291,7 @@ PORT: z.number().default(3001),
 
 ---
 
-### TASK 2.5: Validasi Enum Status Comment (H-005)
+### ✅ TASK 2.5: Validasi Enum Status Comment (H-005)
 **File:** `apps/api/src/modules/comment/comment.service.ts`
 
 **Step 2.5.1:** Definisikan enum valid
@@ -310,7 +310,7 @@ if (!VALID_COMMENT_STATUSES.includes(newStatus as any)) {
 
 ---
 
-### TASK 2.6: Implementasi State Machine Workflow Article (H-006)
+### ✅ TASK 2.6: Implementasi State Machine Workflow Article (H-006)
 **File:** `apps/api/src/modules/article/article.controller.ts`
 
 **Step 2.6.1:** Definisikan valid transitions
@@ -336,7 +336,7 @@ function isValidTransition(from: ArticleStatus, to: ArticleStatus): boolean {
 
 ---
 
-### TASK 2.7: Proteksi Path Traversal Media Upload (H-007)
+### ✅ TASK 2.7: Proteksi Path Traversal Media Upload (H-007)
 **File:** `apps/api/src/modules/media/media.controller.ts`
 **Line:** ~14
 
@@ -360,7 +360,7 @@ if (!isPathSafe(UPLOAD_DIR, safePath)) {
 
 ---
 
-### TASK 2.8: Error Handling Redis Batch Delete (H-008)
+### ✅ TASK 2.8: Error Handling Redis Batch Delete (H-008)
 **File:** `apps/api/src/lib/redis.ts`
 **Line:** ~52
 
@@ -382,7 +382,7 @@ export async function clearPattern(pattern: string): Promise<void> {
 
 ---
 
-### TASK 2.9: Verifikasi User Context AI Logging (H-009)
+### ✅ TASK 2.9: Verifikasi User Context AI Logging (H-009)
 **File:** `apps/api/src/ai/base.service.ts`
 **Line:** ~196
 
@@ -396,7 +396,7 @@ if (req.user?.userId) {
 
 ---
 
-### TASK 2.10: Validasi Refresh Token User ID (H-010)
+### ✅ TASK 2.10: Validasi Refresh Token User ID (H-010)
 **File:** `apps/api/src/modules/auth/auth.service.ts`
 **Lines:** 72-73
 
@@ -413,7 +413,7 @@ if (!record || record.expiresAt < new Date() || record.userId !== decoded.userId
 
 ---
 
-### TASK 2.11: Perbaiki Logic Superadmin Site Scope (H-011)
+### ✅ TASK 2.11: Perbaiki Logic Superadmin Site Scope (H-011)
 **File:** `apps/api/src/middleware/site-scope.middleware.ts`
 
 **Step 2.11.1:** Update logic check
@@ -426,7 +426,7 @@ if (user.role === 'superadmin' || !user.siteId) {
 
 ---
 
-### TASK 2.12: Gunakan directUrl di Prisma (H-012)
+### ✅ TASK 2.12: Gunakan directUrl di Prisma (H-012)
 **File:** `apps/api/src/db/client.ts`
 **Line:** ~14
 
@@ -453,7 +453,7 @@ DIRECT_URL: z.string().url().optional(),
 
 ---
 
-### TASK 2.13: Tambah Security Headers Nginx (H-013)
+### ✅ TASK 2.13: Tambah Security Headers Nginx (H-013)
 **File:** `infra/nginx/nginx.conf`
 
 **Step 2.13.1:** Tambahkan headers di server block
@@ -472,7 +472,7 @@ add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsaf
 
 ---
 
-### TASK 2.14: Perbaiki Docker Healthcheck (H-014)
+### ✅ TASK 2.14: Perbaiki Docker Healthcheck (H-014)
 **File:** `infra/docker/docker-compose.backend.yml`
 **Line:** ~46
 
@@ -493,7 +493,7 @@ RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
 ---
 
-### TASK 2.15: Environment Variable untuk SSL Path (H-015)
+### ✅ TASK 2.15: Environment Variable untuk SSL Path (H-015)
 **File:** `infra/nginx/nginx.conf`
 **Lines:** 26-27
 
@@ -510,7 +510,7 @@ ssl_certificate_key  ${SSL_KEY_PATH:-/etc/ssl/private/beritakarya.key};
 
 ---
 
-### TASK 2.16: Perbaiki Slug Karakter ñ (H-016)
+### ✅ TASK 2.16: Perbaiki Slug Karakter ñ (H-016)
 **File:** `packages/utils/src/slug.ts`
 **Line:** ~10
 
@@ -526,7 +526,7 @@ ssl_certificate_key  ${SSL_KEY_PATH:-/etc/ssl/private/beritakarya.key};
 
 ---
 
-### TASK 2.17: Hapus JS Files dari packages/src (H-017)
+### ✅ TASK 2.17: Hapus JS Files dari packages/src (H-017)
 **File:** `packages/types/src/`, `packages/config/src/`
 
 **Step 2.17.1:** Hapus semua file .js dari src directories
@@ -561,7 +561,7 @@ FRONTEND_URL: z.string().url().default('http://localhost:3000'),
 
 ---
 
-### TASK 3.2: Standarisasi Format Response Error (M-002)
+### ✅ TASK 3.2: Standarisasi Format Response Error (M-002)
 **File:** `apps/api/src/utils/response.ts` (buat jika tidak ada)
 
 **Step 3.2.1:** Buat helper functions
@@ -589,7 +589,7 @@ export function successResponse(res: Response, data: any, message?: string) {
 
 ---
 
-### TASK 3.3: Validasi File Content Type KYC (M-003)
+### ✅ TASK 3.3: Validasi File Content Type KYC (M-003)
 **File:** `apps/api/src/modules/kyc/kyc.controller.ts`
 **Line:** ~26
 
@@ -701,7 +701,7 @@ router.use('/sites', apiLimiter, siteRoutes)
 
 ---
 
-### TASK 3.9: Sanitasi Email HTML (M-009)
+### ✅ TASK 3.9: Sanitasi Email HTML (M-009)
 **File:** `apps/api/src/modules/invitation/invitation.controller.ts`
 **Line:** 129
 
@@ -771,7 +771,7 @@ import { metrics } from '../lib/metrics'
 
 ---
 
-### TASK 3.13: Pertimbangkan HttpOnly Cookies (M-013)
+### ✅ TASK 3.13: Pertimbangkan HttpOnly Cookies (M-013)
 **File:** `apps/web/lib/api.ts`
 
 **Step 3.13.1:** Modifikasi token storage
@@ -901,7 +901,7 @@ partialize: (state) => ({
 
 ---
 
-### TASK 3.19: Tambah Backup Strategy (M-019)
+### ✅ TASK 3.19: Tambah Backup Strategy (M-019)
 **File:** `infra/docker/docker-compose.yml`
 
 **Step 3.19.1:** Tambahkan volume backup service
@@ -923,7 +923,7 @@ backup:
 
 ---
 
-### TASK 3.20: Hide Postgres Port (M-020)
+### ✅ TASK 3.20: Hide Postgres Port (M-020)
 **File:** `infra/docker/docker-compose.yml`
 **Line:** 12
 

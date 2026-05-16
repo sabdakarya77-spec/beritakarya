@@ -27,7 +27,8 @@ RUN pnpm turbo run build --filter=@beritakarya/api --force
 
 # Stage 3: Runner
 FROM node:20-alpine AS runner
-RUN apk add --no-cache openssl libc6-compat
+# [H-014] Ensure curl is installed for healthcheck
+RUN apk add --no-cache openssl libc6-compat curl
 # Instal pnpm di tahap runner agar semua perintah monorepo bisa dipanggil dengan benar
 RUN npm install -g pnpm
 
@@ -54,7 +55,7 @@ USER apiuser
 EXPOSE 3001
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-  CMD wget -qO- http://localhost:3001/health || exit 1
+  CMD curl -f http://localhost:3001/health || exit 1
 
 # Jalankan dari folder apps/api menggunakan pnpm
 WORKDIR /app/apps/api

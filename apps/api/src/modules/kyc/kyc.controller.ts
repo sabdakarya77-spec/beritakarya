@@ -434,9 +434,15 @@ kycRouter.patch('/:userId/verify',
       return res.status(404).json({ success: false, error: { message: 'User tidak ditemukan' } })
     }
 
-    // Site access check for wapimred
-    if (req.user!.role === 'wapimred' && targetUser.siteId !== req.site) {
-      return res.status(403).json({ success: false, error: { message: 'Akses ditolak untuk situs ini' } })
+    // [C-003] Site access check for reviewer
+    const reviewerRole = req.user!.role
+    const reviewerSiteId = req.user!.siteId
+    
+    if (reviewerRole !== 'superadmin' && targetUser.siteId !== reviewerSiteId) {
+      return res.status(403).json({ 
+        success: false, 
+        error: { message: 'Tidak memiliki izin mereview KYC site ini' } 
+      })
     }
 
     await prisma.$transaction(async (tx) => {

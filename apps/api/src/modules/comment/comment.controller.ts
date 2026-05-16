@@ -54,9 +54,14 @@ commentRouter.get('/moderation',
     const limit = Math.min(parseInt(req.query.limit as string) || 20, 100)
     const skip = (page - 1) * limit
     
+    const VALID_STATUSES = ['pending', 'approved', 'spam']
     const where: any = { siteId }
     if (status && status !== 'all') {
-      where.status = status
+      if (VALID_STATUSES.includes(status as string)) {
+        where.status = status
+      } else {
+        where.status = 'pending' // Fallback to pending if invalid
+      }
     } else if (!status) {
       where.status = 'pending'
     }

@@ -10,8 +10,8 @@ export function requireSiteAccess(resourceSiteId: string | ((req: Request) => st
       })
     }
 
-    // Superadmin bisa akses semua site
-    if (req.user.role === 'superadmin') return next()
+    // Superadmin atau user global tanpa siteId bisa akses semua site
+    if (req.user.role === 'superadmin' || !req.user.siteId) return next()
 
     // Get target site ID from param, query, or body
     const targetSiteId = typeof resourceSiteId === 'function' 

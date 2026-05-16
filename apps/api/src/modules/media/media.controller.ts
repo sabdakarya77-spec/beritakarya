@@ -15,6 +15,13 @@ export const mediaRouter: Router = Router()
 const UPLOAD_DIR = path.join(process.cwd(), 'uploads')
 const THUMB_DIR  = path.join(UPLOAD_DIR, 'thumbs')
 
+// [H-007] Path Traversal Protection
+function isPathSafe(baseDir: string, targetPath: string): boolean {
+  const normalizedBase = path.normalize(baseDir)
+  const normalizedTarget = path.normalize(targetPath)
+  return normalizedTarget.startsWith(normalizedBase)
+}
+
 // Ensure directories exist with better error handling
 function ensureDirectories() {
   const dirs = [UPLOAD_DIR, THUMB_DIR]
@@ -77,6 +84,10 @@ async function processImage(buffer: Buffer, filename: string, options: { skipWat
   const fullName = `${filename}.webp`
   const fullPath = path.join(UPLOAD_DIR, fullName)
   
+  if (!isPathSafe(UPLOAD_DIR, fullPath)) {
+    throw new Error('Path upload tidak aman')
+  }
+
   try {
     let pipeline = sharp(processedBuffer)
 
@@ -113,6 +124,11 @@ async function processImage(buffer: Buffer, filename: string, options: { skipWat
   // Thumbnail 400px → WebP
   const thumbName = `${filename}_thumb.webp`
   const thumbPath = path.join(THUMB_DIR, thumbName)
+
+  if (!isPathSafe(THUMB_DIR, thumbPath)) {
+    throw new Error('Path thumbnail tidak aman')
+  }
+
   try {
     await sharp(buffer).resize(400).webp({ quality: 70 }).toFile(thumbPath)
   } catch (err) {

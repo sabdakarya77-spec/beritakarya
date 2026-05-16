@@ -178,6 +178,29 @@ export async function updateArticle(
     throw Object.assign(new Error('Anda tidak punya akses ke post ini'), { statusCode: 403 })
   }
 
+  // [H-006] State Machine Workflow Validation
+  const WORKFLOW_TRANSITIONS: Record<string, string[]> = {
+    draft: ['submitted', 'deleted'],
+    submitted: ['draft', 'approved', 'published', 'rejected', 'review', 'revision'],
+    review: ['revision', 'approved', 'rejected'],
+    revision: ['submitted', 'draft'],
+    approved: ['published', 'scheduled', 'draft'],
+    scheduled: ['published', 'draft'],
+    published: ['archived', 'draft'],
+    archived: ['published', 'draft'],
+    rejected: ['draft', 'submitted']
+  }
+
+  if (input.status && input.status !== article.status) {
+    const allowed = WORKFLOW_TRANSITIONS[article.status] || []
+    if (!allowed.includes(input.status)) {
+      throw Object.assign(
+        new Error(`Transisi status tidak valid: ${article.status} -> ${input.status}`), 
+        { statusCode: 400 }
+      )
+    }
+  }
+
   // Prevent journalists from setting certain statuses directly
   if (user.role === 'jurnalis' && input.status && !['draft', 'submitted'].includes(input.status)) {
      if (article.status !== 'revision' && input.status !== 'submitted') {

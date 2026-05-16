@@ -193,7 +193,10 @@ export async function callAIWithTracking<T>(
 
   // Post-call accounting and cost tracking
   try {
-    await accountAIUsage(req, action, result, Date.now() - start)
+    // [H-009] Only log if user context exists
+    if (req?.user?.userId || req?.aiUserId) {
+      await accountAIUsage(req, action, result, Date.now() - start)
+    }
   } catch (accountingError) {
     logger.error('Failed to account AI usage:', accountingError)
     // Don't fail the request due to accounting issues
@@ -213,7 +216,7 @@ async function accountAIUsage(
 ) {
   const userId = req?.aiUserId || req?.user?.userId
   const siteId = req?.user?.siteId || 'pusat'
-  const model = req?.body?.model || process.env.AI_MODEL || 'gpt-4o'
+  const model = req?.body?.model || env.AI_MODEL || 'gpt-4o'
 
   if (!userId) return
 
@@ -257,11 +260,8 @@ async function accountAIUsage(
   if (process.env.REDIS_HOST) {
     try {
       const today = new Date().toISOString().split('T')[0]
-      const dailyKey = `ai:daily:${userId}:${today}`
+      const dailyKey = `ai:quota:${userId}:${today}`
       
-      // Use atomic increment if available
-      // Note: In production, use a proper Redis client with HINCRBY
-      // For now, we'll just set a simple counter (this is simplified)
       const current = await getCache<number>(dailyKey) || 0
       await setCache(dailyKey, current + 1, 86400)
     } catch (redisError) {

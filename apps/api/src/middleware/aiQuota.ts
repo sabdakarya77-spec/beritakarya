@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express'
 import { prisma } from '../db/client'
 import { getCache, setCache } from '../lib/redis'
+import { env } from '../lib/env'
 
 interface QuotaCheckResult {
   allowed: boolean
@@ -110,7 +111,7 @@ async function checkPermissions(
   }
 
   // Model restriction check (applies to the request model if specified)
-  const requestedModel = (req.body as any)?.model || process.env.AI_MODEL
+  const requestedModel = (req.body as any)?.model || env.AI_MODEL
   if (modelRestriction && requestedModel !== modelRestriction) {
     return {
       allowed: false,

@@ -2,8 +2,9 @@ import { z } from 'zod'
 
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
-  PORT: z.string().transform(Number).default('3001'),
+  PORT: z.coerce.number().default(3001),
   DATABASE_URL: z.string(),
+  DIRECT_URL: z.string().url().optional(),
   JWT_SECRET: z.string(),
   JWT_ACCESS_EXPIRES: z.string().default('15m'),
   OPENAI_API_KEY: z.string().optional(),
@@ -20,6 +21,7 @@ const envSchema = z.object({
   LOG_HTTP_HOST: z.string().url().optional(),
   // Trust proxy settings (for Nginx/Load Balancer)
   TRUST_PROXY: z.string().optional(),
+  RESET_SECRET: z.string().min(32).optional(),
 })
 
 const parsed = envSchema.safeParse(process.env)

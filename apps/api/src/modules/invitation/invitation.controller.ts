@@ -61,58 +61,73 @@ invitationRouter.post('/',
       // Soft deleted user - can be invited again (will be restored on accept)
     }
 
-    // Check for pending invitation with same email
-    const pendingInvitation = await prisma.invitation.findFirst({
-      where: {
-        email,
-        acceptedAt: null,
-        expiresAt: { gt: new Date() }
+    // [C-004] Wrap in transaction to prevent race conditions
+    const result = await prisma.$transaction(async (tx) => {
+      // Check for pending invitation within the transaction
+      const pending = await tx.invitation.findFirst({
+        where: {
+          email,
+          acceptedAt: null,
+          expiresAt: { gt: new Date() }
+        }
+      })
+
+      if (pending) {
+        throw new Error('PENDING_INVITATION_EXISTS')
       }
+
+      // Generate unique token
+      const token = generateInvitationToken()
+
+      // Set expiry: 7 days from now
+      const expiresAt = new Date()
+      expiresAt.setDate(expiresAt.getDate() + 7)
+
+      // Determine invite siteId:
+      let inviteSiteId: string | null = null
+      if (req.user!.role === 'wapimred') {
+        inviteSiteId = currentSiteId
+      } else if (siteId && req.user!.role === 'superadmin') {
+        inviteSiteId = siteId
+      }
+
+      const createdInvitation = await tx.invitation.create({
+        data: {
+          email,
+          token,
+          role,
+          siteId: inviteSiteId,
+          invitedBy: inviterId,
+          expiresAt
+        },
+        include: {
+          invitedByUser: {
+            select: { name: true, email: true }
+          }
+        }
+      })
+
+      return { success: true, invitation: createdInvitation }
+    }).catch(err => {
+      if (err.message === 'PENDING_INVITATION_EXISTS') {
+        return { success: false, error: 'PENDING_INVITATION_EXISTS' }
+      }
+      throw err
     })
 
-    if (pendingInvitation) {
+    if (!result.success) {
       return res.status(400).json({
         success: false,
         error: { message: 'Email sudah memiliki undangan yang belum kadaluarsa' }
       })
     }
 
-    // Generate unique token
-    const token = generateInvitationToken()
-
-    // Set expiry: 7 days from now
-    const expiresAt = new Date()
-    expiresAt.setDate(expiresAt.getDate() + 7)
-
-    // Determine invite siteId:
-    // - superadmin can invite to specific site or null (global)
-    // - wapimred can only invite to their own site
-    let inviteSiteId: string | null = null
-    if (req.user!.role === 'wapimred') {
-      inviteSiteId = currentSiteId
-    } else if (siteId && req.user!.role === 'superadmin') {
-      inviteSiteId = siteId
-    }
-
-    // Create invitation
-    const invitation = await prisma.invitation.create({
-      data: {
-        email,
-        token,
-        role,
-        siteId: inviteSiteId,
-        invitedBy: inviterId,
-        expiresAt
-      },
-      include: {
-        invitedByUser: {
-          select: { name: true, email: true }
-        }
-      }
-    })
+    const invitation = (result as any).invitation
+    const expiresAt = invitation.expiresAt
+    const inviteSiteId = invitation.siteId
 
     // Send invitation email
-    const acceptLink = `${process.env.APP_URL || 'https://beritakarya.co'}/invite/${token}`
+    const acceptLink = `${process.env.APP_URL || 'https://beritakarya.co'}/invite/${invitation.token}`
     
     try {
       await emailService.sendEmail(email, 'Undangan Bergabung ke BeritaKarya', `

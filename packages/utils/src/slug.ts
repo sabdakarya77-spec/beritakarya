@@ -7,6 +7,7 @@ export function generateSlug(title: string): string {
     .replace(/[ìíîï]/g, 'i')
     .replace(/[òóôõö]/g, 'o')
     .replace(/[ùúûü]/g, 'u')
+    .replace(/[ñ]/g, 'n')
     .replace(/[^a-z0-9\s-]/g, '')
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-')
