@@ -208,6 +208,53 @@ userRouter.put('/:id/role',
   })
 )
 
+userRouter.delete('/:id',
+  requireAuth,
+  siteMiddleware,
+  requireSiteAccess,
+  requireRole(['superadmin']),
+  asyncHandler(async (req: any, res: any) => {
+    const { id } = req.params
+    const siteId = req.site
+
+    if (id === req.user!.userId) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'BAD_REQUEST', message: 'Anda tidak dapat menghapus akun Anda sendiri' }
+      })
+    }
+
+    const user = await prisma.user.findFirst({
+      where: { id, siteId, deletedAt: null }
+    })
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'NOT_FOUND', message: 'User tidak ditemukan' }
+      })
+    }
+
+    await prisma.user.update({
+      where: { id },
+      data: { deletedAt: new Date() }
+    })
+
+    await prisma.auditLog.create({
+      data: {
+        userId: req.user!.userId,
+        siteId: req.site!,
+        action: 'user.delete',
+        entityType: 'user',
+        entityId: id,
+        oldValue: { name: user.name, email: user.email, role: user.role },
+        newValue: { deletedAt: new Date() }
+      }
+    })
+
+    res.json({ success: true, message: 'User berhasil dihapus' })
+  })
+)
+
 /**
  * POST /api/v1/users/heartbeat
  * Update user's online status in Redis

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { api } from '../../../../lib/api';
 import { useToastStore } from '../../../../store/toastStore';
+import { useAuthStore } from '../../../../store/authStore';
 
 interface User {
   id: string;
@@ -21,6 +22,7 @@ export default function UsersDashboard() {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const { addToast } = useToastStore();
+  const { user: currentUser } = useAuthStore();
 
   // [A-5b] Fix: use useParams() instead of window.location.pathname regex (which always returned empty string)
   const params = useParams();
@@ -177,18 +179,18 @@ export default function UsersDashboard() {
             {loading ? (
               [...Array(5)].map((_, i) => (
                 <tr key={i}>
-                  <td colSpan={5} className="px-6 py-4">
+                  <td colSpan={6} className="px-6 py-4">
                     <div className="h-8 bg-gray-100 dark:bg-gray-700 rounded animate-pulse" />
                   </td>
                 </tr>
               ))
             ) : visibleUsers.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-6 py-12 text-center">
+                <td colSpan={6} className="px-6 py-12 text-center">
                   <div className="flex flex-col items-center gap-3 text-gray-400">
                     <span className="text-4xl">👥</span>
                     <span className="text-sm font-bold uppercase tracking-widest">Belum ada pengguna</span>
-                    <p className="text-xs">Pengguna akan muncul setelah mereka register atau di-invite.</p>
+                    <p className="text-xs">Pengguna akan muncul setelah mereka register or di-invite.</p>
                   </div>
                 </td>
               </tr>
@@ -231,27 +233,48 @@ export default function UsersDashboard() {
                     {new Date(user.createdAt).toLocaleDateString('id-ID')}
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <select
-                      value={user.role}
-                      onChange={async (e) => {
-                        const newRole = e.target.value;
-                        if (window.confirm(`Ubah peran ${user.name} menjadi ${newRole}?`)) {
-                          try {
-                            await api.put(`/users/${user.id}/role`, { role: newRole });
-                            addToast(`Berhasil mengubah peran ${user.name}`, 'success');
-                            fetchUsers();
-                          } catch (err: any) {
-                            addToast(err.response?.data?.error?.message || 'Gagal mengubah peran', 'error');
+                    <div className="flex items-center justify-end gap-3">
+                      <select
+                        value={user.role}
+                        onChange={async (e) => {
+                          const newRole = e.target.value;
+                          if (window.confirm(`Ubah peran ${user.name} menjadi ${newRole}?`)) {
+                            try {
+                              await api.put(`/users/${user.id}/role`, { role: newRole });
+                              addToast(`Berhasil mengubah peran ${user.name}`, 'success');
+                              fetchUsers();
+                            } catch (err: any) {
+                              addToast(err.response?.data?.error?.message || 'Gagal mengubah peran', 'error');
+                            }
                           }
-                        }
-                      }}
-                      className="text-xs bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-2 py-1 outline-none"
-                    >
-                      <option value="reader">Reader (Suspend)</option>
-                      <option value="jurnalis">Wartawan</option>
-                      <option value="wapimred">Wapimred</option>
-                      <option value="superadmin">Superadmin</option>
-                    </select>
+                        }}
+                        className="text-xs bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-2 py-1 outline-none"
+                      >
+                        <option value="reader">Reader (Suspend)</option>
+                        <option value="jurnalis">Wartawan</option>
+                        <option value="wapimred">Wapimred</option>
+                        <option value="superadmin">Superadmin</option>
+                      </select>
+
+                      {currentUser?.id !== user.id && (
+                        <button
+                          onClick={async () => {
+                            if (window.confirm(`⚠️ PERINGATAN KESELAMATAN: Apakah Anda yakin ingin menghapus akun ${user.name} (${user.email}) secara permanen? Akun ini akan segera dinonaktifkan dari sistem BeritaKarya.`)) {
+                              try {
+                                await api.delete(`/users/${user.id}`);
+                                addToast(`Berhasil menghapus akun ${user.name}`, 'success');
+                                fetchUsers();
+                              } catch (err: any) {
+                                addToast(err.response?.data?.error?.message || 'Gagal menghapus akun', 'error');
+                              }
+                            }
+                          }}
+                          className="text-xs bg-red-50 hover:bg-red-100 dark:bg-red-950/20 dark:hover:bg-red-950/40 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/50 rounded-lg px-2.5 py-1 font-semibold transition-colors"
+                        >
+                          Hapus
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))
