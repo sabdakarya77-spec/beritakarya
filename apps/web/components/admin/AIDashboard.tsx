@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
+import { api } from '../../lib/api'
 import { 
   TrendingUp, 
   DollarSign, 
@@ -74,20 +75,12 @@ export function AIDashboard() {
   async function fetchData() {
     try {
       const [usageRes, quotaRes] = await Promise.all([
-        fetch('/api/v1/admin/ai-usage', {
-          headers: {
-            Authorization: `Bearer ${typeof window !== 'undefined' ? localStorage.getItem('accessToken') : ''}`,
-          }
-        }),
-        fetch('/api/v1/admin/quotas', {
-          headers: {
-            Authorization: `Bearer ${typeof window !== 'undefined' ? localStorage.getItem('accessToken') : ''}`,
-          }
-        })
+        api.get('/admin/ai-usage'),
+        api.get('/admin/quotas')
       ])
       
-      if (usageRes.ok) setUsageData(await usageRes.json())
-      if (quotaRes.ok) setQuotaData(await quotaRes.json())
+      setUsageData(usageRes.data)
+      setQuotaData(quotaRes.data)
     } catch (error) {
       console.error('Failed to fetch admin data:', error)
     } finally {
