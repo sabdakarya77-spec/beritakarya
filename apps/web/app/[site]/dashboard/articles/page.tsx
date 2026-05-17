@@ -59,6 +59,7 @@ export default function ArticlesPage() {
   const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list');
   const [isCreating, setIsCreating] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [globalStats, setGlobalStats] = useState<Record<string, number>>({});
 
   const load = async () => {
     setLoading(true);
@@ -70,12 +71,17 @@ export default function ArticlesPage() {
         limit: 10
       };
       if (filter) params.status = filter;
-      const { data } = await api.get('/articles', { params });
       
-      const items = data.data.articles || data.data.items || [];
+      const [artRes, statsRes] = await Promise.all([
+        api.get('/articles', { params }),
+        api.get('/articles/stats', { params: { site } })
+      ]);
+      
+      const items = artRes.data.data.articles || artRes.data.data.items || [];
       setArticles(items);
-      setTotalPages(data.data.totalPages || 1);
-      setTotalItems(data.data.total || 0);
+      setTotalPages(artRes.data.data.totalPages || 1);
+      setTotalItems(artRes.data.data.total || 0);
+      setGlobalStats(statsRes.data.data || {});
     } catch (e) {
       console.error(e);
     } finally {
@@ -136,8 +142,13 @@ export default function ArticlesPage() {
 
   const filtered = articles; // Sekarang data sudah difilter di sisi Server
 
-  // Count per status for tab badges
-  const countByStatus = (s: string) => articles.filter(a => a.status === s).length;
+  // Count per status for tab badges using global stats from backend
+  const countByStatus = (s: string) => {
+    if (s === '') {
+      return Object.values(globalStats).reduce((a, b) => a + b, 0);
+    }
+    return globalStats[s] || 0;
+  };
 
   // Tabs to show based on role
   const visibleStatuses = user?.role === 'jurnalis'
@@ -205,7 +216,7 @@ export default function ArticlesPage() {
         {/* Status Tabs */}
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
           {visibleStatuses.map(s => {
-            const count = s === '' ? articles.length : countByStatus(s);
+            const count = countByStatus(s);
             return (
               <button 
                 key={s}
