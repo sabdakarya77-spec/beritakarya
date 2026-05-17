@@ -48,38 +48,40 @@ export function AISidebar() {
     return (
       <button
         onClick={() => setOpen(true)}
-        className="fixed right-6 bottom-6 bg-brand-black hover:bg-brand-red text-white text-[10px] font-black uppercase tracking-[0.2em] px-6 py-3 rounded-sm shadow-2xl flex items-center gap-3 transition-all z-40"
+        className="fixed right-6 bottom-6 text-[10px] font-black uppercase tracking-[0.2em] px-6 py-3.5 rounded-xl shadow-2xl shadow-black/40 flex items-center gap-3 transition-all duration-300 z-40 border border-white/10 hover:bg-brand-red hover:scale-105 active:scale-95 group"
+        style={{ backgroundColor: '#0f172a', color: '#ffffff' }}
       >
-        <Sparkles size={16} className="text-brand-red animate-pulse" />
-        <span>Asisten AI</span>
+        <Sparkles size={14} className="text-amber-400 group-hover:text-white animate-pulse" />
+        <span className="text-white">Asisten AI</span>
       </button>
     )
   }
 
   return (
-    <div className="fixed right-0 top-0 h-full w-96 bg-white border-l border-gray-100 shadow-[-20px_0_50px_rgba(0,0,0,0.05)] flex flex-col z-[60] animate-fade-in">
-      <div className="flex items-center justify-between px-6 py-4 border-b border-gray-50 bg-brand-surface">
+    <div className="fixed right-0 top-0 h-full w-96 bg-white dark:bg-[#090e18] border-l border-gray-100 dark:border-white/5 shadow-[-20px_0_50px_rgba(0,0,0,0.05)] dark:shadow-[-20px_0_50px_rgba(0,0,0,0.3)] flex flex-col z-[60] animate-fade-in text-gray-900 dark:text-gray-100">
+      {/* Header */}
+      <div className="flex items-center justify-between px-6 py-4 border-b border-gray-50 dark:border-white/5 bg-brand-surface dark:bg-[#0d1525]">
         <div className="flex items-center gap-2">
           <Sparkles size={18} className="text-brand-red" />
-          <span className="text-xs font-black uppercase tracking-[0.2em] text-brand-black">Asisten AI Redaksi</span>
+          <span className="text-xs font-black uppercase tracking-[0.2em] text-brand-black dark:text-white">Asisten AI Redaksi</span>
         </div>
         <button
           onClick={() => setOpen(false)}
-          className="p-2 text-gray-400 hover:text-brand-black transition-colors"
+          className="p-2 text-gray-400 hover:text-brand-black dark:hover:text-white transition-colors"
         >
           <X size={20} />
         </button>
       </div>
       
       {/* Model Selector */}
-      <div className="px-6 py-3 border-b border-gray-50 bg-gray-25">
+      <div className="px-6 py-3 border-b border-gray-50 dark:border-white/5 bg-gray-25 dark:bg-[#070b13]">
         <div className="flex items-center gap-2">
-          <label className="text-xs font-medium text-gray-500 shrink-0">Model:</label>
+          <label className="text-xs font-medium text-gray-500 dark:text-gray-400 shrink-0">Model:</label>
           <div className="relative flex-1">
             <select
               value={selectedModel}
               onChange={handleModelChange}
-              className="w-full text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 pr-8 outline-none focus:border-amber-400 appearance-none bg-white"
+              className="w-full text-xs border border-gray-200 dark:border-white/5 rounded-lg px-2.5 py-1.5 pr-8 outline-none focus:border-amber-400 appearance-none bg-white dark:bg-[#0a0f1d] text-gray-800 dark:text-gray-200"
             >
               {AI_MODELS.map(m => (
                 <option key={m.value} value={m.value}>
@@ -90,14 +92,15 @@ export function AISidebar() {
             <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
           </div>
         </div>
-        <p className="text-[10px] text-gray-400 mt-1">
+        <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-1">
           {selectedModel === 'gpt-4o' && 'Best quality - Recommended for important articles'}
           {selectedModel === 'gpt-4-turbo' && 'Good balance - Fast and accurate'}
           {selectedModel === 'gpt-3.5-turbo' && 'Fastest & cheapest - Good for drafts'}
         </p>
       </div>
 
-      <div className="flex border-b border-gray-50">
+      {/* Tabs */}
+      <div className="flex border-b border-gray-50 dark:border-white/5 bg-white dark:bg-[#090e18]">
         {TABS.map(t => (
           <button
             key={t.id}
@@ -105,8 +108,8 @@ export function AISidebar() {
             className={cn(
               "flex-1 py-4 text-[10px] font-black uppercase tracking-widest transition-all border-b-2",
               tab === t.id
-                ? 'border-brand-red text-brand-red bg-brand-red/[0.02]'
-                : 'border-transparent text-gray-400 hover:text-brand-black hover:bg-gray-50'
+                ? 'border-brand-red text-brand-red bg-brand-red/[0.02] dark:bg-brand-red/[0.01]'
+                : 'border-transparent text-gray-400 hover:text-brand-black dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/[0.01]'
             )}
           >
             {t.label}
@@ -114,7 +117,8 @@ export function AISidebar() {
         ))}
       </div>
 
-      <div className="flex-1 overflow-y-auto p-6 scrollbar-thin">
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto p-6 scrollbar-thin dark:bg-[#090e18]">
         <div style={{ display: tab === 'write' ? 'block' : 'none' }}>
           <WriteTab model={selectedModel} onTrigger={() => { setOpen(true); setTab('write') }} />
         </div>
@@ -132,8 +136,9 @@ export function AISidebar() {
         </div>
       </div>
 
-      <div className="px-6 py-4 border-t border-gray-50 bg-brand-surface">
-        <p className="text-[9px] font-bold text-gray-400 text-center uppercase tracking-widest leading-relaxed">
+      {/* Footer */}
+      <div className="px-6 py-4 border-t border-gray-50 dark:border-white/5 bg-brand-surface dark:bg-[#0d1525]">
+        <p className="text-[9px] font-bold text-gray-400 dark:text-gray-500 text-center uppercase tracking-widest leading-relaxed">
           AI bersifat asistif — Selalu tinjau konten sebelum dipublikasikan demi menjaga integritas jurnalistik.
         </p>
       </div>
