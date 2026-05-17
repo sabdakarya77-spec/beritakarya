@@ -61,12 +61,12 @@ interface QuotaData {
   }>
 }
 
-function formatCurrency(value: number): string {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value)
+function formatCurrency(value: number | null | undefined): string {
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(Number(value) || 0)
 }
 
-function formatNumber(value: number): string {
-  return new Intl.NumberFormat('en-US').format(value)
+function formatNumber(value: number | null | undefined): string {
+  return new Intl.NumberFormat('en-US').format(Number(value) || 0)
 }
 
 export function AIDashboard() {
@@ -293,19 +293,23 @@ export function AIDashboard() {
               </div>
               
               <div className="space-y-5">
-                {(usageData?.budgetStatus || []).map((budget, idx) => (
+                {(usageData?.budgetStatus || []).map((budget, idx) => {
+                  const pct = Number(budget.percentUsed) || 0
+                  const spend = Number(budget.currentSpend) || 0
+                  const limit = Number(budget.monthlyBudget) || 0
+                  return (
                   <div key={idx} className="space-y-2">
                     <div className="flex justify-between items-center text-xs font-extrabold">
                       <span className="capitalize text-gray-300">{budget.role}</span>
                       <span className={cn(
                         "px-2.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider border",
-                        budget.percentUsed > 90 
+                        pct > 90 
                           ? "bg-rose-500/10 text-rose-400 border-rose-500/20" 
-                          : budget.percentUsed > 70 
+                          : pct > 70 
                           ? "bg-amber-500/10 text-amber-400 border-amber-500/20" 
                           : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
                       )}>
-                        {budget.percentUsed.toFixed(1)}% Terpakai
+                        {pct.toFixed(1)}% Terpakai
                       </span>
                     </div>
                     
@@ -313,22 +317,23 @@ export function AIDashboard() {
                       <div 
                         className={cn(
                           "h-1.5 rounded-full transition-all duration-500",
-                          budget.percentUsed > 90 
+                          pct > 90 
                             ? "bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.5)]" 
-                            : budget.percentUsed > 70 
+                            : pct > 70 
                             ? "bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]" 
                             : "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"
                         )}
-                        style={{ width: `${Math.min(budget.percentUsed, 100)}%` }}
+                        style={{ width: `${Math.min(pct, 100)}%` }}
                       />
                     </div>
                     
                     <div className="flex justify-between items-center text-[10px] text-gray-500 font-bold uppercase tracking-wider">
-                      <span>Pengeluaran: {formatCurrency(budget.currentSpend)}</span>
-                      <span>Batas: {formatCurrency(budget.monthlyBudget)}</span>
+                      <span>Pengeluaran: {formatCurrency(spend)}</span>
+                      <span>Batas: {formatCurrency(limit)}</span>
                     </div>
                   </div>
-                ))}
+                  )
+                })}
               </div>
             </div>
 
