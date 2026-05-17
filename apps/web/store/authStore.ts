@@ -29,7 +29,15 @@ export const useAuthStore = create<AuthState>()(
       const { user } = data.data
       set({ user, isLoading: false })
     } catch (err: any) {
-      const msg = err.response?.data?.error?.message || 'Login gagal'
+      let msg = 'Login gagal'
+      if (err.response?.data?.error) {
+        const errorData = err.response.data.error
+        if (errorData.details && errorData.details.length > 0) {
+          msg = errorData.details.map((d: any) => `${d.message}`).join(', ')
+        } else {
+          msg = errorData.message || msg
+        }
+      }
       set({ error: msg, isLoading: false })
       throw new Error(msg)
     }
@@ -43,7 +51,15 @@ export const useAuthStore = create<AuthState>()(
       const { user } = data.data
       set({ user, isLoading: false })
     } catch (err: any) {
-      const msg = err.response?.data?.error?.message || 'Pendaftaran gagal'
+      let msg = 'Pendaftaran gagal'
+      if (err.response?.data?.error) {
+        const errorData = err.response.data.error
+        if (errorData.details && errorData.details.length > 0) {
+          msg = errorData.details.map((d: any) => `${d.message}`).join(', ')
+        } else {
+          msg = errorData.message || msg
+        }
+      }
       set({ error: msg, isLoading: false })
       throw new Error(msg)
     }

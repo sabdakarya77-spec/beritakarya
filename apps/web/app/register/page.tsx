@@ -139,7 +139,7 @@ export default function RegisterPage() {
                     if (displayError) { clearError(); setLocalError(null); }
                   }}
                   required
-                  placeholder="Minimal 6 karakter"
+                  placeholder="Minimal 8 karakter dengan huruf kapital, angka, & simbol"
                   className="w-full px-4 py-3 pr-12 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-sm text-brand-black dark:text-white focus:outline-none focus:border-brand-red dark:focus:border-brand-red transition-colors rounded-sm"
                 />
                 <button
@@ -150,6 +150,9 @@ export default function RegisterPage() {
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
+              <p className="text-[9px] text-gray-400 dark:text-gray-500 font-medium leading-normal mt-1">
+                * Minimal 8 karakter, harus mengandung huruf kapital, angka, dan karakter spesial (seperti @, #, $, !, %, dll.)
+              </p>
             </div>
 
             <div className="space-y-2">
