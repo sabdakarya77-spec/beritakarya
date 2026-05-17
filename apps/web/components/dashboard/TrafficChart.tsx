@@ -35,7 +35,7 @@ export default function TrafficChart({ data }: { data: TrafficData[] }) {
 
   return (
     <div className="h-[300px] w-full">
-      <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+      <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
         <AreaChart
           data={data}
           margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
