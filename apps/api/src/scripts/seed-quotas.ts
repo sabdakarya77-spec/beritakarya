@@ -11,7 +11,7 @@ async function main() {
       dailyRequests: 1000,
       dailyTokens: 500000,
       monthlyBudget: 100.00,
-      allowedFeatures: JSON.stringify(['rewrite', 'expand', 'grammar', 'readability', 'caption', 'image_gen']),
+      allowedFeatures: JSON.stringify(['rewrite', 'expand', 'headline', 'seo', 'grammar', 'readability', 'fact-check', 'caption', 'image_gen']),
       modelRestriction: null
     },
     {
@@ -19,16 +19,16 @@ async function main() {
       dailyRequests: 500,
       dailyTokens: 200000,
       monthlyBudget: 50.00,
-      allowedFeatures: JSON.stringify(['rewrite', 'expand', 'grammar', 'readability', 'caption', 'image_gen']),
+      allowedFeatures: JSON.stringify(['rewrite', 'expand', 'headline', 'seo', 'grammar', 'readability', 'fact-check', 'caption', 'image_gen']),
       modelRestriction: null
     },
     {
       role: Role.jurnalis,
       dailyRequests: 100,
       dailyTokens: 50000,
-      monthlyBudget: 20.00,
-      allowedFeatures: JSON.stringify(['rewrite', 'expand', 'grammar', 'readability', 'caption']),
-      modelRestriction: 'gpt-3.5-turbo'
+      monthlyBudget: 50.00,
+      allowedFeatures: JSON.stringify(['rewrite', 'expand', 'headline', 'seo', 'grammar', 'readability', 'fact-check', 'caption']),
+      modelRestriction: null
     },
     {
       role: Role.reader,

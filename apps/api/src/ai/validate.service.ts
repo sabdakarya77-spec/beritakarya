@@ -68,3 +68,55 @@ Kembalikan HANYA JSON:
     return result
   })
 }
+
+export interface FactCheckClaim {
+  claim: string
+  verdict: 'Benar' | 'Sebagian Benar' | 'Salah' | 'Belum Terverifikasi'
+  explanation: string
+  sources: string[]
+}
+
+export interface FactCheckResult {
+  claims: FactCheckClaim[]
+  summary: string
+  trustScore: number
+}
+
+export async function checkFact(
+  text: string
+): Promise<AIResult<FactCheckResult>> {
+  return callAI(async () => {
+    const raw = await chatComplete(
+      `Kamu adalah pemeriksa fakta (fact-checker) profesional dan jurnalis investigasi senior Indonesia.
+Tugasmu adalah menganalisis klaim-klaim faktual utama dalam teks yang diberikan dan memverifikasi kredibilitasnya.
+Rules:
+- Pilah maksimal 5 klaim penting dalam teks yang membutuhkan verifikasi fakta.
+- Berikan keputusan (verdict) untuk setiap klaim: "Benar" | "Sebagian Benar" | "Salah" | "Belum Terverifikasi".
+- Berikan penjelasan singkat dan objektif mengenai alasan keputusan tersebut.
+- Berikan daftar sumber referensi terpercaya yang relevan (misalnya: kementerian terkait, media arus utama, data statistik resmi) untuk memverifikasi klaim tersebut.
+- Hitung "trustScore" (0-100) berdasarkan rasio klaim yang benar dibanding klaim yang salah/belum terverifikasi.
+- Buat kesimpulan ringkas (summary) dalam 1-2 kalimat.
+Kembalikan HANYA JSON:
+{
+  "claims": [
+    {
+      "claim": "pernyataan klaim dari teks",
+      "verdict": "Benar"|"Sebagian Benar"|"Salah"|"Belum Terverifikasi",
+      "explanation": "penjelasan logis",
+      "sources": ["nama sumber/instansi", "sumber kedua"]
+    }
+  ],
+  "summary": "kesimpulan analisis fakta",
+  "trustScore": 85
+}`,
+      `Teks berita yang harus diverifikasi fakta-faktanya:
+"${text.slice(0, 3000)}"`,
+      { temperature: 0.2 }
+    )
+    const result = extractJSON<FactCheckResult>(raw)
+    if (!Array.isArray(result.claims) || typeof result.trustScore !== 'number') {
+      throw new Error('Format hasil cek fakta tidak valid')
+    }
+    return result
+  })
+}

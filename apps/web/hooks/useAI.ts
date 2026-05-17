@@ -91,6 +91,22 @@ export function useReadability(model?: string) {
   >('readability', { model })
 }
 
+export function useFactCheck(model?: string) {
+  return useAIAction<
+    { text: string },
+    {
+      claims: {
+        claim: string
+        verdict: 'Benar' | 'Sebagian Benar' | 'Salah' | 'Belum Terverifikasi'
+        explanation: string
+        sources: string[]
+      }[]
+      summary: string
+      trustScore: number
+    }
+  >('fact-check', { model })
+}
+
 // ── Layout ────────────────────────────────────────────────────
 export function useLayout(model?: string) {
   return useAIAction<

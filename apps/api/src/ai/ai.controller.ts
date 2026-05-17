@@ -117,6 +117,14 @@ aiRouter.post('/readability', asyncHandler(async (req: Request, res: Response) =
   res.json(result)
 }))
 
+aiRouter.post('/fact-check', asyncHandler(async (req: Request, res: Response) => {
+  const { text } = z.object({ text: z.string().min(50).max(10000) }).parse(req.body)
+  const result = await withQuotaAndTracking(req, 'fact-check', () =>
+    validateService.checkFact(text)
+  )
+  res.json(result)
+}))
+
 // ── LAYOUT ────────────────────────────────────────────────────
 aiRouter.post('/layout', asyncHandler(async (req: Request, res: Response) => {
   const { blocks } = z.object({

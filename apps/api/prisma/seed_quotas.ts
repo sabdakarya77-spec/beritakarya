@@ -13,7 +13,7 @@ async function seedQuotas() {
       monthlyBudget: 99999.00,
       allowedFeatures: JSON.stringify([
         'rewrite', 'expand', 'headline', 'seo', 
-        'grammar', 'readability', 'layout', 'caption'
+        'grammar', 'readability', 'fact-check', 'layout', 'caption'
       ]),
       modelRestriction: null
     },
@@ -24,19 +24,19 @@ async function seedQuotas() {
       monthlyBudget: 500.00,
       allowedFeatures: JSON.stringify([
         'rewrite', 'expand', 'headline', 'seo',
-        'grammar', 'readability', 'layout', 'caption'
+        'grammar', 'readability', 'fact-check', 'layout', 'caption'
       ]),
       modelRestriction: null
     },
     {
       role: Role.jurnalis,
       dailyRequests: 100,
-      dailyTokens: 25000,
-      monthlyBudget: 25.00,
+      dailyTokens: 50000,
+      monthlyBudget: 50.00,
       allowedFeatures: JSON.stringify([
-        'rewrite', 'expand', 'grammar', 'readability', 'caption'
+        'rewrite', 'expand', 'headline', 'seo', 'grammar', 'readability', 'fact-check', 'caption'
       ]),
-      modelRestriction: 'gpt-3.5-turbo'
+      modelRestriction: null
     },
     {
       role: Role.reader,
@@ -71,10 +71,10 @@ async function updateExistingUsers() {
   
   const defaultQuota = {
     aiEnabled: true,
-    aiDailyLimit: 50,
-    aiMonthlyBudget: 10.00,
+    aiDailyLimit: 100,
+    aiMonthlyBudget: 50.00,
     aiFeaturesAllowed: JSON.stringify([
-      'rewrite', 'expand', 'grammar', 'readability', 'caption'
+      'rewrite', 'expand', 'headline', 'seo', 'grammar', 'readability', 'fact-check', 'caption'
     ]),
     aiQuotaResetDate: null,
     aiModelRestriction: null
