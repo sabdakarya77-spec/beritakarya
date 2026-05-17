@@ -8,6 +8,7 @@ import LoadMoreArticles from '../ui/LoadMoreArticles'
 import VideoWidget from '../ui/VideoWidget'
 import NewsletterForm from '../ui/NewsletterForm'
 import { PremiumHero } from '../berita/PremiumHero'
+import { MagazineBentoHero } from '../berita/MagazineBentoHero'
 import { notFound } from 'next/navigation'
 
 type SearchParams = {
@@ -90,10 +91,9 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
   }
 
   const articlesList = await getArticles(siteConfig.id, categoryFilter, searchQuery)
-  const leadArticle = articlesList[0]
-  const mediumStories = articlesList.slice(1, 3)
-  const minimalStories = articlesList.slice(3, 7)
-  const mainFeed = articlesList.slice(7, 15)
+  const topBentoStories = articlesList.slice(0, 4)
+  const minimalStories = articlesList.slice(4, 8)
+  const mainFeed = articlesList.slice(8, 16)
   const popular = articlesList.slice(0, 5)
 
   const defaultTags = ['Politik', 'Ekonomi', 'Investigasi', 'Teknologi', 'Gaya Hidup', 'Hiburan']
@@ -109,32 +109,19 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
         </div>
 
         {!searchQuery && categoryFilter === 'Terbaru' && (
-          <div className="mb-24 -mx-4 lg:-mx-10 border-b border-gray-100 dark:border-white/5 pb-24 bg-gray-50/30 dark:bg-white/[0.01]">
-            {leadArticle && (
-              <PremiumHero article={leadArticle} site={siteParam} />
-            )}
+          <div className="mb-24 -mx-4 lg:-mx-10 border-b border-gray-100 dark:border-white/5 pb-16 bg-gray-50/30 dark:bg-white/[0.01] px-4 lg:px-10 pt-8">
+            <MagazineBentoHero articles={topBentoStories} site={siteParam} />
 
-
-            {/* 2 & 4: Medium & Minimal Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-              {/* 2 Medium Stories */}
-              <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-8">
-                {mediumStories.map((article: any) => (
-                  <NewsCard key={article.id} article={article} variant="medium" site={siteParam} />
-                ))}
+            {/* 4 Minimal Stories Row */}
+            <div className="border-t border-gray-100 dark:border-white/5 pt-8">
+              <div className="flex items-center gap-2 mb-8">
+                <Zap size={16} className="text-brand-red" />
+                <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-brand-black dark:text-white">Fokus Redaksi</h3>
               </div>
-
-              {/* 4 Minimal Stories */}
-              <div className="lg:col-span-4 border-l border-gray-100 dark:border-white/5 pl-0 lg:pl-10">
-                <div className="flex items-center gap-2 mb-6 border-b border-gray-100 dark:border-white/5 pb-2">
-                  <Zap size={16} className="text-brand-red" />
-                  <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-brand-black dark:text-white">Laporan Terbaru</h3>
-                </div>
-                <div className="flex flex-col gap-2">
-                  {minimalStories.map((article: any) => (
-                    <NewsCard key={article.id} article={article} variant="minimal" site={siteParam} />
-                  ))}
-                </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {minimalStories.map((article: any) => (
+                  <NewsCard key={article.id} article={article} variant="minimal" site={siteParam} />
+                ))}
               </div>
             </div>
           </div>
