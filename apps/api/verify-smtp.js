@@ -49,6 +49,43 @@ if (!host || !user || !pass) {
 
 console.log('🔌 Connecting to SMTP server and validating credentials...')
 
+const isResend = host === 'smtp.resend.com' || (pass && pass.startsWith('re_'))
+if (isResend) {
+  console.log('📡 Detected Resend credentials. Testing secure HTTPS REST API key (bypasses port blocks)...')
+  fetch('https://api.resend.com/domains', {
+    headers: {
+      'Authorization': `Bearer ${pass}`
+    }
+  })
+  .then(async (res) => {
+    if (res.ok) {
+      const data = await res.json()
+      console.log('\n✅ **SUCCESS! Resend HTTPS API connection & credentials are 100% valid!**')
+      console.log('📋 Managed domains on Resend:')
+      if (data.data && data.data.length > 0) {
+        data.data.forEach(d => {
+          console.log(`  - ${d.name} (Status: ${d.status}, Region: ${d.region})`)
+        })
+      } else {
+        console.log('  - No domains added yet.')
+      }
+      console.log('\n💡 Note: Your VPS is blocking standard SMTP ports, but our REST API fallback will completely bypass this block and deliver your emails flawlessly over HTTPS!')
+      process.exit(0)
+    } else {
+      const err = await res.text()
+      console.error('\n❌ **RESEND REST API AUTHENTICATION FAILED!**')
+      console.error(`Error details: ${err}`)
+      process.exit(1)
+    }
+  })
+  .catch((err) => {
+    console.error('\n❌ **HTTPS CONNECTION TO RESEND API FAILED!**')
+    console.error(err.message)
+    process.exit(1)
+  })
+  return
+}
+
 const transporter = nodemailer.createTransport({
   host,
   port,

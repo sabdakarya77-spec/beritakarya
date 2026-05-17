@@ -40,9 +40,47 @@ class EmailService {
   }
 
   async sendEmail(to: string, subject: string, html: string, text?: string): Promise<boolean> {
-    if (!this.isEnabled || !this.transporter) {
+    if (!this.isEnabled) {
       logger.warn('Email service is disabled. Skipping email to:', to)
       return false
+    }
+
+    // Check if we should use Resend's REST API (bypasses SMTP port blocking)
+    const isResend = process.env.SMTP_HOST === 'smtp.resend.com' || (process.env.SMTP_PASS && process.env.SMTP_PASS.startsWith('re_'))
+    if (isResend) {
+      try {
+        const fromAddress = process.env.EMAIL_FROM_ADDRESS || 'Redaksi BeritaKarya <redaksi@beritakarya.co>'
+        const replyToAddress = process.env.EMAIL_REPLY_TO || fromAddress
+        
+        logger.info(`Sending email to ${to} via Resend REST API...`)
+        
+        const response = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${process.env.SMTP_PASS}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            from: fromAddress,
+            to: [to],
+            subject: subject,
+            html: html,
+            reply_to: replyToAddress
+          })
+        })
+
+        if (!response.ok) {
+          const errText = await response.text()
+          throw new Error(`Resend REST API returned status ${response.status}: ${errText}`)
+        }
+
+        const data: any = await response.json()
+        logger.info(`Email successfully sent via Resend REST API. ID: ${data.id}`)
+        return true
+      } catch (error) {
+        logger.error('Failed to send email via Resend REST API, falling back to SMTP...', error)
+        // Fallback to standard SMTP below if API call failed
+      }
     }
 
     try {
@@ -53,6 +91,10 @@ class EmailService {
       }
 
       const replyToAddress = process.env.EMAIL_REPLY_TO || fromAddress
+
+      if (!this.transporter) {
+        throw new Error('SMTP Transporter not initialized')
+      }
 
       await this.transporter.sendMail({
         from: fromAddress,
