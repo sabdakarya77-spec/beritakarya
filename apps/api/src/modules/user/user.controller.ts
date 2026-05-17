@@ -4,6 +4,8 @@ import { requireAuth, requireRole } from '../../middleware/auth.middleware'
 import { siteMiddleware, requireSiteAccess } from '../../middleware/site.middleware'
 import { asyncHandler } from '../../utils/asyncHandler'
 import { redis } from '../../lib/redis'
+import { emailService } from '../../services/email.service'
+import { logger } from '../../lib/logger'
 
 export const userRouter = Router() as any
 
@@ -16,9 +18,13 @@ userRouter.get('/',
     const page = parseInt(req.query.page as string) || 1
     const limit = Math.min(parseInt(req.query.limit as string) || 20, 100)
     const skip = (page - 1) * limit
+
+    const fetchAll = req.query.site === 'all' && req.user!.role === 'superadmin'
+    const whereClause = fetchAll ? { deletedAt: null } : { siteId, deletedAt: null }
+
     const [users, total] = await Promise.all([
       prisma.user.findMany({
-        where: { siteId, deletedAt: null },
+        where: whereClause,
         skip,
         take: limit,
         select: {
@@ -32,7 +38,7 @@ userRouter.get('/',
         },
         orderBy: { createdAt: 'desc' }
       }),
-      prisma.user.count({ where: { siteId, deletedAt: null } })
+      prisma.user.count({ where: whereClause })
     ])
 
     // Fetch online status from Redis for each user
@@ -146,7 +152,7 @@ userRouter.put('/:id/role',
   requireRole(['superadmin', 'wapimred']),
   asyncHandler(async (req: any, res: any) => {
     const { id } = req.params
-    const { role } = req.body
+    const { role, siteId } = req.body
 
     const validRoles = ['reader', 'jurnalis', 'wapimred', 'superadmin']
     if (!validRoles.includes(role)) {
@@ -162,25 +168,53 @@ userRouter.put('/:id/role',
         error: { code: 'FORBIDDEN', message: 'Only superadmin can grant superadmin role' }
       })
     }
-    const siteId = req.site
+    const currentRequestSiteId = req.site
 
-    // Verify user belongs to same site
+    // Verify user exists
+    const userQuery: any = { id, deletedAt: null }
+    if (req.user!.role !== 'superadmin') {
+      userQuery.siteId = currentRequestSiteId
+    }
+
     const user = await prisma.user.findFirst({
-      where: { id, siteId, deletedAt: null }
+      where: userQuery
     })
     if (!user) {
       return res.status(404).json({
         success: false,
-        error: { code: 'NOT_FOUND', message: 'User not found or does not belong to this site' }
+        error: { code: 'NOT_FOUND', message: 'User not found or you do not have permission to manage this user' }
       })
     }
 
-    // Get old role for audit log
+    // Get old fields for audit log
     const oldRole = user.role
+    const oldSiteId = user.siteId
+
+    // Compile update fields
+    const updateData: any = { role }
+
+    // Only superadmin can assign/change branches (siteId)
+    if (req.user!.role === 'superadmin') {
+      if (siteId === '' || siteId === null || siteId === undefined) {
+        updateData.siteId = null
+      } else {
+        // Validate that siteId exists in database
+        const siteExists = await prisma.site.findUnique({
+          where: { id: siteId }
+        })
+        if (!siteExists) {
+          return res.status(400).json({
+            success: false,
+            error: { code: 'BAD_REQUEST', message: 'Cabang yang dipilih tidak valid' }
+          })
+        }
+        updateData.siteId = siteId
+      }
+    }
 
     const updated = await prisma.user.update({
       where: { id },
-      data: { role },
+      data: updateData,
       select: {
         id: true,
         email: true,
@@ -190,20 +224,31 @@ userRouter.put('/:id/role',
       }
     })
 
-    // Audit log for role change
+    // Audit log for role/site change
     await prisma.auditLog.create({
       data: {
         userId: req.user!.userId,
-        siteId: req.site!,
+        siteId: currentRequestSiteId || 'pusat',
         action: 'user.role_change',
         entityType: 'user',
         entityId: id,
-        oldValue: { role: oldRole },
-        newValue: { role: role }
+        oldValue: { role: oldRole, siteId: oldSiteId },
+        newValue: { role: role, siteId: updateData.siteId }
       }
     })
 
-    // TODO: Send email notification to user about role change (when email service is ready)
+    // Send email notification to user about role/site change
+    try {
+      await emailService.sendRoleChangeNotification(
+        updated.email,
+        updated.name,
+        oldRole,
+        updated.role,
+        req.user!.name || 'Superadmin'
+      )
+    } catch (emailErr) {
+      logger.error('Gagal mengirim email notifikasi perubahan peran:', emailErr)
+    }
 
     res.json({ success: true, data: updated })
   })

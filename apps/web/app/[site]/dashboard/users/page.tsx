@@ -17,6 +17,7 @@ interface User {
 
 export default function UsersDashboard() {
   const [users, setUsers] = useState<User[]>([]);
+  const [sites, setSites] = useState<{ id: string; name: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAll, setShowAll] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -49,8 +50,20 @@ export default function UsersDashboard() {
     }
   };
 
+  const fetchSites = async () => {
+    try {
+      const { data } = await api.get('/sites');
+      if (data.success) {
+        setSites(data.data);
+      }
+    } catch (err) {
+      console.error('Gagal mengambil data situs', err);
+    }
+  };
+
   useEffect(() => {
     fetchUsers();
+    fetchSites();
   }, [showAll]);
 
   const getRoleBadge = (role: string) => {
@@ -221,11 +234,11 @@ export default function UsersDashboard() {
                   <td className="px-6 py-4">
                     {user.siteId ? (
                       <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800 border border-blue-300">
-                        {user.siteId}
+                        {sites.find(s => s.id === user.siteId)?.name || user.siteId}
                       </span>
                     ) : (
                       <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-600 border border-gray-300">
-                        Global
+                        Global / Pusat
                       </span>
                     )}
                   </td>
@@ -234,13 +247,14 @@ export default function UsersDashboard() {
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-3">
+                      {/* Role select */}
                       <select
                         value={user.role}
                         onChange={async (e) => {
                           const newRole = e.target.value;
                           if (window.confirm(`Ubah peran ${user.name} menjadi ${newRole}?`)) {
                             try {
-                              await api.put(`/users/${user.id}/role`, { role: newRole });
+                              await api.put(`/users/${user.id}/role`, { role: newRole, siteId: user.siteId });
                               addToast(`Berhasil mengubah peran ${user.name}`, 'success');
                               fetchUsers();
                             } catch (err: any) {
@@ -250,11 +264,37 @@ export default function UsersDashboard() {
                         }}
                         className="text-xs bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-2 py-1 outline-none"
                       >
-                        <option value="reader">Reader (Suspend)</option>
+                        <option value="reader">Pembaca</option>
                         <option value="jurnalis">Wartawan</option>
                         <option value="wapimred">Wapimred</option>
                         <option value="superadmin">Superadmin</option>
                       </select>
+
+                      {/* Branch select for superadmins */}
+                      {currentUser?.role === 'superadmin' && (
+                        <select
+                          value={user.siteId || ''}
+                          onChange={async (e) => {
+                            const newSiteId = e.target.value || null;
+                            const siteName = newSiteId ? (sites.find(s => s.id === newSiteId)?.name || newSiteId) : 'Global / Pusat';
+                            if (window.confirm(`Ubah wilayah penugasan ${user.name} menjadi ${siteName}?`)) {
+                              try {
+                                await api.put(`/users/${user.id}/role`, { role: user.role, siteId: newSiteId });
+                                addToast(`Berhasil memindahkan wilayah ${user.name} ke ${siteName}`, 'success');
+                                fetchUsers();
+                              } catch (err: any) {
+                                addToast(err.response?.data?.error?.message || 'Gagal memindahkan wilayah', 'error');
+                              }
+                            }
+                          }}
+                          className="text-xs bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-2 py-1 outline-none font-medium"
+                        >
+                          <option value="">Global / Pusat</option>
+                          {sites.map(s => (
+                            <option key={s.id} value={s.id}>{s.name}</option>
+                          ))}
+                        </select>
+                      )}
 
                       {currentUser?.id !== user.id && (
                         <button
