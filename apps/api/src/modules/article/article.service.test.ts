@@ -9,7 +9,13 @@ vi.mock('../../modules/notification/notification.controller', () => ({
 }))
 vi.mock('../../db/client', () => ({
   prisma: {
-    user: { findUnique: vi.fn(), findMany: vi.fn() }
+    user: { findUnique: vi.fn(), findMany: vi.fn() },
+    site: { findUnique: vi.fn().mockResolvedValue({ id: 'bandung', domain: 'bandung.beritakarya.co' }) }
+  }
+}))
+vi.mock('../../services/google-indexing.service', () => ({
+  googleIndexingService: {
+    submitUrl: vi.fn().mockResolvedValue({ success: true })
   }
 }))
 
