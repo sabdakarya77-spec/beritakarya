@@ -60,7 +60,11 @@ userRouter.get('/stats',
   asyncHandler(async (req: any, res: any) => {
     const siteId = req.site
     const users = await prisma.user.findMany({
-      where: { siteId, deletedAt: null },
+      where: { 
+        siteId, 
+        deletedAt: null,
+        role: { in: ['jurnalis', 'wapimred', 'superadmin'] }
+      },
       select: {
         id: true,
         name: true,
