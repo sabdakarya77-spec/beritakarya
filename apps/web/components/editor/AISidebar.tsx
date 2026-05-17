@@ -5,13 +5,15 @@ import { OptimizeTab } from './ai/OptimizeTab'
 import { ValidateTab } from './ai/ValidateTab'
 import { LayoutTab } from './ai/LayoutTab'
 import { ImageTab } from './ai/ImageTab'
+import { SEOAuditTab } from './ai/SEOAuditTab'
 
-type Tab = 'write' | 'optimize' | 'validate' | 'layout' | 'image'
+type Tab = 'write' | 'optimize' | 'validate' | 'seo' | 'layout' | 'image'
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'write', label: 'Tulis' },
   { id: 'optimize', label: 'Optimasi' },
   { id: 'validate', label: 'Validasi' },
+  { id: 'seo', label: 'SEO Audit' },
   { id: 'layout', label: 'Layout' },
   { id: 'image', label: 'Gambar' }
 ]
@@ -127,6 +129,9 @@ export function AISidebar() {
         </div>
         <div style={{ display: tab === 'validate' ? 'block' : 'none' }}>
           <ValidateTab model={selectedModel} onTrigger={() => { setOpen(true); setTab('validate') }} />
+        </div>
+        <div style={{ display: tab === 'seo' ? 'block' : 'none' }}>
+          <SEOAuditTab />
         </div>
         <div style={{ display: tab === 'layout' ? 'block' : 'none' }}>
           <LayoutTab model={selectedModel} onTrigger={() => { setOpen(true); setTab('layout') }} />
