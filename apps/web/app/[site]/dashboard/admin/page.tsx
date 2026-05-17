@@ -3,6 +3,22 @@
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { api } from '../../../../lib/api'
+import { motion, AnimatePresence } from 'framer-motion'
+import { 
+  Plus, 
+  Settings, 
+  Trash2, 
+  Edit3, 
+  Globe, 
+  Mail, 
+  Users, 
+  FileText, 
+  FolderOpen, 
+  AlertTriangle,
+  X,
+  CheckCircle2,
+  Lock
+} from 'lucide-react'
 
 interface Site {
   id: string
@@ -19,6 +35,7 @@ interface Site {
 export default function AdminDashboardPage() {
   const router = useRouter()
   const params = useParams()
+  const { site: currentSiteId } = useParams() as { site: string }
   const [sites, setSites] = useState<Site[]>([])
   const [loading, setLoading] = useState(true)
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -111,255 +128,368 @@ export default function AdminDashboardPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 min-h-screen text-slate-100 pb-12">
       {/* Toast Notification */}
-      {toast && (
-        <div className={`fixed top-6 right-6 z-[100] px-5 py-4 rounded-xl shadow-2xl text-sm font-semibold transition-all animate-fade-in ${
-          toast.type === 'success' 
-            ? 'bg-green-600 text-white' 
-            : 'bg-red-600 text-white'
-        }`}>
-          {toast.message}
-        </div>
-      )}
+      <AnimatePresence>
+        {toast && (
+          <motion.div 
+            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+            className={`fixed top-6 right-6 z-[100] px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 backdrop-blur-md border ${
+              toast.type === 'success' 
+                ? 'bg-emerald-950/90 border-emerald-500/20 text-emerald-200' 
+                : 'bg-red-950/90 border-red-500/20 text-red-200'
+            }`}
+          >
+            {toast.type === 'success' ? <CheckCircle2 size={18} className="text-emerald-400" /> : <AlertTriangle size={18} className="text-red-400" />}
+            <span className="text-xs font-black uppercase tracking-wider">{toast.message}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      <div className="flex justify-between items-center">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            Manajemen Situs
+          <h1 className="text-3xl font-black tracking-tight text-gray-900 dark:text-white uppercase">
+            Manajemen <span className="text-brand-red">Situs</span>
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
+          <p className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest mt-1">
             Kelola semua portal berita di jaringan BeritaKarya
           </p>
         </div>
-        <button 
+        <motion.button 
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.98 }}
           onClick={openCreateDialog}
-          className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-semibold"
+          className="bg-brand-red hover:bg-red-600 text-white px-5 py-3 rounded-xl font-black text-xs uppercase tracking-widest shadow-lg shadow-brand-red/20 flex items-center gap-2 border border-brand-red/10 transition-all duration-300"
         >
-          + Tambah Situs
-        </button>
+          <Plus size={14} strokeWidth={3} />
+          Tambah Situs
+        </motion.button>
       </div>
 
+      {/* Main Table Card */}
       {loading ? (
-        <div className="space-y-3">
+        <div className="space-y-4">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="h-16 bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse" />
+            <div key={i} className="h-20 bg-white dark:bg-[#0c121e]/80 border border-gray-100 dark:border-white/5 rounded-2xl animate-pulse" />
           ))}
         </div>
       ) : (
-        <div className="border rounded-lg overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-gray-50 dark:bg-gray-900">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Site ID
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Domain
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Nama
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Kontak
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Statistik
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Aksi
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-              {sites.length === 0 ? (
+        <div className="bg-white dark:bg-[#0c121e]/60 border border-gray-100 dark:border-white/5 rounded-2xl overflow-hidden shadow-xl shadow-black/5">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50 dark:bg-[#070b13] border-b border-gray-100 dark:border-white/5">
                 <tr>
-                  <td colSpan={6} className="px-4 py-12 text-center text-gray-400">
-                    Belum ada situs terdaftar
-                  </td>
+                  <th className="px-6 py-4.5 text-left text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">
+                    Site ID
+                  </th>
+                  <th className="px-6 py-4.5 text-left text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">
+                    Domain
+                  </th>
+                  <th className="px-6 py-4.5 text-left text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] hidden md:table-cell">
+                    Nama & Kontak
+                  </th>
+                  <th className="px-6 py-4.5 text-left text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] hidden sm:table-cell">
+                    Statistik
+                  </th>
+                  <th className="px-6 py-4.5 text-right text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">
+                    Aksi
+                  </th>
                 </tr>
-              ) : sites.map((site) => (
-                <tr key={site.id}>
-                  <td className="px-4 py-4 whitespace-nowrap">
-                    <code className="text-xs bg-gray-100 dark:bg-gray-900 px-2 py-1 rounded">
-                      {site.id}
-                    </code>
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap">
-                    <a 
-                      href={`https://${site.domain}`} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-red-600 hover:underline"
-                    >
-                      {site.domain}
-                    </a>
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap font-medium">
-                    {site.name}
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {site.contactEmail || '-'}
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap">
-                    <div className="flex gap-2 text-xs">
-                      <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                        {site.stats?.users || 0} users
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-800/40">
+                {sites.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-16 text-center text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">
+                      Belum ada situs terdaftar di sistem.
+                    </td>
+                  </tr>
+                ) : sites.map((site) => (
+                  <tr 
+                    key={site.id}
+                    className="hover:bg-gray-50/50 dark:hover:bg-white/[0.01] transition-all duration-200"
+                  >
+                    {/* Site ID */}
+                    <td className="px-6 py-5 whitespace-nowrap">
+                      <span className="inline-flex items-center bg-gray-100 dark:bg-slate-900/80 border border-gray-200 dark:border-white/5 text-gray-700 dark:text-gray-300 text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg shadow-sm">
+                        {site.id}
                       </span>
-                      <span className="bg-green-100 text-green-800 px-2 py-1 rounded">
-                        {site.stats?.articles || 0} articles
-                      </span>
-                      <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded">
-                        {site.stats?.categories || 0} categories
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap">
-                    <div className="flex gap-2">
-                      <button 
-                        onClick={() => openEditDialog(site)}
-                        className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm hover:bg-gray-50 dark:hover:bg-gray-700"
-                      >
-                        Edit
-                      </button>
-                      <button 
-                        onClick={() => handleDelete(site.id)}
-                        className="px-3 py-1 bg-red-100 text-red-700 border border-red-200 rounded text-sm hover:bg-red-200"
-                      >
-                        Hapus
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                    </td>
+                    
+                    {/* Domain in glowing red text */}
+                    <td className="px-6 py-5 whitespace-nowrap">
+                      <div className="flex items-center gap-2">
+                        <Globe size={13} className="text-brand-red opacity-80" />
+                        <a 
+                          href={`https://${site.domain}`} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-brand-red dark:text-red-500 hover:text-red-400 font-extrabold text-sm tracking-tight transition-colors duration-300 hover:underline"
+                        >
+                          {site.domain}
+                        </a>
+                      </div>
+                    </td>
+
+                    {/* Name & Contact */}
+                    <td className="px-6 py-5 whitespace-nowrap hidden md:table-cell">
+                      <div className="flex flex-col">
+                        <span className="font-extrabold text-xs text-gray-900 dark:text-gray-100 uppercase tracking-wide">
+                          {site.name}
+                        </span>
+                        {site.contactEmail ? (
+                          <span className="text-[10px] text-gray-400 font-medium flex items-center gap-1.5 mt-0.5">
+                            <Mail size={10} /> {site.contactEmail}
+                          </span>
+                        ) : (
+                          <span className="text-[10px] text-gray-500 font-medium italic mt-0.5">
+                            Tanpa email kontak
+                          </span>
+                        )}
+                      </div>
+                    </td>
+
+                    {/* Statistics */}
+                    <td className="px-6 py-5 whitespace-nowrap hidden sm:table-cell">
+                      <div className="flex items-center gap-2.5">
+                        <span className="inline-flex items-center gap-1 bg-blue-50 dark:bg-blue-950/20 text-blue-700 dark:text-blue-400 border border-blue-100 dark:border-blue-900/20 px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-wider">
+                          <Users size={10} /> {site.stats?.users || 0}
+                        </span>
+                        <span className="inline-flex items-center gap-1 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/20 px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-wider">
+                          <FileText size={10} /> {site.stats?.articles || 0}
+                        </span>
+                        <span className="inline-flex items-center gap-1 bg-purple-50 dark:bg-purple-950/20 text-purple-700 dark:text-purple-400 border border-purple-100 dark:border-purple-900/20 px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-wider">
+                          <FolderOpen size={10} /> {site.stats?.categories || 0}
+                        </span>
+                      </div>
+                    </td>
+
+                    {/* Actions */}
+                    <td className="px-6 py-5 whitespace-nowrap text-right">
+                      <div className="flex gap-2 justify-end">
+                        <motion.button 
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => openEditDialog(site)}
+                          className="px-3.5 py-1.5 border border-gray-200 dark:border-white/5 bg-gray-50 dark:bg-[#070b13] text-gray-600 dark:text-gray-400 rounded-lg text-[10px] font-black uppercase tracking-widest hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 transition-all duration-300 flex items-center gap-1"
+                        >
+                          <Edit3 size={11} />
+                          Edit
+                        </motion.button>
+                        {site.id !== 'pusat' && (
+                          <motion.button 
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => handleDelete(site.id)}
+                            className="px-3.5 py-1.5 bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-900/20 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-red-100 dark:hover:bg-red-900/60 transition-all duration-300 flex items-center gap-1"
+                          >
+                            <Trash2 size={11} />
+                            Hapus
+                          </motion.button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
-      {/* Create/Edit Dialog */}
-      {dialogOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6">
-            <h2 className="text-xl font-bold mb-4">
-              {editingSite ? 'Edit Situs' : 'Tambah Situs Baru'}
-            </h2>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
-              {editingSite 
-                ? 'Perbarui konfigurasi situs yang ada' 
-                : 'Tambahkan portal berita baru ke jaringan BeritaKarya'
-              }
-            </p>
+      {/* Create/Edit Dialog Modal */}
+      <AnimatePresence>
+        {dialogOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setDialogOpen(false)}
+              className="absolute inset-0 bg-[#05070c]/85 backdrop-blur-md"
+            />
+            
+            {/* Content Card (Exactly like the dark premium design requested) */}
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              transition={{ type: 'spring', duration: 0.5 }}
+              className="bg-slate-900 dark:bg-[#0c121e] border border-white/5 rounded-2xl max-w-xl w-full p-8 shadow-2xl relative overflow-hidden z-10 text-white"
+            >
+              {/* Close Button */}
+              <button 
+                onClick={() => setDialogOpen(false)}
+                className="absolute top-5 right-5 text-gray-500 hover:text-white hover:bg-white/5 p-2 rounded-xl transition-all"
+              >
+                <X size={16} />
+              </button>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Site ID *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.id}
-                    onChange={(e) => setFormData({ ...formData, id: e.target.value })}
-                    placeholder="contoh: surabaya"
-                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg"
-                    required
-                    disabled={!!editingSite}
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Unique identifier. Digunakan dalam URL: /[site_id]/
-                  </p>
+              <h2 className="text-lg font-black tracking-tight text-white uppercase flex items-center gap-2">
+                <Settings size={18} className="text-brand-red" />
+                {editingSite ? 'Edit Konfigurasi Situs' : 'Tambahkan Portal Berita'}
+              </h2>
+              <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mt-1 mb-8">
+                {editingSite 
+                  ? 'Perbarui konfigurasi situs yang terdaftar' 
+                  : 'Tambahkan portal berita baru ke jaringan BeritaKarya'
+                }
+              </p>
+
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  {/* Site ID */}
+                  <div className="flex flex-col">
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider mb-2">
+                      Site ID *
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.id}
+                      onChange={(e) => setFormData({ ...formData, id: e.target.value })}
+                      placeholder="contoh: surabaya"
+                      className="w-full px-4 py-3 bg-[#070b13] border border-white/5 rounded-xl text-xs text-white placeholder:text-gray-600 focus:border-brand-red/40 focus:ring-1 focus:ring-brand-red/30 outline-none transition-all duration-300 font-extrabold uppercase tracking-wide"
+                      required
+                      disabled={!!editingSite}
+                    />
+                    <p className="text-[9px] text-gray-600 font-semibold uppercase mt-1.5 tracking-wider">
+                      Unique identifier. Digunakan dalam URL: /[site_id]/
+                    </p>
+                  </div>
+
+                  {/* Domain */}
+                  <div className="flex flex-col">
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider mb-2">
+                      Domain *
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.domain}
+                      onChange={(e) => setFormData({ ...formData, domain: e.target.value })}
+                      placeholder="surabaya.beritakarya.co"
+                      className="w-full px-4 py-3 bg-[#070b13] border border-white/5 rounded-xl text-xs text-white placeholder:text-gray-600 focus:border-brand-red/40 focus:ring-1 focus:ring-brand-red/30 outline-none transition-all duration-300 font-extrabold tracking-wide"
+                      required
+                    />
+                    <p className="text-[9px] text-gray-600 font-semibold uppercase mt-1.5 tracking-wider">
+                      Alamat domain lengkap untuk portal cabang.
+                    </p>
+                  </div>
+
+                  {/* Nama Tampilan */}
+                  <div className="flex flex-col">
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider mb-2">
+                      Nama Tampilan *
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      placeholder="BeritaKarya Surabaya"
+                      className="w-full px-4 py-3 bg-[#070b13] border border-white/5 rounded-xl text-xs text-white placeholder:text-gray-600 focus:border-brand-red/40 focus:ring-1 focus:ring-brand-red/30 outline-none transition-all duration-300 font-extrabold"
+                      required
+                    />
+                    <p className="text-[9px] text-gray-600 font-semibold uppercase mt-1.5 tracking-wider">
+                      Nama cabang yang ditampilkan ke pembaca.
+                    </p>
+                  </div>
+
+                  {/* Email Kontak */}
+                  <div className="flex flex-col">
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider mb-2">
+                      Email Kontak
+                    </label>
+                    <input
+                      type="email"
+                      value={formData.contactEmail}
+                      onChange={(e) => setFormData({ ...formData, contactEmail: e.target.value })}
+                      placeholder="admin@surabaya.beritakarya.co"
+                      className="w-full px-4 py-3 bg-[#070b13] border border-white/5 rounded-xl text-xs text-white placeholder:text-gray-600 focus:border-brand-red/40 focus:ring-1 focus:ring-brand-red/30 outline-none transition-all duration-300 font-extrabold"
+                    />
+                    <p className="text-[9px] text-gray-600 font-semibold uppercase mt-1.5 tracking-wider">
+                      Email administrasi untuk notifikasi resmi.
+                    </p>
+                  </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Domain *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.domain}
-                    onChange={(e) => setFormData({ ...formData, domain: e.target.value })}
-                    placeholder="surabaya.beritakarya.co"
-                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg"
-                    required
-                  />
+                <div className="flex justify-end gap-3 pt-6 border-t border-white/5 mt-8">
+                  <button
+                    type="button"
+                    onClick={() => setDialogOpen(false)}
+                    className="px-5 py-3 bg-slate-800 hover:bg-slate-755 text-gray-400 hover:text-white rounded-xl text-[10px] font-black uppercase tracking-widest border border-white/5 transition-all duration-300"
+                  >
+                    Batal
+                  </button>
+                  <motion.button
+                    type="submit"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="px-5 py-3 bg-brand-red hover:bg-red-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-brand-red/30 border border-brand-red/10 transition-all duration-300"
+                  >
+                    {editingSite ? 'Perbarui' : 'Buat Situs'}
+                  </motion.button>
                 </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Nama Tampilan *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="BeritaKarya Surabaya"
-                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg"
-                    required
-                  />
-                </div>
+      {/* Delete Confirmation Modal */}
+      <AnimatePresence>
+        {deleteConfirm && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setDeleteConfirm(null)}
+              className="absolute inset-0 bg-[#05070c]/85 backdrop-blur-md"
+            />
 
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Email Kontak
-                  </label>
-                  <input
-                    type="email"
-                    value={formData.contactEmail}
-                    onChange={(e) => setFormData({ ...formData, contactEmail: e.target.value })}
-                    placeholder="admin@surabaya.beritakarya.co"
-                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg"
-                  />
-                </div>
+            {/* Confirmation Box */}
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              className="bg-slate-900 border border-red-500/20 rounded-2xl max-w-md w-full p-8 shadow-2xl relative overflow-hidden z-10 text-white"
+            >
+              <div className="w-12 h-12 bg-red-950/50 border border-red-500/30 rounded-2xl flex items-center justify-center text-red-500 mb-5">
+                <AlertTriangle size={22} />
               </div>
 
-              <div className="flex justify-end gap-3 pt-4">
+              <h3 className="text-base font-black tracking-tight text-white uppercase">
+                Konfirmasi Hapus Situs
+              </h3>
+              <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mt-1 mb-5">
+                Tindakan ini permanen dan berisiko tinggi
+              </p>
+
+              <p className="text-xs text-gray-400 leading-relaxed mb-8">
+                Apakah Anda yakin ingin menghapus situs <code className="text-red-400 font-extrabold text-xs px-1.5 py-0.5 bg-red-950/30 rounded border border-red-500/20">{deleteConfirm}</code>? Tindakan ini akan menghapus seluruh artikel, kategori, media, dan data wartawan yang berafiliasi dengan situs tersebut secara permanen!
+              </p>
+
+              <div className="flex justify-end gap-3 pt-5 border-t border-white/5">
                 <button
-                  type="button"
-                  onClick={() => setDialogOpen(false)}
-                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+                  onClick={() => setDeleteConfirm(null)}
+                  className="px-5 py-3 bg-slate-800 hover:bg-slate-755 text-gray-400 hover:text-white rounded-xl text-[10px] font-black uppercase tracking-widest border border-white/5 transition-all duration-300"
                 >
                   Batal
                 </button>
                 <button
-                  type="submit"
-                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold"
+                  onClick={confirmDelete}
+                  className="px-5 py-3 bg-red-600 hover:bg-red-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-red-900/30 border border-red-500/20 transition-all duration-300"
                 >
-                  {editingSite ? 'Perbarui' : 'Buat Situs'}
+                  Ya, Hapus
                 </button>
               </div>
-            </form>
+            </motion.div>
           </div>
-        </div>
-      )}
-
-      {/* Delete Confirmation Modal */}
-      {deleteConfirm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full p-6 shadow-2xl">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
-              Konfirmasi Hapus Situs
-            </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-              Apakah Anda yakin ingin menghapus situs ini? Tindakan ini tidak dapat dibatalkan dan akan menghapus semua data terkait.
-            </p>
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setDeleteConfirm(null)}
-                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-sm"
-              >
-                Batal
-              </button>
-              <button
-                onClick={confirmDelete}
-                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold text-sm"
-              >
-                Ya, Hapus
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
     </div>
   )
 }
