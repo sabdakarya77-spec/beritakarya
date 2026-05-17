@@ -36,7 +36,12 @@ export default function SettingsPage() {
     appearance: {
       primaryColor: '#e11d48'
     },
-    trendingTopics: [] as string[]
+    trendingTopics: [] as string[],
+    googleIndexingConfig: {
+      clientEmail: '',
+      privateKey: '',
+      isActive: false
+    }
   })
   
   const [newTag, setNewTag] = useState('')
@@ -80,7 +85,8 @@ export default function SettingsPage() {
           advertising: data.data.advertising || '',
           socialLinks: data.data.socialLinks || { facebook: '', twitter: '', instagram: '', youtube: '' },
           appearance: data.data.appearance || { primaryColor: '#e11d48' },
-          trendingTopics: data.data.trendingTopics || []
+          trendingTopics: data.data.trendingTopics || [],
+          googleIndexingConfig: data.data.googleIndexingConfig || { clientEmail: '', privateKey: '', isActive: false }
         })
       }
     } catch (err) {
@@ -368,6 +374,86 @@ export default function SettingsPage() {
                     />
                   </div>
                 ))}
+              </div>
+            </div>
+          </section>
+
+          {/* Google Indexing API (SEO) */}
+          <section className="bg-white dark:bg-black/20 p-8 border border-gray-100 dark:border-white/5 rounded-sm shadow-sm">
+            <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-black dark:text-white mb-8 flex items-center gap-2">
+              <Globe size={14} className="text-brand-red" /> Google Indexing API (Akselerasi SEO)
+            </h2>
+            
+            <div className="space-y-6">
+              <div className="flex items-center justify-between bg-slate-50 dark:bg-white/5 px-6 py-4 rounded-sm border border-gray-100 dark:border-white/5">
+                <div>
+                  <h4 className="text-[10px] font-black uppercase tracking-wider text-brand-black dark:text-white">Status Indeks Otomatis</h4>
+                  <p className="text-[9px] text-gray-400 mt-1">Mengirimkan URL baru ke Google secara otomatis saat artikel diterbitkan.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSettings({
+                    ...settings,
+                    googleIndexingConfig: {
+                      ...settings.googleIndexingConfig,
+                      isActive: !settings.googleIndexingConfig.isActive
+                    }
+                  })}
+                  className={`px-4 py-2 text-[9px] font-black uppercase tracking-wider border rounded-sm transition-all ${
+                    settings.googleIndexingConfig.isActive
+                      ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400'
+                      : 'bg-gray-100 border-gray-200 text-gray-400 dark:bg-white/5 dark:border-white/10'
+                  }`}
+                >
+                  {settings.googleIndexingConfig.isActive ? 'Aktif' : 'Nonaktif'}
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 gap-6">
+                <div className="space-y-2">
+                  <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Service Account Email</label>
+                  <input 
+                    type="text" 
+                    value={settings.googleIndexingConfig.clientEmail}
+                    onChange={(e) => setSettings({
+                      ...settings,
+                      googleIndexingConfig: {
+                        ...settings.googleIndexingConfig,
+                        clientEmail: e.target.value
+                      }
+                    })}
+                    placeholder="nama-akun@id-project.iam.gserviceaccount.com"
+                    className="w-full bg-slate-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 px-4 py-3 text-xs text-brand-black dark:text-white outline-none focus:border-brand-red transition-colors font-medium"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Private Key (PEM Format)</label>
+                  <textarea 
+                    value={settings.googleIndexingConfig.privateKey}
+                    onChange={(e) => setSettings({
+                      ...settings,
+                      googleIndexingConfig: {
+                        ...settings.googleIndexingConfig,
+                        privateKey: e.target.value
+                      }
+                    })}
+                    placeholder="-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC7...\n-----END PRIVATE KEY-----"
+                    rows={5}
+                    className="w-full bg-slate-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 px-4 py-3 text-[10px] text-brand-black dark:text-white outline-none focus:border-brand-red transition-colors font-mono resize-none leading-relaxed"
+                  />
+                </div>
+              </div>
+
+              <div className="p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/20 rounded-sm">
+                <h4 className="text-[9px] font-black uppercase tracking-widest text-amber-800 dark:text-amber-400 flex items-center gap-1.5">
+                  <AlertCircle size={12} /> Panduan Integrasi Google Search Console:
+                </h4>
+                <ol className="text-[9px] text-amber-700/80 dark:text-amber-500/70 space-y-1.5 list-decimal pl-4 mt-2 font-bold uppercase tracking-wider">
+                  <li>Buat Service Account di **Google Cloud Console**, aktifkan **Google Indexing API**, dan unduh berkas JSON Key.</li>
+                  <li>Salin nilai `client_email` dan `private_key` dari JSON tersebut ke dalam isian di atas.</li>
+                  <li>**LANGKAH MUTLAK:** Tambahkan email Service Account di atas sebagai **Pemilik (Owner)** di dalam akun **Google Search Console** website Anda agar Google memberi izin pengajuan indeks.</li>
+                </ol>
               </div>
             </div>
           </section>

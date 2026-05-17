@@ -52,6 +52,7 @@ model Site {
   socialLinks    Json?     @default("{}")
   appearance     Json?     @default("{\"primaryColor\":\"#e11d48\"}")
   trendingTopics Json?     @default("[]")
+  googleIndexingConfig Json? @default("{}")
   deletedAt      DateTime?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt

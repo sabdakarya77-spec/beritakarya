@@ -8,7 +8,8 @@ import { useAuthStore } from '../../../../store/authStore';
 import { motion } from 'framer-motion';
 import { 
   Plus, Search, Eye, Edit3, Trash2, Calendar,
-  FileText, Loader2, Send, ChevronLeft, ChevronRight
+  FileText, Loader2, Send, ChevronLeft, ChevronRight,
+  Globe
 } from 'lucide-react';
 import StatusBadge from '../../../../components/ui/StatusBadge';
 import EditorialBadge from '../../../../components/ui/EditorialBadge';
@@ -135,6 +136,22 @@ export default function ArticlesPage() {
       await load();
     } catch (e: any) {
       alert(e.response?.data?.error?.message || 'Gagal menghapus post');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleGoogleIndex = async (articleId: string) => {
+    setActionLoading(articleId + 'index');
+    try {
+      const { data } = await api.post(`/articles/${articleId}/index-google`);
+      if (data.success) {
+        alert('Sukses! Google Indexing API berhasil diping. Artikel akan segera dirayapi Googlebot!');
+      } else {
+        alert('Info: ' + (data.message || 'Respons dari API'));
+      }
+    } catch (e: any) {
+      alert(e.response?.data?.error?.message || e.response?.data?.message || 'Gagal memanggil Google Indexing API. Pastikan kredensial di Pengaturan Situs sudah aktif & benar!');
     } finally {
       setActionLoading(null);
     }
@@ -361,14 +378,28 @@ export default function ArticlesPage() {
                         <Edit3 size={15} />
                       </Link>
                       {article.status === 'published' && (
-                        <Link
-                          href={`/${site}/post/${article.slug}`}
-                          target="_blank"
-                          className="p-2 text-gray-400 hover:text-brand-black dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 rounded-lg transition-all"
-                          title="Lihat post"
-                        >
-                          <Eye size={15} />
-                        </Link>
+                        <>
+                          <Link
+                            href={`/${site}/post/${article.slug}`}
+                            target="_blank"
+                            className="p-2 text-gray-400 hover:text-brand-black dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 rounded-lg transition-all"
+                            title="Lihat post"
+                          >
+                            <Eye size={15} />
+                          </Link>
+                          <button
+                            onClick={() => handleGoogleIndex(article.id)}
+                            disabled={actionLoading === article.id + 'index'}
+                            className="p-2 text-gray-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 rounded-lg transition-all disabled:opacity-50"
+                            title="⚡ Indeks Google Instan"
+                          >
+                            {actionLoading === article.id + 'index' ? (
+                              <Loader2 size={14} className="animate-spin text-emerald-500" />
+                            ) : (
+                              <Globe size={14} />
+                            )}
+                          </button>
+                        </>
                       )}
                       {(user?.role === 'superadmin' || user?.role === 'wapimred') && (
                         <button 

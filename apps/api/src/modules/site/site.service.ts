@@ -264,7 +264,8 @@ export class SiteService {
       advertising: site.advertising,
       socialLinks: site.socialLinks,
       appearance: site.appearance,
-      trendingTopics: site.trendingTopics
+      trendingTopics: site.trendingTopics,
+      googleIndexingConfig: site.googleIndexingConfig
     }
   }
 
@@ -296,12 +297,13 @@ export class SiteService {
     const allowedFields = [
       'name', 'domain', 'description', 'logoUrl', 'footerText', 
       'address', 'contactEmail', 'phone', 'aboutUs', 'codeOfEthics', 
-      'editorial', 'advertising', 'socialLinks', 'appearance', 'trendingTopics'
+      'editorial', 'advertising', 'socialLinks', 'appearance', 'trendingTopics',
+      'googleIndexingConfig'
     ]
     
     for (const field of allowedFields) {
       if (data[field] !== undefined) {
-        if (['socialLinks', 'appearance', 'trendingTopics'].includes(field) && typeof data[field] === 'object') {
+        if (['socialLinks', 'appearance', 'trendingTopics', 'googleIndexingConfig'].includes(field) && typeof data[field] === 'object') {
           // Prisma handles objects natively for JSON fields in Postgres
           updateData[field] = data[field]
         } else {

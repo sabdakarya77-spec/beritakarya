@@ -58,6 +58,11 @@ articleRouter.post('/:id/publish', ...withSite, asyncHandler(async (req: Request
   res.json({ success: true, data: article })
 }))
 
+articleRouter.post('/:id/index-google', ...withSite, asyncHandler(async (req: Request, res: Response) => {
+  const result = await service.indexGoogleArticle(req.params.id, req.site!)
+  res.json(result)
+}))
+
 // Versioning Endpoints
 articleRouter.get('/:id/versions', ...withSite, asyncHandler(async (req: Request, res: Response) => {
   const versions = await service.getArticleVersions(req.params.id)

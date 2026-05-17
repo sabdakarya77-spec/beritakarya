@@ -6,6 +6,7 @@ import { prisma } from '../../db/client'
 import { recordView } from '../analytics/analytics.service'
 import * as searchService from './search.service'
 import { getCache, setCache, deleteCache } from '../../lib/redis'
+import { googleIndexingService } from '../../services/google-indexing.service'
 
 export async function getArticles(
   siteId: string,
@@ -321,7 +322,7 @@ export async function publishArticle(id: string, siteId: string, user: JWTPayloa
     siteId,
     type: 'post_reviewed',
     title: 'Post Berhasil Terbit!',
-    message: `Selamat! Post "${updated.title}" Anda telah disetujui dan terbit sekarang.`,
+    message: `Selamat! Post "${updated.title}" Anda telah disetujui and terbit sekarang.`,
     link: `/${siteId}/post/${updated.slug}`
   })
 
@@ -334,6 +335,18 @@ export async function publishArticle(id: string, siteId: string, user: JWTPayloa
     oldValue: article,
     newValue: updated
   })
+
+  // [SEO Indexing API Automation] Auto-submit URL to Google Indexing API on publish
+  prisma.site.findUnique({ where: { id: siteId } }).then(site => {
+    if (site) {
+      const domain = site.domain || 'beritakarya.co'
+      const protocol = domain.includes('localhost') || domain.includes('127.0.0.1') ? 'http' : 'https'
+      const articleUrl = `${protocol}://${domain}/post/${updated.slug}`
+      googleIndexingService.submitUrl(siteId, articleUrl, 'URL_UPDATED')
+        .then(res => console.log('Auto Google Indexing API trigger result:', res))
+        .catch(err => console.error('Auto Google Indexing API trigger error:', err))
+    }
+  }).catch(err => console.error('Failed to fetch site details for indexing:', err))
 
   return updated
 }
@@ -428,4 +441,23 @@ export async function getArticleStats(siteId: string) {
   })
 
   return stats
+}
+
+export async function indexGoogleArticle(id: string, siteId: string) {
+  const article = await repo.findArticleById(id, siteId)
+  if (!article) throw Object.assign(new Error('Post tidak ditemukan'), { statusCode: 404 })
+  if (article.status !== 'published') {
+    throw Object.assign(new Error('Hanya artikel yang sudah terbit (Published) yang dapat di-indeks ke Google'), { statusCode: 400 })
+  }
+
+  const site = await prisma.site.findUnique({
+    where: { id: siteId }
+  })
+
+  const domain = site?.domain || 'beritakarya.co'
+  const protocol = domain.includes('localhost') || domain.includes('127.0.0.1') ? 'http' : 'https'
+  const articleUrl = `${protocol}://${domain}/post/${article.slug}`
+
+  const result = await googleIndexingService.submitUrl(siteId, articleUrl, 'URL_UPDATED')
+  return result
 }
