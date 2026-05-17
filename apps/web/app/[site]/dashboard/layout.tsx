@@ -24,7 +24,8 @@ import {
   ChevronDown,
   Calendar,
   MessageSquare,
-  Mail
+  Mail,
+  Lock
 } from 'lucide-react'
 import { ROLE_LABELS } from '../../../lib/constants'
 import { useState, useEffect } from 'react'
@@ -57,10 +58,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         const allowedRoles = ['superadmin', 'wapimred', 'jurnalis']
         if (!allowedRoles.includes(user.role)) {
           router.push(`/${site}`)
+          return
+        }
+
+        // KYC Gatekeeping: jurnalis and wapimred MUST be verified (isVerified === true)
+        const isKycRequired = ['jurnalis', 'wapimred'].includes(user.role)
+        const targetKycPath = `/${site}/dashboard/kyc`
+        
+        if (isKycRequired && !user.isVerified && pathname !== targetKycPath) {
+          router.push(targetKycPath)
         }
       }
     }
-  }, [user, router, site])
+  }, [user, router, site, pathname])
 
   // Menambahkan pemisah visual di console setiap kali pindah halaman
   // untuk memudahkan membedakan error antar halaman
@@ -187,20 +197,28 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <div className="space-y-0.5">
                   {filteredItems.map((item) => {
                     const isActive = item.href === activeHref
-                    const Icon = item.icon
+                    const isKycRequired = user && ['jurnalis', 'wapimred'].includes(user.role)
+                    const isLocked = isKycRequired && !user.isVerified && item.href !== `/${site}/dashboard/kyc`
+                    const Icon = isLocked ? Lock : item.icon
                     return (
                       <Link 
                         key={item.name} 
-                        href={item.href}
+                        href={isLocked ? '#' : item.href}
+                        onClick={(e) => {
+                          if (isLocked) {
+                            e.preventDefault()
+                          }
+                        }}
                         className={cn(
                           "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-300 group relative overflow-hidden",
                           isActive 
                             ? 'bg-brand-red text-white shadow-lg shadow-brand-red/30' 
-                            : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                            : 'text-gray-400 hover:bg-white/5 hover:text-white',
+                          isLocked && "opacity-40 hover:bg-transparent cursor-not-allowed text-gray-500"
                         )}
                       >
                         {/* Active Glow Backdrop */}
-                        {isActive && (
+                        {isActive && !isLocked && (
                           <div className="absolute inset-0 bg-gradient-to-r from-brand-red via-red-500 to-brand-red opacity-50 animate-pulse" />
                         )}
                         
@@ -208,7 +226,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         {!isSidebarCollapsed && (
                           <>
                             <span className="text-[11px] font-black uppercase tracking-wider relative z-10">{item.name}</span>
-                            {isActive && <ChevronRight size={12} className="ml-auto opacity-60 relative z-10" />}
+                            {isActive && !isLocked && <ChevronRight size={12} className="ml-auto opacity-60 relative z-10" />}
+                            {isLocked && <Lock size={12} className="ml-auto text-gray-500 relative z-10" />}
                           </>
                         )}
                       </Link>
@@ -282,15 +301,24 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <p className="px-3 text-[9px] font-black text-gray-600 uppercase tracking-[0.2em] mb-2">{section.label}</p>
                 {filteredItems.map((item) => {
                   const isActive = item.href === activeHref
-                  const Icon = item.icon
+                  const isKycRequired = user && ['jurnalis', 'wapimred'].includes(user.role)
+                  const isLocked = isKycRequired && !user.isVerified && item.href !== `/${site}/dashboard/kyc`
+                  const Icon = isLocked ? Lock : item.icon
                   return (
                     <Link 
                       key={item.name} 
-                      href={item.href}
-                      onClick={() => setIsMobileMenuOpen(false)}
+                      href={isLocked ? '#' : item.href}
+                      onClick={(e) => {
+                        if (isLocked) {
+                          e.preventDefault()
+                        } else {
+                          setIsMobileMenuOpen(false)
+                        }
+                      }}
                       className={cn(
                         "flex items-center gap-4 py-3.5 px-3 rounded-lg mb-0.5",
-                        isActive ? "text-brand-red bg-brand-red/5" : "text-gray-400"
+                        isActive ? "text-brand-red bg-brand-red/5" : "text-gray-400",
+                        isLocked && "opacity-40 cursor-not-allowed text-gray-600"
                       )}
                     >
                       <Icon size={20} />
