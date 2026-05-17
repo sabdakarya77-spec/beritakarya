@@ -34,7 +34,7 @@ export function EmbedBlock({ block }: { block: TEmbedBlock }) {
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleConfirm()}
             placeholder="https://..."
-            className="flex-1 text-sm border rounded-lg px-3 py-1.5 outline-none focus:border-blue-400"
+            className="flex-1 text-sm text-gray-900 bg-white border border-gray-200 rounded-lg px-3 py-1.5 outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400"
           />
           <button
             onClick={handleConfirm}
