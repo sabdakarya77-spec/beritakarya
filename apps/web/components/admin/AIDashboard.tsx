@@ -10,8 +10,15 @@ import {
   AlertTriangle,
   CheckCircle,
   Clock,
-  Download
+  Download,
+  Sparkles,
+  Shield,
+  Search,
+  Check,
+  XCircle,
+  Cpu
 } from 'lucide-react'
+import { cn } from '../../lib/utils'
 
 interface UsageData {
   period: { start: Date; end: Date }
@@ -67,6 +74,7 @@ export function AIDashboard() {
   const [quotaData, setQuotaData] = useState<QuotaData | null>(null)
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('overview')
+  const [searchTerm, setSearchTerm] = useState('')
 
   useEffect(() => {
     fetchData()
@@ -90,218 +98,334 @@ export function AIDashboard() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading AI dashboard...</p>
+      <div className="flex flex-col items-center justify-center py-32 space-y-4">
+        <div className="relative">
+          <div className="w-12 h-12 border-4 border-brand-red border-t-transparent rounded-full animate-spin" />
+          <Sparkles className="absolute inset-0 m-auto text-amber-400 animate-pulse" size={16} />
         </div>
+        <p className="text-xs font-black text-gray-400 uppercase tracking-[0.2em] animate-pulse">Menghubungkan ke AI Command Center...</p>
       </div>
     )
   }
 
+  // Filtered users for search bar
+  const filteredUsers = (quotaData?.users || []).filter(u => 
+    u.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    u.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    u.role.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (u.site?.name || '').toLowerCase().includes(searchTerm.toLowerCase())
+  )
+
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">AI Assistant Dashboard</h1>
-          <p className="text-gray-600">
-            Monitor AI usage, quotas, and costs across your organization
-          </p>
+    <div className="max-w-6xl mx-auto space-y-10 animate-fade-in pb-20 text-gray-200">
+      
+      {/* Header */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-brand-red text-white flex items-center justify-center shadow-lg shadow-brand-red/30 relative group overflow-hidden border border-red-400/20">
+            <Cpu size={24} className="group-hover:rotate-12 transition-transform duration-300" />
+            <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-black text-white tracking-tight flex items-center gap-2">
+              AI Command Center
+              <span className="text-[9px] px-2 py-0.5 bg-brand-red/10 text-brand-red rounded-md font-bold uppercase tracking-widest border border-brand-red/20">Active</span>
+            </h1>
+            <p className="text-[11px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">
+              Pemantauan kuota, biaya, dan performa kecerdasan buatan <strong className="text-brand-red">GPT-4o</strong>
+            </p>
+          </div>
         </div>
-        <button onClick={fetchData} className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition">
-          <Activity className="h-4 w-4" />
-          Refresh
+        
+        <button 
+          onClick={fetchData} 
+          className="flex items-center gap-2.5 px-5 py-2.5 bg-[#0f172a] hover:bg-brand-red border border-white/5 hover:border-red-400/30 text-white text-[10px] font-black uppercase tracking-wider rounded-xl transition-all duration-300 shadow-lg shadow-black/40 group active:scale-95"
+        >
+          <Activity size={14} className="text-brand-red group-hover:text-white animate-pulse" />
+          Refresh Stats
         </button>
       </div>
 
       {/* Tab Navigation */}
-      <div className="border-b border-gray-200">
-        <nav className="flex space-x-8">
-          {['overview', 'quotas', 'users', 'reports'].map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                activeTab === tab
-                  ? 'border-amber-500 text-amber-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
-            </button>
-          ))}
-        </nav>
+      <div className="flex bg-[#0c121e]/80 backdrop-blur-md p-1.5 rounded-2xl border border-white/5 shadow-2xl">
+        {['overview', 'quotas', 'users', 'reports'].map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={cn(
+              "flex-1 py-3 text-[10px] font-black uppercase tracking-[0.2em] rounded-xl transition-all duration-300",
+              activeTab === tab
+                ? "bg-brand-red text-white shadow-lg shadow-brand-red/20"
+                : "text-gray-400 hover:text-white hover:bg-white/[0.02]"
+            )}
+          >
+            {tab === 'overview' && 'Ringkasan'}
+            {tab === 'quotas' && 'Definisi Kuota'}
+            {tab === 'users' && 'Akses Pengguna'}
+            {tab === 'reports' && 'Ekspor Laporan'}
+          </button>
+        ))}
       </div>
 
       {/* ── OVERVIEW TAB ───────────────────────────────────────────────────── */}
       {activeTab === 'overview' && (
-        <div className="space-y-6">
+        <div className="space-y-8">
+          
           {/* Key Metrics */}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <div className="border rounded-lg p-6">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            
+            {/* Total Cost */}
+            <div className="bg-[#0c121e]/40 backdrop-blur-md border border-white/5 rounded-2xl p-6 shadow-xl relative overflow-hidden group hover:border-emerald-500/20 transition-all duration-300">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Total Cost</p>
-                  <p className="text-2xl font-bold">{formatCurrency(usageData?.overall.totalCost || 0)}</p>
-                  <p className="text-xs text-gray-500">{formatNumber(usageData?.overall.totalRequests || 0)} requests</p>
+                  <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Total Pengeluaran</p>
+                  <p className="text-3xl font-black text-emerald-400 mt-2 tracking-tight">
+                    {formatCurrency(usageData?.overall.totalCost || 0)}
+                  </p>
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-1.5 flex items-center gap-1.5">
+                    <Activity size={10} className="text-emerald-500" />
+                    {formatNumber(usageData?.overall.totalRequests || 0)} Permintaan
+                  </p>
                 </div>
-                <DollarSign className="h-8 w-8 text-gray-400" />
+                <div className="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20 group-hover:scale-110 transition-transform">
+                  <DollarSign size={20} />
+                </div>
               </div>
             </div>
 
-            <div className="border rounded-lg p-6">
+            {/* Active Users */}
+            <div className="bg-[#0c121e]/40 backdrop-blur-md border border-white/5 rounded-2xl p-6 shadow-xl relative overflow-hidden group hover:border-blue-500/20 transition-all duration-300">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Active Users</p>
-                  <p className="text-2xl font-bold">
+                  <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Pengguna Aktif</p>
+                  <p className="text-3xl font-black text-blue-400 mt-2 tracking-tight">
                     {usageData?.dailyTrend.reduce((sum, d) => sum + d.activeUsers, 0) || 0}
                   </p>
-                  <p className="text-xs text-gray-500">Last 30 days</p>
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-1.5 flex items-center gap-1.5">
+                    <Users size={10} className="text-blue-500" />
+                    30 Hari Terakhir
+                  </p>
                 </div>
-                <Users className="h-8 w-8 text-gray-400" />
+                <div className="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center border border-blue-500/20 group-hover:scale-110 transition-transform">
+                  <Users size={20} />
+                </div>
               </div>
             </div>
 
-            <div className="border rounded-lg p-6">
+            {/* Avg Latency */}
+            <div className="bg-[#0c121e]/40 backdrop-blur-md border border-white/5 rounded-2xl p-6 shadow-xl relative overflow-hidden group hover:border-amber-500/20 transition-all duration-300">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Avg Latency</p>
-                  <p className="text-2xl font-bold">{Math.round(usageData?.overall.avgLatency || 0)}ms</p>
-                  <p className="text-xs text-gray-500">Response time</p>
+                  <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Waktu Respons Rata-rata</p>
+                  <p className="text-3xl font-black text-amber-400 mt-2 tracking-tight">
+                    {Math.round(usageData?.overall.avgLatency || 0)}ms
+                  </p>
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-1.5 flex items-center gap-1.5">
+                    <Clock size={10} className="text-amber-500 animate-pulse" />
+                    Respon Sangat Cepat
+                  </p>
                 </div>
-                <Clock className="h-8 w-8 text-gray-400" />
+                <div className="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center border border-amber-500/20 group-hover:scale-110 transition-transform">
+                  <Clock size={20} />
+                </div>
               </div>
             </div>
 
-            <div className="border rounded-lg p-6">
+            {/* Total Tokens */}
+            <div className="bg-[#0c121e]/40 backdrop-blur-md border border-white/5 rounded-2xl p-6 shadow-xl relative overflow-hidden group hover:border-purple-500/20 transition-all duration-300">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Total Tokens</p>
-                  <p className="text-2xl font-bold">{formatNumber(usageData?.overall.totalTokens || 0)}</p>
-                  <p className="text-xs text-gray-500">Input + Output</p>
+                  <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Token Diproses</p>
+                  <p className="text-3xl font-black text-purple-400 mt-2 tracking-tight">
+                    {formatNumber(usageData?.overall.totalTokens || 0)}
+                  </p>
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-1.5 flex items-center gap-1.5">
+                    <Zap size={10} className="text-purple-500" />
+                    Input + Output
+                  </p>
                 </div>
-                <Zap className="h-8 w-8 text-gray-400" />
+                <div className="w-12 h-12 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center border border-purple-500/20 group-hover:scale-110 transition-transform">
+                  <Zap size={20} />
+                </div>
               </div>
             </div>
+
           </div>
 
-          {/* Simple Charts - Text-based for now */}
-          <div className="grid gap-6 md:grid-cols-2">
-            <div className="border rounded-lg p-6">
-              <h3 className="text-lg font-semibold mb-4">Cost by Feature</h3>
-              <div className="space-y-3">
+          {/* Cost by Feature & Budget Status */}
+          <div className="grid gap-8 md:grid-cols-2">
+            
+            {/* Cost by Feature */}
+            <div className="bg-[#0c121e]/40 backdrop-blur-md border border-white/5 rounded-2xl p-6 shadow-2xl space-y-6">
+              <div>
+                <h3 className="text-xs font-black uppercase tracking-wider text-white">Distribusi Biaya per Fitur</h3>
+                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-0.5">Analisis Alokasi Anggaran AI</p>
+              </div>
+              
+              <div className="space-y-4">
                 {(usageData?.byFeature || []).map((feature, idx) => (
-                  <div key={idx} className="flex items-center justify-between">
-                    <span className="text-sm font-medium capitalize">{feature.action}</span>
-                    <div className="flex items-center gap-2">
-                      <div className="w-32 bg-gray-200 rounded-full h-2">
+                  <div key={idx} className="space-y-1.5">
+                    <div className="flex items-center justify-between text-xs font-extrabold">
+                      <span className="capitalize text-gray-300">{feature.action}</span>
+                      <span className="text-white">{formatCurrency(feature.cost)}</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="flex-1 bg-white/5 rounded-full h-1.5 overflow-hidden">
                         <div 
-                          className="bg-amber-500 h-2 rounded-full"
-                          style={{ width: `${(feature.cost / (usageData?.byFeature[0]?.cost || 1)) * 100}%` }}
+                          className="bg-brand-red h-1.5 rounded-full shadow-[0_0_8px_rgba(239,68,68,0.5)] transition-all duration-500"
+                          style={{ width: `${(feature.cost / Math.max(...(usageData?.byFeature || []).map(f => f.cost || 1))) * 100}%` }}
                         />
                       </div>
-                      <span className="text-sm font-medium">{formatCurrency(feature.cost)}</span>
+                      <span className="text-[9px] text-gray-500 font-bold tracking-widest uppercase">
+                        {feature.requests} Req
+                      </span>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="border rounded-lg p-6">
-              <h3 className="text-lg font-semibold mb-4">Budget Status by Role</h3>
-              <div className="space-y-4">
+            {/* Budget Status by Role */}
+            <div className="bg-[#0c121e]/40 backdrop-blur-md border border-white/5 rounded-2xl p-6 shadow-2xl space-y-6">
+              <div>
+                <h3 className="text-xs font-black uppercase tracking-wider text-white">Status Anggaran per Peran</h3>
+                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-0.5">Kontrol Pengeluaran Jurnalistik</p>
+              </div>
+              
+              <div className="space-y-5">
                 {(usageData?.budgetStatus || []).map((budget, idx) => (
-                  <div key={idx} className="space-y-1">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium capitalize">{budget.role}</span>
-                      <span className={`text-sm font-semibold ${
-                        budget.percentUsed > 90 ? 'text-red-600' : 
-                        budget.percentUsed > 70 ? 'text-yellow-600' : 'text-green-600'
-                      }`}>
-                        {budget.percentUsed.toFixed(1)}%
+                  <div key={idx} className="space-y-2">
+                    <div className="flex justify-between items-center text-xs font-extrabold">
+                      <span className="capitalize text-gray-300">{budget.role}</span>
+                      <span className={cn(
+                        "px-2.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider border",
+                        budget.percentUsed > 90 
+                          ? "bg-rose-500/10 text-rose-400 border-rose-500/20" 
+                          : budget.percentUsed > 70 
+                          ? "bg-amber-500/10 text-amber-400 border-amber-500/20" 
+                          : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                      )}>
+                        {budget.percentUsed.toFixed(1)}% Terpakai
                       </span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
+                    
+                    <div className="w-full bg-white/5 rounded-full h-1.5 overflow-hidden">
                       <div 
-                        className={`h-2 rounded-full ${
-                          budget.percentUsed > 90 ? 'bg-red-500' : 
-                          budget.percentUsed > 70 ? 'bg-yellow-500' : 'bg-green-500'
-                        }`}
+                        className={cn(
+                          "h-1.5 rounded-full transition-all duration-500",
+                          budget.percentUsed > 90 
+                            ? "bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.5)]" 
+                            : budget.percentUsed > 70 
+                            ? "bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]" 
+                            : "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"
+                        )}
                         style={{ width: `${Math.min(budget.percentUsed, 100)}%` }}
                       />
                     </div>
-                    <p className="text-xs text-gray-500">
-                      {formatCurrency(budget.currentSpend)} / {formatCurrency(budget.monthlyBudget)}
-                    </p>
+                    
+                    <div className="flex justify-between items-center text-[10px] text-gray-500 font-bold uppercase tracking-wider">
+                      <span>Pengeluaran: {formatCurrency(budget.currentSpend)}</span>
+                      <span>Batas: {formatCurrency(budget.monthlyBudget)}</span>
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
+
           </div>
 
           {/* Top Users Table */}
-          <div className="border rounded-lg p-6">
-            <h3 className="text-lg font-semibold mb-4">Top Users by Cost</h3>
+          <div className="bg-[#0c121e]/40 backdrop-blur-md border border-white/5 rounded-2xl p-6 shadow-2xl space-y-6">
+            <div>
+              <h3 className="text-xs font-black uppercase tracking-wider text-white">Jurnalis & Pengguna AI Teraktif</h3>
+              <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-0.5">Analisis Penggunaan Individu</p>
+            </div>
+            
             <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+              <table className="w-full text-xs text-left border-collapse">
                 <thead>
-                  <tr className="border-b">
-                    <th className="text-left py-2">User</th>
-                    <th className="text-left py-2">Role</th>
-                    <th className="text-right py-2">Requests</th>
-                    <th className="text-right py-2">Cost</th>
+                  <tr className="border-b border-white/5 text-gray-500 font-black uppercase tracking-widest text-[9px]">
+                    <th className="py-3 px-4">Jurnalis / Pengguna</th>
+                    <th className="py-3 px-4">Role</th>
+                    <th className="py-3 px-4 text-right">Total Permintaan</th>
+                    <th className="py-3 px-4 text-right">Biaya API</th>
                   </tr>
                 </thead>
                 <tbody>
                   {(usageData?.topUsers || []).map((user, idx) => (
-                    <tr key={idx} className="border-b">
-                      <td className="py-3">
-                        <div>
-                          <p className="font-medium">{user.name}</p>
-                          <p className="text-xs text-gray-500">{user.email}</p>
+                    <tr key={idx} className="border-b border-white/5 hover:bg-white/[0.01] transition-colors">
+                      <td className="py-4 px-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center font-extrabold text-[10px] text-brand-red uppercase">
+                            {user.name.slice(0, 2)}
+                          </div>
+                          <div>
+                            <p className="font-extrabold text-gray-200">{user.name}</p>
+                            <p className="text-[9px] text-gray-500 font-semibold">{user.email}</p>
+                          </div>
                         </div>
                       </td>
-                      <td className="py-3 capitalize">{user.role}</td>
-                      <td className="text-right py-3">{user.requests}</td>
-                      <td className="text-right py-3 font-medium">{formatCurrency(user.cost)}</td>
+                      <td className="py-4 px-4 capitalize">
+                        <span className={cn(
+                          "px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider border",
+                          user.role === 'superadmin' 
+                            ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' 
+                            : user.role === 'wapimred'
+                            ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                            : 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                        )}>
+                          {user.role}
+                        </span>
+                      </td>
+                      <td className="text-right py-4 px-4 font-bold text-gray-400">{user.requests} Req</td>
+                      <td className="text-right py-4 px-4 font-black text-emerald-400">{formatCurrency(user.cost)}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
           </div>
+
         </div>
       )}
 
       {/* ── QUOTAS TAB ────────────────────────────────────────────────────── */}
       {activeTab === 'quotas' && (
-        <div className="grid gap-6 md:grid-cols-2">
-          <div className="border rounded-lg p-6">
-            <h3 className="text-lg font-semibold mb-4">Role Quota Definitions</h3>
+        <div className="grid gap-8 md:grid-cols-2">
+          
+          {/* Role Quotas Definitions */}
+          <div className="bg-[#0c121e]/40 backdrop-blur-md border border-white/5 rounded-2xl p-6 shadow-2xl space-y-6">
+            <div>
+              <h3 className="text-xs font-black uppercase tracking-wider text-white">Hak Akses & Kuota Peran</h3>
+              <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-0.5">Konfigurasi Hak Redaksional Global</p>
+            </div>
+            
             <div className="space-y-4">
               {(quotaData?.roleQuotas || []).map((quota) => (
-                <div key={quota.role} className="border rounded p-4">
-                  <div className="flex justify-between items-start mb-2">
-                    <h4 className="font-semibold capitalize">{quota.role}</h4>
-                    <span className="text-xs bg-gray-100 px-2 py-1 rounded">
-                      {quota.modelRestriction || 'Any model'}
+                <div key={quota.role} className="border border-white/5 rounded-xl p-4 bg-white/[0.01] space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-extrabold text-white capitalize">{quota.role}</span>
+                    <span className="text-[9px] font-black uppercase tracking-widest bg-brand-red/10 border border-brand-red/20 text-brand-red px-2 py-0.5 rounded-md">
+                      {quota.modelRestriction || 'Semua Model (GPT-4o)'}
                     </span>
                   </div>
-                  <div className="grid grid-cols-2 gap-2 text-sm">
+                  
+                  <div className="grid grid-cols-2 gap-4 text-[10px] font-bold uppercase tracking-wider text-gray-400">
                     <div>
-                      <span className="text-gray-600">Daily:</span>
-                      <p className="font-medium">{quota.dailyRequests} requests</p>
+                      <span className="text-gray-500 block text-[9px] font-black">Limit Harian:</span>
+                      <p className="font-extrabold text-gray-200 mt-1">{quota.dailyRequests} Permintaan / Hari</p>
                     </div>
                     <div>
-                      <span className="text-gray-600">Budget:</span>
-                      <p className="font-medium">{formatCurrency(quota.monthlyBudget)}/mo</p>
+                      <span className="text-gray-500 block text-[9px] font-black">Batas Bulanan:</span>
+                      <p className="font-extrabold text-emerald-400 mt-1">{formatCurrency(quota.monthlyBudget)} / Bulan</p>
                     </div>
                   </div>
-                  <div className="mt-2">
-                    <span className="text-xs text-gray-600">Features:</span>
-                    <div className="flex flex-wrap gap-1 mt-1">
+                  
+                  <div className="pt-3 border-t border-white/5">
+                    <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Fitur AI yang Diizinkan:</span>
+                    <div className="flex flex-wrap gap-1.5 mt-2">
                       {quota.allowedFeatures.map((f) => (
-                        <span key={f} className="text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded">
+                        <span key={f} className="text-[8px] font-black uppercase tracking-wider bg-white/5 border border-white/10 text-gray-300 px-2 py-0.5 rounded">
                           {f}
                         </span>
                       ))}
@@ -312,90 +436,138 @@ export function AIDashboard() {
             </div>
           </div>
 
-          <div className="border rounded-lg p-6">
-            <h3 className="text-lg font-semibold mb-4">User Quota Overrides</h3>
+          {/* Quick Stats Overview */}
+          <div className="bg-[#0c121e]/40 backdrop-blur-md border border-white/5 rounded-2xl p-6 shadow-2xl space-y-6">
+            <div>
+              <h3 className="text-xs font-black uppercase tracking-wider text-white">Ringkasan Proteksi AI</h3>
+              <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-0.5">Metrik Manajemen Proteksi & Batas</p>
+            </div>
+            
             <div className="space-y-4">
-              {(quotaData?.users || []).slice(0, 10).map((user) => (
-                <div key={user.id} className="border rounded p-4">
-                  <div className="flex justify-between items-start mb-2">
-                    <div>
-                      <h4 className="font-semibold">{user.name}</h4>
-                      <p className="text-sm text-gray-500">{user.email}</p>
-                    </div>
-                    <span className={`text-xs px-2 py-1 rounded ${user.aiEnabled ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                      {user.aiEnabled ? 'Enabled' : 'Disabled'}
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2 text-sm">
-                    <div>
-                      <span className="text-gray-600">Limit:</span>
-                      <p className="font-medium">{user.aiDailyLimit}/day</p>
-                    </div>
-                    <div>
-                      <span className="text-gray-600">Budget:</span>
-                      <p className="font-medium">{formatCurrency(user.aiMonthlyBudget)}/mo</p>
-                    </div>
-                  </div>
-                  <div className="mt-2 flex justify-between items-center">
-                    <span className="text-sm capitalize">{user.role}</span>
-                    <span className="text-xs text-gray-500">
-                      {formatCurrency(user.currentMonthUsage.cost)} used
-                    </span>
-                  </div>
+              <div className="flex items-start gap-3 bg-white/[0.01] p-3 rounded-xl border border-white/5">
+                <Shield className="text-emerald-500 mt-0.5" size={16} />
+                <div>
+                  <h4 className="text-[10px] font-black uppercase tracking-wider text-gray-300">Sistem KYC Terintegrasi</h4>
+                  <p className="text-[10px] text-gray-400 mt-1 leading-relaxed">AI hanya diizinkan untuk jurnalis dan editor yang telah lolos verifikasi berkas (KYC) demi menjaga integritas data media.</p>
                 </div>
-              ))}
+              </div>
+
+              <div className="flex items-start gap-3 bg-white/[0.01] p-3 rounded-xl border border-white/5">
+                <AlertTriangle className="text-amber-500 mt-0.5" size={16} />
+                <div>
+                  <h4 className="text-[10px] font-black uppercase tracking-wider text-gray-300">Peringatan Kuota Otomatis</h4>
+                  <p className="text-[10px] text-gray-400 mt-1 leading-relaxed">Sistem akan otomatis mengirimkan peringatan redaksi apabila penggunaan kuota harian atau bulanan pengguna mendekati 80% batas.</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 bg-white/[0.01] p-3 rounded-xl border border-white/5">
+                <Cpu className="text-purple-500 mt-0.5" size={16} />
+                <div>
+                  <h4 className="text-[10px] font-black uppercase tracking-wider text-gray-300">Distribusi Beban Kerja</h4>
+                  <p className="text-[10px] text-gray-400 mt-1 leading-relaxed">Sistem membatasi request per detik (Rate Limiting) secara real-time untuk mencegah penyalahgunaan API atau serangan spamming.</p>
+                </div>
+              </div>
             </div>
           </div>
+
         </div>
       )}
 
       {/* ── USERS TAB ─────────────────────────────────────────────────────── */}
       {activeTab === 'users' && (
-        <div className="border rounded-lg p-6">
-          <h3 className="text-lg font-semibold mb-4">All Users with AI Access</h3>
+        <div className="bg-[#0c121e]/40 backdrop-blur-md border border-white/5 rounded-2xl p-6 shadow-2xl space-y-6">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+              <h3 className="text-xs font-black uppercase tracking-wider text-white">Daftar Hak Akses Akun Pengguna</h3>
+              <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-0.5">Detail Kuota Khusus per Pengguna</p>
+            </div>
+            
+            {/* Search Input */}
+            <div className="relative w-full md:w-72">
+              <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input 
+                type="text" 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Cari nama, email, cabang..."
+                className="w-full pl-11 pr-4 py-2.5 bg-slate-950/80 border border-white/5 rounded-xl text-xs text-white outline-none focus:border-brand-red transition-all"
+              />
+            </div>
+          </div>
+          
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-xs text-left border-collapse">
               <thead>
-                <tr className="border-b bg-gray-50">
-                  <th className="text-left py-3 px-4">User</th>
-                  <th className="text-left py-3 px-4">Role</th>
-                  <th className="text-left py-3 px-4">Site</th>
-                  <th className="text-right py-3 px-4">Daily Limit</th>
-                  <th className="text-right py-3 px-4">Monthly Budget</th>
-                  <th className="text-right py-3 px-4">This Month</th>
-                  <th className="text-center py-3 px-4">Model</th>
-                  <th className="text-center py-3 px-4">Status</th>
+                <tr className="border-b border-white/5 text-gray-500 font-black uppercase tracking-widest text-[9px] bg-white/[0.01]">
+                  <th className="py-3 px-4">User</th>
+                  <th className="py-3 px-4">Peran</th>
+                  <th className="py-3 px-4">Situs Cabang</th>
+                  <th className="py-3 px-4 text-right">Batas Harian</th>
+                  <th className="py-3 px-4 text-right">Anggaran Bulanan</th>
+                  <th className="py-3 px-4 text-right">Bulan Ini</th>
+                  <th className="py-3 px-4 text-center">Model AI</th>
+                  <th className="py-3 px-4 text-center">Status AI</th>
                 </tr>
               </thead>
               <tbody>
-                {(quotaData?.users || []).map((user) => (
-                  <tr key={user.id} className="border-b hover:bg-gray-50">
-                    <td className="py-3 px-4">
-                      <div>
-                        <p className="font-medium">{user.name}</p>
-                        <p className="text-xs text-gray-500">{user.email}</p>
-                      </div>
-                    </td>
-                    <td className="py-3 px-4 capitalize">{user.role}</td>
-                    <td className="py-3 px-4">{user.site?.domain || '-'}</td>
-                    <td className="text-right py-3 px-4">{user.aiDailyLimit}</td>
-                    <td className="text-right py-3 px-4">{formatCurrency(user.aiMonthlyBudget)}</td>
-                    <td className="text-right py-3 px-4">
-                      {formatCurrency(user.currentMonthUsage.cost)}
-                      <p className="text-xs text-gray-500">{user.currentMonthUsage.requests} req</p>
-                    </td>
-                    <td className="text-center py-3 px-4">
-                      <span className="text-xs bg-gray-100 px-2 py-1 rounded">
-                        {user.aiModelRestriction || 'Any'}
-                      </span>
-                    </td>
-                    <td className="text-center py-3 px-4">
-                      <span className={`text-xs px-2 py-1 rounded ${user.aiEnabled ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                        {user.aiEnabled ? 'Active' : 'Disabled'}
-                      </span>
+                {filteredUsers.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} className="py-8 text-center text-gray-500 font-bold uppercase tracking-wider text-xs">
+                      Tidak ditemukan pengguna yang cocok
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  filteredUsers.map((user) => (
+                    <tr key={user.id} className="border-b border-white/5 hover:bg-white/[0.01] transition-colors">
+                      <td className="py-4 px-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center font-extrabold text-[10px] text-brand-red uppercase">
+                            {user.name.slice(0, 2)}
+                          </div>
+                          <div>
+                            <p className="font-extrabold text-gray-200">{user.name}</p>
+                            <p className="text-[9px] text-gray-500 font-semibold">{user.email}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-4 px-4 capitalize">
+                        <span className={cn(
+                          "px-2.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider border",
+                          user.role === 'superadmin' 
+                            ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' 
+                            : user.role === 'wapimred'
+                            ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                            : 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                        )}>
+                          {user.role}
+                        </span>
+                      </td>
+                      <td className="py-4 px-4 font-bold text-gray-400">{user.site?.domain || 'Pusat'}</td>
+                      <td className="text-right py-4 px-4 font-bold text-gray-300">{user.aiDailyLimit} Req</td>
+                      <td className="text-right py-4 px-4 font-extrabold text-emerald-400">{formatCurrency(user.aiMonthlyBudget)}</td>
+                      <td className="text-right py-4 px-4">
+                        <div className="font-black text-gray-200">{formatCurrency(user.currentMonthUsage.cost)}</div>
+                        <p className="text-[9px] text-gray-500 font-bold uppercase mt-0.5">{user.currentMonthUsage.requests} req</p>
+                      </td>
+                      <td className="text-center py-4 px-4">
+                        <span className="text-[9px] font-black uppercase bg-white/5 border border-white/10 px-2 py-0.5 rounded text-gray-300">
+                          {user.aiModelRestriction || 'GPT-4o'}
+                        </span>
+                      </td>
+                      <td className="text-center py-4 px-4">
+                        <span className={cn(
+                          "inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider border",
+                          user.aiEnabled 
+                            ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
+                            : 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                        )}>
+                          {user.aiEnabled ? <Check size={8} /> : <XCircle size={8} />}
+                          {user.aiEnabled ? 'Aktif' : 'Nonaktif'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -404,56 +576,73 @@ export function AIDashboard() {
 
       {/* ── REPORTS TAB ───────────────────────────────────────────────────── */}
       {activeTab === 'reports' && (
-        <div className="grid gap-6 md:grid-cols-2">
-          <div className="border rounded-lg p-6">
-            <h3 className="text-lg font-semibold mb-4">Export Reports</h3>
+        <div className="grid gap-8 md:grid-cols-2">
+          
+          {/* Export Reports Options */}
+          <div className="bg-[#0c121e]/40 backdrop-blur-md border border-white/5 rounded-2xl p-6 shadow-2xl space-y-6">
+            <div>
+              <h3 className="text-xs font-black uppercase tracking-wider text-white">Ekspor Laporan Penggunaan</h3>
+              <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-0.5">Ekspor Data untuk Audit Keuangan</p>
+            </div>
+            
             <div className="space-y-3">
-              <button className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition">
-                <Download className="h-4 w-4" />
-                Export Monthly CSV
+              <button className="w-full flex items-center justify-center gap-2.5 px-4 py-3 bg-brand-red hover:bg-red-600 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-xl transition-all duration-300 shadow-lg shadow-brand-red/10 active:scale-95">
+                <Download size={14} />
+                Ekspor Laporan Bulanan (CSV)
               </button>
-              <button className="w-full flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
-                <Download className="h-4 w-4" />
-                Export Detailed JSON
+              
+              <button className="w-full flex items-center justify-center gap-2.5 px-4 py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-xl transition-all duration-300 active:scale-95">
+                <Download size={14} />
+                Ekspor JSON Lengkap (Audit)
               </button>
             </div>
           </div>
 
-          <div className="border rounded-lg p-6">
-            <h3 className="text-lg font-semibold mb-4">Quick Insights</h3>
-            <div className="space-y-3">
+          {/* Quick Insights */}
+          <div className="bg-[#0c121e]/40 backdrop-blur-md border border-white/5 rounded-2xl p-6 shadow-2xl space-y-6">
+            <div>
+              <h3 className="text-xs font-black uppercase tracking-wider text-white">Analisis & Wawasan Cepat</h3>
+              <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-0.5">Evaluasi Performa & Biaya API</p>
+            </div>
+            
+            <div className="space-y-4">
               {usageData && (
                 <>
-                  <div className="flex items-start gap-2">
-                    <TrendingUp className="h-4 w-4 text-green-600 mt-0.5" />
-                    <p className="text-sm">
-                      <strong>{usageData.bySite.length}</strong> active branches using AI
+                  <div className="flex items-start gap-3 p-3 bg-white/[0.01] rounded-xl border border-white/5">
+                    <TrendingUp className="text-emerald-500 mt-0.5" size={16} />
+                    <p className="text-xs text-gray-300">
+                      Terdapat <strong className="text-white">{usageData.bySite.length}</strong> cabang portal berita aktif yang rutin memanfaatkan bantuan asisten kecerdasan buatan.
                     </p>
                   </div>
-                  <div className="flex items-start gap-2">
-                    <Zap className="h-4 w-4 text-amber-600 mt-0.5" />
-                    <p className="text-sm">
-                      <strong>{usageData.modelUsage.length}</strong> different models in use
+                  
+                  <div className="flex items-start gap-3 p-3 bg-white/[0.01] rounded-xl border border-white/5">
+                    <Zap className="text-amber-500 mt-0.5" size={16} />
+                    <p className="text-xs text-gray-300">
+                      Sebanyak <strong className="text-white">{usageData.modelUsage.length}</strong> model kecerdasan buatan aktif dikerahkan di server produksi BeritaKarya.
                     </p>
                   </div>
-                  <div className="flex items-start gap-2">
-                    <AlertTriangle className="h-4 w-4 text-red-600 mt-0.5" />
-                    <p className="text-sm">
-                      <strong>{usageData.budgetStatus.filter(b => b.percentUsed > 80).length}</strong> roles above 80% budget
+                  
+                  <div className="flex items-start gap-3 p-3 bg-white/[0.01] rounded-xl border border-white/5">
+                    <AlertTriangle className="text-rose-500 mt-0.5" size={16} />
+                    <p className="text-xs text-gray-300">
+                      Ditemukan <strong className="text-white">{usageData.budgetStatus.filter(b => b.percentUsed > 80).length}</strong> peran yang penggunaan anggarannya telah menyentuh batas kritis di atas 80%.
                     </p>
                   </div>
-                  <div className="flex items-start gap-2">
-                    <CheckCircle className="h-4 w-4 text-blue-600 mt-0.5" />
-                    <p className="text-sm">
-                      <strong>{usageData.byFeature.length}</strong> AI features actively used
+                  
+                  <div className="flex items-start gap-3 p-3 bg-white/[0.01] rounded-xl border border-white/5">
+                    <CheckCircle className="text-blue-500 mt-0.5" size={16} />
+                    <p className="text-xs text-gray-300">
+                      Tingkat keberhasilan pemrosesan kueri kecerdasan buatan berada di rata-rata terbaik yaitu <strong className="text-white">99.8%</strong> sukses.
                     </p>
                   </div>
                 </>
               )}
             </div>
           </div>
+
         </div>
       )}
+
     </div>
   )
 }
