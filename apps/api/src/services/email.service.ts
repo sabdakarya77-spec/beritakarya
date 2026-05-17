@@ -52,11 +52,14 @@ class EmailService {
         throw new Error('No from address configured. Set EMAIL_FROM_ADDRESS or SMTP_USER')
       }
 
+      const replyToAddress = process.env.EMAIL_REPLY_TO || fromAddress
+
       await this.transporter.sendMail({
         from: fromAddress,
         to,
         subject,
         html,
+        replyTo: replyToAddress,
         text: text || html.replace(/<[^>]*>/g, '')
       })
 
