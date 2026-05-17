@@ -171,7 +171,7 @@ app.use('/api/v1/ai', aiRouter)
 
 // Category routes - using functions directly (not routers)
 // GET: public (anyone can read categories)
-app.get('/api/v1/categories', asyncHandler(categoryController.getCategories))
+app.get('/api/v1/categories', siteMiddleware, asyncHandler(categoryController.getCategories))
 // POST/PUT/DELETE: requires auth + site scope + role wapimred/superadmin
 app.post('/api/v1/categories',
   requireAuth, csrfProtection, siteMiddleware, requireSiteAccess,

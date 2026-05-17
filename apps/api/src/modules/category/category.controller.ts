@@ -17,7 +17,7 @@ export async function getCategories(req: Request, res: Response) {
   try {
     const { view } = req.query
     const user = (req as any).user
-    const siteId = (req as any).site
+    const siteId = (req as any).site || (req.query.site as string) || (req.headers['x-site-id'] as string)
 
     // Superadmin-only routes
     if (view === 'global' || view === 'all') {
