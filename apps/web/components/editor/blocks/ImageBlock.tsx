@@ -5,9 +5,11 @@ import { useEditorStore } from '../../../store/editorStore'
 import { api } from '../../../lib/api'
 import type { ImageBlock as TImageBlock } from '@beritakarya/types'
 import { useCaption } from '../../../hooks/useAI'; // Import AI caption hook
+import { useToastStore } from '../../../store/toastStore'
 
 export function ImageBlock({ block }: { block: TImageBlock }) {
   const { updateBlock } = useEditorStore()
+  const { addToast } = useToastStore()
   const inputRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
   const [progress, setProgress] = useState(0)
@@ -32,10 +34,11 @@ export function ImageBlock({ block }: { block: TImageBlock }) {
         width: data.data.width,
         height: data.data.height
       })
+      addToast('Gambar berhasil diunggah!', 'success')
     } catch (error: any) {
       const msg = error?.response?.data?.error?.message || 'Upload gagal, coba lagi'
       console.error('[ImageBlock] Upload error:', error?.response?.data || error)
-      alert(msg)
+      addToast(msg, 'error')
     } finally {
       setUploading(false)
       setProgress(0)

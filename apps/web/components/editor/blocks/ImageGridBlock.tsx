@@ -4,11 +4,13 @@ import Image from 'next/image'
 import { useEditorStore } from '../../../store/editorStore'
 import { api } from '../../../lib/api'
 import type { ImageGridBlock as TImageGridBlock, ImageItem } from '@beritakarya/types'
+import { useToastStore } from '../../../store/toastStore'
 
 interface Props { block: TImageGridBlock }
 
 export function ImageGridBlock({ block }: Props) {
   const { updateBlock } = useEditorStore()
+  const { addToast } = useToastStore()
   const [dragIdx, setDragIdx] = useState<number | null>(null)
 
   const setColumns = (columns: 2 | 3) => updateBlock(block.id, { columns })
@@ -26,8 +28,12 @@ export function ImageGridBlock({ block }: Props) {
 
   const handleAddImage = async (file: File) => {
     const item = await uploadImage(file)
-    if (!item) return
+    if (!item) {
+      addToast('Gagal mengunggah gambar. Coba lagi.', 'error')
+      return
+    }
     updateBlock(block.id, { images: [...block.images, item] })
+    addToast('Gambar berhasil ditambahkan ke grid!', 'success')
   }
 
   const handleRemove = (idx: number) => {

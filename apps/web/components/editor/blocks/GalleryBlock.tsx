@@ -4,9 +4,11 @@ import Image from 'next/image'
 import { useEditorStore } from '../../../store/editorStore'
 import { api } from '../../../lib/api'
 import type { GalleryBlock as TGalleryBlock } from '@beritakarya/types'
+import { useToastStore } from '../../../store/toastStore'
 
 export function GalleryBlock({ block }: { block: TGalleryBlock }) {
   const { updateBlock } = useEditorStore()
+  const { addToast } = useToastStore()
   const [lightbox, setLightbox] = useState<number | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
@@ -14,6 +16,7 @@ export function GalleryBlock({ block }: { block: TGalleryBlock }) {
   const handleUpload = async (files: FileList) => {
     setUploading(true)
     const newItems = []
+    let failedCount = 0
     for (const file of Array.from(files)) {
       const form = new FormData()
       form.append('file', file)
@@ -22,9 +25,21 @@ export function GalleryBlock({ block }: { block: TGalleryBlock }) {
           headers: { 'Content-Type': 'multipart/form-data' }
         })
         newItems.push({ url: data.data.url, alt: file.name.replace(/.[^/.]+$/, '') })
-      } catch {}
+      } catch {
+        failedCount++
+      }
     }
-    updateBlock(block.id, { images: [...block.images, ...newItems] })
+    
+    if (newItems.length > 0) {
+      updateBlock(block.id, { images: [...block.images, ...newItems] })
+      if (failedCount > 0) {
+        addToast(`Berhasil mengunggah ${newItems.length} foto, tetapi ${failedCount} foto gagal.`, 'warning')
+      } else {
+        addToast(`Berhasil mengunggah ${newItems.length} foto!`, 'success')
+      }
+    } else if (failedCount > 0) {
+      addToast('Gagal mengunggah foto. Silakan coba lagi.', 'error')
+    }
     setUploading(false)
   }
 

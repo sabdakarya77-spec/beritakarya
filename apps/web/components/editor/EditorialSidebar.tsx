@@ -7,10 +7,11 @@ import {
   Globe, ChevronRight, History, RotateCcw
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { api } from '../../lib/api';
 import { cn } from '../../lib/utils';
 import Image from 'next/image';
+import { useToastStore } from '../../store/toastStore';
 
 export function EditorialSidebar() {
   const { 
@@ -23,6 +24,29 @@ export function EditorialSidebar() {
   const [tagInput, setTagInput] = useState('');
   const [versions, setVersions] = useState<any[]>([]);
   const [loadingVersions, setLoadingVersions] = useState(false);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingFeatured, setUploadingFeatured] = useState(false);
+  const { addToast } = useToastStore();
+
+  const handleFeaturedImageUpload = async (file: File) => {
+    const form = new FormData()
+    form.append('file', file)
+    setUploadingFeatured(true)
+    try {
+      addToast('Sedang mengunggah gambar utama...', 'info')
+      const { data } = await api.post('/media/upload', form, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+      updateArticleData({ featuredImage: data.data.url })
+      addToast('Gambar utama berhasil diunggah!', 'success')
+    } catch (error: any) {
+      const msg = error?.response?.data?.error?.message || 'Gagal mengunggah gambar utama'
+      addToast(msg, 'error')
+    } finally {
+      setUploadingFeatured(false)
+    }
+  }
 
   useEffect(() => {
     const loadCategories = async () => {
@@ -157,18 +181,40 @@ export function EditorialSidebar() {
                            </div>
                         </>
                       ) : (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center cursor-pointer hover:bg-gray-100 dark:hover:bg-white/[0.08] transition-colors">
+                        <div 
+                          onClick={(e) => {
+                            if ((e.target as HTMLElement).tagName !== 'INPUT') {
+                              fileInputRef.current?.click();
+                            }
+                          }}
+                          className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center cursor-pointer hover:bg-gray-100 dark:hover:bg-white/[0.08] transition-colors"
+                        >
                           <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-white/5 flex items-center justify-center mb-3">
-                            <ImageIcon size={18} className="text-gray-300" />
+                            {uploadingFeatured ? (
+                              <RotateCcw size={18} className="text-gray-300 animate-spin" />
+                            ) : (
+                              <ImageIcon size={18} className="text-gray-300" />
+                            )}
                           </div>
                           <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-relaxed">
-                            Upload atau Paste URL Gambar Utama
+                            {uploadingFeatured ? 'Mengunggah...' : 'Klik untuk Upload / Paste URL'}
                           </p>
                           <input 
                             type="text" 
                             placeholder="https://..."
+                            onClick={(e) => e.stopPropagation()}
                             onBlur={(e) => updateArticleData({ featuredImage: e.target.value })}
                             className="mt-4 w-full px-3 py-2 text-[10px] bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 rounded-lg outline-none focus:border-brand-red"
+                          />
+                          <input 
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => {
+                              const f = e.target.files?.[0];
+                              if (f) handleFeaturedImageUpload(f);
+                            }}
                           />
                         </div>
                       )}
