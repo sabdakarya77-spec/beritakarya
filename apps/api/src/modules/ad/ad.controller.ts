@@ -6,6 +6,32 @@ import { asyncHandler } from '../../utils/asyncHandler'
 
 export const adRouter = Router()
 
+// Public endpoint for tracking views/clicks
+adRouter.post('/track/:id',
+  asyncHandler(async (req: Request, res: Response) => {
+    const { id } = req.params
+    const { action } = req.query // 'impression' | 'click'
+    
+    try {
+      if (action === 'click') {
+        await prisma.advertisement.update({
+          where: { id },
+          data: { clicks: { increment: 1 } }
+        })
+      } else if (action === 'impression') {
+        await prisma.advertisement.update({
+          where: { id },
+          data: { impressions: { increment: 1 } }
+        })
+      }
+    } catch (e) {
+      // Ignore if ad not found
+    }
+    
+    res.json({ success: true })
+  })
+)
+
 adRouter.get('/',
   requireAuth,
   requireRole(['superadmin', 'wapimred']),
@@ -53,7 +79,7 @@ adRouter.post('/',
         linkUrl: linkUrl || null,
         isActive: isActive ?? true
       },
-      select: { id: true, slot: true, code: true, imageUrl: true, linkUrl: true, isActive: true, createdAt: true }
+      select: { id: true, slot: true, code: true, imageUrl: true, linkUrl: true, isActive: true, impressions: true, clicks: true, createdAt: true }
     })
     res.status(201).json({ success: true, data: ad })
   })
@@ -75,7 +101,7 @@ adRouter.patch('/:id',
         linkUrl: linkUrl || null,
         isActive
       },
-      select: { id: true, slot: true, code: true, imageUrl: true, linkUrl: true, isActive: true, createdAt: true }
+      select: { id: true, slot: true, code: true, imageUrl: true, linkUrl: true, isActive: true, impressions: true, clicks: true, createdAt: true }
     })
     res.json({ success: true, data: ad })
   })

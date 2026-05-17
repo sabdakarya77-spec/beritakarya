@@ -12,7 +12,8 @@ import {
   AlertCircle, 
   ExternalLink,
   Upload,
-  RefreshCw
+  RefreshCw,
+  BarChart3
 } from 'lucide-react';
 import { cn } from '../../../../lib/utils';
 
@@ -23,6 +24,8 @@ interface Ad {
   imageUrl: string | null;
   linkUrl: string | null;
   isActive: boolean;
+  impressions?: number;
+  clicks?: number;
 }
 
 const SLOTS = [
@@ -181,6 +184,32 @@ function AdSlotCard({ slot, data, onSave, isSaving }: { slot: any, data: Ad | un
           </button>
         </div>
       </div>
+
+      {/* Analytics Mini Tracker (Only shown if data exists) */}
+      {data && (
+        <div className="px-6 py-4 bg-emerald-50/50 dark:bg-emerald-900/10 flex flex-col md:flex-row items-start md:items-center justify-between border-b border-emerald-100/50 dark:border-emerald-900/20 gap-4">
+          <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400">
+            <BarChart3 size={16} />
+            <span className="text-[10px] font-black uppercase tracking-widest">Laporan Performa Iklan</span>
+          </div>
+          <div className="flex items-center gap-8 w-full md:w-auto justify-between md:justify-end">
+            <div className="text-center">
+              <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Impresi (Views)</p>
+              <p className="text-sm font-black text-brand-black dark:text-white">{(data.impressions || 0).toLocaleString()}</p>
+            </div>
+            <div className="text-center">
+              <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Klik</p>
+              <p className="text-sm font-black text-brand-black dark:text-white">{(data.clicks || 0).toLocaleString()}</p>
+            </div>
+            <div className="text-center">
+              <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">CTR</p>
+              <p className="text-sm font-black text-emerald-600 dark:text-emerald-400">
+                {data.impressions ? ((data.clicks || 0) / data.impressions * 100).toFixed(2) : '0.00'}%
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Tab Switcher */}
       <div className="flex bg-gray-50/50 dark:bg-black/10 p-1 m-4 rounded-xl border border-gray-100 dark:border-white/5">

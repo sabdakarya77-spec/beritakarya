@@ -154,14 +154,16 @@ model Category {
 }
 
 model Advertisement {
-  id        String   @id @default(uuid())
-  siteId    String
-  slot      String // 'leaderboard', 'in_feed', 'sidebar'
-  code      String? // HTML/JS snippet like Google AdSense
-  imageUrl  String? // If they just want to upload an image banner
-  linkUrl   String? // Where the banner clicks to
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
+  id          String   @id @default(uuid())
+  siteId      String
+  slot        String // 'leaderboard', 'in_feed', 'sidebar'
+  code        String? // HTML/JS snippet like Google AdSense
+  imageUrl    String? // If they just want to upload an image banner
+  linkUrl     String? // Where the banner clicks to
+  isActive    Boolean  @default(true)
+  impressions Int      @default(0) // Tracker for views
+  clicks      Int      @default(0) // Tracker for clicks
+  createdAt   DateTime @default(now())
 
   site Site @relation(fields: [siteId], references: [id])
 
