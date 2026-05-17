@@ -137,15 +137,15 @@ kycRouter.get('/stats',
     }
 
     // NEW: Calculate Trend Data (Last 7 Days)
-    // [B-2] Optimized: use raw query for GROUP BY DATE to avoid N+1
+    // [B-2] Optimized: use raw query for GROUP BY DATE to support PostgreSQL casting
     const trendDataRaw = await prisma.$queryRaw<any[]>`
       SELECT 
-        DATE("kycSubmittedAt") as date, 
+        "kycSubmittedAt"::date as date, 
         COUNT(*)::int as count 
       FROM "User" 
       WHERE "siteId" = ${siteId} 
         AND "kycSubmittedAt" >= ${oneWeekAgo}
-      GROUP BY DATE("kycSubmittedAt") 
+      GROUP BY "kycSubmittedAt"::date 
       ORDER BY date ASC
     `
 

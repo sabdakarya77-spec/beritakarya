@@ -129,7 +129,7 @@ adminRouter.get('/ai-usage', requireAuth, requireAdmin, asyncHandler(async (req:
   // Daily usage trend
   const dailyTrend = await prisma.$queryRaw<any[]>`
     SELECT 
-      DATE(ua."createdAt") as date,
+      ua."createdAt"::date as date,
       COUNT(*) as requests,
       SUM(ua."estimatedCost") as cost,
       COUNT(DISTINCT ua."userId") as activeUsers
@@ -137,7 +137,7 @@ adminRouter.get('/ai-usage', requireAuth, requireAdmin, asyncHandler(async (req:
     WHERE ua."createdAt" >= ${start}
       AND ua."createdAt" <= ${end}
       AND ua.success = true
-    GROUP BY DATE(ua."createdAt")
+    GROUP BY ua."createdAt"::date
     ORDER BY date ASC
   `
 
