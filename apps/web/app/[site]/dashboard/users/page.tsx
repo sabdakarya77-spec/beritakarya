@@ -76,8 +76,8 @@ export default function UsersDashboard() {
   // Filter users based on role and current site
   const getVisibleUsers = () => {
     if (showAll) return users;
-    // Non-superadmin only see users from their own site
-    return users.filter(u => u.siteId === siteId || u.role === 'superadmin');
+    // Allow users belonging to this site, global users (null siteId), or superadmins
+    return users.filter(u => !u.siteId || u.siteId === siteId || u.role === 'superadmin');
   };
 
   const visibleUsers = getVisibleUsers();

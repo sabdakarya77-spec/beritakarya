@@ -27,6 +27,7 @@ userRouter.get('/',
           name: true,
           role: true,
           isVerified: true,
+          siteId: true,
           createdAt: true
         },
         orderBy: { createdAt: 'desc' }
