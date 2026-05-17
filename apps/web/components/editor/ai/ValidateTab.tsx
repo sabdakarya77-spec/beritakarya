@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { useGrammar, useReadability, useFactCheck } from '../../../hooks/useAI'
 import { useEditorStore } from '../../../store/editorStore'
 import { useKeyboardShortcuts } from '../../../hooks/useKeyboardShortcuts'
-import { ShieldAlert, CheckCircle2, HelpCircle, XCircle, AlertCircle } from 'lucide-react'
+import { CheckCircle2, HelpCircle, XCircle, AlertCircle } from 'lucide-react'
 
 interface Props {
   model?: string
@@ -287,7 +287,7 @@ export function ValidateTab({ model = 'gpt-4o', onTrigger }: Props) {
                 <div key={idx} className="bg-white dark:bg-[#0c121e]/40 border border-gray-100 dark:border-white/5 rounded-xl p-3.5 space-y-3.5 shadow-sm">
                   <div className="flex items-start justify-between gap-2">
                     <p className="text-xs font-extrabold text-gray-800 dark:text-gray-200 leading-snug">
-                      "{claim.claim}"
+                      &ldquo;{claim.claim}&rdquo;
                     </p>
                     <span className={`inline-flex items-center gap-1 shrink-0 px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider border ${
                       claim.verdict === 'Benar'
