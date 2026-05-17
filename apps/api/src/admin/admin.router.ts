@@ -38,9 +38,9 @@ adminRouter.get('/ai-usage', requireAuth, requireAdmin, asyncHandler(async (req:
   const byRole = await prisma.$queryRaw<any[]>`
     SELECT 
       u.role,
-      COUNT(DISTINCT ua.id) as requests,
+      COUNT(DISTINCT ua.id)::int as requests,
       SUM(ua."estimatedCost") as cost,
-      SUM(ua."tokensInput" + ua."tokensOutput") as totalTokens
+      SUM(ua."tokensInput" + ua."tokensOutput")::int as totalTokens
     FROM "AIUsage" ua
     JOIN "User" u ON ua."userId" = u.id
     WHERE ua."createdAt" >= ${start}
@@ -76,9 +76,9 @@ adminRouter.get('/ai-usage', requireAuth, requireAdmin, asyncHandler(async (req:
   const bySite = await prisma.$queryRaw<any[]>`
     SELECT 
       s.domain as site,
-      COUNT(DISTINCT ua.id) as requests,
+      COUNT(DISTINCT ua.id)::int as requests,
       SUM(ua."estimatedCost") as cost,
-      COUNT(DISTINCT ua."userId") as activeUsers
+      COUNT(DISTINCT ua."userId")::int as activeUsers
     FROM "AIUsage" ua
     JOIN "Site" s ON ua."siteId" = s.id
     WHERE ua."createdAt" >= ${start}
@@ -94,7 +94,7 @@ adminRouter.get('/ai-usage', requireAuth, requireAdmin, asyncHandler(async (req:
       u.name,
       u.email,
       u.role,
-      COUNT(DISTINCT ua.id) as requests,
+      COUNT(DISTINCT ua.id)::int as requests,
       SUM(ua."estimatedCost") as cost
     FROM "AIUsage" ua
     JOIN "User" u ON ua."userId" = u.id
@@ -111,7 +111,7 @@ adminRouter.get('/ai-usage', requireAuth, requireAdmin, asyncHandler(async (req:
   const budgetStatus = await prisma.$queryRaw<any[]>`
     SELECT 
       u.role,
-      COUNT(DISTINCT ua.id) as requests,
+      COUNT(DISTINCT ua.id)::int as requests,
       SUM(ua."estimatedCost") as currentSpend,
       rq."monthlyBudget",
       (SUM(ua."estimatedCost") * 100.0 / rq."monthlyBudget") as percentUsed
@@ -130,9 +130,9 @@ adminRouter.get('/ai-usage', requireAuth, requireAdmin, asyncHandler(async (req:
   const dailyTrend = await prisma.$queryRaw<any[]>`
     SELECT 
       ua."createdAt"::date as date,
-      COUNT(*) as requests,
+      COUNT(*)::int as requests,
       SUM(ua."estimatedCost") as cost,
-      COUNT(DISTINCT ua."userId") as activeUsers
+      COUNT(DISTINCT ua."userId")::int as activeUsers
     FROM "AIUsage" ua
     WHERE ua."createdAt" >= ${start}
       AND ua."createdAt" <= ${end}
@@ -221,9 +221,9 @@ adminRouter.get('/quotas', requireAuth, requireAdmin, asyncHandler(async (req, r
   const userUsage = await prisma.$queryRaw<any[]>`
     SELECT 
       ua."userId",
-      COUNT(*) as requests,
+      COUNT(*)::int as requests,
       SUM(ua."estimatedCost") as cost,
-      SUM(ua."tokensInput" + ua."tokensOutput") as tokens
+      SUM(ua."tokensInput" + ua."tokensOutput")::int as tokens
     FROM "AIUsage" ua
     WHERE ua."createdAt" >= ${monthStart}
       AND ua.success = true
