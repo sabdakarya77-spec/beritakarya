@@ -69,6 +69,15 @@ export interface EmbedBlock extends BaseBlock {
   title?: string
 }
 
+export interface MediaTextBlock extends BaseBlock {
+  type: 'mediaText'
+  url: string
+  alt: string
+  caption?: string
+  content: string
+  align: 'left' | 'right'
+}
+
 export type Block =
   | ParagraphBlock
   | HeadingBlock
@@ -79,3 +88,4 @@ export type Block =
   | ImageGridBlock
   | GalleryBlock
   | EmbedBlock
+  | MediaTextBlock

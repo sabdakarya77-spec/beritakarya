@@ -390,6 +390,40 @@ function PublicBlock({ block }: { block: Block }) {
           )}
         </figure>
       )
+    case 'mediaText':
+      return (
+        <div 
+          className={cn(
+            "flex flex-col gap-8 my-16 items-center w-full",
+            block.align === 'right' ? "md:flex-row-reverse" : "md:flex-row"
+          )}
+        >
+          {/* Image Column */}
+          <div className="w-full md:w-1/2">
+            <figure className="m-0">
+              <div className="relative aspect-[4/3] rounded-xl overflow-hidden shadow-lg border border-gray-100 dark:border-white/5">
+                <Image 
+                  src={block.url || '/placeholder.jpg'} 
+                  alt={block.alt || 'Post image'}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+              {block.caption && (
+                <figcaption className="mt-3 text-xs text-brand-text-muted dark:text-gray-400 italic text-center">
+                  {block.caption}
+                </figcaption>
+              )}
+            </figure>
+          </div>
+          {/* Text Column */}
+          <div className="w-full md:w-1/2">
+            <p className="font-serif text-xl md:text-2xl antialiased leading-relaxed m-0 whitespace-pre-wrap">
+              {block.content}
+            </p>
+          </div>
+        </div>
+      )
     default:
       return null
   }

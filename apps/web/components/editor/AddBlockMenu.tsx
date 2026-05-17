@@ -13,6 +13,7 @@ const BLOCK_TYPES: { type: Block['type']; label: string; desc: string }[] = [
   { type: 'imageGrid', label: 'Grid Gambar', desc: '2 atau 3 kolom' },
   { type: 'gallery', label: 'Galeri', desc: 'Slideshow' },
   { type: 'embed', label: 'Embed', desc: 'YouTube, Twitter' },
+  { type: 'mediaText', label: 'Media & Teks', desc: 'Gambar & Teks bersisian' },
 ]
 
 interface Props {

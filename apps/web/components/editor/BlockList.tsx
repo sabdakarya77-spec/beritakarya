@@ -10,6 +10,7 @@ import { ImageGridBlock } from './blocks/ImageGridBlock'
 import { GalleryBlock } from './blocks/GalleryBlock'
 import { ListBlock } from './blocks/ListBlock'
 import { CalloutBlock } from './blocks/CalloutBlock'
+import { MediaTextBlock } from './blocks/MediaTextBlock'
 import type { Block } from '@beritakarya/types'
 
 export function BlockList() {
@@ -45,6 +46,7 @@ function BlockRenderer({ block }: { block: Block }) {
     case 'list': return <ListBlock block={block} />
     case 'callout': return <CalloutBlock block={block} />
     case 'embed': return <EmbedBlock block={block} />
+    case 'mediaText': return <MediaTextBlock block={block} />
     default:
       return (
         <div className="text-xs text-gray-400 py-2 px-3 border rounded bg-gray-50">
