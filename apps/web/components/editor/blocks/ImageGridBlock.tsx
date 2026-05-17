@@ -109,7 +109,9 @@ export function ImageGridBlock({ block }: Props) {
         ))}
 
         {/* Add slot */}
-        <UploadSlot onFile={handleAddImage} />
+        {block.images.length < block.columns && (
+          <UploadSlot onFile={handleAddImage} />
+        )}
       </div>
     </div>
   )
