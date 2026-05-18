@@ -55,7 +55,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       // Jika user null setelah AuthInit selesai checkAuth, 
       // middleware.ts (Next.js) sudah handle redirect ke /login via cookie check
       if (user) {
-        const allowedRoles = ['superadmin', 'wapimred', 'jurnalis']
+        const allowedRoles = ['superadmin', 'wapimred', 'jurnalis', 'advertiser']
         if (!allowedRoles.includes(user.role)) {
           router.push(`/${site}`)
           return
@@ -88,7 +88,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   // Navigation organized by section
-  const navSections = [
+  const navSections = user?.role === 'advertiser' ? [
+    {
+      label: 'Portal Pengiklan',
+      items: [
+        { name: 'Statistik Iklan', href: `/${site}/dashboard`, icon: LayoutDashboard, roles: ['advertiser'] },
+        { name: 'Pasang Iklan Baru', href: `/${site}/dashboard/ads/order`, icon: ImageIcon, roles: ['advertiser'] },
+      ]
+    }
+  ] : [
         {
           label: 'Utama',
           items: [

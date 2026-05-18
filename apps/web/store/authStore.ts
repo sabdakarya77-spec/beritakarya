@@ -8,7 +8,7 @@ interface AuthState {
   isLoading: boolean
   error: string | null
   login: (email: string, password: string) => Promise<void>
-  register: (name: string, email: string, password: string, siteId?: string) => Promise<void>
+  register: (name: string, email: string, password: string, siteId?: string, role?: string) => Promise<void>
   logout: () => Promise<void>
   checkAuth: () => Promise<void>
   clearError: () => void
@@ -43,10 +43,10 @@ export const useAuthStore = create<AuthState>()(
     }
   },
 
-  register: async (name, email, password, siteId) => {
+  register: async (name, email, password, siteId, role) => {
     set({ isLoading: true, error: null })
     try {
-      const { data } = await api.post('/auth/register', { name, email, password, siteId })
+      const { data } = await api.post('/auth/register', { name, email, password, siteId, role })
       // Tokens are now set in httpOnly cookies by the backend
       const { user } = data.data
       set({ user, isLoading: false })

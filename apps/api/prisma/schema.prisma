@@ -21,6 +21,7 @@ enum Role {
   jurnalis
   wapimred
   superadmin
+  advertiser
 }
 
 enum ArticleStatus {

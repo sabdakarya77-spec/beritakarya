@@ -48,6 +48,10 @@ export default function DashboardOverview() {
   }, []);
 
   useEffect(() => {
+    if (user?.role === 'advertiser') {
+      setLoading(false);
+      return;
+    }
     const loadData = async () => {
       setLoading(true);
       try {
@@ -69,7 +73,7 @@ export default function DashboardOverview() {
       }
     };
     loadData();
-  }, [site]);
+  }, [site, user]);
 
   if (loading) {
     return (
@@ -115,6 +119,17 @@ export default function DashboardOverview() {
     wapimred: 'Wapimred',
     jurnalis: 'Wartawan',
   };
+
+  if (user?.role === 'advertiser') {
+    return (
+      <AdvertiserDashboardOverview 
+        greeting={greeting}
+        userName={user?.name || 'Mitra Bisnis'}
+        site={site}
+        currentDate={currentDate}
+      />
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -206,6 +221,126 @@ export default function DashboardOverview() {
             </p>
             <button className="w-full py-2.5 bg-brand-red text-white text-[10px] font-black uppercase tracking-widest rounded-lg hover:bg-red-700 transition-all">
               Hubungi Support
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AdvertiserDashboardOverview({ greeting, userName, site, currentDate }: { greeting: string, userName: string, site: string, currentDate: string }) {
+  return (
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-brand-red text-white flex items-center justify-center shadow-lg shadow-brand-red/20">
+            <BarChart3 size={24} />
+          </div>
+          <div>
+            <h1 className="text-2xl font-black text-brand-black dark:text-white tracking-tight">
+              {greeting}, {userName}!
+            </h1>
+            <p className="text-[11px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">
+              Portal Mitra Pengiklan BeritaKarya di <strong className="text-brand-red">{site === 'pusat' ? 'Pusat' : site}</strong>
+            </p>
+          </div>
+        </div>
+        <div className="text-right">
+          <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest bg-gray-100 dark:bg-white/5 px-3 py-1.5 rounded-full border border-gray-100 dark:border-white/5">
+            {currentDate}
+          </span>
+        </div>
+      </div>
+
+      {/* KPI Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="dash-card p-6 flex flex-col justify-between h-32 relative overflow-hidden group">
+          <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest relative z-10">Iklan Aktif</p>
+          <p className="text-3xl font-black text-brand-black dark:text-white tabular-nums relative z-10">0</p>
+          <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest relative z-10">Sewa Slot Aktif</p>
+        </div>
+        <div className="dash-card p-6 flex flex-col justify-between h-32 relative overflow-hidden group">
+          <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest relative z-10">Total Impresi</p>
+          <p className="text-3xl font-black text-brand-black dark:text-white tabular-nums relative z-10">0</p>
+          <p className="text-[9px] font-bold text-emerald-500 uppercase tracking-widest relative z-10">Views Terhitung</p>
+        </div>
+        <div className="dash-card p-6 flex flex-col justify-between h-32 relative overflow-hidden group">
+          <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest relative z-10">Total Klik</p>
+          <p className="text-3xl font-black text-brand-black dark:text-white tabular-nums relative z-10">0</p>
+          <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest relative z-10">Direct Link Clicks</p>
+        </div>
+        <div className="dash-card p-6 flex flex-col justify-between h-32 relative overflow-hidden group">
+          <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest relative z-10">Rata-rata CTR</p>
+          <p className="text-3xl font-black text-brand-black dark:text-white tabular-nums relative z-10">0.00%</p>
+          <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest relative z-10">Click Through Rate</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-6">
+          {/* Main Info Card */}
+          <div className="dash-card p-8 bg-gradient-to-br from-brand-red/5 via-transparent to-brand-red/5 border-brand-red/10">
+            <h3 className="text-lg font-serif font-black text-brand-black dark:text-white uppercase tracking-tight mb-4">
+              Selamat Bergabung di Platform Iklan Mandiri!
+            </h3>
+            <p className="text-xs text-brand-text-muted leading-relaxed mb-6 font-semibold">
+              Terima kasih telah mempercayakan promosi bisnis Anda kepada BeritaKarya Nusantara. Saat ini, tim pengembang kami sedang melakukan integrasi modul pembayaran otomatis dan penentuan tarif regional dinamis berbasis jangkauan pembaca.
+            </p>
+            
+            {/* Timeline Process */}
+            <div className="space-y-6 mt-8">
+              <h4 className="text-[10px] font-black text-brand-black dark:text-white uppercase tracking-widest">Tahapan Alur Pemasangan Iklan</h4>
+              <div className="relative border-l border-gray-100 dark:border-white/5 pl-6 ml-3 space-y-8">
+                <div className="relative">
+                  <div className="absolute -left-9 top-0.5 w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[10px] font-black shadow-lg shadow-emerald-500/20">✓</div>
+                  <h5 className="text-xs font-black text-brand-black dark:text-white uppercase tracking-tight mb-1">Daftarkan Akun Pengiklan</h5>
+                  <p className="text-[10px] text-gray-400 leading-relaxed">Profil bisnis Anda telah sukses terdaftar di jaringan BeritaKarya.</p>
+                </div>
+                <div className="relative">
+                  <div className="absolute -left-9 top-0.5 w-6 h-6 rounded-full bg-brand-red text-white flex items-center justify-center text-[10px] font-black shadow-lg shadow-brand-red/20">2</div>
+                  <h5 className="text-xs font-black text-brand-black dark:text-white uppercase tracking-tight mb-1">Pilih Regional & Slot Iklan</h5>
+                  <p className="text-[10px] text-gray-400 leading-relaxed">Pilih subdomain regional target dan tentukan slot (Leaderboard atas atau banner di dalam artikel paragraf ke-3) sesuai segmentasi pasar Anda.</p>
+                </div>
+                <div className="relative">
+                  <div className="absolute -left-9 top-0.5 w-6 h-6 rounded-full bg-gray-200 dark:bg-white/5 text-gray-400 flex items-center justify-center text-[10px] font-black">3</div>
+                  <h5 className="text-xs font-black text-brand-black dark:text-white uppercase tracking-tight mb-1">Unggah Media (Gambar/Video) & Lakukan Pembayaran</h5>
+                  <p className="text-[10px] text-gray-400 leading-relaxed">Unggah file materi promosi berupa gambar statis, animasi GIF, atau video klip MP4 resolusi tinggi, kemudian selesaikan transaksi secara otomatis.</p>
+                </div>
+                <div className="relative">
+                  <div className="absolute -left-9 top-0.5 w-6 h-6 rounded-full bg-gray-200 dark:bg-white/5 text-gray-400 flex items-center justify-center text-[10px] font-black">4</div>
+                  <h5 className="text-xs font-black text-brand-black dark:text-white uppercase tracking-tight mb-1">Verifikasi Kilat & Iklan Mengudara</h5>
+                  <p className="text-[10px] text-gray-400 leading-relaxed">Tim redaksi akan melakukan peninjauan konten secara instan untuk kelayakan sebelum iklan Anda otomatis ditayangkan di domain regional pilihan.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-6">
+          {/* Help Center */}
+          <div className="dash-card p-6 bg-blue-50/50 dark:bg-blue-900/10 border-blue-100 dark:border-blue-900/20">
+            <h4 className="text-[10px] font-black text-blue-900 dark:text-blue-300 uppercase tracking-widest mb-3">Butuh Bantuan Segera?</h4>
+            <p className="text-[10px] text-blue-700/80 dark:text-blue-400/80 leading-relaxed mb-4 font-bold uppercase tracking-wider">
+              Ingin memesan iklan secara khusus, kerja sama tahunan, atau butuh bantuan pendaftaran manual? Layanan bantuan kami siap melayani Anda 24/7.
+            </p>
+            <a 
+              href="https://wa.me/628123456789" 
+              target="_blank" 
+              className="w-full py-3 bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest rounded-lg hover:bg-blue-700 transition-all flex items-center justify-center gap-2"
+            >
+              Hubungi Marketing (WA)
+            </a>
+          </div>
+
+          <div className="dash-card p-6 text-center bg-gradient-to-br from-brand-red/5 to-violet-500/5 border-brand-red/10">
+            <p className="text-xs font-black text-brand-black dark:text-white uppercase tracking-tight mb-1">Unduh Rate Card</p>
+            <p className="text-[10px] text-gray-400 leading-relaxed mb-4">
+              Dapatkan draf panduan lengkap ukuran banner, spesifikasi video, dan rincian jangkauan demografis pembaca BeritaKarya.
+            </p>
+            <button className="w-full py-2.5 bg-brand-black dark:bg-white text-white dark:text-brand-black text-[10px] font-black uppercase tracking-widest rounded-lg hover:opacity-90 transition-all">
+              Download Media Kit PDF
             </button>
           </div>
         </div>

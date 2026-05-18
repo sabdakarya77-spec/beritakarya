@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '../../store/authStore';
 import { Loader2, ArrowRight, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 
-export default function RegisterPage() {
+function RegisterForm() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -17,6 +17,9 @@ export default function RegisterPage() {
   
   const { register, isLoading, error, clearError, user } = useAuthStore();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const roleParam = searchParams.get('role') || 'reader';
+  const isAdvertiser = roleParam === 'advertiser';
 
   // Redirect if already logged in
   useEffect(() => {
@@ -27,10 +30,11 @@ export default function RegisterPage() {
         .find(row => row.startsWith('siteId='))
         ?.split('=')[1] || 'pusat';
       
-      // Since they are newly registered, they have role 'reader'.
-      // If we redirect them to dashboard, the layout will bounce them to '/'.
-      // So let's directly push them to the portal homepage based on their siteId.
-      router.push(`/${siteId}`);
+      if (user.role === 'advertiser') {
+        router.push(`/${siteId}/dashboard`);
+      } else {
+        router.push(`/${siteId}`);
+      }
     }
   }, [user, router]);
 
@@ -54,8 +58,7 @@ export default function RegisterPage() {
         .split('; ')
         .find(row => row.startsWith('siteId='))
         ?.split('=')[1] || 'pusat';
-      await register(name, email, password, siteId);
-      // Let the useEffect handle the redirect once user is set
+      await register(name, email, password, siteId, roleParam);
     } catch (err) {
       // Error is handled by the store
     }
@@ -81,8 +84,12 @@ export default function RegisterPage() {
 
         {/* Register Box */}
         <div className="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 p-8 sm:p-10 shadow-2xl shadow-black/5 rounded-sm">
-          <h2 className="text-xl font-serif font-black text-brand-black dark:text-white uppercase tracking-tight mb-2">Buat Akun Baru</h2>
-          <p className="text-xs text-gray-500 font-bold uppercase tracking-widest mb-8">Daftar untuk mengakses portal penuh</p>
+          <h2 className="text-xl font-serif font-black text-brand-black dark:text-white uppercase tracking-tight mb-2">
+            {isAdvertiser ? 'Pendaftaran Mitra Pengiklan' : 'Buat Akun Baru'}
+          </h2>
+          <p className="text-xs text-gray-500 font-bold uppercase tracking-widest mb-8">
+            {isAdvertiser ? 'Daftar untuk pasang & kelola iklan mandiri Anda' : 'Daftar untuk mengakses portal penuh'}
+          </p>
 
           {displayError && (
             <div className="mb-6 p-4 bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/20 flex items-start gap-3 rounded-sm">
@@ -94,7 +101,7 @@ export default function RegisterPage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <label className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-black dark:text-gray-300">
-                Nama Lengkap
+                {isAdvertiser ? 'Nama Perusahaan / Brand / Personal' : 'Nama Lengkap'}
               </label>
               <input
                 type="text"
@@ -104,7 +111,7 @@ export default function RegisterPage() {
                   if (displayError) { clearError(); setLocalError(null); }
                 }}
                 required
-                placeholder="Nama Anda"
+                placeholder={isAdvertiser ? 'Contoh: PT Sukses Bersama' : 'Nama Anda'}
                 className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-sm text-brand-black dark:text-white focus:outline-none focus:border-brand-red dark:focus:border-brand-red transition-colors rounded-sm"
               />
             </div>
@@ -121,7 +128,7 @@ export default function RegisterPage() {
                   if (displayError) { clearError(); setLocalError(null); }
                 }}
                 required
-                placeholder="nama@beritakarya.co"
+                placeholder={isAdvertiser ? 'email@perusahaan.com' : 'nama@beritakarya.co'}
                 className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-sm text-brand-black dark:text-white focus:outline-none focus:border-brand-red dark:focus:border-brand-red transition-colors rounded-sm"
               />
             </div>
@@ -215,5 +222,17 @@ export default function RegisterPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-white dark:bg-[#0a0f1a] flex justify-center items-center">
+        <Loader2 size={24} className="text-brand-red animate-spin" />
+      </div>
+    }>
+      <RegisterForm />
+    </Suspense>
   );
 }
