@@ -42,7 +42,9 @@ api.interceptors.request.use(async (config) => {
     if (siteId && !isAuthRoute) {
       config.headers['X-Site-ID'] = siteId
       if (!config.params) config.params = {}
-      config.params.site = siteId
+      if (!config.params.site) {
+        config.params.site = siteId
+      }
     }
     
     // CSRF Injection
