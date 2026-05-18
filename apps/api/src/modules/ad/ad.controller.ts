@@ -123,3 +123,215 @@ adRouter.delete('/:id',
     res.json({ success: true, message: 'Advertisement deleted' })
   })
 )
+
+// ==========================================
+// 🚀 DYNAMIC AD PACKAGES & BOOKINGS ENDPOINTS
+// ==========================================
+
+// 1. GET /packages — Public & Advertiser to view active packages
+adRouter.get('/packages',
+  asyncHandler(async (req: Request, res: Response) => {
+    const packages = await prisma.adPackage.findMany({
+      where: { isActive: true },
+      orderBy: { price: 'asc' }
+    })
+    res.json({ success: true, data: packages })
+  })
+)
+
+// 2. POST /bookings — Advertiser to book an ad slot
+adRouter.post('/bookings',
+  requireAuth,
+  requireRole(['advertiser']),
+  asyncHandler(async (req: any, res: Response) => {
+    const { packageId, siteId, imageUrl, linkUrl, startDate, endDate } = req.body
+    const booking = await prisma.adBooking.create({
+      data: {
+        userId: req.user.userId,
+        siteId,
+        packageId,
+        imageUrl: imageUrl || null,
+        linkUrl: linkUrl || null,
+        startDate: new Date(startDate),
+        endDate: new Date(endDate),
+        paymentStatus: 'PENDING',
+        status: 'PENDING_REVIEW'
+      }
+    })
+    res.status(201).json({ success: true, data: booking })
+  })
+)
+
+// 3. GET /bookings/my — Advertiser to view their own bookings
+adRouter.get('/bookings/my',
+  requireAuth,
+  requireRole(['advertiser']),
+  asyncHandler(async (req: any, res: Response) => {
+    const bookings = await prisma.adBooking.findMany({
+      where: { userId: req.user.userId },
+      include: { package: true, site: true },
+      orderBy: { createdAt: 'desc' }
+    })
+    res.json({ success: true, data: bookings })
+  })
+)
+
+// 4. POST /bookings/:id/pay — Advertiser to upload payment proof image URL
+adRouter.post('/bookings/:id/pay',
+  requireAuth,
+  requireRole(['advertiser']),
+  asyncHandler(async (req: any, res: Response) => {
+    const { id } = req.params
+    const { paymentProof } = req.body
+    const booking = await prisma.adBooking.update({
+      where: { id },
+      data: {
+        paymentProof,
+        paymentStatus: 'VERIFYING'
+      }
+    })
+    res.json({ success: true, data: booking })
+  })
+)
+
+// 5. POST /packages — Superadmin only to create a new ad package
+adRouter.post('/packages',
+  requireAuth,
+  requireRole(['superadmin']),
+  asyncHandler(async (req: Request, res: Response) => {
+    const { name, slot, durationDays, price, description } = req.body
+    const pkg = await prisma.adPackage.create({
+      data: {
+        name,
+        slot,
+        durationDays: parseInt(durationDays),
+        price: parseFloat(price),
+        description: description || null
+      }
+    })
+    res.status(201).json({ success: true, data: pkg })
+  })
+)
+
+// 6. PATCH /packages/:id — Superadmin only to modify an ad package
+adRouter.patch('/packages/:id',
+  requireAuth,
+  requireRole(['superadmin']),
+  asyncHandler(async (req: Request, res: Response) => {
+    const { id } = req.params
+    const { name, slot, durationDays, price, description, isActive } = req.body
+    const pkg = await prisma.adPackage.update({
+      where: { id },
+      data: {
+        name,
+        slot,
+        durationDays: durationDays ? parseInt(durationDays) : undefined,
+        price: price ? parseFloat(price) : undefined,
+        description,
+        isActive
+      }
+    })
+    res.json({ success: true, data: pkg })
+  })
+)
+
+// 7. DELETE /packages/:id — Superadmin only to delete an ad package
+adRouter.delete('/packages/:id',
+  requireAuth,
+  requireRole(['superadmin']),
+  asyncHandler(async (req: Request, res: Response) => {
+    const { id } = req.params
+    await prisma.adPackage.delete({
+      where: { id }
+    })
+    res.json({ success: true, message: 'Package deleted successfully' })
+  })
+)
+
+// 8. GET /bookings/all — Superadmin only to view all incoming ad bookings
+adRouter.get('/bookings/all',
+  requireAuth,
+  requireRole(['superadmin']),
+  asyncHandler(async (req: Request, res: Response) => {
+    const bookings = await prisma.adBooking.findMany({
+      include: { package: true, site: true, user: true },
+      orderBy: { createdAt: 'desc' }
+    })
+    res.json({ success: true, data: bookings })
+  })
+)
+
+// 9. POST /bookings/:id/approve — Superadmin only to approve a booking and auto-sync active ad banner
+adRouter.post('/bookings/:id/approve',
+  requireAuth,
+  requireRole(['superadmin']),
+  asyncHandler(async (req: Request, res: Response) => {
+    const { id } = req.params
+    
+    const booking = await prisma.adBooking.findUnique({
+      where: { id },
+      include: { package: true }
+    })
+    if (!booking) {
+      return res.status(404).json({ success: false, message: 'Pemesanan tidak ditemukan' })
+    }
+    
+    // Update booking status
+    const updatedBooking = await prisma.adBooking.update({
+      where: { id },
+      data: {
+        paymentStatus: 'PAID',
+        status: 'ACTIVE'
+      }
+    })
+    
+    // AUTO-INTEGRATION: Sync/Upsert to active Advertisement table for that site & slot!
+    await prisma.advertisement.upsert({
+      where: {
+        siteId_slot: {
+          siteId: booking.siteId,
+          slot: booking.package.slot
+        }
+      },
+      update: {
+        imageUrl: booking.imageUrl,
+        linkUrl: booking.linkUrl,
+        code: null, // Clear HTML script since this is a visual client direct banner
+        isActive: true,
+        impressions: 0,
+        clicks: 0
+      },
+      create: {
+        siteId: booking.siteId,
+        slot: booking.package.slot,
+        imageUrl: booking.imageUrl,
+        linkUrl: booking.linkUrl,
+        code: null,
+        isActive: true,
+        impressions: 0,
+        clicks: 0
+      }
+    })
+    
+    res.json({ success: true, data: updatedBooking })
+  })
+)
+
+// 10. POST /bookings/:id/reject — Superadmin only to reject a booking with notes
+adRouter.post('/bookings/:id/reject',
+  requireAuth,
+  requireRole(['superadmin']),
+  asyncHandler(async (req: Request, res: Response) => {
+    const { id } = req.params
+    const { rejectionNotes } = req.body
+    const booking = await prisma.adBooking.update({
+      where: { id },
+      data: {
+        paymentStatus: 'REJECTED',
+        status: 'REJECTED',
+        rejectionNotes: rejectionNotes || null
+      }
+    })
+    res.json({ success: true, data: booking })
+  })
+)
