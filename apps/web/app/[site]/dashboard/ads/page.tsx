@@ -496,14 +496,18 @@ export default function AdsDashboard() {
 
                           {/* Preview Creative */}
                           <div className="space-y-2">
-                            <label className="dash-label">Live Preview Kreatif Iklan Anda</label>
+                            <label className="dash-label">Live Preview Banner / Video</label>
                             <div className="aspect-[4/3] md:aspect-auto md:h-[210px] bg-gray-50 dark:bg-black/20 rounded-2xl border-2 border-dashed border-gray-100 dark:border-white/5 flex items-center justify-center overflow-hidden relative">
                               {advImageUrl ? (
-                                <img src={advImageUrl} alt="Ad Preview" className="w-full h-full object-contain" />
+                                advImageUrl.toLowerCase().match(/\.(mp4|webm|ogg|mov)$/i) || advImageUrl.toLowerCase().includes('video') ? (
+                                  <video src={advImageUrl} autoPlay loop muted playsInline className="w-full h-full object-contain" />
+                                ) : (
+                                  <img src={advImageUrl} alt="Ad Preview" className="w-full h-full object-contain" />
+                                )
                               ) : (
                                 <div className="flex flex-col items-center gap-2 text-gray-300">
                                   <ImageIcon size={32} />
-                                  <span className="text-[9px] font-black uppercase tracking-widest">Pratinjau Banner</span>
+                                  <span className="text-[9px] font-black uppercase tracking-widest">Pratinjau Materi</span>
                                 </div>
                               )}
                             </div>
@@ -972,12 +976,16 @@ export default function AdsDashboard() {
 
                             {/* Banner Preview */}
                             <div className="space-y-2 border-r border-gray-50 dark:border-white/5 pr-6">
-                              <span className="text-[8px] text-gray-400 font-bold uppercase tracking-widest block">Materi Kreatif Banner</span>
+                              <span className="text-[8px] text-gray-400 font-bold uppercase tracking-widest block">Materi Kreatif Banner / Video</span>
                               <div className="h-[120px] bg-gray-50 dark:bg-black/20 rounded-xl border border-gray-100 dark:border-white/5 flex items-center justify-center overflow-hidden">
                                 {b.imageUrl ? (
-                                  <img src={b.imageUrl} alt="Banner" className="w-full h-full object-contain" />
+                                  b.imageUrl.toLowerCase().match(/\.(mp4|webm|ogg|mov)$/i) || b.imageUrl.toLowerCase().includes('video') ? (
+                                    <video src={b.imageUrl} autoPlay loop muted playsInline className="w-full h-full object-contain" />
+                                  ) : (
+                                    <img src={b.imageUrl} alt="Banner" className="w-full h-full object-contain" />
+                                  )
                                 ) : (
-                                  <span className="text-[9px] text-gray-400">Tidak ada gambar</span>
+                                  <span className="text-[9px] text-gray-400">Tidak ada materi</span>
                                 )}
                               </div>
                             </div>
@@ -1218,14 +1226,18 @@ function AdSlotCard({ slot, data, onSave, isSaving }: { slot: any, data: Ad | un
 
               {/* Preview Area */}
               <div className="space-y-2">
-                <label className="dash-label">Live Preview</label>
+                <label className="dash-label">Live Preview Banner / Video</label>
                 <div className="aspect-[4/1] bg-gray-50 dark:bg-black/20 rounded-xl border-2 border-dashed border-gray-100 dark:border-white/5 flex items-center justify-center overflow-hidden relative group">
                   {imageUrl ? (
-                    <img src={imageUrl} alt="Ad Preview" className="w-full h-full object-contain" />
+                    imageUrl.toLowerCase().match(/\.(mp4|webm|ogg|mov)$/i) || imageUrl.toLowerCase().includes('video') ? (
+                      <video src={imageUrl} autoPlay loop muted playsInline className="w-full h-full object-contain" />
+                    ) : (
+                      <img src={imageUrl} alt="Ad Preview" className="w-full h-full object-contain" />
+                    )
                   ) : (
                     <div className="flex flex-col items-center gap-2 text-gray-300">
                       <ImageIcon size={24} />
-                      <span className="text-[9px] font-black uppercase tracking-widest">Preview Banner</span>
+                      <span className="text-[9px] font-black uppercase tracking-widest">Preview Materi</span>
                     </div>
                   )}
                 </div>
