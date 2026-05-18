@@ -30,7 +30,7 @@ const registerSchema = z.object({
     .regex(/[^A-Za-z0-9]/, 'Harus mengandung karakter spesial'),
   name: z.string().min(2),
   siteId: z.string().nullable().default(null),
-  role: z.enum(['reader', 'advertiser']).optional().default('reader')
+  role: z.string().optional().default('reader')
 })
 
 const forgotPasswordSchema = z.object({
@@ -84,9 +84,10 @@ authRouter.post('/login', asyncHandler(async (req: Request, res: Response) => {
 
 authRouter.post('/register', asyncHandler(async (req: Request, res: Response) => {
   const input = registerSchema.parse(req.body)
+  const role = input.role === 'advertiser' ? 'advertiser' : 'reader'
   const result = await authService.registerUser(
     input.email, input.password, input.name,
-    input.role as any, input.siteId
+    role as any, input.siteId
   )
   
   // Set httpOnly cookies

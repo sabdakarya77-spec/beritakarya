@@ -34,12 +34,12 @@ app.use('/api/v1/media', mediaRouter)
 app.use(errorMiddleware)
 
 describe('Media Upload Endpoint', () => {
-  it('harus menolak file yang bukan gambar (contoh: PDF)', async () => {
+  it('harus menolak file yang bukan gambar atau PDF (contoh: TXT)', async () => {
     const res = await request(app)
       .post('/api/v1/media/upload')
-      .attach('file', Buffer.from('%PDF-1.4'), {
-        filename: 'document.pdf',
-        contentType: 'application/pdf'
+      .attach('file', Buffer.from('hello world'), {
+        filename: 'document.txt',
+        contentType: 'text/plain'
       })
     
     expect(res.status).toBe(400)
