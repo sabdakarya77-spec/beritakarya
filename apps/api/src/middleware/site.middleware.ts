@@ -44,7 +44,7 @@ export async function siteMiddleware(
     await refreshCache()
   }
 
-  if (!validSiteCache.has(siteId) && siteId !== 'pusat') {
+  if (!validSiteCache.has(siteId) && siteId !== 'pusat' && siteId !== 'all') {
     return res.status(400).json({
       success: false,
       error: { code: 'SITE_UNKNOWN', message: `Site "${siteId}" tidak dikenal` }
