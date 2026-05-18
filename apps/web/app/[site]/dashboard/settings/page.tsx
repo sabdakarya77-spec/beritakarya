@@ -76,6 +76,30 @@ export default function SettingsPage() {
   const [uploadingLogo, setUploadingLogo] = useState(false)
   const [uploadingPdf, setUploadingPdf] = useState(false)
 
+  // Refs untuk Auto-Expanding Textarea
+  const aboutUsRef = useRef<HTMLTextAreaElement>(null)
+  const codeOfEthicsRef = useRef<HTMLTextAreaElement>(null)
+  const editorialRef = useRef<HTMLTextAreaElement>(null)
+  const advertisingRef = useRef<HTMLTextAreaElement>(null)
+
+  // Efek Auto-Expanding Textarea
+  useEffect(() => {
+    const adjust = (ref: React.RefObject<HTMLTextAreaElement | null>) => {
+      if (ref.current) {
+        ref.current.style.height = 'auto'
+        ref.current.style.height = `${ref.current.scrollHeight}px`
+      }
+    }
+    // Diberi sedikit delay agar rendering font/DOM selesai sempurna
+    const timer = setTimeout(() => {
+      adjust(aboutUsRef)
+      adjust(codeOfEthicsRef)
+      adjust(editorialRef)
+      adjust(advertisingRef)
+    }, 50)
+    return () => clearTimeout(timer)
+  }, [settings.aboutUs, settings.codeOfEthics, settings.editorial, settings.advertising, activeTab])
+
   // Deteksi perubahan form (Dirty State Checker)
   useEffect(() => {
     if (!originalSettings) return
@@ -775,22 +799,24 @@ export default function SettingsPage() {
                   <div className="space-y-2">
                     <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Halaman: Tentang Kami (Visi & Misi)</label>
                     <textarea 
+                      ref={aboutUsRef}
                       value={settings.aboutUs}
                       onChange={(e) => setSettings({...settings, aboutUs: e.target.value})}
                       placeholder="Tuliskan sejarah berdirinya, visi, misi, dan komitmen portal regional Anda di sini..."
                       rows={4}
-                      className="w-full bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-xl px-4 py-3 text-xs text-brand-black dark:text-white outline-none focus:border-brand-red/50 focus:ring-1 focus:ring-brand-red/20 transition-all font-semibold"
+                      className="w-full bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-xl px-4 py-3 text-xs text-brand-black dark:text-white outline-none focus:border-brand-red/50 focus:ring-1 focus:ring-brand-red/20 transition-all font-semibold resize-none overflow-hidden"
                     />
                   </div>
 
                   <div className="space-y-2">
                     <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Halaman: Kode Etik Internal</label>
                     <textarea 
+                      ref={codeOfEthicsRef}
                       value={settings.codeOfEthics}
                       onChange={(e) => setSettings({...settings, codeOfEthics: e.target.value})}
                       placeholder="Tuliskan aturan jurnalisme independen, etika peliputan, dan komitmen profesionalitas redaksi Anda..."
                       rows={4}
-                      className="w-full bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-xl px-4 py-3 text-xs text-brand-black dark:text-white outline-none focus:border-brand-red/50 focus:ring-1 focus:ring-brand-red/20 transition-all font-semibold"
+                      className="w-full bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-xl px-4 py-3 text-xs text-brand-black dark:text-white outline-none focus:border-brand-red/50 focus:ring-1 focus:ring-brand-red/20 transition-all font-semibold resize-none overflow-hidden"
                     />
                   </div>
 
@@ -816,11 +842,12 @@ export default function SettingsPage() {
                     </div>
                     
                     <textarea 
+                      ref={editorialRef}
                       value={settings.editorial}
                       onChange={(e) => setSettings({...settings, editorial: e.target.value})}
                       placeholder="Daftar nama Pemimpin Redaksi, Editor, Jurnalis, Dewan Penasehat, beserta peran masing-masing..."
                       rows={5}
-                      className="w-full bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-xl px-4 py-3 text-xs text-brand-black dark:text-white outline-none focus:border-brand-red/50 focus:ring-1 focus:ring-brand-red/20 transition-all font-semibold"
+                      className="w-full bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-xl px-4 py-3 text-xs text-brand-black dark:text-white outline-none focus:border-brand-red/50 focus:ring-1 focus:ring-brand-red/20 transition-all font-semibold resize-none overflow-hidden"
                     />
 
                     {/* PDF Uploader Slot */}
@@ -929,11 +956,12 @@ export default function SettingsPage() {
                   <div className="space-y-2">
                     <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Halaman: Panduan & Informasi Periklanan</label>
                     <textarea 
+                      ref={advertisingRef}
                       value={settings.advertising}
                       onChange={(e) => setSettings({...settings, advertising: e.target.value})}
                       placeholder="Tuliskan ketentuan tarif iklan, jenis space iklan yang tersedia (banner/advetorial), beserta nomor kontak iklan khusus..."
                       rows={4}
-                      className="w-full bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-xl px-4 py-3 text-xs text-brand-black dark:text-white outline-none focus:border-brand-red/50 focus:ring-1 focus:ring-brand-red/20 transition-all font-semibold"
+                      className="w-full bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-xl px-4 py-3 text-xs text-brand-black dark:text-white outline-none focus:border-brand-red/50 focus:ring-1 focus:ring-brand-red/20 transition-all font-semibold resize-none overflow-hidden"
                     />
                   </div>
                 </div>
