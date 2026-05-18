@@ -46,6 +46,7 @@ interface AdPackage {
   id: string;
   name: string;
   slot: string;
+  allowedFormat: string;
   durationDays: number;
   price: string;
   description: string | null;
@@ -92,6 +93,7 @@ export default function AdsDashboard() {
   const [packages, setPackages] = useState<AdPackage[]>([]);
   const [pkgName, setPkgName] = useState('');
   const [pkgSlot, setPkgSlot] = useState('leaderboard');
+  const [pkgFormat, setPkgFormat] = useState('ALL');
   const [pkgDuration, setPkgDuration] = useState('7');
   const [pkgPrice, setPkgPrice] = useState('');
   const [pkgDesc, setPkgDesc] = useState('');
@@ -166,6 +168,7 @@ export default function AdsDashboard() {
       const payload = {
         name: pkgName,
         slot: pkgSlot,
+        allowedFormat: pkgFormat,
         durationDays: parseInt(pkgDuration),
         price: parseFloat(pkgPrice),
         description: pkgDesc
@@ -180,6 +183,7 @@ export default function AdsDashboard() {
       setPkgName('');
       setPkgPrice('');
       setPkgDesc('');
+      setPkgFormat('ALL');
       setEditingPkgId(null);
       setShowPkgForm(false);
       await fetchData();
@@ -786,6 +790,9 @@ export default function AdsDashboard() {
                       onClick={() => {
                         setEditingPkgId(null);
                         setPkgName('');
+                        setPkgSlot('leaderboard');
+                        setPkgFormat('ALL');
+                        setPkgDuration('7');
                         setPkgPrice('');
                         setPkgDesc('');
                         setShowPkgForm(!showPkgForm);
@@ -799,7 +806,7 @@ export default function AdsDashboard() {
                   {showPkgForm && (
                     <form onSubmit={handleCreateOrUpdatePackage} className="dash-card p-6 space-y-6 animate-fade-in">
                       <h4 className="text-xs font-black uppercase tracking-widest text-brand-red">{editingPkgId ? 'Ubah Paket Iklan' : 'Buat Paket Iklan Baru'}</h4>
-                      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                      <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
                         <div>
                           <label className="dash-label mb-2 block">Nama Paket</label>
                           <input 
@@ -820,6 +827,18 @@ export default function AdsDashboard() {
                           >
                             <option value="leaderboard">Top Leaderboard</option>
                             <option value="in_feed">In-Feed Article</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="dash-label mb-2 block">Format Iklan</label>
+                          <select 
+                            value={pkgFormat}
+                            onChange={(e) => setPkgFormat(e.target.value)}
+                            className="w-full px-4 py-3 bg-white dark:bg-slate-950 border border-gray-200 dark:border-white/10 rounded-xl text-xs outline-none focus:border-brand-red transition-all"
+                          >
+                            <option value="ALL">Semua (Banner & Video)</option>
+                            <option value="IMAGE">Hanya Banner (Gambar)</option>
+                            <option value="VIDEO">Hanya Video (.mp4/.webm)</option>
                           </select>
                         </div>
                         <div>
@@ -874,7 +893,12 @@ export default function AdsDashboard() {
                           </div>
                           <h4 className="text-xs font-black text-brand-black dark:text-white uppercase tracking-tight mt-3">{pkg.name}</h4>
                           <p className="text-[10px] text-gray-400 mt-1">{pkg.description || 'Tidak ada deskripsi.'}</p>
-                          <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-4">Durasi: {pkg.durationDays} Hari</div>
+                          <div className="flex flex-wrap items-center gap-3 mt-4">
+                            <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Durasi: {pkg.durationDays} Hari</div>
+                            <div className="text-[9px] font-bold text-brand-red uppercase tracking-widest border border-brand-red/20 px-2 py-0.5 rounded-md bg-brand-red/5">
+                              {pkg.allowedFormat === 'VIDEO' ? '🎥 VIDEO ONLY' : pkg.allowedFormat === 'IMAGE' ? '📸 BANNER ONLY' : '🎥+📸 ALL FORMAT'}
+                            </div>
+                          </div>
                           <div className="text-base font-black text-brand-black dark:text-white mt-1">Rp {parseFloat(pkg.price).toLocaleString('id-ID')}</div>
                         </div>
 
@@ -884,6 +908,7 @@ export default function AdsDashboard() {
                               setEditingPkgId(pkg.id);
                               setPkgName(pkg.name);
                               setPkgSlot(pkg.slot);
+                              setPkgFormat(pkg.allowedFormat || 'ALL');
                               setPkgDuration(pkg.durationDays.toString());
                               setPkgPrice(pkg.price);
                               setPkgDesc(pkg.description || '');

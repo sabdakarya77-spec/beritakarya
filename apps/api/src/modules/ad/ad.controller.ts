@@ -213,11 +213,12 @@ adRouter.post('/packages',
   requireAuth,
   requireRole(['superadmin']),
   asyncHandler(async (req: Request, res: Response) => {
-    const { name, slot, durationDays, price, description } = req.body
+    const { name, slot, allowedFormat, durationDays, price, description } = req.body
     const pkg = await prisma.adPackage.create({
       data: {
         name,
         slot,
+        allowedFormat: allowedFormat || 'ALL',
         durationDays: parseInt(durationDays),
         price: parseFloat(price),
         description: description || null
@@ -233,12 +234,13 @@ adRouter.patch('/packages/:id',
   requireRole(['superadmin']),
   asyncHandler(async (req: Request, res: Response) => {
     const { id } = req.params
-    const { name, slot, durationDays, price, description, isActive } = req.body
+    const { name, slot, allowedFormat, durationDays, price, description, isActive } = req.body
     const pkg = await prisma.adPackage.update({
       where: { id },
       data: {
         name,
         slot,
+        allowedFormat,
         durationDays: durationDays ? parseInt(durationDays) : undefined,
         price: price ? parseFloat(price) : undefined,
         description,

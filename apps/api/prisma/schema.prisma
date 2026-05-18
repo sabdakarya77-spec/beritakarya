@@ -37,26 +37,26 @@ enum ArticleStatus {
 }
 
 model Site {
-  id             String    @id
-  name           String
-  domain         String    @unique
-  description    String?
-  logoUrl        String?
-  footerText     String?
-  address        String?
-  contactEmail   String?
-  phone          String?
-  aboutUs        String?   @db.Text
-  codeOfEthics   String?   @db.Text
-  editorial      String?   @db.Text
-  advertising    String?   @db.Text
-  socialLinks    Json?     @default("{}")
-  appearance     Json?     @default("{\"primaryColor\":\"#e11d48\"}")
-  trendingTopics Json?     @default("[]")
-  googleIndexingConfig Json? @default("{}")
-  deletedAt      DateTime?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  id                   String    @id
+  name                 String
+  domain               String    @unique
+  description          String?
+  logoUrl              String?
+  footerText           String?
+  address              String?
+  contactEmail         String?
+  phone                String?
+  aboutUs              String?   @db.Text
+  codeOfEthics         String?   @db.Text
+  editorial            String?   @db.Text
+  advertising          String?   @db.Text
+  socialLinks          Json?     @default("{}")
+  appearance           Json?     @default("{\"primaryColor\":\"#e11d48\"}")
+  trendingTopics       Json?     @default("[]")
+  googleIndexingConfig Json?     @default("{}")
+  deletedAt            DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
 
   users                 User[]
   articles              Article[]
@@ -458,16 +458,17 @@ model Invitation {
 
 // Katalog Paket Iklan yang dibuat oleh Superadmin
 model AdPackage {
-  id           String      @id @default(uuid())
-  name         String      // Contoh: "Banner Leaderboard Mingguan"
-  slot         String      // 'leaderboard' | 'in_feed' | 'sidebar'
-  durationDays Int         // Durasi tayang dalam hari (misal: 3, 7, 30)
-  price        Decimal     @db.Decimal(12, 2) // Biaya dalam Rupiah
-  description  String?     @db.Text
-  isActive     Boolean     @default(true)
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
-  bookings     AdBooking[]
+  id            String      @id @default(uuid())
+  name          String // Contoh: "Banner Leaderboard Mingguan"
+  slot          String // 'leaderboard' | 'in_feed' | 'sidebar'
+  durationDays  Int // Durasi tayang dalam hari (misal: 3, 7, 30)
+  price         Decimal     @db.Decimal(12, 2) // Biaya dalam Rupiah
+  allowedFormat String      @default("ALL") // 'IMAGE' | 'VIDEO' | 'ALL'
+  description   String?     @db.Text
+  isActive      Boolean     @default(true)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  bookings      AdBooking[]
 }
 
 // Transaksi Pemesanan Iklan oleh Advertiser
@@ -476,12 +477,12 @@ model AdBooking {
   userId         String
   siteId         String
   packageId      String
-  imageUrl       String?       // File banner gambar WebP
-  linkUrl       String?       // Tautan target ketika diklik
+  imageUrl       String? // File banner gambar WebP
+  linkUrl        String? // Tautan target ketika diklik
   startDate      DateTime
   endDate        DateTime
   paymentStatus  PaymentStatus @default(PENDING)
-  paymentProof   String?       // Bukti transfer bank/QRIS
+  paymentProof   String? // Bukti transfer bank/QRIS
   status         AdStatus      @default(PENDING_REVIEW)
   rejectionNotes String?       @db.Text
   impressions    Int           @default(0)
@@ -489,9 +490,9 @@ model AdBooking {
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 
-  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  site           Site          @relation(fields: [siteId], references: [id])
-  package        AdPackage     @relation(fields: [packageId], references: [id])
+  user    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  site    Site      @relation(fields: [siteId], references: [id])
+  package AdPackage @relation(fields: [packageId], references: [id])
 
   @@index([userId])
   @@index([siteId])
