@@ -82,6 +82,10 @@ export default function SettingsPage() {
   const editorialRef = useRef<HTMLTextAreaElement>(null)
   const advertisingRef = useRef<HTMLTextAreaElement>(null)
 
+  // Refs untuk Uploader File
+  const logoInputRef = useRef<HTMLInputElement>(null)
+  const pdfInputRef = useRef<HTMLInputElement>(null)
+
   // Efek Auto-Expanding Textarea
   useEffect(() => {
     const adjust = (ref: React.RefObject<HTMLTextAreaElement | null>) => {
@@ -509,16 +513,17 @@ export default function SettingsPage() {
                         />
                         <div className="relative">
                           <input 
+                            ref={logoInputRef}
                             type="file" 
                             accept="image/*"
                             onChange={handleLogoUpload}
-                            className="absolute inset-0 opacity-0 cursor-pointer disabled:cursor-not-allowed z-10"
-                            disabled={uploadingLogo}
+                            className="hidden"
                           />
                           <button 
                             type="button"
+                            onClick={() => logoInputRef.current?.click()}
                             disabled={uploadingLogo}
-                            className="h-full bg-brand-black dark:bg-white/10 hover:bg-brand-red text-white px-6 text-[10px] font-black uppercase tracking-widest transition-all rounded-xl flex items-center gap-2"
+                            className="h-full bg-brand-black dark:bg-white/10 hover:bg-brand-red text-white px-6 text-[10px] font-black uppercase tracking-widest transition-all rounded-xl flex items-center gap-2 cursor-pointer"
                           >
                             {uploadingLogo ? <Loader2 size={12} className="animate-spin" /> : <Plus size={12} />}
                             {uploadingLogo ? 'Unggah...' : 'Upload'}
@@ -884,6 +889,7 @@ export default function SettingsPage() {
                         
                         <div className="relative">
                           <input 
+                            ref={pdfInputRef}
                             type="file" 
                             accept="application/pdf"
                             onChange={async (e) => {
@@ -910,13 +916,13 @@ export default function SettingsPage() {
                                 setUploadingPdf(false)
                               }
                             }}
-                            className="absolute inset-0 opacity-0 cursor-pointer disabled:cursor-not-allowed z-10"
-                            disabled={uploadingPdf}
+                            className="hidden"
                           />
                           <button 
                             type="button"
+                            onClick={() => pdfInputRef.current?.click()}
                             disabled={uploadingPdf}
-                            className="h-full bg-brand-black dark:bg-white/10 hover:bg-brand-red text-white px-4 py-3 text-[9px] font-black uppercase tracking-widest transition-all rounded-lg flex items-center gap-1.5"
+                            className="h-full bg-brand-black dark:bg-white/10 hover:bg-brand-red text-white px-4 py-3 text-[9px] font-black uppercase tracking-widest transition-all rounded-lg flex items-center gap-1.5 cursor-pointer"
                           >
                             {uploadingPdf ? <Loader2 size={10} className="animate-spin" /> : <Plus size={10} />}
                             {uploadingPdf ? 'Mengunggah...' : 'Upload PDF'}
