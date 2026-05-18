@@ -32,6 +32,20 @@ adRouter.post('/track/:id',
   })
 )
 
+// Public endpoint for fetching active advertisements for a specific site
+adRouter.get('/public',
+  asyncHandler(async (req: Request, res: Response) => {
+    const siteId = req.query.site as string
+    if (!siteId) {
+      return res.status(400).json({ success: false, message: 'site query parameter is required' })
+    }
+    const ads = await prisma.advertisement.findMany({
+      where: { siteId, isActive: true }
+    })
+    res.json({ success: true, data: ads })
+  })
+)
+
 adRouter.get('/',
   requireAuth,
   siteMiddleware,
