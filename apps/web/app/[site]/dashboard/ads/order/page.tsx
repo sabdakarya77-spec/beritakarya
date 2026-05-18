@@ -1,78 +1,236 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { api } from '../../../../../lib/api';
 import { 
   ArrowLeft, 
   ArrowRight, 
   Upload, 
   CheckCircle2, 
   Image as ImageIcon, 
-  Video, 
+  Video as VideoIcon, 
   AlertCircle, 
   QrCode, 
   Building2, 
   Sparkles,
-  ChevronRight,
-  BarChart3
+  RefreshCw,
+  Play
 } from 'lucide-react';
 import Link from 'next/link';
+import { cn } from '../../../../../lib/utils';
+
+interface AdPackage {
+  id: string;
+  name: string;
+  slot: string;
+  durationDays: number;
+  price: number | string;
+  description: string | null;
+  isActive: boolean;
+}
 
 export default function OrderAdPage() {
   const { site } = useParams() as { site: string };
   const router = useRouter();
   
   const [step, setStep] = useState(1);
+  const [packages, setPackages] = useState<AdPackage[]>([]);
+  const [loadingPackages, setLoadingPackages] = useState(true);
+  const [selectedPackage, setSelectedPackage] = useState<AdPackage | null>(null);
+  
   const [campaignName, setCampaignName] = useState('');
   const [linkUrl, setLinkUrl] = useState('');
-  const [slot, setSlot] = useState('leaderboard');
-  const [duration, setDuration] = useState('30');
-  const [mediaType, setMediaType] = useState('image');
+  const [mediaType, setMediaType] = useState<'image' | 'video'>('image');
+  
   const [adFile, setAdFile] = useState<File | null>(null);
-  const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [adFileName, setAdFileName] = useState('');
+  const [adPreviewUrl, setAdPreviewUrl] = useState<string>('');
+  
+  const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [receiptFileName, setReceiptFileName] = useState('');
+  const [receiptPreviewUrl, setReceiptPreviewUrl] = useState<string>('');
+  
   const [submitting, setSubmitting] = useState(false);
-  const [invoiceNumber] = useState(() => Math.floor(1000 + Math.random() * 9000));
+  const [error, setError] = useState('');
+  const [invoiceNumber] = useState(() => Math.floor(100000 + Math.random() * 900000));
 
-  // Pricing details based on slots
-  const PRICING: Record<string, { name: string, price: number, size: string }> = {
-    leaderboard: { name: 'Leaderboard Atas (Header Banner)', price: 1500000, size: '970x90 px' },
-    in_feed: { name: 'Dalam Artikel (Article Rectangle)', price: 500000, size: '300x250 px' },
-    sidebar: { name: 'Sidebar Widget (Banner Samping)', price: 800000, size: '300x600 px' }
-  };
+  // Fallback default packages if database empty
+  const FALLBACK_PACKAGES: AdPackage[] = [
+    {
+      id: 'fallback-lead-30',
+      name: 'Billboard Banner Pusat/Regional',
+      slot: 'leaderboard',
+      durationDays: 30,
+      price: 1500000,
+      description: 'Impresi tertinggi di first-fold bagian atas seluruh halaman regional.',
+      isActive: true
+    },
+    {
+      id: 'fallback-feed-14',
+      name: 'In-Feed Artikel Rectangle',
+      slot: 'in_feed',
+      durationDays: 14,
+      price: 500000,
+      description: 'Rasio klik (CTR) tertinggi, disisipkan secara alami di antara paragraf berita.',
+      isActive: true
+    },
+    {
+      id: 'fallback-side-7',
+      name: 'Vertical Sidebar Widget',
+      slot: 'sidebar',
+      durationDays: 7,
+      price: 250000,
+      description: 'Sangat cocok untuk materi promosi vertikal memanjang di samping layar.',
+      isActive: true
+    }
+  ];
 
-  const getPrice = () => {
-    const base = PRICING[slot]?.price || 0;
-    const factor = duration === '7' ? 0.3 : duration === '14' ? 0.6 : 1.0;
-    return Math.floor(base * factor);
-  };
-
-  const totalPrice = getPrice();
+  useEffect(() => {
+    const fetchPackages = async () => {
+      try {
+        const res = await api.get('/ads/packages');
+        if (res.data && res.data.success && res.data.data && res.data.data.length > 0) {
+          setPackages(res.data.data);
+          setSelectedPackage(res.data.data[0]);
+        } else {
+          // If no packages are in DB, use fallback mock
+          setPackages(FALLBACK_PACKAGES);
+          setSelectedPackage(FALLBACK_PACKAGES[0]);
+        }
+      } catch (e) {
+        console.error('Gagal mengambil paket iklan:', e);
+        setPackages(FALLBACK_PACKAGES);
+        setSelectedPackage(FALLBACK_PACKAGES[0]);
+      } finally {
+        setLoadingPackages(false);
+      }
+    };
+    fetchPackages();
+  }, []);
 
   const handleAdFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setAdFile(e.target.files[0]);
-      setAdFileName(e.target.files[0].name);
+      const file = e.target.files[0];
+      setAdFile(file);
+      setAdFileName(file.name);
+      
+      // Release old object URL if exists to avoid memory leak
+      if (adPreviewUrl) URL.revokeObjectURL(adPreviewUrl);
+      setAdPreviewUrl(URL.createObjectURL(file));
     }
   };
 
   const handleReceiptFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setReceiptFile(e.target.files[0]);
-      setReceiptFileName(e.target.files[0].name);
+      const file = e.target.files[0];
+      setReceiptFile(file);
+      setReceiptFileName(file.name);
+
+      if (receiptPreviewUrl) URL.revokeObjectURL(receiptPreviewUrl);
+      setReceiptPreviewUrl(URL.createObjectURL(file));
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitting(true);
+  const uploadFile = async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('siteId', site || 'pusat');
     
-    // Simulate uploading files and saving the transaction
-    setTimeout(() => {
-      setSubmitting(false);
+    const res = await api.post('/media/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    
+    // API usually returns url inside nested properties
+    return res.data?.url || res.data?.filePath || res.data || '';
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedPackage || !adFile || !receiptFile) {
+      setError('Mohon lengkapi seluruh materi iklan dan bukti transfer.');
+      return;
+    }
+
+    setSubmitting(true);
+    setError('');
+
+    try {
+      // 1. Upload creative banner file (image or video)
+      const uploadedAdUrl = await uploadFile(adFile);
+      if (!uploadedAdUrl) {
+        throw new Error('Gagal mengunggah materi kreatif iklan. Silakan coba kembali.');
+      }
+
+      // 2. Calculate dynamic date range
+      const startDate = new Date();
+      const endDate = new Date();
+      endDate.setDate(startDate.getDate() + selectedPackage.durationDays);
+
+      // 3. Create booking transaction
+      const bookingRes = await api.post('/ads/bookings', {
+        packageId: selectedPackage.id,
+        siteId: site || 'pusat',
+        imageUrl: uploadedAdUrl,
+        linkUrl: linkUrl || '#',
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString()
+      });
+
+      if (!bookingRes.data || !bookingRes.data.success || !bookingRes.data.data) {
+        throw new Error(bookingRes.data?.message || 'Gagal memproses pemesanan iklan.');
+      }
+
+      const bookingId = bookingRes.data.data.id;
+
+      // 4. Upload payment transfer receipt
+      const uploadedReceiptUrl = await uploadFile(receiptFile);
+      if (!uploadedReceiptUrl) {
+        throw new Error('Gagal mengunggah resi bukti transfer.');
+      }
+
+      // 5. Submit payment confirmation
+      const payRes = await api.post(`/ads/bookings/${bookingId}/pay`, {
+        paymentProof: uploadedReceiptUrl
+      });
+
+      if (!payRes.data || !payRes.data.success) {
+        throw new Error(payRes.data?.message || 'Gagal memverifikasi resi pembayaran.');
+      }
+
+      // Done! Success step
       setStep(4);
-    }, 2000);
+    } catch (err: any) {
+      setError(err.message || 'Terjadi kesalahan sistem, silakan hubungi pusat bantuan.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const getSlotLabel = (slot: string) => {
+    switch (slot) {
+      case 'leaderboard': return 'Leaderboard Atas (Header)';
+      case 'in_feed': return 'Dalam Artikel (In-Feed)';
+      case 'sidebar': return 'Widget Samping (Sidebar)';
+      default: return slot.toUpperCase();
+    }
+  };
+
+  const getSlotDimensions = (slot: string) => {
+    switch (slot) {
+      case 'leaderboard': return '970x90 px';
+      case 'in_feed': return '300x250 px';
+      case 'sidebar': return '300x600 px';
+      default: return '100% Responsive';
+    }
+  };
+
+  const formatRupiah = (val: string | number) => {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0
+    }).format(Number(val));
   };
 
   return (
@@ -90,9 +248,9 @@ export default function OrderAdPage() {
       {/* Steps Indicator */}
       <div className="grid grid-cols-4 gap-2">
         {[
-          { num: 1, label: 'Detail Iklan' },
-          { num: 2, label: 'Slot & Durasi' },
-          { num: 3, label: 'Materi & Bayar' },
+          { num: 1, label: 'Pilih Paket' },
+          { num: 2, label: 'Materi Iklan' },
+          { num: 3, label: 'Unggah Resi' },
           { num: 4, label: 'Selesai' }
         ].map((s) => (
           <div 
@@ -109,18 +267,150 @@ export default function OrderAdPage() {
         ))}
       </div>
 
+      {/* Error Banner */}
+      {error && (
+        <div className="p-4 bg-brand-red/10 border border-brand-red/20 text-brand-red rounded-sm flex items-center gap-3 text-xs">
+          <AlertCircle size={16} className="shrink-0 animate-bounce" />
+          <span className="font-semibold uppercase tracking-wider">{error}</span>
+        </div>
+      )}
+
       {/* Main Container */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Form Container */}
-        <div className="lg:col-span-2 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800/80 p-8 rounded-sm shadow-2xl shadow-black/5">
+        
+        {/* Form / Wizard Content */}
+        <div className="lg:col-span-2 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800/80 p-8 rounded-sm shadow-2xl shadow-black/5 relative overflow-hidden">
+          
+          {/* STEP 1: SELECT DYNAMIC PACKAGES & FORMAT */}
           {step === 1 && (
-            <div className="space-y-6">
+            <div className="space-y-8">
               <div>
-                <h2 className="text-base font-serif font-black text-brand-black dark:text-white uppercase tracking-tight mb-2">Informasi Kampanye Iklan</h2>
-                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Masukkan detail promosi produk atau bisnis Anda</p>
+                <h2 className="text-base font-serif font-black text-brand-black dark:text-white uppercase tracking-tight mb-2">Pilih Paket & Format Iklan</h2>
+                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Tentukan paket tarif sewa yang sesuai dengan budget promosi Anda</p>
               </div>
 
-              <div className="space-y-4">
+              {loadingPackages ? (
+                <div className="py-12 text-center space-y-3">
+                  <RefreshCw size={24} className="animate-spin text-brand-red mx-auto" />
+                  <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Memuat Katalog Tarif Regional...</p>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {/* Packages grid */}
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-black dark:text-gray-300 block">
+                      Paket Iklan Regional Aktif
+                    </label>
+                    <div className="grid grid-cols-1 gap-3">
+                      {packages.map((pkg) => (
+                        <label 
+                          key={pkg.id}
+                          className={cn(
+                            "flex items-start gap-4 p-4 border rounded-sm cursor-pointer transition-all relative overflow-hidden",
+                            selectedPackage?.id === pkg.id 
+                              ? 'border-brand-red bg-brand-red/[0.03] shadow-md' 
+                              : 'border-gray-100 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800/40'
+                          )}
+                        >
+                          <input
+                            type="radio"
+                            name="ad_package"
+                            value={pkg.id}
+                            checked={selectedPackage?.id === pkg.id}
+                            onChange={() => setSelectedPackage(pkg)}
+                            className="mt-1.5 accent-brand-red"
+                          />
+                          <div className="flex-1">
+                            <div className="flex justify-between items-start gap-3">
+                              <div>
+                                <span className="text-xs font-black text-brand-black dark:text-white uppercase tracking-tight block">
+                                  {pkg.name}
+                                </span>
+                                <span className="text-[9px] font-black text-brand-red uppercase tracking-wider mt-0.5 inline-block">
+                                  {getSlotLabel(pkg.slot)} • {pkg.durationDays} Hari
+                                </span>
+                              </div>
+                              <div className="text-right">
+                                <span className="text-xs font-serif font-black text-brand-red block">
+                                  {formatRupiah(pkg.price)}
+                                </span>
+                                <span className="text-[8px] font-black text-gray-400 bg-gray-100 dark:bg-white/5 px-2 py-0.5 rounded-sm uppercase tracking-widest inline-block mt-1">
+                                  {getSlotDimensions(pkg.slot)}
+                                </span>
+                              </div>
+                            </div>
+                            {pkg.description && (
+                              <p className="text-[10px] text-brand-text-muted mt-2 leading-relaxed">{pkg.description}</p>
+                            )}
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Format Selector */}
+                  <div className="space-y-3 pt-2">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-black dark:text-gray-300 block">
+                      Pilih Format Kreatif Iklan
+                    </label>
+                    <div className="grid grid-cols-2 gap-4">
+                      <button
+                        type="button"
+                        onClick={() => setMediaType('image')}
+                        className={cn(
+                          "p-4 border rounded-sm flex flex-col items-center gap-2 transition-all",
+                          mediaType === 'image'
+                            ? 'border-brand-red bg-brand-red/[0.02] text-brand-black dark:text-white shadow-sm'
+                            : 'border-gray-100 dark:border-slate-800 text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800/40'
+                        )}
+                      >
+                        <ImageIcon size={20} className={mediaType === 'image' ? 'text-brand-red' : 'text-gray-400'} />
+                        <span className="text-xs font-black uppercase tracking-wider">📸 Gambar / GIF</span>
+                        <span className="text-[8px] text-gray-400 uppercase">Mendukung format WebP, JPG, PNG, GIF</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setMediaType('video')}
+                        className={cn(
+                          "p-4 border rounded-sm flex flex-col items-center gap-2 transition-all",
+                          mediaType === 'video'
+                            ? 'border-brand-red bg-brand-red/[0.02] text-brand-black dark:text-white shadow-sm'
+                            : 'border-gray-100 dark:border-slate-800 text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800/40'
+                        )}
+                      >
+                        <VideoIcon size={20} className={mediaType === 'video' ? 'text-brand-red' : 'text-gray-400'} />
+                        <span className="text-xs font-black uppercase tracking-wider">🎥 Video Autoplay</span>
+                        <span className="text-[8px] text-gray-400 uppercase">Mendukung format MP4, WebM (Loop & Muted)</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="pt-4 flex justify-end">
+                <button
+                  type="button"
+                  disabled={!selectedPackage}
+                  onClick={() => setStep(2)}
+                  className="px-6 py-3 bg-brand-red hover:bg-brand-black text-white text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-50 disabled:cursor-not-allowed rounded-sm flex items-center gap-2 group"
+                >
+                  Lanjut ke Materi Iklan
+                  <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 2: FILL CAMPAIGN DETAIL & UPLOAD MATERIAL */}
+          {step === 2 && (
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-base font-serif font-black text-brand-black dark:text-white uppercase tracking-tight mb-2">Materi & Target Kampanye</h2>
+                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Masukkan detail promosi produk dan pasang banner Anda</p>
+              </div>
+
+              <div className="space-y-5">
                 <div className="space-y-2">
                   <label className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-black dark:text-gray-300">
                     Nama Kampanye Iklan
@@ -151,85 +441,57 @@ export default function OrderAdPage() {
                     * Alamat tujuan website atau link WhatsApp yang akan dituju saat audiens mengklik banner iklan Anda.
                   </p>
                 </div>
-              </div>
 
-              <div className="pt-4 flex justify-end">
-                <button
-                  type="button"
-                  disabled={!campaignName || !linkUrl}
-                  onClick={() => setStep(2)}
-                  className="px-6 py-3 bg-brand-red hover:bg-brand-black text-white text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-50 disabled:cursor-not-allowed rounded-sm flex items-center gap-2 group"
-                >
-                  Lanjut ke Slot & Durasi
-                  <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-                </button>
-              </div>
-            </div>
-          )}
+                {/* File Upload with Smart Local Preview */}
+                <div className="space-y-3 pt-2">
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-black dark:text-gray-300 block">
+                    Unggah Kreatif Iklan ({selectedPackage ? getSlotDimensions(selectedPackage.slot) : 'Responsive'})
+                  </label>
+                  
+                  <div className="relative border-2 border-dashed border-gray-200 dark:border-slate-800 hover:border-brand-red/50 transition-colors p-8 text-center rounded-sm bg-gray-50/50 dark:bg-slate-800/10">
+                    <input
+                      type="file"
+                      required
+                      accept={mediaType === 'image' ? 'image/*,image/gif' : 'video/mp4,video/webm'}
+                      onChange={handleAdFileChange}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                    />
+                    <Upload size={24} className="text-gray-400 mx-auto mb-3" />
+                    <p className="text-xs font-black text-brand-black dark:text-white uppercase tracking-tight mb-1">
+                      {adFileName ? `Berkas Terpilih: ${adFileName}` : `Pilih Berkas Media ${mediaType === 'image' ? 'Gambar/GIF' : 'Video'}`}
+                    </p>
+                    <p className="text-[9px] text-gray-400 leading-relaxed uppercase tracking-wider">
+                      Seret & letakkan berkas di sini atau klik untuk membuka folder.<br />
+                      Format yang didukung: {mediaType === 'image' ? 'WebP, JPG, PNG, GIF' : 'MP4, WebM'}. Maksimal: 10MB.
+                    </p>
+                  </div>
 
-          {step === 2 && (
-            <div className="space-y-8">
-              <div>
-                <h2 className="text-base font-serif font-black text-brand-black dark:text-white uppercase tracking-tight mb-2">Pilih Penempatan & Durasi</h2>
-                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Tentukan lokasi tayang banner dan berapa lama masa sewa slot iklan</p>
-              </div>
-
-              {/* Slots Radio Cards */}
-              <div className="space-y-4">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-black dark:text-gray-300 block">
-                  Penempatan Slot Iklan
-                </label>
-                <div className="space-y-3">
-                  {[
-                    { id: 'leaderboard', name: 'Leaderboard Atas (Header Banner)', desc: 'Impresi tertinggi di first-fold bagian atas situs regional.', size: '970x90 px' },
-                    { id: 'in_feed', name: 'Dalam Artikel (Article Rectangle)', desc: 'CTR tertinggi, disisipkan secara alami di antara paragraf berita.', size: '300x250 px' },
-                    { id: 'sidebar', name: 'Sidebar Widget (Banner Samping)', desc: 'Sangat cocok untuk materi promosi vertikal memanjang.', size: '300x600 px' }
-                  ].map((s) => (
-                    <label 
-                      key={s.id}
-                      className={`flex items-start gap-4 p-4 border rounded-sm cursor-pointer transition-all ${slot === s.id ? 'border-brand-red bg-brand-red/5' : 'border-gray-100 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800/40'}`}
-                    >
-                      <input
-                        type="radio"
-                        name="ad_slot"
-                        value={s.id}
-                        checked={slot === s.id}
-                        onChange={(e) => setSlot(e.target.value)}
-                        className="mt-1 accent-brand-red"
-                      />
-                      <div className="flex-1">
-                        <div className="flex justify-between items-start gap-2">
-                          <span className="text-xs font-black text-brand-black dark:text-white uppercase tracking-tight">{s.name}</span>
-                          <span className="text-[9px] font-black bg-gray-100 dark:bg-white/5 text-gray-400 px-2 py-0.5 rounded-sm uppercase">{s.size}</span>
-                        </div>
-                        <p className="text-[10px] text-brand-text-muted mt-1 leading-normal">{s.desc}</p>
+                  {/* Dynamic Premium Preview Panel */}
+                  {adPreviewUrl && (
+                    <div className="mt-4 p-4 border border-gray-100 dark:border-slate-800 rounded-sm bg-gray-50 dark:bg-black/20">
+                      <p className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 mb-3 block">
+                        👁️ Live Interactive Preview (Tampilan Spanduk)
+                      </p>
+                      <div className="relative w-full overflow-hidden border border-gray-100 dark:border-white/5 rounded-sm flex items-center justify-center bg-black">
+                        {mediaType === 'video' ? (
+                          <video 
+                            src={adPreviewUrl}
+                            autoPlay
+                            loop
+                            muted
+                            playsInline
+                            className="w-full max-h-56 object-contain"
+                          />
+                        ) : (
+                          <img 
+                            src={adPreviewUrl} 
+                            alt="Pratinjau Gambar" 
+                            className="w-full max-h-56 object-contain"
+                          />
+                        )}
                       </div>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {/* Duration Tabs */}
-              <div className="space-y-4">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-black dark:text-gray-300 block">
-                  Durasi Masa Tayang
-                </label>
-                <div className="grid grid-cols-3 gap-3">
-                  {[
-                    { id: '7', label: '7 Hari', discount: 'Paket Promo' },
-                    { id: '14', label: '14 Hari', discount: 'Hemat 10%' },
-                    { id: '30', label: '30 Hari', discount: 'Paket Populer' }
-                  ].map((d) => (
-                    <button
-                      key={d.id}
-                      type="button"
-                      onClick={() => setDuration(d.id)}
-                      className={`p-4 border rounded-sm text-center flex flex-col items-center justify-center transition-all ${duration === d.id ? 'border-brand-red bg-brand-red/5' : 'border-gray-100 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800/40'}`}
-                    >
-                      <span className="text-xs font-black text-brand-black dark:text-white uppercase tracking-tight">{d.label}</span>
-                      <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-1">{d.discount}</span>
-                    </button>
-                  ))}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -243,68 +505,29 @@ export default function OrderAdPage() {
                 </button>
                 <button
                   type="button"
+                  disabled={!campaignName || !linkUrl || !adFile}
                   onClick={() => setStep(3)}
-                  className="px-6 py-3 bg-brand-red hover:bg-brand-black text-white text-[10px] font-black uppercase tracking-widest transition-all rounded-sm flex items-center gap-2 group"
+                  className="px-6 py-3 bg-brand-red hover:bg-brand-black text-white text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-50 disabled:cursor-not-allowed rounded-sm flex items-center gap-2 group"
                 >
-                  Lanjut ke Materi & Bayar
+                  Lanjut ke Pembayaran
                   <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
                 </button>
               </div>
             </div>
           )}
 
+          {/* STEP 3: CENTRAL PAYMENT RECEIPT UPLOAD */}
           {step === 3 && (
             <form onSubmit={handleSubmit} className="space-y-8">
               <div>
-                <h2 className="text-base font-serif font-black text-brand-black dark:text-white uppercase tracking-tight mb-2">Unggah Banner & Bukti Transfer</h2>
-                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Selesaikan transaksi secara manual dengan mentransfer dan mengunggah bukti bayar</p>
-              </div>
-
-              {/* Upload Creative Media */}
-              <div className="space-y-4">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-black dark:text-gray-300 block">
-                  Unggah Berkas Banner Iklan ({PRICING[slot]?.size})
-                </label>
-                <div className="flex gap-4 mb-3">
-                  <button
-                    type="button"
-                    onClick={() => setMediaType('image')}
-                    className={`px-4 py-2 text-[9px] font-black uppercase tracking-wider rounded-full flex items-center gap-1.5 border transition-all ${mediaType === 'image' ? 'bg-brand-red text-white border-brand-red' : 'border-gray-200 dark:border-slate-800 text-gray-400'}`}
-                  >
-                    <ImageIcon size={12} /> Gambar / GIF
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setMediaType('video')}
-                    className={`px-4 py-2 text-[9px] font-black uppercase tracking-wider rounded-full flex items-center gap-1.5 border transition-all ${mediaType === 'video' ? 'bg-brand-red text-white border-brand-red' : 'border-gray-200 dark:border-slate-800 text-gray-400'}`}
-                  >
-                    <Video size={12} /> Video MP4
-                  </button>
-                </div>
-
-                <div className="relative border-2 border-dashed border-gray-200 dark:border-slate-800 hover:border-brand-red/50 transition-colors p-8 text-center rounded-sm">
-                  <input
-                    type="file"
-                    required
-                    accept={mediaType === 'image' ? 'image/*,image/gif' : 'video/mp4'}
-                    onChange={handleAdFileChange}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                  />
-                  <Upload size={24} className="text-gray-400 mx-auto mb-3" />
-                  <p className="text-xs font-black text-brand-black dark:text-white uppercase tracking-tight mb-1">
-                    {adFileName ? `Berkas Terpilih: ${adFileName}` : `Pilih Berkas Media ${mediaType === 'image' ? 'Gambar/GIF' : 'Video MP4'}`}
-                  </p>
-                  <p className="text-[9px] text-gray-400 leading-relaxed uppercase tracking-wider">
-                    Seret & letakkan berkas di sini atau klik untuk merambah folder.<br />
-                    Maksimal ukuran file: 10MB.
-                  </p>
-                </div>
+                <h2 className="text-base font-serif font-black text-brand-black dark:text-white uppercase tracking-tight mb-2">Unggah Resi Bukti Pembayaran</h2>
+                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Selesaikan pembayaran administrasi ke rekening kas terpusat PT Berita Karya</p>
               </div>
 
               {/* Payment Methods Info */}
-              <div className="border-t border-gray-100 dark:border-slate-800 pt-8 space-y-6">
+              <div className="space-y-6">
                 <div>
-                  <h3 className="text-xs font-black text-brand-black dark:text-white uppercase tracking-[0.2em] mb-4">Informasi Rekening Transfer Beritakarya</h3>
+                  <h3 className="text-xs font-black text-brand-black dark:text-white uppercase tracking-[0.2em] mb-4">Informasi Rekening Pusat (Satu Pintu)</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* Bank BCA */}
                     <div className="p-4 bg-gray-50 dark:bg-slate-800/40 border border-gray-100 dark:border-slate-800 rounded-sm">
@@ -328,37 +551,48 @@ export default function OrderAdPage() {
                   </div>
 
                   <div className="mt-4 p-4 bg-emerald-500/5 border border-emerald-500/10 rounded-sm flex items-center gap-3">
-                    <QrCode size={20} className="text-emerald-500 shrink-0" />
+                    <QrCode size={20} className="text-emerald-500 shrink-0 animate-pulse" />
                     <div>
-                      <p className="text-[10px] font-black text-emerald-800 dark:text-emerald-400 uppercase tracking-tight">Mendukung Pembayaran QRIS Nasional</p>
+                      <p className="text-[10px] font-black text-emerald-800 dark:text-emerald-400 uppercase tracking-tight">Mendukung Scan QRIS Terpusat</p>
                       <p className="text-[9px] text-emerald-600 dark:text-emerald-500/80 leading-normal uppercase tracking-wider font-semibold">
-                        Pindai QRIS BeritaKarya (Dapat diminta langsung via tim support WA) atau transfer manual ke rekening bank di atas untuk kelancaran instan.
+                        Pindai kode QRIS resmi BeritaKarya Nusantara untuk memproses validasi super cepat dari pihak Superadmin Keuangan Pusat.
                       </p>
                     </div>
                   </div>
                 </div>
 
-                {/* Upload Payment Receipt */}
-                <div className="space-y-4">
+                {/* Upload Receipt File */}
+                <div className="space-y-4 pt-2 border-t border-gray-100 dark:border-slate-800">
                   <label className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-black dark:text-gray-300 block">
-                    Unggah Foto Bukti Transfer / Pembayaran
+                    Unggah Bukti Transfer / Resi ATM (.png / .jpg)
                   </label>
-                  <div className="relative border-2 border-dashed border-gray-200 dark:border-slate-800 hover:border-brand-red/50 transition-colors p-8 text-center rounded-sm">
+                  <div className="relative border-2 border-dashed border-gray-200 dark:border-slate-800 hover:border-brand-red/50 transition-colors p-8 text-center rounded-sm bg-gray-50/50 dark:bg-slate-800/10">
                     <input
                       type="file"
                       required
                       accept="image/*"
                       onChange={handleReceiptFileChange}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                     />
                     <Upload size={24} className="text-gray-400 mx-auto mb-3" />
                     <p className="text-xs font-black text-brand-black dark:text-white uppercase tracking-tight mb-1">
-                      {receiptFileName ? `Bukti Terpilih: ${receiptFileName}` : 'Pilih Berkas Bukti Transfer (.png / .jpg)'}
+                      {receiptFileName ? `Resi Terpilih: ${receiptFileName}` : 'Pilih Berkas Foto Resi Transaksi'}
                     </p>
                     <p className="text-[9px] text-gray-400 leading-relaxed uppercase tracking-wider">
-                      Pastikan nominal transfer, nama rekening tujuan, dan waktu transaksi tercetak jelas.
+                      Mendukung format PNG atau JPG. Pastikan jam transaksi dan nama pengirim terbaca jelas untuk validasi instan.
                     </p>
                   </div>
+
+                  {/* Receipt Local Preview */}
+                  {receiptPreviewUrl && (
+                    <div className="mt-4 p-4 border border-gray-100 dark:border-slate-800 rounded-sm bg-gray-50 dark:bg-black/20 flex justify-center">
+                      <img 
+                        src={receiptPreviewUrl} 
+                        alt="Bukti Transfer" 
+                        className="max-h-48 object-contain rounded-sm"
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -373,16 +607,26 @@ export default function OrderAdPage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={submitting || !adFile || !receiptFile}
+                  disabled={submitting || !receiptFile}
                   className="px-8 py-3 bg-brand-red hover:bg-brand-black text-white text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-50 disabled:cursor-not-allowed rounded-sm flex items-center gap-2 group shadow-lg shadow-brand-red/20"
                 >
-                  {submitting ? 'Mengirim Data...' : 'Kirim Bukti Bayar & Selesaikan'}
-                  <CheckCircle2 size={14} />
+                  {submitting ? (
+                    <>
+                      <RefreshCw size={14} className="animate-spin" />
+                      Memproses Transaksi Riil...
+                    </>
+                  ) : (
+                    <>
+                      Kirim Bukti Bayar & Selesaikan
+                      <CheckCircle2 size={14} />
+                    </>
+                  )}
                 </button>
               </div>
             </form>
           )}
 
+          {/* STEP 4: SUCCESS PAGE */}
           {step === 4 && (
             <div className="text-center py-12 space-y-6">
               <div className="w-16 h-16 bg-emerald-500/10 text-emerald-500 rounded-full flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/10">
@@ -390,25 +634,25 @@ export default function OrderAdPage() {
               </div>
               <div className="space-y-2">
                 <h2 className="text-xl font-serif font-black text-brand-black dark:text-white uppercase tracking-tight">Pesanan Iklan Sukses Dibuat!</h2>
-                <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-widest">Status: Menunggu Verifikasi Bukti Bayar</p>
+                <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-widest">Status: Menunggu Pencocokan Mutasi (Superadmin)</p>
               </div>
 
-              <div className="max-w-md mx-auto bg-gray-50 dark:bg-slate-800/40 border border-gray-100 dark:border-slate-800/80 p-6 rounded-sm text-left space-y-4">
+              <div className="max-w-md mx-auto bg-gray-50 dark:bg-slate-800/40 border border-gray-100 dark:border-slate-800/80 p-6 rounded-sm text-left space-y-4 shadow-sm">
                 <div className="flex justify-between border-b border-gray-200 dark:border-slate-800 pb-2.5 text-[10px] font-bold uppercase tracking-wider text-gray-500">
-                  <span>Rincian Transaksi</span>
+                  <span>Rincian Pembelian</span>
                   <span>Invoice #BK-{invoiceNumber}</span>
                 </div>
                 <div className="space-y-2 text-xs">
                   <div className="flex justify-between font-semibold"><span className="text-gray-400">Nama Kampanye:</span> <span className="text-brand-black dark:text-white">{campaignName}</span></div>
-                  <div className="flex justify-between font-semibold"><span className="text-gray-400">Penempatan Slot:</span> <span className="text-brand-black dark:text-white">{PRICING[slot]?.name}</span></div>
-                  <div className="flex justify-between font-semibold"><span className="text-gray-400">Durasi Sewa:</span> <span className="text-brand-black dark:text-white">{duration} Hari</span></div>
-                  <div className="flex justify-between font-semibold"><span className="text-gray-400">Metode Bayar:</span> <span className="text-brand-black dark:text-white">Manual Transfer</span></div>
-                  <div className="flex justify-between font-black text-brand-red pt-2 border-t border-gray-200 dark:border-slate-800 text-sm"><span>Total Pembayaran:</span> <span>Rp {totalPrice.toLocaleString('id-ID')}</span></div>
+                  <div className="flex justify-between font-semibold"><span className="text-gray-400">Penempatan Slot:</span> <span className="text-brand-black dark:text-white">{selectedPackage ? getSlotLabel(selectedPackage.slot) : ''}</span></div>
+                  <div className="flex justify-between font-semibold"><span className="text-gray-400">Durasi Sewa:</span> <span className="text-brand-black dark:text-white">{selectedPackage?.durationDays} Hari</span></div>
+                  <div className="flex justify-between font-semibold"><span className="text-gray-400">Metode Bayar:</span> <span className="text-brand-black dark:text-white">Transfer Terpusat</span></div>
+                  <div className="flex justify-between font-black text-brand-red pt-2 border-t border-gray-200 dark:border-slate-800 text-sm"><span>Total Pembayaran:</span> <span>{selectedPackage ? formatRupiah(selectedPackage.price) : ''}</span></div>
                 </div>
               </div>
 
               <p className="text-[10px] text-gray-400 leading-relaxed max-w-md mx-auto uppercase tracking-wider">
-                Bukti transfer dan media kreatif iklan Anda telah terunggah secara aman. Tim marketing kami akan melakukan pencocokan mutasi dan memverifikasi kelayakan materi iklan dalam waktu 5-15 menit ke depan.
+                Materi iklan (.mp4/gambar) dan resi transfer bukti pembayaran telah sukses diunggah ke server PT Berita Karya Nusantara. Validasi persetujuan di sisi Superadmin Pusat membutuhkan waktu 5-15 menit untuk penayangan instan.
               </p>
 
               <div className="pt-4">
@@ -423,7 +667,7 @@ export default function OrderAdPage() {
           )}
         </div>
 
-        {/* Sidebar Cart Info */}
+        {/* SIDEBAR ORDER SUMMARY */}
         <div className="space-y-6">
           <div className="bg-brand-black dark:bg-[#080d18] border border-white/5 p-6 rounded-sm text-white shadow-2xl">
             <h3 className="text-xs font-black uppercase tracking-[0.2em] text-brand-red mb-4">Ringkasan Pesanan</h3>
@@ -433,20 +677,36 @@ export default function OrderAdPage() {
                 <p className="text-xs font-black uppercase tracking-tight mt-0.5">{site === 'pusat' ? 'BeritaKarya Pusat' : `BeritaKarya Regional ${site}`}</p>
               </div>
 
-              <div className="border-b border-white/10 pb-3">
-                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Slot Penempatan</p>
-                <p className="text-xs font-black uppercase tracking-tight mt-0.5">{PRICING[slot]?.name}</p>
-                <p className="text-[9px] font-bold text-gray-400 uppercase mt-0.5">Dimensi: {PRICING[slot]?.size}</p>
-              </div>
+              {selectedPackage && (
+                <>
+                  <div className="border-b border-white/10 pb-3">
+                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Paket Pilihan</p>
+                    <p className="text-xs font-black uppercase tracking-tight mt-0.5">{selectedPackage.name}</p>
+                  </div>
+
+                  <div className="border-b border-white/10 pb-3">
+                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Slot Penempatan</p>
+                    <p className="text-xs font-black uppercase tracking-tight mt-0.5">{getSlotLabel(selectedPackage.slot)}</p>
+                    <p className="text-[9px] font-bold text-gray-400 uppercase mt-0.5">Dimensi: {getSlotDimensions(selectedPackage.slot)}</p>
+                  </div>
+
+                  <div className="border-b border-white/10 pb-3">
+                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Durasi Sewa</p>
+                    <p className="text-xs font-black uppercase tracking-tight mt-0.5">{selectedPackage.durationDays} Hari</p>
+                  </div>
+                </>
+              )}
 
               <div className="border-b border-white/10 pb-3">
-                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Durasi Sewa</p>
-                <p className="text-xs font-black uppercase tracking-tight mt-0.5">{duration} Hari</p>
+                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Format Banner</p>
+                <p className="text-xs font-black uppercase tracking-tight mt-0.5">{mediaType === 'video' ? '🎥 Video MP4 (Autoplay)' : '📸 Gambar Banner'}</p>
               </div>
 
               <div className="pt-2 flex justify-between items-baseline">
                 <span className="text-[10px] font-black uppercase tracking-wider">Total Biaya:</span>
-                <span className="text-base font-serif font-black text-brand-red">Rp {totalPrice.toLocaleString('id-ID')}</span>
+                <span className="text-base font-serif font-black text-brand-red">
+                  {selectedPackage ? formatRupiah(selectedPackage.price) : 'Rp 0'}
+                </span>
               </div>
             </div>
           </div>
@@ -457,12 +717,13 @@ export default function OrderAdPage() {
               <div>
                 <h4 className="text-[10px] font-black text-brand-black dark:text-white uppercase tracking-wider mb-1">Mendukung Migrasi Otomatis</h4>
                 <p className="text-[9px] text-gray-400 leading-relaxed uppercase tracking-wider">
-                  Sistem pemesanan ini telah dirancang dengan struktur data hybrid. Di masa mendatang, proses verifikasi manual ini akan berubah menjadi scan QRIS dinamis langsung secara instan.
+                  Sistem pemesanan ini diintegrasikan secara dinamis ke database pusat. Spanduk video looping/gambar yang disetujui akan tayang **seketika secara otomatis** di sub-portal Anda!
                 </p>
               </div>
             </div>
           </div>
         </div>
+
       </div>
     </div>
   );
