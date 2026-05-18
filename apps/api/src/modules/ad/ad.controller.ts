@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express'
 import { prisma } from '../../db/client'
 import { requireAuth, requireRole } from '../../middleware/auth.middleware'
-import { requireSiteAccess } from '../../middleware/site-scope.middleware'
+import { siteMiddleware, requireSiteAccess } from '../../middleware/site.middleware'
 import { asyncHandler } from '../../utils/asyncHandler'
 
 export const adRouter = Router()
@@ -34,6 +34,7 @@ adRouter.post('/track/:id',
 
 adRouter.get('/',
   requireAuth,
+  siteMiddleware,
   requireRole(['superadmin', 'wapimred']),
   requireSiteAccess,
   asyncHandler(async (req: Request, res: Response) => {
@@ -66,6 +67,7 @@ adRouter.get('/',
 
 adRouter.post('/',
   requireAuth,
+  siteMiddleware,
   requireRole(['superadmin', 'wapimred']),
   requireSiteAccess,
   asyncHandler(async (req: Request, res: Response) => {
@@ -87,6 +89,7 @@ adRouter.post('/',
 
 adRouter.patch('/:id',
   requireAuth,
+  siteMiddleware,
   requireRole(['superadmin', 'wapimred']),
   requireSiteAccess,
   asyncHandler(async (req: Request, res: Response) => {
@@ -109,6 +112,7 @@ adRouter.patch('/:id',
 
 adRouter.delete('/:id',
   requireAuth,
+  siteMiddleware,
   requireRole(['superadmin', 'wapimred']),
   requireSiteAccess,
   asyncHandler(async (req: Request, res: Response) => {
