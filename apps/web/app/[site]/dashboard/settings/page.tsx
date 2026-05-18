@@ -56,7 +56,8 @@ export default function SettingsPage() {
       youtube: ''
     },
     appearance: {
-      primaryColor: '#e11d48'
+      primaryColor: '#e11d48',
+      editorialPdfUrl: ''
     },
     trendingTopics: [] as string[],
     googleIndexingConfig: {
@@ -73,6 +74,7 @@ export default function SettingsPage() {
   const [showPrivateKey, setShowPrivateKey] = useState(false)
   const [newTag, setNewTag] = useState('')
   const [uploadingLogo, setUploadingLogo] = useState(false)
+  const [uploadingPdf, setUploadingPdf] = useState(false)
 
   // Deteksi perubahan form (Dirty State Checker)
   useEffect(() => {
@@ -171,7 +173,10 @@ export default function SettingsPage() {
           editorial: data.data.editorial || '',
           advertising: data.data.advertising || '',
           socialLinks: data.data.socialLinks || { facebook: '', twitter: '', instagram: '', youtube: '' },
-          appearance: data.data.appearance || { primaryColor: '#e11d48' },
+          appearance: {
+            primaryColor: data.data.appearance?.primaryColor || '#e11d48',
+            editorialPdfUrl: data.data.appearance?.editorialPdfUrl || ''
+          },
           trendingTopics: data.data.trendingTopics || [],
           googleIndexingConfig: data.data.googleIndexingConfig || { clientEmail: '', privateKey: '', isActive: false }
         }
@@ -784,15 +789,136 @@ export default function SettingsPage() {
                     />
                   </div>
 
-                  <div className="space-y-2">
-                    <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Halaman: Susunan Redaksi</label>
+                  <div className="space-y-3">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                      <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">
+                        Halaman: Susunan Redaksi
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (confirm('Apakah Anda yakin ingin memuat format Dewan Pers standar? Teks susunan redaksi saat ini akan ditimpa.')) {
+                            setSettings({
+                              ...settings,
+                              editorial: `PT SABDA KARYA MEDIA (BERITAKARYA.CO)\nSK MENKUMHAM: AHU-0012345.AH.01.01.TAHUN 2026\n\nSUSUNAN REDAKSI & TATA KELOLA PERUSAHAAN\n\nPenerbit / Badan Hukum:\nPT Sabda Karya Media\n\nDewan Pembina / Penasihat:\n- [Nama Dewan Pembina]\n\nPemimpin Umum / Direktur Utama:\n- [Nama Pemimpin Umum]\n\nPemimpin Redaksi / Penanggung Jawab:\n- [Nama Pemimpin Redaksi] (Sertifikat Wartawan Utama No: [Nomor])\n\nRedaktur Pelaksana (Redpel):\n- [Nama Redaktur Pelaksana]\n\nRedaktur Senior & Editor:\n- [Nama Editor 1]\n- [Nama Editor 2]\n\nReporter / Wartawan Lapangan:\n- [Nama Reporter 1]\n- [Nama Reporter 2]\n- [Nama Reporter 3]\n\nDesain Grafis, IT & Multimedia:\n- [Nama Tim IT/Desain]\n\nAlamat Kantor Redaksi Pusat:\nGedung BeritaKarya, Lt. 3, Jl. Asia Afrika No. 45, Bandung, Jawa Barat\nEmail: redaksi@beritakarya.co | Telp: +62 812-3456-7890\n\nPenasihat Hukum:\n- [Nama Advokat/LBH], S.H., M.H.`
+                            })
+                          }
+                        }}
+                        className="text-[9px] font-black text-brand-red hover:text-brand-black dark:hover:text-white uppercase tracking-widest flex items-center gap-1 bg-brand-red/5 px-2.5 py-1.5 rounded-lg border border-brand-red/10 transition-all shadow-sm animate-pulse"
+                      >
+                        <Sparkles size={10} className="text-brand-red" /> Gunakan Template Dewan Pers
+                      </button>
+                    </div>
+                    
                     <textarea 
                       value={settings.editorial}
                       onChange={(e) => setSettings({...settings, editorial: e.target.value})}
                       placeholder="Daftar nama Pemimpin Redaksi, Editor, Jurnalis, Dewan Penasehat, beserta peran masing-masing..."
-                      rows={4}
+                      rows={5}
                       className="w-full bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-xl px-4 py-3 text-xs text-brand-black dark:text-white outline-none focus:border-brand-red/50 focus:ring-1 focus:ring-brand-red/20 transition-all font-semibold"
                     />
+
+                    {/* PDF Uploader Slot */}
+                    <div className="p-4 bg-slate-50 dark:bg-slate-950/30 border border-gray-100 dark:border-white/5 rounded-xl space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[9px] font-black uppercase tracking-widest text-gray-400">
+                          Lampiran Berkas SK Redaksi Resmi (PDF)
+                        </span>
+                        {settings.appearance.editorialPdfUrl ? (
+                          <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest bg-emerald-500/10 px-2 py-0.5 rounded">
+                            PDF Terunggah
+                          </span>
+                        ) : (
+                          <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">
+                            Belum Ada PDF
+                          </span>
+                        )}
+                      </div>
+                      
+                      <div className="flex gap-3">
+                        <input 
+                          type="text" 
+                          value={settings.appearance.editorialPdfUrl || ''}
+                          onChange={(e) => setSettings({
+                            ...settings,
+                            appearance: {
+                              ...settings.appearance,
+                              editorialPdfUrl: e.target.value
+                            }
+                          })}
+                          placeholder="https://.../sk-redaksi.pdf"
+                          className="flex-1 bg-white dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-lg px-3 py-2 text-[10px] text-brand-black dark:text-white outline-none focus:border-brand-red/50 focus:ring-1 focus:ring-brand-red/20 transition-all font-semibold"
+                        />
+                        
+                        <div className="relative">
+                          <input 
+                            type="file" 
+                            accept="application/pdf"
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0]
+                              if (!file) return
+                              
+                              setUploadingPdf(true)
+                              const formData = new FormData()
+                              formData.append('file', file)
+                              
+                              try {
+                                const { data } = await api.post('/media/upload', formData)
+                                setSettings({
+                                  ...settings,
+                                  appearance: {
+                                    ...settings.appearance,
+                                    editorialPdfUrl: data.data.url
+                                  }
+                                })
+                              } catch (err: any) {
+                                console.error('Failed to upload PDF', err)
+                                alert(err.response?.data?.error?.message || 'Gagal mengunggah file PDF')
+                              } finally {
+                                setUploadingPdf(false)
+                              }
+                            }}
+                            className="absolute inset-0 opacity-0 cursor-pointer disabled:cursor-not-allowed z-10"
+                            disabled={uploadingPdf}
+                          />
+                          <button 
+                            type="button"
+                            disabled={uploadingPdf}
+                            className="h-full bg-brand-black dark:bg-white/10 hover:bg-brand-red text-white px-4 py-3 text-[9px] font-black uppercase tracking-widest transition-all rounded-lg flex items-center gap-1.5"
+                          >
+                            {uploadingPdf ? <Loader2 size={10} className="animate-spin" /> : <Plus size={10} />}
+                            {uploadingPdf ? 'Mengunggah...' : 'Upload PDF'}
+                          </button>
+                        </div>
+                      </div>
+                      
+                      {settings.appearance.editorialPdfUrl && (
+                        <div className="flex items-center gap-2">
+                          <a 
+                            href={settings.appearance.editorialPdfUrl} 
+                            target="_blank" 
+                            rel="noreferrer" 
+                            className="text-[9px] font-black text-brand-red hover:underline flex items-center gap-1 uppercase tracking-widest"
+                          >
+                            <ExternalLink size={10} /> Buka / Uji Berkas PDF SK Redaksi
+                          </a>
+                          <span className="text-gray-300 dark:text-white/10">|</span>
+                          <button
+                            type="button"
+                            onClick={() => setSettings({
+                              ...settings,
+                              appearance: {
+                                ...settings.appearance,
+                                editorialPdfUrl: ''
+                              }
+                            })}
+                            className="text-[9px] font-black text-rose-500 hover:text-rose-600 uppercase tracking-widest"
+                          >
+                            Hapus Lampiran
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   <div className="space-y-2">

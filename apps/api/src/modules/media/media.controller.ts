@@ -48,9 +48,9 @@ const upload = multer({
   storage,
   limits: { fileSize: 10 * 1024 * 1024 },
   fileFilter: (_, file, cb) => {
-    const allowed = ['image/jpeg','image/png','image/webp','image/gif']
+    const allowed = ['image/jpeg','image/png','image/webp','image/gif','application/pdf']
     if (allowed.includes(file.mimetype)) cb(null, true)
-    else cb(new AppError('Tipe file tidak didukung. Gunakan JPG, PNG, WebP, atau GIF', 400, 'INVALID_FILE_TYPE'))
+    else cb(new AppError('Tipe file tidak didukung. Gunakan JPG, PNG, WebP, GIF, atau PDF', 400, 'INVALID_FILE_TYPE'))
   }
 })
 
@@ -172,27 +172,57 @@ mediaRouter.post(
     logger.info(`[Media] Uploading file: ${req.file.originalname} (${req.file.size} bytes), Type: ${req.query.type || 'standard'}`)
     const id = uuidv4()
     let processed;
-    try {
-      processed = await processImage(req.file.buffer, id, { skipWatermark: isLogo })
-    } catch (err: any) {
-      logger.error('[Media] Image processing failed:', err)
-      return res.status(500).json({
-        success: false,
-        error: { message: `Gagal memproses gambar: ${err.message}` }
-      })
-    }
+    let url = ''
+    let thumbUrl = ''
+    let width = 0
+    let height = 0
+    let originalFormat = ''
 
-    const baseUrl  = env.API_URL
-    const url      = `${baseUrl}/api/v1/media/uploads/${processed.fullName}`
-    const thumbUrl = `${baseUrl}/api/v1/media/uploads/thumbs/${processed.thumbName}`
+    if (req.file.mimetype === 'application/pdf') {
+      const fullName = `${id}.pdf`
+      const fullPath = path.join(UPLOAD_DIR, fullName)
+      if (!isPathSafe(UPLOAD_DIR, fullPath)) {
+        return res.status(400).json({
+          success: false,
+          error: { message: 'Path upload tidak aman' }
+        })
+      }
+      try {
+        fs.writeFileSync(fullPath, req.file.buffer)
+        url = `${env.API_URL}/api/v1/media/uploads/${fullName}`
+        thumbUrl = url
+        originalFormat = 'pdf'
+      } catch (err: any) {
+        logger.error('[Media] PDF save failed:', err)
+        return res.status(500).json({
+          success: false,
+          error: { message: `Gagal menyimpan berkas PDF: ${err.message}` }
+        })
+      }
+    } else {
+      try {
+        processed = await processImage(req.file.buffer, id, { skipWatermark: isLogo })
+        url = `${env.API_URL}/api/v1/media/uploads/${processed.fullName}`
+        thumbUrl = `${env.API_URL}/api/v1/media/uploads/thumbs/${processed.thumbName}`
+        width = processed.width
+        height = processed.height
+        originalFormat = processed.originalFormat
+      } catch (err: any) {
+        logger.error('[Media] Image processing failed:', err)
+        return res.status(500).json({
+          success: false,
+          error: { message: `Gagal memproses gambar: ${err.message}` }
+        })
+      }
+    }
 
     // Save to database
     const media = await repo.createMedia({
       url,
       thumbUrl,
-      width: processed.width,
-      height: processed.height,
-      originalFormat: processed.originalFormat,
+      width,
+      height,
+      originalFormat,
       size: req.file.size,
       userId: req.user!.userId,
       siteId: req.site,
