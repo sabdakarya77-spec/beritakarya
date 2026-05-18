@@ -1,7 +1,9 @@
-import { prisma } from '../src/db/client'
+import { PrismaClient } from '@prisma/client'
 import path from 'path'
 import fs from 'fs'
 import sharp from 'sharp'
+
+const prisma = new PrismaClient()
 
 async function main() {
   console.log('🚀 Starting S-Tier BlurHash backfill script...')
