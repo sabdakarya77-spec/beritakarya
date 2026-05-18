@@ -328,6 +328,7 @@ function AdvertiserDashboardOverview({ greeting, userName, site, currentDate }: 
             <a 
               href="https://wa.me/628123456789" 
               target="_blank" 
+              rel="noopener noreferrer"
               className="w-full py-3 bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest rounded-lg hover:bg-blue-700 transition-all flex items-center justify-center gap-2"
             >
               Hubungi Marketing (WA)

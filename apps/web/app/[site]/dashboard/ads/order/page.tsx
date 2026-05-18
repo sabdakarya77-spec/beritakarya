@@ -33,6 +33,7 @@ export default function OrderAdPage() {
   const [adFileName, setAdFileName] = useState('');
   const [receiptFileName, setReceiptFileName] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [invoiceNumber] = useState(() => Math.floor(1000 + Math.random() * 9000));
 
   // Pricing details based on slots
   const PRICING: Record<string, { name: string, price: number, size: string }> = {
@@ -395,7 +396,7 @@ export default function OrderAdPage() {
               <div className="max-w-md mx-auto bg-gray-50 dark:bg-slate-800/40 border border-gray-100 dark:border-slate-800/80 p-6 rounded-sm text-left space-y-4">
                 <div className="flex justify-between border-b border-gray-200 dark:border-slate-800 pb-2.5 text-[10px] font-bold uppercase tracking-wider text-gray-500">
                   <span>Rincian Transaksi</span>
-                  <span>Invoice #BK-{Math.floor(1000 + Math.random() * 9000)}</span>
+                  <span>Invoice #BK-{invoiceNumber}</span>
                 </div>
                 <div className="space-y-2 text-xs">
                   <div className="flex justify-between font-semibold"><span className="text-gray-400">Nama Kampanye:</span> <span className="text-brand-black dark:text-white">{campaignName}</span></div>
