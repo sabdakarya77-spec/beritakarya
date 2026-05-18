@@ -10,7 +10,6 @@ async function main() {
 
   const medias = await prisma.media.findMany({
     where: {
-      type: 'image',
       blurHash: null
     }
   })
