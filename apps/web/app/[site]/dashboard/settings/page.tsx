@@ -172,7 +172,12 @@ export default function SettingsPage() {
           codeOfEthics: data.data.codeOfEthics || '',
           editorial: data.data.editorial || '',
           advertising: data.data.advertising || '',
-          socialLinks: data.data.socialLinks || { facebook: '', twitter: '', instagram: '', youtube: '' },
+          socialLinks: {
+            facebook: data.data.socialLinks?.facebook || '',
+            twitter: data.data.socialLinks?.twitter || '',
+            instagram: data.data.socialLinks?.instagram || '',
+            youtube: data.data.socialLinks?.youtube || ''
+          },
           appearance: {
             primaryColor: data.data.appearance?.primaryColor || '#e11d48',
             editorialPdfUrl: data.data.appearance?.editorialPdfUrl || ''
