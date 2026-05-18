@@ -1,6 +1,6 @@
 'use client'
 import { useRef, useState, useEffect } from 'react'
-import Image from 'next/image'
+import { SmartImage } from '../../ui/SmartImage'
 import { useEditorStore } from '../../../store/editorStore'
 import { api } from '../../../lib/api'
 import type { GalleryBlock as TGalleryBlock } from '@beritakarya/types'
@@ -89,10 +89,12 @@ export function GalleryBlock({ block }: { block: TGalleryBlock }) {
         <div className="flex gap-2 overflow-x-auto pb-2">
           {block.images.map((img, idx) => (
             <div key={idx} className="relative group shrink-0 w-24 h-24">
-              <Image
+              <SmartImage
                 src={img.url} alt={img.alt}
                 width={96}
                 height={96}
+                fill={false}
+                context="gallery_thumb"
                 onClick={() => setLightbox(idx)}
                 className="w-full h-full object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
               />
@@ -111,11 +113,13 @@ export function GalleryBlock({ block }: { block: TGalleryBlock }) {
           className="fixed inset-0 bg-black/90 z-50 flex flex-col items-center justify-center"
           onClick={() => setLightbox(null)}
         >
-          <Image
+          <SmartImage
             src={block.images[lightbox]?.url}
             alt={block.images[lightbox]?.alt}
             width={1600}
             height={1200}
+            fill={false}
+            context="gallery_full"
             className="max-h-[80vh] max-w-[90vw] object-contain rounded-xl"
             onClick={e => e.stopPropagation()}
           />
@@ -138,12 +142,14 @@ export function GalleryBlock({ block }: { block: TGalleryBlock }) {
 
           <div className="flex gap-1.5 mt-4 overflow-x-auto max-w-xs">
             {block.images.map((img, idx) => (
-              <Image
+              <SmartImage
                 key={idx}
                 src={img.url}
                 alt={img.alt || `Thumbnail ${idx + 1}`}
                 width={40}
                 height={40}
+                fill={false}
+                context="gallery_thumb"
                 onClick={e => { e.stopPropagation(); setLightbox(idx) }}
                 className={`w-10 h-10 object-cover rounded cursor-pointer transition-opacity ${idx === lightbox ? 'opacity-100 ring-2 ring-white' : 'opacity-50 hover:opacity-80'}`}
               />

@@ -1,6 +1,6 @@
 'use client'
 import { useRef, useState } from 'react'
-import Image from 'next/image'
+import { SmartImage } from '../../ui/SmartImage'
 import { useEditorStore } from '../../../store/editorStore'
 import { api } from '../../../lib/api'
 import type { ImageGridBlock as TImageGridBlock, ImageItem } from '@beritakarya/types'
@@ -88,11 +88,13 @@ export function ImageGridBlock({ block }: Props) {
             onDrop={() => handleDrop(idx)}
             className="group relative cursor-grab active:cursor-grabbing"
           >
-            <Image
+            <SmartImage
               src={img.url}
               alt={img.alt || `Grid image ${idx + 1}`}
               width={800}
               height={800}
+              fill={false}
+              context="card"
               className="w-full aspect-square object-cover rounded-lg"
             />
             <button

@@ -6,7 +6,7 @@ import type { MediaTextBlock as TMediaTextBlock } from '@beritakarya/types'
 import { ImageIcon, RotateCcw, AlignLeft, AlignRight } from 'lucide-react'
 import { useToastStore } from '../../../store/toastStore'
 import { api } from '../../../lib/api'
-import Image from 'next/image'
+import { SmartImage } from '../../ui/SmartImage'
 
 interface Props {
   block: TMediaTextBlock
@@ -93,10 +93,11 @@ export function MediaTextBlock({ block }: Props) {
           {block.url ? (
             <div className="relative group/img w-full rounded-xl overflow-hidden border border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-white/[0.02]">
               <div className="relative w-full aspect-[4/3]">
-                <Image
+                <SmartImage
                   src={block.url}
                   alt={block.alt || 'Media & Text block image'}
                   fill
+                  context="card"
                   className="object-cover rounded-t-xl transition-transform duration-300 group-hover/img:scale-102"
                 />
                 {/* Image Controls Hover Layer */}

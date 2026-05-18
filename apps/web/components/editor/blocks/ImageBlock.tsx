@@ -1,6 +1,6 @@
 'use client'
 import { useRef, useState } from 'react'
-import Image from 'next/image'
+import { SmartImage } from '../../ui/SmartImage'
 import { useEditorStore } from '../../../store/editorStore'
 import { api } from '../../../lib/api'
 import type { ImageBlock as TImageBlock } from '@beritakarya/types'
@@ -76,11 +76,13 @@ export function ImageBlock({ block }: { block: TImageBlock }) {
 
   return (
     <div className="relative group">
-      <Image
+      <SmartImage
         src={block.url}
         alt={block.alt || 'Article image'}
         width={1600}
         height={900}
+        fill={false}
+        context="card"
         className="w-full rounded-xl object-cover max-h-96 h-auto"
       />
       <button

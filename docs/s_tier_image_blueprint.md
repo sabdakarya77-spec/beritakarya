@@ -144,7 +144,7 @@ File: components/ui/SmartImage.tsx
 | `VideoWidget.tsx` | 1 | ✅ |
 | `Navbar.tsx` (logo) | 1 | ✅ |
 | `artikel/[slug]/page.tsx` | 3 | ✅ |
-| Editor blocks (4 files) | 4 | ⚠️ Optional |
+| Editor blocks (4 files) | 4 | ✅ |
 | **Total** | **~21** | |
 
 ---
