@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 import { ArrowUpRight, Clock, BookOpen, Bookmark, User, Share2 } from 'lucide-react';
 import Link from 'next/link';
-import Image from 'next/image';
+import { SmartImage } from './SmartImage';
 import { cn } from '../../lib/utils';
 import EditorialBadge, { resolveArticleBadge } from './EditorialBadge';
 
@@ -32,8 +32,10 @@ export default function NewsCard({ article, variant = 'medium', site = 'pusat' }
           whileHover={{ y: -4 }}
           className="relative min-h-[450px] h-[550px] lg:h-[700px] group overflow-hidden rounded-lg cursor-pointer w-full bg-slate-900 shadow-2xl"
         >
-          <Image 
+          <SmartImage 
             src={imageUrl} 
+            blur={article.featuredImageBlur}
+            context="hero_lead"
             alt={article.title} 
             fill
             className="object-cover object-center opacity-70 group-hover:opacity-60 group-hover:scale-105 transition-all duration-[1.5s] ease-out"
@@ -109,8 +111,10 @@ export default function NewsCard({ article, variant = 'medium', site = 'pusat' }
           className="flex gap-6 group cursor-pointer border-b border-gray-100 dark:border-white/5 pb-6 last:border-0"
         >
           <div className="relative w-32 md:w-48 aspect-[4/3] overflow-hidden bg-gray-100 dark:bg-white/5 rounded-lg flex-shrink-0">
-            <Image 
+            <SmartImage 
               src={imageUrl} 
+              blur={article.featuredImageBlur}
+              context="card_horizontal"
               alt={article.title} 
               fill
               className="object-cover object-center group-hover:scale-110 transition-transform duration-700 ease-out"
@@ -143,8 +147,10 @@ export default function NewsCard({ article, variant = 'medium', site = 'pusat' }
         className="flex flex-col gap-5 group cursor-pointer relative"
       >
         <div className="relative aspect-video overflow-hidden bg-gray-100 dark:bg-white/5 rounded-xl shadow-sm">
-          <Image 
+          <SmartImage 
             src={imageUrl} 
+            blur={article.featuredImageBlur}
+            context="card"
             alt={article.title} 
             fill
             className="object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out"

@@ -192,9 +192,10 @@ model Article {
   scheduledAt DateTime? // Waktu terbit yang dijadwalkan
 
   // SEO
-  metaTitle       String?
-  metaDescription String?
-  featuredImage   String? // URL gambar utama
+  metaTitle         String?
+  metaDescription   String?
+  featuredImage     String? // URL gambar utama
+  featuredImageBlur String? // Base64 blur hash (10x10 webp)
 
   // Article Metadata
   wordCount      Int? // Jumlah kata
@@ -292,6 +293,7 @@ model Media {
   id             String   @id @default(uuid())
   url            String
   thumbUrl       String
+  blurHash       String? // Base64 blur hash (10x10 webp)
   width          Int
   height         Int
   originalFormat String

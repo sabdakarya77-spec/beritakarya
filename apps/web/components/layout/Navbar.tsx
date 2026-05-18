@@ -4,7 +4,7 @@ import { Search, Menu, User as UserIcon, Bell, Globe, Moon, Sun, FileText } from
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+import { SmartImage } from '../ui/SmartImage';
 import DateTimeWeather from '../ui/DateTimeWeather';
 import { cn } from '../../lib/utils';
 
@@ -115,10 +115,11 @@ export default function Navbar({
           <Link href="/" className="flex flex-col items-center group">
             {siteConfig?.logoUrl ? (
               <div className="relative h-12 w-48 mb-1">
-                <Image 
+                <SmartImage 
                   src={siteConfig.logoUrl} 
                   alt={siteConfig.name} 
                   fill 
+                  context="gallery_thumb"
                   className="object-contain"
                   priority
                 />

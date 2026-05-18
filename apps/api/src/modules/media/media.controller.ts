@@ -130,10 +130,18 @@ async function processImage(buffer: Buffer, filename: string, options: { skipWat
     throw new Error('Path thumbnail tidak aman')
   }
 
+  let blurHash = ''
   try {
     await sharp(buffer).resize(400).webp({ quality: 70 }).toFile(thumbPath)
+
+    // Generate blur hash (10x10 WebP base64 URI)
+    const blurBuffer = await sharp(buffer)
+      .resize(10, 10, { fit: 'inside' })
+      .webp({ quality: 20 })
+      .toBuffer()
+    blurHash = `data:image/webp;base64,${blurBuffer.toString('base64')}`
   } catch (err) {
-    logger.error('[Media] Failed to save thumbnail:', err)
+    logger.error('[Media] Failed to save thumbnail or generate blurHash:', err)
     // Clean up full image if thumbnail fails
     try {
       if (fs.existsSync(fullPath)) {
@@ -147,7 +155,7 @@ async function processImage(buffer: Buffer, filename: string, options: { skipWat
 
   const finalMeta = await sharp(fullPath).metadata()
   return {
-    fullName, thumbName,
+    fullName, thumbName, blurHash,
     width: finalMeta.width ?? meta.width ?? 0,
     height: finalMeta.height ?? meta.height ?? 0,
     originalFormat: meta.format ?? 'unknown'
@@ -174,6 +182,7 @@ mediaRouter.post(
     let processed;
     let url = ''
     let thumbUrl = ''
+    let blurHash = ''
     let width = 0
     let height = 0
     let originalFormat = ''
@@ -204,6 +213,7 @@ mediaRouter.post(
         processed = await processImage(req.file.buffer, id, { skipWatermark: isLogo })
         url = `${env.API_URL}/api/v1/media/uploads/${processed.fullName}`
         thumbUrl = `${env.API_URL}/api/v1/media/uploads/thumbs/${processed.thumbName}`
+        blurHash = processed.blurHash
         width = processed.width
         height = processed.height
         originalFormat = processed.originalFormat
@@ -220,6 +230,7 @@ mediaRouter.post(
     const media = await repo.createMedia({
       url,
       thumbUrl,
+      blurHash,
       width,
       height,
       originalFormat,

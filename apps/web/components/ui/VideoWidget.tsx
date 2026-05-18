@@ -1,7 +1,7 @@
 'use client';
 
 import { Play, Tv, ExternalLink } from 'lucide-react';
-import Image from 'next/image';
+import { SmartImage } from './SmartImage';
 import { motion } from 'framer-motion';
 
 interface VideoWidgetProps {
@@ -28,10 +28,11 @@ export default function VideoWidget({
       </div>
 
       <div className="relative aspect-video overflow-hidden rounded-sm bg-brand-black">
-        <Image 
+        <SmartImage 
           src={thumbnail} 
           alt={title} 
           fill
+          context="card"
           className="object-cover opacity-80 group-hover:scale-105 group-hover:opacity-60 transition-all duration-700"
         />
         

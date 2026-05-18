@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation'
-import Image from 'next/image'
+import { SmartImage } from '../../../../components/ui/SmartImage'
 import Link from 'next/link'
 import type { Block } from '@beritakarya/types'
 import PublicSiteLayout from '../../../../components/layout/PublicSiteLayout'
@@ -237,8 +237,10 @@ export default async function ArticlePage({ params }: Props) {
         {/* --- HERO IMAGE --- */}
         <div className="max-w-7xl mx-auto px-4 -mt-10 md:-mt-20 mb-20">
           <div className="aspect-video md:aspect-[21/9] w-full relative overflow-hidden shadow-2xl rounded-xl">
-            <Image 
+            <SmartImage 
               src={coverImage} 
+              blur={article.featuredImageBlur}
+              context="article_cover"
               alt={article.title}
               fill
               className="object-cover"
@@ -375,8 +377,9 @@ function PublicBlock({ block }: { block: Block }) {
       return (
         <figure className="my-16">
           <div className="relative aspect-video rounded-xl overflow-hidden shadow-lg border border-gray-100 dark:border-white/5">
-            <Image 
+            <SmartImage 
               src={block.url} 
+              context="article_cover"
               alt={block.alt || 'Post image'}
               fill
               className="object-cover"
@@ -402,8 +405,9 @@ function PublicBlock({ block }: { block: Block }) {
           <div className="w-full md:w-1/2">
             <figure className="m-0">
               <div className="relative aspect-[4/3] rounded-xl overflow-hidden shadow-lg border border-gray-100 dark:border-white/5">
-                <Image 
+                <SmartImage 
                   src={block.url || '/placeholder.jpg'} 
+                  context="article_cover"
                   alt={block.alt || 'Post image'}
                   fill
                   className="object-cover"

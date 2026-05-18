@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
-import Image from 'next/image'
+import { SmartImage } from '../ui/SmartImage'
 import type { ImageItem } from '@beritakarya/types'
 
 interface Props {
@@ -48,11 +48,13 @@ export function PublicGallery({ images }: Props) {
               onClick={() => setActive(i)} 
               className="focus:outline-none group relative overflow-hidden rounded-xl bg-gray-100"
             >
-              <Image
+              <SmartImage
                 src={img.url} 
                 alt={img.alt || `Gallery image ${i + 1}`}
+                fill={false}
                 width={800}
                 height={800}
+                context="card"
                 className="w-full aspect-square object-cover transition-transform duration-500 group-hover:scale-110 cursor-pointer"
                 loading="lazy"
               />
@@ -70,11 +72,13 @@ export function PublicGallery({ images }: Props) {
         >
           {/* Main Image */}
           <div className="relative flex flex-col items-center max-w-5xl w-full">
-            <Image
+            <SmartImage
               src={images[active]?.url} 
               alt={images[active]?.alt || `Gallery image ${active + 1}`}
+              fill={false}
               width={1600}
               height={1200}
+              context="gallery_full"
               className="max-h-[75vh] max-w-full object-contain rounded-lg shadow-2xl lightbox-image"
               onClick={e => e.stopPropagation()}
             />
@@ -119,11 +123,13 @@ export function PublicGallery({ images }: Props) {
                 className="shrink-0"
                 onClick={e => { e.stopPropagation(); setActive(i) }}
               >
-                <Image 
+                <SmartImage 
                   src={img.url} 
                   alt={img.alt || `Gallery thumbnail ${i + 1}`}
+                  fill={false}
                   width={56}
                   height={56}
+                  context="gallery_thumb"
                   className={`w-14 h-14 object-cover rounded-lg cursor-pointer transition-all duration-300 ${
                     i === active 
                       ? 'ring-2 ring-white scale-110 opacity-100 shadow-lg' 

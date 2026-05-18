@@ -3,6 +3,7 @@ import { prisma } from '../../db/client'
 export async function createMedia(data: {
   url: string;
   thumbUrl: string;
+  blurHash?: string;
   width: number;
   height: number;
   originalFormat: string;

@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 import { ArrowRight, Clock, BookOpen, Share2, Bookmark } from 'lucide-react';
 import Link from 'next/link';
-import Image from 'next/image';
+import { SmartImage } from '../ui/SmartImage';
 import { cn } from '../../lib/utils';
 import EditorialBadge, { resolveArticleBadge } from '../ui/EditorialBadge';
 
@@ -106,8 +106,10 @@ export function PremiumHero({ article, site }: PremiumHeroProps) {
               transition={{ duration: 1.2, ease: "easeOut" }}
               className="relative aspect-[4/5] lg:aspect-[1.1/1] overflow-hidden rounded-3xl shadow-3xl"
             >
-              <Image
+              <SmartImage
                 src={imageUrl}
+                blur={article.featuredImageBlur}
+                context="hero_lead"
                 alt={article.title}
                 fill
                 className="object-cover transition-transform duration-[3s] hover:scale-110"

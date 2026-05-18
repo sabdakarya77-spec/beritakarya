@@ -211,6 +211,19 @@ export async function updateArticle(
 
   let data: any = { ...input }
   
+  // [S-Tier] Propagate blur hash if featuredImage is updated
+  if (input.featuredImage && input.featuredImage !== article.featuredImage) {
+    const media = await prisma.media.findFirst({
+      where: { url: input.featuredImage },
+      select: { blurHash: true }
+    })
+    if (media && media.blurHash) {
+      data.featuredImageBlur = media.blurHash
+    } else if (!input.featuredImage) {
+      data.featuredImageBlur = null
+    }
+  }
+
   // Handle Slug Change
   if (input.title && input.title !== article.title) {
     let slug = generateSlug(input.title)

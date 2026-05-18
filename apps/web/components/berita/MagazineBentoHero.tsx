@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 import { Clock } from 'lucide-react';
 import Link from 'next/link';
-import Image from 'next/image';
+import { SmartImage } from '../ui/SmartImage';
 import { cn } from '../../lib/utils';
 import EditorialBadge, { resolveArticleBadge } from '../ui/EditorialBadge';
 
@@ -30,8 +30,10 @@ export function MagazineBentoHero({ articles, site }: { articles: any[], site: s
         {/* BIG LEAD ARTICLE (Col Span 8) */}
         {lead && (
           <Link href={`/${site}/article/${lead.slug}`} className="lg:col-span-8 relative rounded-2xl overflow-hidden group/lead block h-[400px] lg:h-full">
-            <Image 
+            <SmartImage 
               src={getImageUrl(lead)} 
+              blur={lead.featuredImageBlur}
+              context="hero_lead"
               alt={lead.title}
               fill
               className="object-cover transition-transform duration-[5s] group-hover/lead:scale-110"
@@ -72,8 +74,10 @@ export function MagazineBentoHero({ articles, site }: { articles: any[], site: s
               href={`/${site}/article/${article.slug}`}
               className="relative flex-1 rounded-2xl overflow-hidden group/side block min-h-[150px]"
             >
-              <Image 
+              <SmartImage 
                 src={getImageUrl(article)} 
+                blur={article.featuredImageBlur}
+                context="hero_side"
                 alt={article.title}
                 fill
                 className="object-cover transition-transform duration-[4s] group-hover/side:scale-110"
