@@ -16,7 +16,10 @@ import {
   Search,
   Check,
   XCircle,
-  Cpu
+  Cpu,
+  Edit3,
+  X,
+  Settings
 } from 'lucide-react'
 import { cn } from '../../lib/utils'
 
@@ -75,6 +78,82 @@ export function AIDashboard() {
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('overview')
   const [searchTerm, setSearchTerm] = useState('')
+  
+  const [editingRole, setEditingRole] = useState<any | null>(null)
+  const [roleFormData, setRoleFormData] = useState({
+    dailyRequests: 50,
+    monthlyBudget: 10,
+    modelRestriction: '',
+    allowedFeatures: [] as string[]
+  })
+  const [submittingRole, setSubmittingRole] = useState(false)
+
+  const AVAILABLE_FEATURES = [
+    { id: 'rewrite', name: 'Tulis Ulang (Rewrite)' },
+    { id: 'expand', name: 'Perluas Teks (Expand)' },
+    { id: 'headline', name: 'Buat Judul (Headline)' },
+    { id: 'seo', name: 'Audit SEO (SEO Audit)' },
+    { id: 'grammar', name: 'Perbaiki Gramatika (Grammar)' },
+    { id: 'readability', name: 'Keterbacaan (Readability)' },
+    { id: 'fact-check', name: 'Cek Fakta (Fact Check)' },
+    { id: 'caption', name: 'Keterangan Gambar (Caption)' },
+    { id: 'image_gen', name: 'Pembuat Gambar AI (Image Gen)' }
+  ]
+
+  function openEditRoleModal(quota: any) {
+    let allowed: string[] = []
+    if (Array.isArray(quota.allowedFeatures)) {
+      allowed = quota.allowedFeatures
+    } else if (typeof quota.allowedFeatures === 'string') {
+      try {
+        allowed = JSON.parse(quota.allowedFeatures)
+      } catch (e) {
+        allowed = []
+      }
+    }
+
+    setEditingRole(quota)
+    setRoleFormData({
+      dailyRequests: quota.dailyRequests,
+      monthlyBudget: Number(quota.monthlyBudget) || 0,
+      modelRestriction: quota.modelRestriction || '',
+      allowedFeatures: allowed
+    })
+  }
+
+  async function handleRoleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!editingRole) return
+    setSubmittingRole(true)
+    try {
+      const res = await api.patch(`/admin/roles/${editingRole.role}/quota`, {
+        dailyRequests: Number(roleFormData.dailyRequests),
+        dailyTokens: Number(roleFormData.dailyRequests) * 2000,
+        monthlyBudget: Number(roleFormData.monthlyBudget),
+        allowedFeatures: roleFormData.allowedFeatures,
+        modelRestriction: roleFormData.modelRestriction || null
+      })
+
+      if (res.data.success) {
+        await fetchData()
+        setEditingRole(null)
+      }
+    } catch (error) {
+      console.error('Failed to update role quota:', error)
+      alert('Gagal memperbarui kuota peran!')
+    } finally {
+      setSubmittingRole(false)
+    }
+  }
+
+  function handleFeatureToggle(featureId: string) {
+    setRoleFormData(prev => {
+      const allowed = prev.allowedFeatures.includes(featureId)
+        ? prev.allowedFeatures.filter(id => id !== featureId)
+        : [...prev.allowedFeatures, featureId]
+      return { ...prev, allowedFeatures: allowed }
+    })
+  }
 
   useEffect(() => {
     fetchData()
@@ -410,9 +489,18 @@ export function AIDashboard() {
                 <div key={quota.role} className="border border-white/5 rounded-xl p-4 bg-white/[0.01] space-y-4">
                   <div className="flex justify-between items-center">
                     <span className="text-xs font-extrabold text-white capitalize">{quota.role}</span>
-                    <span className="text-[9px] font-black uppercase tracking-widest bg-brand-red/10 border border-brand-red/20 text-brand-red px-2 py-0.5 rounded-md">
-                      {quota.modelRestriction || 'Semua Model (GPT-4o)'}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[9px] font-black uppercase tracking-widest bg-brand-red/10 border border-brand-red/20 text-brand-red px-2 py-0.5 rounded-md">
+                        {quota.modelRestriction || 'Semua Model (GPT-4o)'}
+                      </span>
+                      <button 
+                        onClick={() => openEditRoleModal(quota)}
+                        className="p-1 text-gray-400 hover:text-white transition-colors bg-white/5 hover:bg-white/10 rounded-md border border-white/5"
+                        title="Sesuaikan Kuota AI Peran"
+                      >
+                        <Edit3 size={11} />
+                      </button>
+                    </div>
                   </div>
                   
                   <div className="grid grid-cols-2 gap-4 text-[10px] font-bold uppercase tracking-wider text-gray-400">
@@ -657,6 +745,120 @@ export function AIDashboard() {
             </div>
           </div>
 
+        </div>
+      )}
+
+      {/* ── ROLE QUOTA EDIT MODAL ────────────────────────────────────────── */}
+      {editingRole && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="w-full max-w-lg bg-[#0c121e] border border-white/10 rounded-2xl p-6 shadow-2xl space-y-6 relative overflow-hidden">
+            {/* Background glowing effects */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-brand-red/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+
+            <div className="flex justify-between items-center pb-4 border-b border-white/5">
+              <div>
+                <h3 className="text-xs font-black uppercase tracking-wider text-white">Sesuaikan Kuota AI Peran</h3>
+                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-0.5">Konfigurasi Peran: <span className="text-brand-red uppercase">{editingRole.role}</span></p>
+              </div>
+              <button 
+                onClick={() => setEditingRole(null)}
+                className="text-gray-400 hover:text-white transition-colors bg-white/5 hover:bg-white/10 p-1.5 rounded-lg border border-white/5"
+              >
+                <X size={14} />
+              </button>
+            </div>
+
+            <form onSubmit={handleRoleSubmit} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-[9px] font-black text-gray-400 uppercase tracking-wider block">Batas Permintaan Harian</label>
+                  <input 
+                    type="number" 
+                    required
+                    min={0}
+                    value={roleFormData.dailyRequests}
+                    onChange={(e) => setRoleFormData(prev => ({ ...prev, dailyRequests: parseInt(e.target.value) || 0 }))}
+                    className="w-full px-3 py-2 bg-slate-950/80 border border-white/5 rounded-xl text-xs text-white outline-none focus:border-brand-red transition-all font-bold"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[9px] font-black text-gray-400 uppercase tracking-wider block">Anggaran Bulanan (USD)</label>
+                  <input 
+                    type="number" 
+                    required
+                    min={0}
+                    step="0.01"
+                    value={roleFormData.monthlyBudget}
+                    onChange={(e) => setRoleFormData(prev => ({ ...prev, monthlyBudget: parseFloat(e.target.value) || 0 }))}
+                    className="w-full px-3 py-2 bg-slate-950/80 border border-white/5 rounded-xl text-xs text-white outline-none focus:border-brand-red transition-all font-bold"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[9px] font-black text-gray-400 uppercase tracking-wider block">Batasan Model AI</label>
+                <select 
+                  value={roleFormData.modelRestriction}
+                  onChange={(e) => setRoleFormData(prev => ({ ...prev, modelRestriction: e.target.value }))}
+                  className="w-full px-3 py-2 bg-slate-950/80 border border-white/5 rounded-xl text-xs text-white outline-none focus:border-brand-red transition-all font-bold"
+                >
+                  <option value="">Semua Model (Default: GPT-4o)</option>
+                  <option value="gpt-4o">GPT-4o (Premium)</option>
+                  <option value="gpt-4o-mini">GPT-4o Mini (Hemat)</option>
+                  <option value="gpt-3.5-turbo">GPT-3.5 Turbo (Legacy)</option>
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[9px] font-black text-gray-400 uppercase tracking-wider block">Hak Akses Fitur AI</label>
+                <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
+                  {AVAILABLE_FEATURES.map((feature) => {
+                    const isChecked = roleFormData.allowedFeatures.includes(feature.id)
+                    return (
+                      <div 
+                        key={feature.id}
+                        onClick={() => handleFeatureToggle(feature.id)}
+                        className={cn(
+                          "flex items-center gap-2 px-3 py-2 rounded-xl border cursor-pointer select-none transition-all",
+                          isChecked 
+                            ? "bg-brand-red/10 border-brand-red/30 text-white" 
+                            : "bg-white/[0.01] border-white/5 text-gray-400 hover:bg-white/5"
+                        )}
+                      >
+                        <div className={cn(
+                          "w-3.5 h-3.5 rounded flex items-center justify-center border transition-all",
+                          isChecked 
+                            ? "bg-brand-red border-brand-red text-white" 
+                            : "border-white/20"
+                        )}>
+                          {isChecked && <Check size={10} strokeWidth={3} />}
+                        </div>
+                        <span className="text-[10px] font-bold uppercase tracking-wider">{feature.name}</span>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-white/5 flex gap-3">
+                <button 
+                  type="button"
+                  onClick={() => setEditingRole(null)}
+                  className="flex-1 px-4 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-xl transition-all duration-300"
+                >
+                  Batal
+                </button>
+                <button 
+                  type="submit"
+                  disabled={submittingRole}
+                  className="flex-1 px-4 py-2.5 bg-brand-red hover:bg-red-600 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-xl transition-all duration-300 shadow-lg shadow-brand-red/10 active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
+                >
+                  {submittingRole ? 'Menyimpan...' : 'Simpan Kuota'}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
 
