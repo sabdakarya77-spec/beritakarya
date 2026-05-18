@@ -429,11 +429,23 @@ export function AIDashboard() {
                   <div className="pt-3 border-t border-white/5">
                     <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Fitur AI yang Diizinkan:</span>
                     <div className="flex flex-wrap gap-1.5 mt-2">
-                      {quota.allowedFeatures.map((f) => (
-                        <span key={f} className="text-[8px] font-black uppercase tracking-wider bg-white/5 border border-white/10 text-gray-300 px-2 py-0.5 rounded">
-                          {f}
-                        </span>
-                      ))}
+                      {(() => {
+                        let allowed: string[] = []
+                        if (Array.isArray(quota.allowedFeatures)) {
+                          allowed = quota.allowedFeatures
+                        } else if (typeof quota.allowedFeatures === 'string') {
+                          try {
+                            allowed = JSON.parse(quota.allowedFeatures)
+                          } catch (e) {
+                            allowed = []
+                          }
+                        }
+                        return (allowed || []).map((f) => (
+                          <span key={f} className="text-[8px] font-black uppercase tracking-wider bg-white/5 border border-white/10 text-gray-300 px-2 py-0.5 rounded">
+                            {f}
+                          </span>
+                        ))
+                      })()}
                     </div>
                   </div>
                 </div>

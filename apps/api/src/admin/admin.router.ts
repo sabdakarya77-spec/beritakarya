@@ -235,10 +235,40 @@ adminRouter.get('/quotas', requireAuth, requireAdmin, asyncHandler(async (req, r
     usageMap.set(u.userId, u)
   }
 
-  // Enrich users with usage and site info
+  // Enrich roleQuotas to make sure allowedFeatures is always an array
+  const formattedRoleQuotas = roleQuotas.map(quota => {
+    let allowed: string[] = []
+    if (Array.isArray(quota.allowedFeatures)) {
+      allowed = quota.allowedFeatures as string[]
+    } else if (typeof quota.allowedFeatures === 'string') {
+      try {
+        allowed = JSON.parse(quota.allowedFeatures)
+      } catch (e) {
+        allowed = []
+      }
+    }
+    return {
+      ...quota,
+      allowedFeatures: allowed
+    }
+  })
+
+  // Enrich users with usage, site info, and secure features array
   const enrichedUsers = users.map(user => {
     const usage = usageMap.get(user.id) || { requests: 0, cost: 0, tokens: 0 }
     const site = user.siteId ? siteMap.get(user.siteId) : null
+    
+    let allowed: string[] = []
+    if (Array.isArray(user.aiFeaturesAllowed)) {
+      allowed = user.aiFeaturesAllowed as string[]
+    } else if (typeof user.aiFeaturesAllowed === 'string') {
+      try {
+        allowed = JSON.parse(user.aiFeaturesAllowed)
+      } catch (e) {
+        allowed = []
+      }
+    }
+
     return {
       id: user.id,
       name: user.name,
@@ -248,14 +278,14 @@ adminRouter.get('/quotas', requireAuth, requireAdmin, asyncHandler(async (req, r
       aiEnabled: user.aiEnabled,
       aiDailyLimit: user.aiDailyLimit,
       aiMonthlyBudget: user.aiMonthlyBudget,
-      aiFeaturesAllowed: user.aiFeaturesAllowed,
+      aiFeaturesAllowed: allowed,
       aiModelRestriction: user.aiModelRestriction,
       currentMonthUsage: usage
     }
   })
 
   res.json({
-    roleQuotas,
+    roleQuotas: formattedRoleQuotas,
     users: enrichedUsers
   })
 }))
