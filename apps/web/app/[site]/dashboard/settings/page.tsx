@@ -2,13 +2,35 @@
 
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
-import { Save, Plus, X, Globe, Settings as SettingsIcon, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react'
-import { useAuthStore } from '../../../../store/authStore'
+import { 
+  Save, 
+  Plus, 
+  X, 
+  Globe, 
+  Settings as SettingsIcon, 
+  AlertCircle, 
+  CheckCircle2, 
+  Loader2, 
+  Mail, 
+  ShieldAlert, 
+  BookOpen, 
+  Flame, 
+  Eye, 
+  EyeOff, 
+  ExternalLink, 
+  Palette, 
+  Sparkles, 
+  Lock,
+  Phone,
+  MapPin,
+  Share2
+} from 'lucide-react'
 import { api } from '../../../../lib/api'
+
+type SettingsTab = 'basic' | 'contact' | 'google' | 'info' | 'trending'
 
 export default function SettingsPage() {
   const { site } = useParams() as { site: string }
-  const { user } = useAuthStore()
   
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -44,8 +66,73 @@ export default function SettingsPage() {
     }
   })
   
+  // State manajemen lanjutan
+  const [originalSettings, setOriginalSettings] = useState<typeof settings | null>(null)
+  const [isDirty, setIsDirty] = useState(false)
+  const [activeTab, setActiveTab] = useState<SettingsTab>('basic')
+  const [showPrivateKey, setShowPrivateKey] = useState(false)
   const [newTag, setNewTag] = useState('')
   const [uploadingLogo, setUploadingLogo] = useState(false)
+
+  // Deteksi perubahan form (Dirty State Checker)
+  useEffect(() => {
+    if (!originalSettings) return
+    const changed = JSON.stringify(settings) !== JSON.stringify(originalSettings)
+    setIsDirty(changed)
+  }, [settings, originalSettings])
+
+  // Peringatan sebelum keluar halaman jika ada perubahan belum disimpan (Unsaved Changes Warning)
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isDirty) {
+        e.preventDefault()
+        e.returnValue = 'Anda memiliki perubahan yang belum disimpan. Yakin ingin meninggalkan halaman ini?'
+        return e.returnValue
+      }
+    }
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, [isDirty])
+
+  // Validasi domain & bersihkan otomatis
+  const cleanDomain = (val: string) => {
+    let clean = val.trim().toLowerCase()
+    clean = clean.replace(/^(https?:\/\/)?(www\.)?/, '')
+    clean = clean.replace(/\/$/, '')
+    return clean
+  }
+
+  // Validasi email
+  const isValidEmail = (email: string) => {
+    if (!email) return true
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+  }
+
+  // Analisis kontras warna (WCAG AA Helper)
+  const getContrastAdvice = (hexColor: string) => {
+    const hex = hexColor.replace('#', '')
+    if (hex.length !== 6) return null
+    const r = parseInt(hex.substring(0, 2), 16) / 255
+    const g = parseInt(hex.substring(2, 4), 16) / 255
+    const b = parseInt(hex.substring(4, 6), 16) / 255
+    
+    const a = [r, g, b].map(v => {
+      return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)
+    })
+    const luminance = 0.2126 * a[0] + 0.7152 * a[1] + 0.0722 * a[2]
+    
+    // Hitung kontras rasio dengan teks putih (#FFFFFF)
+    const ratio = 1.05 / (luminance + 0.05)
+    const isSafe = ratio >= 3.0 // 3:1 WCAG AA standar untuk teks tebal/judul
+    
+    return {
+      isSafe,
+      ratio: ratio.toFixed(1),
+      textAdvice: isSafe 
+        ? 'Aman untuk Teks Putih (Kontras Optimal)' 
+        : 'Terlahu Terang! Teks putih di portal depan akan sulit dibaca.'
+    }
+  }
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -70,7 +157,7 @@ export default function SettingsPage() {
     try {
       const { data } = await api.get('/sites/settings')
       if (data.success) {
-        setSettings({
+        const mappedSettings = {
           name: data.data.name || '',
           domain: data.data.domain || '',
           description: data.data.description || '',
@@ -87,7 +174,9 @@ export default function SettingsPage() {
           appearance: data.data.appearance || { primaryColor: '#e11d48' },
           trendingTopics: data.data.trendingTopics || [],
           googleIndexingConfig: data.data.googleIndexingConfig || { clientEmail: '', privateKey: '', isActive: false }
-        })
+        }
+        setSettings(mappedSettings)
+        setOriginalSettings(JSON.parse(JSON.stringify(mappedSettings)))
       }
     } catch (err) {
       console.error('Failed to fetch settings', err)
@@ -99,13 +188,30 @@ export default function SettingsPage() {
   useEffect(() => {
     fetchSettings()
   }, [site])
+
   const handleSave = async () => {
+    // Jalankan validasi domain sebelum kirim
+    const cleanedDomain = cleanDomain(settings.domain)
+    const finalSettings = {
+      ...settings,
+      domain: cleanedDomain,
+      contactEmail: settings.contactEmail.trim()
+    }
+
+    if (!isValidEmail(finalSettings.contactEmail)) {
+      setMessage({ type: 'error', text: 'Format email kontak tidak valid!' })
+      return
+    }
+
     setSaving(true)
     setMessage(null)
     try {
-      const { data } = await api.patch('/sites/settings', settings)
+      const { data } = await api.patch('/sites/settings', finalSettings)
       if (data.success) {
         setMessage({ type: 'success', text: 'Pengaturan berhasil disimpan!' })
+        setSettings(finalSettings)
+        setOriginalSettings(JSON.parse(JSON.stringify(finalSettings)))
+        setIsDirty(false)
       } else {
         setMessage({ type: 'error', text: data.error?.message || 'Gagal menyimpan pengaturan' })
       }
@@ -140,463 +246,649 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
-        <Loader2 className="w-8 h-8 text-brand-red animate-spin" />
-        <p className="text-xs font-black uppercase tracking-[0.2em] text-gray-400">Memuat Pengaturan...</p>
+      <div className="flex flex-col items-center justify-center min-h-[500px] gap-4">
+        <div className="relative w-16 h-16 flex items-center justify-center">
+          <div className="absolute inset-0 border-4 border-brand-red/10 rounded-full"></div>
+          <div className="absolute inset-0 border-4 border-t-brand-red rounded-full animate-spin"></div>
+        </div>
+        <p className="text-xs font-black uppercase tracking-[0.2em] text-gray-400">Menyinkronkan Konfigurasi...</p>
       </div>
     )
   }
 
+  const tabs = [
+    { id: 'basic', label: 'Identitas & Visual', icon: Globe, desc: 'Nama portal, domain, logo, & skema warna utama' },
+    { id: 'contact', label: 'Kontak & Sosial', icon: Mail, desc: 'Alamat redaksi, hotline, & link media sosial resmi' },
+    { id: 'google', label: 'Google Search API', icon: ShieldAlert, desc: 'Konfigurasi otomatis indeks artikel Google' },
+    { id: 'info', label: 'Halaman Informasi', icon: BookOpen, desc: 'Teks Tentang Kami, Kode Etik, Redaksi, & Iklan' },
+    { id: 'trending', label: 'Topik Hangat', icon: Flame, desc: 'Manajemen kata kunci trending di navigasi depan' }
+  ] as const
+
+  const contrastAdvice = getContrastAdvice(settings.appearance.primaryColor)
+
   return (
-    <div className="space-y-10 animate-in fade-in duration-500">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-100 dark:border-white/5 pb-8">
+    <div className="space-y-8 animate-in fade-in duration-500 max-w-[1400px] mx-auto pb-24">
+      
+      {/* HEADER UTAMA */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-gray-100 dark:border-white/5 pb-8">
         <div>
-          <div className="flex items-center gap-2 mb-2">
-            <SettingsIcon size={16} className="text-brand-red" />
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 bg-brand-red/10 rounded-xl">
+              <SettingsIcon size={20} className="text-brand-red animate-pulse" />
+            </div>
             <h1 className="text-2xl font-serif font-black tracking-tight text-brand-black dark:text-white uppercase">
-              Pengaturan Situs
+              Konfigurasi Sistem Portal
             </h1>
           </div>
-          <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
-            Kelola identitas dan topik hangat untuk portal <span className="text-brand-red">{site}</span>
+          <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest flex items-center gap-1.5">
+            Manajemen Identitas Cabang Regional <span className="text-brand-red font-black">#{site}</span>
           </p>
         </div>
         
-        <button 
-          onClick={handleSave}
-          disabled={saving}
-          className="flex items-center gap-2 bg-brand-red hover:bg-brand-black text-white px-6 py-3 text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-brand-red/20 disabled:opacity-50"
-        >
-          {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
-          {saving ? 'Menyimpan...' : 'Simpan Perubahan'}
-        </button>
+        <div className="flex items-center gap-3">
+          {isDirty && (
+            <span className="text-[9px] font-black uppercase tracking-widest text-amber-500 bg-amber-500/10 px-3 py-1.5 rounded-full border border-amber-500/20">
+              Ada Perubahan Belum Disimpan
+            </span>
+          )}
+          <button 
+            onClick={handleSave}
+            disabled={saving}
+            className="flex items-center gap-2 bg-brand-red hover:bg-brand-black dark:hover:bg-white dark:hover:text-black text-white px-6 py-3 text-[10px] font-black uppercase tracking-widest transition-all rounded-xl shadow-lg shadow-brand-red/20 disabled:opacity-50"
+          >
+            {saving ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} />}
+            {saving ? 'Sedang Menyimpan...' : 'Simpan Konfigurasi'}
+          </button>
+        </div>
       </div>
 
+      {/* NOTIFIKASI STATUS */}
       {message && (
-        <div className={`p-4 flex items-center gap-3 rounded-sm border ${
+        <div className={`p-4 flex items-center gap-3 rounded-2xl border animate-in slide-in-from-top-4 duration-300 ${
           message.type === 'success' 
-            ? 'bg-green-50 border-green-100 text-green-700 dark:bg-green-500/10 dark:border-green-500/20 dark:text-green-400' 
-            : 'bg-red-50 border-red-100 text-red-700 dark:bg-red-500/10 dark:border-red-500/20 dark:text-red-400'
+            ? 'bg-emerald-50 border-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-400' 
+            : 'bg-rose-50 border-rose-100 text-rose-700 dark:bg-rose-500/10 dark:border-rose-500/20 dark:text-rose-400'
         }`}>
           {message.type === 'success' ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}
           <span className="text-xs font-bold uppercase tracking-widest">{message.text}</span>
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-        {/* Identitas Situs */}
-        <div className="lg:col-span-2 space-y-8">
-          <section className="bg-white dark:bg-black/20 p-8 border border-gray-100 dark:border-white/5 rounded-sm shadow-sm">
-            <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-black dark:text-white mb-8 flex items-center gap-2">
-              <Globe size={14} className="text-brand-red" /> Identitas Dasar
-            </h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="space-y-2">
-                <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Nama Situs / Portal</label>
-                <input 
-                  type="text" 
-                  value={settings.name}
-                  onChange={(e) => setSettings({...settings, name: e.target.value})}
-                  placeholder="Contoh: BeritaKarya Bandung"
-                  className="w-full bg-slate-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 px-4 py-3 text-xs text-brand-black dark:text-white outline-none focus:border-brand-red transition-colors font-medium"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Domain Publik</label>
-                <input 
-                  type="text" 
-                  value={settings.domain}
-                  onChange={(e) => setSettings({...settings, domain: e.target.value})}
-                  placeholder="bandung.beritakarya.co"
-                  className="w-full bg-slate-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 px-4 py-3 text-xs text-brand-black dark:text-white outline-none focus:border-brand-red transition-colors font-medium"
-                />
-              </div>
-
-              <div className="md:col-span-2 space-y-2">
-                <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Deskripsi Situs (SEO)</label>
-                <textarea 
-                  value={settings.description}
-                  onChange={(e) => setSettings({...settings, description: e.target.value})}
-                  placeholder="Deskripsi singkat portal Anda untuk hasil pencarian Google..."
-                  rows={3}
-                  className="w-full bg-slate-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 px-4 py-3 text-xs text-brand-black dark:text-white outline-none focus:border-brand-red transition-colors font-medium resize-none"
-                />
-              </div>
-            </div>
-          </section>
-
-          {/* Branding & Visual */}
-          <section className="bg-white dark:bg-black/20 p-8 border border-gray-100 dark:border-white/5 rounded-sm shadow-sm">
-            <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-black dark:text-white mb-8 flex items-center gap-2">
-              <span className="w-2 h-2 bg-brand-red rounded-full"></span> Branding & Visual
-            </h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="space-y-4">
-                <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Logo Situs</label>
-                <div className="flex flex-col gap-4">
-                  {settings.logoUrl && (
-                    <div className="w-full h-32 bg-slate-50 dark:bg-white/5 rounded-sm border border-dashed border-gray-200 dark:border-white/10 flex items-center justify-center p-4 relative group">
-                      <img src={settings.logoUrl} alt="Logo Preview" className="max-w-full max-h-full object-contain" />
-                      <button 
-                        type="button"
-                        onClick={() => setSettings({...settings, logoUrl: ''})}
-                        className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <X size={12} />
-                      </button>
-                    </div>
-                  )}
-                  
-                  <div className="flex gap-3">
-                    <input 
-                      type="text" 
-                      value={settings.logoUrl}
-                      onChange={(e) => setSettings({...settings, logoUrl: e.target.value})}
-                      placeholder="https://.../logo.png"
-                      className="flex-1 bg-slate-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 px-4 py-3 text-xs text-brand-black dark:text-white outline-none focus:border-brand-red transition-colors font-medium"
-                    />
-                    <div className="relative">
-                      <input 
-                        type="file" 
-                        accept="image/*"
-                        onChange={handleLogoUpload}
-                        className="absolute inset-0 opacity-0 cursor-pointer disabled:cursor-not-allowed z-10"
-                        disabled={uploadingLogo}
-                      />
-                      <button 
-                        type="button"
-                        disabled={uploadingLogo}
-                        className="h-full bg-brand-black dark:bg-white/10 hover:bg-brand-red text-white px-6 text-[10px] font-black uppercase tracking-widest transition-all rounded-sm flex items-center gap-2"
-                      >
-                        {uploadingLogo ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
-                        {uploadingLogo ? 'Unggah...' : 'Pilih File'}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Warna Utama (Brand Color)</label>
-                <div className="flex gap-3">
-                  <input 
-                    type="color" 
-                    value={settings.appearance.primaryColor}
-                    onChange={(e) => setSettings({
-                      ...settings, 
-                      appearance: { ...settings.appearance, primaryColor: e.target.value }
-                    })}
-                    className="w-12 h-10 bg-transparent border-none outline-none cursor-pointer"
-                  />
-                  <input 
-                    type="text" 
-                    value={settings.appearance.primaryColor}
-                    onChange={(e) => setSettings({
-                      ...settings, 
-                      appearance: { ...settings.appearance, primaryColor: e.target.value }
-                    })}
-                    className="flex-1 bg-slate-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 px-4 py-3 text-[10px] text-brand-black dark:text-white outline-none focus:border-brand-red transition-colors font-mono"
-                  />
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* Footer & Kontak */}
-          <section className="bg-white dark:bg-black/20 p-8 border border-gray-100 dark:border-white/5 rounded-sm shadow-sm">
-            <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-black dark:text-white mb-8 flex items-center gap-2">
-              <span className="w-2 h-2 bg-brand-red rounded-full"></span> Footer & Informasi Kontak
-            </h2>
-            
-            <div className="space-y-8">
-              <div className="space-y-2">
-                <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Teks Footer (Copyright/Info)</label>
-                <input 
-                  type="text" 
-                  value={settings.footerText}
-                  onChange={(e) => setSettings({...settings, footerText: e.target.value})}
-                  placeholder="© 2024 BeritaKarya. All rights reserved."
-                  className="w-full bg-slate-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 px-4 py-3 text-xs text-brand-black dark:text-white outline-none focus:border-brand-red transition-colors font-medium"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="space-y-2">
-                  <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Alamat Kantor</label>
-                  <input 
-                    type="text" 
-                    value={settings.address}
-                    onChange={(e) => setSettings({...settings, address: e.target.value})}
-                    placeholder="Jl. Merdeka No. 123, Jakarta"
-                    className="w-full bg-slate-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 px-4 py-3 text-xs text-brand-black dark:text-white outline-none focus:border-brand-red transition-colors font-medium"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Email Kontak</label>
-                  <input 
-                    type="email" 
-                    value={settings.contactEmail}
-                    onChange={(e) => setSettings({...settings, contactEmail: e.target.value})}
-                    placeholder="support@beritakarya.co"
-                    className="w-full bg-slate-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 px-4 py-3 text-xs text-brand-black dark:text-white outline-none focus:border-brand-red transition-colors font-medium"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Nomor Telepon/WA</label>
-                  <input 
-                    type="text" 
-                    value={settings.phone}
-                    onChange={(e) => setSettings({...settings, phone: e.target.value})}
-                    placeholder="+62 812 3456 7890"
-                    className="w-full bg-slate-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 px-4 py-3 text-xs text-brand-black dark:text-white outline-none focus:border-brand-red transition-colors font-medium"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-gray-100 dark:border-white/5">
-                {Object.keys(settings.socialLinks).map((key) => (
-                  <div key={key} className="space-y-2">
-                    <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 capitalize">{key} URL</label>
-                    <input 
-                      type="text" 
-                      value={(settings.socialLinks as any)[key]}
-                      onChange={(e) => setSettings({
-                        ...settings, 
-                        socialLinks: { ...settings.socialLinks, [key]: e.target.value }
-                      })}
-                      placeholder={`https://${key}.com/yourprofile`}
-                      className="w-full bg-slate-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 px-4 py-2 text-[10px] text-brand-black dark:text-white outline-none focus:border-brand-red transition-colors font-medium"
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-
-          {/* Google Indexing API (SEO) */}
-          <section className="bg-white dark:bg-black/20 p-8 border border-gray-100 dark:border-white/5 rounded-sm shadow-sm">
-            <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-black dark:text-white mb-8 flex items-center gap-2">
-              <Globe size={14} className="text-brand-red" /> Google Indexing API (Akselerasi SEO)
-            </h2>
-            
-            <div className="space-y-6">
-              <div className="flex items-center justify-between bg-slate-50 dark:bg-white/5 px-6 py-4 rounded-sm border border-gray-100 dark:border-white/5">
-                <div>
-                  <h4 className="text-[10px] font-black uppercase tracking-wider text-brand-black dark:text-white">Status Indeks Otomatis</h4>
-                  <p className="text-[9px] text-gray-400 mt-1">Mengirimkan URL baru ke Google secara otomatis saat artikel diterbitkan.</p>
-                </div>
+      {/* TATA LETAK MODULAR: TAB SISI KIRI & KONTEN KANAN */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        
+        {/* TAB SISI KIRI */}
+        <div className="lg:col-span-1 space-y-3">
+          <div className="bg-white dark:bg-slate-900/40 backdrop-blur-md p-4 rounded-2xl border border-gray-100 dark:border-white/5 space-y-1 shadow-sm">
+            <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 px-3 mb-3">Kategori Pengaturan</p>
+            {tabs.map((t) => {
+              const Icon = t.icon
+              const isActive = activeTab === t.id
+              return (
                 <button
-                  type="button"
-                  onClick={() => setSettings({
-                    ...settings,
-                    googleIndexingConfig: {
-                      ...settings.googleIndexingConfig,
-                      isActive: !settings.googleIndexingConfig.isActive
-                    }
-                  })}
-                  className={`px-4 py-2 text-[9px] font-black uppercase tracking-wider border rounded-sm transition-all ${
-                    settings.googleIndexingConfig.isActive
-                      ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400'
-                      : 'bg-gray-100 border-gray-200 text-gray-400 dark:bg-white/5 dark:border-white/10'
+                  key={t.id}
+                  onClick={() => {
+                    setMessage(null)
+                    setActiveTab(t.id)
+                  }}
+                  className={`w-full text-left flex items-start gap-3 p-3 rounded-xl transition-all ${
+                    isActive 
+                      ? 'bg-brand-red text-white shadow-lg shadow-brand-red/10' 
+                      : 'text-gray-600 dark:text-gray-400 hover:bg-slate-50 dark:hover:bg-white/5'
                   }`}
                 >
-                  {settings.googleIndexingConfig.isActive ? 'Aktif' : 'Nonaktif'}
-                </button>
-              </div>
-
-              <div className="grid grid-cols-1 gap-6">
-                <div className="space-y-2">
-                  <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Service Account Email</label>
-                  <input 
-                    type="text" 
-                    value={settings.googleIndexingConfig.clientEmail}
-                    onChange={(e) => setSettings({
-                      ...settings,
-                      googleIndexingConfig: {
-                        ...settings.googleIndexingConfig,
-                        clientEmail: e.target.value
-                      }
-                    })}
-                    placeholder="nama-akun@id-project.iam.gserviceaccount.com"
-                    className="w-full bg-slate-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 px-4 py-3 text-xs text-brand-black dark:text-white outline-none focus:border-brand-red transition-colors font-medium"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Private Key (PEM Format)</label>
-                  <textarea 
-                    value={settings.googleIndexingConfig.privateKey}
-                    onChange={(e) => setSettings({
-                      ...settings,
-                      googleIndexingConfig: {
-                        ...settings.googleIndexingConfig,
-                        privateKey: e.target.value
-                      }
-                    })}
-                    placeholder="-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC7...\n-----END PRIVATE KEY-----"
-                    rows={5}
-                    className="w-full bg-slate-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 px-4 py-3 text-[10px] text-brand-black dark:text-white outline-none focus:border-brand-red transition-colors font-mono resize-none leading-relaxed"
-                  />
-                </div>
-              </div>
-
-              <div className="p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/20 rounded-sm">
-                <h4 className="text-[9px] font-black uppercase tracking-widest text-amber-800 dark:text-amber-400 flex items-center gap-1.5">
-                  <AlertCircle size={12} /> Panduan Integrasi Google Search Console:
-                </h4>
-                <ol className="text-[9px] text-amber-700/80 dark:text-amber-500/70 space-y-1.5 list-decimal pl-4 mt-2 font-bold uppercase tracking-wider">
-                  <li>Buat Service Account di **Google Cloud Console**, aktifkan **Google Indexing API**, dan unduh berkas JSON Key.</li>
-                  <li>Salin nilai `client_email` dan `private_key` dari JSON tersebut ke dalam isian di atas.</li>
-                  <li>**LANGKAH MUTLAK:** Tambahkan email Service Account di atas sebagai **Pemilik (Owner)** di dalam akun **Google Search Console** website Anda agar Google memberi izin pengajuan indeks.</li>
-                </ol>
-              </div>
-            </div>
-          </section>
-
-          {/* Halaman Informasi Portal */}
-          <section className="bg-white dark:bg-black/20 p-8 border border-gray-100 dark:border-white/5 rounded-sm shadow-sm">
-            <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-black dark:text-white mb-8 flex items-center gap-2">
-              <span className="w-2 h-2 bg-brand-red rounded-full"></span> Halaman Informasi Portal
-            </h2>
-            
-            <div className="space-y-8">
-              <div className="space-y-2">
-                <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Tentang Kami</label>
-                <textarea 
-                  value={settings.aboutUs}
-                  onChange={(e) => setSettings({...settings, aboutUs: e.target.value})}
-                  placeholder="Ceritakan sejarah dan visi misi portal Anda..."
-                  rows={4}
-                  className="w-full bg-slate-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 px-4 py-3 text-xs text-brand-black dark:text-white outline-none focus:border-brand-red transition-colors font-medium"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Kode Etik</label>
-                <textarea 
-                  value={settings.codeOfEthics}
-                  onChange={(e) => setSettings({...settings, codeOfEthics: e.target.value})}
-                  placeholder="Standar jurnalisme dan etika profesi di portal Anda..."
-                  rows={4}
-                  className="w-full bg-slate-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 px-4 py-3 text-xs text-brand-black dark:text-white outline-none focus:border-brand-red transition-colors font-medium"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Redaksi</label>
-                <textarea 
-                  value={settings.editorial}
-                  onChange={(e) => setSettings({...settings, editorial: e.target.value})}
-                  placeholder="Daftar tim redaksi dan penanggung jawab..."
-                  rows={4}
-                  className="w-full bg-slate-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 px-4 py-3 text-xs text-brand-black dark:text-white outline-none focus:border-brand-red transition-colors font-medium"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Informasi Iklan</label>
-                <textarea 
-                  value={settings.advertising}
-                  onChange={(e) => setSettings({...settings, advertising: e.target.value})}
-                  placeholder="Informasi tarif dan cara beriklan di portal Anda..."
-                  rows={4}
-                  className="w-full bg-slate-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 px-4 py-3 text-xs text-brand-black dark:text-white outline-none focus:border-brand-red transition-colors font-medium"
-                />
-              </div>
-            </div>
-          </section>
-
-          {/* Topik Hangat Editor */}
-          <section className="bg-white dark:bg-black/20 p-8 border border-gray-100 dark:border-white/5 rounded-sm shadow-sm">
-            <div className="flex items-center justify-between mb-8">
-              <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-black dark:text-white flex items-center gap-2">
-                <span className="w-2 h-2 bg-brand-red rounded-full"></span> Topik Hangat (Trending)
-              </h2>
-              <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">
-                {settings.trendingTopics.length} Topik Aktif
-              </span>
-            </div>
-
-            <form onSubmit={addTag} className="flex gap-2 mb-8">
-              <input 
-                type="text" 
-                value={newTag}
-                onChange={(e) => setNewTag(e.target.value)}
-                placeholder="Tambah topik baru (misal: Pilkada 2024)"
-                className="flex-1 bg-slate-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 px-4 py-3 text-xs text-brand-black dark:text-white outline-none focus:border-brand-red transition-colors font-medium"
-              />
-              <button 
-                type="submit"
-                className="bg-brand-black dark:bg-white/10 hover:bg-brand-red text-white px-4 py-3 transition-all rounded-sm"
-              >
-                <Plus size={18} />
-              </button>
-            </form>
-
-            <div className="flex flex-wrap gap-3">
-              {settings.trendingTopics.length > 0 ? (
-                settings.trendingTopics.map((tag) => (
-                  <div 
-                    key={tag}
-                    className="group flex items-center gap-2 bg-slate-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 px-4 py-2 rounded-sm transition-all hover:border-brand-red"
-                  >
-                    <span className="text-[10px] font-black uppercase tracking-widest text-brand-black dark:text-white">#{tag}</span>
-                    <button 
-                      onClick={() => removeTag(tag)}
-                      className="text-gray-400 hover:text-brand-red transition-colors"
-                    >
-                      <X size={14} />
-                    </button>
+                  <Icon size={16} className={`mt-0.5 ${isActive ? 'text-white' : 'text-brand-red'}`} />
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-widest">{t.label}</p>
+                    <p className={`text-[9px] mt-0.5 line-clamp-1 ${isActive ? 'text-white/70' : 'text-gray-400 dark:text-gray-500'}`}>
+                      {t.desc}
+                    </p>
                   </div>
-                ))
-              ) : (
-                <div className="w-full py-10 text-center border-2 border-dashed border-gray-100 dark:border-white/5 rounded-sm">
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">Belum ada topik khusus. Situs akan menggunakan topik default pusat.</p>
-                </div>
-              )}
+                </button>
+              )
+            })}
+          </div>
+
+          <div className="hidden lg:block bg-brand-black dark:bg-slate-950 p-6 text-white rounded-2xl border border-white/5 relative overflow-hidden shadow-lg">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-brand-red/10 rounded-full -mr-16 -mt-16 blur-3xl"></div>
+            <div className="flex items-center gap-2 mb-3">
+              <Sparkles size={14} className="text-brand-red animate-pulse" />
+              <h4 className="text-[10px] font-black uppercase tracking-wider">Tips Search Engine</h4>
             </div>
-          </section>
+            <p className="text-[9.5px] leading-relaxed text-gray-400 font-medium">
+              Mesin pencari seperti Google menyukai deskripsi situs yang mengandung kata kunci geografis daerah Anda. Tulis deskripsi SEO secara singkat dan padat untuk menaikkan rasio klik pembaca lokal.
+            </p>
+          </div>
         </div>
 
-        {/* Sidebar Info */}
-        <div className="space-y-8">
-          <div className="bg-brand-black dark:bg-black/40 p-8 text-white rounded-sm shadow-xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-brand-red/10 rounded-full -mr-16 -mt-16 blur-3xl"></div>
-            <h3 className="text-lg font-serif font-bold mb-4 relative z-10">Tips Pengaturan</h3>
-            <ul className="text-[10px] font-bold text-gray-400 space-y-4 uppercase tracking-[0.1em] leading-relaxed relative z-10">
-              <li className="flex gap-2">
-                <span className="text-brand-red">01.</span>
-                <span>Nama situs akan muncul di Meta Title SEO dan Footer portal.</span>
-              </li>
-              <li className="flex gap-2">
-                <span className="text-brand-red">02.</span>
-                <span>Topik hangat akan muncul di sidebar homepage sebagai shortcut pencarian.</span>
-              </li>
-              <li className="flex gap-2">
-                <span className="text-brand-red">03.</span>
-                <span>Gunakan topik yang spesifik dan relevan dengan daerah Anda untuk meningkatkan engagement.</span>
-              </li>
-            </ul>
+        {/* AREA PANEL KONTEN KANAN */}
+        <div className="lg:col-span-3 space-y-6">
+          <div className="bg-white dark:bg-slate-900/20 backdrop-blur-md p-8 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm min-h-[500px]">
+            
+            {/* ==================== TAB 1: IDENTITAS & VISUAL ==================== */}
+            {activeTab === 'basic' && (
+              <div className="space-y-8 animate-in fade-in duration-300">
+                <div>
+                  <h3 className="text-sm font-bold uppercase tracking-widest text-brand-black dark:text-white flex items-center gap-2">
+                    <Globe size={16} className="text-brand-red" /> Identitas & Branding Utama
+                  </h3>
+                  <p className="text-[10px] text-gray-400 mt-1 uppercase tracking-wider font-semibold">Tentukan jati diri digital utama untuk portal berita regional Anda.</p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Nama Situs / Portal Resmi</label>
+                    <input 
+                      type="text" 
+                      value={settings.name}
+                      onChange={(e) => setSettings({...settings, name: e.target.value})}
+                      placeholder="Contoh: BeritaKarya Bandung"
+                      className="w-full bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-xl px-4 py-3 text-xs text-brand-black dark:text-white outline-none focus:border-brand-red/50 focus:ring-1 focus:ring-brand-red/20 transition-all font-semibold"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Domain Publik (URL)</label>
+                    <div className="relative">
+                      <input 
+                        type="text" 
+                        value={settings.domain}
+                        onChange={(e) => setSettings({...settings, domain: e.target.value})}
+                        onBlur={(e) => setSettings({...settings, domain: cleanDomain(e.target.value)})}
+                        placeholder="bandung.beritakarya.co"
+                        className="w-full bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-xl pl-4 pr-12 py-3 text-xs text-brand-black dark:text-white outline-none focus:border-brand-red/50 focus:ring-1 focus:ring-brand-red/20 transition-all font-semibold"
+                      />
+                      <span className="absolute right-3 top-3.5 text-[9px] font-black text-brand-red uppercase tracking-widest">LIVE</span>
+                    </div>
+                  </div>
+
+                  {/* LIVE GOOGLE SERP PREVIEW EMULATOR */}
+                  <div className="md:col-span-2 p-6 bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-2xl space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-[9px] font-black uppercase tracking-widest text-gray-400">Pratinjau Hasil Pencarian Google (Live SERP Preview)</h4>
+                      <span className="text-[9px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/10">SEO OPTIMAL</span>
+                    </div>
+                    <div className="font-sans space-y-1">
+                      <div className="text-[11px] text-gray-500 dark:text-gray-400 flex items-center gap-1.5 truncate">
+                        <span>https://{settings.domain || 'bandung.beritakarya.co'}</span>
+                        <span className="text-[9px] text-gray-400">› pusat</span>
+                      </div>
+                      <div className="text-base text-blue-600 dark:text-blue-400 font-medium hover:underline cursor-pointer leading-snug line-clamp-1">
+                        {settings.name || 'BeritaKarya Bandung - Portal Berita Regional Terpercaya'}
+                      </div>
+                      <div className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed line-clamp-2">
+                        {settings.description || 'Tulis deskripsi situs di bawah untuk melihat simulasi tampilan ringkasan berita portal Anda di halaman pencarian Google.'}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="md:col-span-2 space-y-2">
+                    <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 flex items-center justify-between">
+                      <span>Deskripsi Situs (SEO & Meta Description)</span>
+                      <span className={`${settings.description.length > 160 ? 'text-rose-500' : 'text-gray-400'} text-[9px] font-bold`}>
+                        {settings.description.length} / 160 Karakter rekomendasi
+                      </span>
+                    </label>
+                    <textarea 
+                      value={settings.description}
+                      onChange={(e) => setSettings({...settings, description: e.target.value})}
+                      placeholder="Tulis ringkasan tentang jenis berita, fokus daerah, dan komitmen portal berita regional Anda..."
+                      rows={3}
+                      className="w-full bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-xl px-4 py-3 text-xs text-brand-black dark:text-white outline-none focus:border-brand-red/50 focus:ring-1 focus:ring-brand-red/20 transition-all font-semibold resize-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="h-px bg-gray-100 dark:bg-white/5 my-4"></div>
+
+                {/* BRANDING LOGO & COLOR */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-4">
+                    <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Identitas Visual Logo Portal</label>
+                    
+                    <div className="flex flex-col gap-4">
+                      {settings.logoUrl ? (
+                        <div className="w-full h-32 bg-slate-50 dark:bg-slate-950/20 rounded-2xl border border-dashed border-gray-200 dark:border-white/10 flex items-center justify-center p-4 relative group transition-all">
+                          <img src={settings.logoUrl} alt="Logo Preview" className="max-w-full max-h-full object-contain" />
+                          <button 
+                            type="button"
+                            onClick={() => setSettings({...settings, logoUrl: ''})}
+                            className="absolute top-2 right-2 p-1.5 bg-rose-500 hover:bg-rose-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <X size={12} />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="w-full h-32 bg-slate-50 dark:bg-slate-950/20 rounded-2xl border border-dashed border-gray-200 dark:border-white/10 flex flex-col items-center justify-center p-4 text-center">
+                          <Palette className="w-8 h-8 text-gray-400 mb-2 animate-bounce" />
+                          <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Belum ada logo terunggah</p>
+                        </div>
+                      )}
+                      
+                      <div className="flex gap-3">
+                        <input 
+                          type="text" 
+                          value={settings.logoUrl}
+                          onChange={(e) => setSettings({...settings, logoUrl: e.target.value})}
+                          placeholder="https://.../logo.png"
+                          className="flex-1 bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-xl px-4 py-3 text-xs text-brand-black dark:text-white outline-none focus:border-brand-red/50 focus:ring-1 focus:ring-brand-red/20 transition-all font-semibold"
+                        />
+                        <div className="relative">
+                          <input 
+                            type="file" 
+                            accept="image/*"
+                            onChange={handleLogoUpload}
+                            className="absolute inset-0 opacity-0 cursor-pointer disabled:cursor-not-allowed z-10"
+                            disabled={uploadingLogo}
+                          />
+                          <button 
+                            type="button"
+                            disabled={uploadingLogo}
+                            className="h-full bg-brand-black dark:bg-white/10 hover:bg-brand-red text-white px-6 text-[10px] font-black uppercase tracking-widest transition-all rounded-xl flex items-center gap-2"
+                          >
+                            {uploadingLogo ? <Loader2 size={12} className="animate-spin" /> : <Plus size={12} />}
+                            {uploadingLogo ? 'Unggah...' : 'Upload'}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Warna Aksen Portal (Brand Theme)</label>
+                    <div className="space-y-3">
+                      <div className="flex gap-3">
+                        <div className="w-12 h-11 rounded-xl overflow-hidden border border-gray-200 dark:border-white/10 flex-shrink-0">
+                          <input 
+                            type="color" 
+                            value={settings.appearance.primaryColor}
+                            onChange={(e) => setSettings({
+                              ...settings, 
+                              appearance: { ...settings.appearance, primaryColor: e.target.value }
+                            })}
+                            className="w-full h-full p-0 border-0 cursor-pointer scale-125"
+                          />
+                        </div>
+                        <input 
+                          type="text" 
+                          value={settings.appearance.primaryColor}
+                          onChange={(e) => setSettings({
+                            ...settings, 
+                            appearance: { ...settings.appearance, primaryColor: e.target.value }
+                          })}
+                          className="flex-1 bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-xl px-4 py-3 text-xs text-brand-black dark:text-white outline-none focus:border-brand-red/50 focus:ring-1 focus:ring-brand-red/20 transition-all font-mono font-bold"
+                        />
+                      </div>
+
+                      {contrastAdvice && (
+                        <div className={`p-4 rounded-xl border flex items-start gap-2.5 ${
+                          contrastAdvice.isSafe 
+                            ? 'bg-emerald-500/5 border-emerald-500/10 text-emerald-600 dark:text-emerald-400' 
+                            : 'bg-amber-500/5 border-amber-500/10 text-amber-600 dark:text-amber-400'
+                        }`}>
+                          <AlertCircle size={14} className="mt-0.5 flex-shrink-0" />
+                          <div className="text-[9px] font-black uppercase tracking-wider space-y-0.5">
+                            <p>Rasio Kontras: {contrastAdvice.ratio}:1 (Standard AA)</p>
+                            <p className="opacity-80 leading-normal">{contrastAdvice.textAdvice}</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ==================== TAB 2: KONTAK & SOSIAL ==================== */}
+            {activeTab === 'contact' && (
+              <div className="space-y-8 animate-in fade-in duration-300">
+                <div>
+                  <h3 className="text-sm font-bold uppercase tracking-widest text-brand-black dark:text-white flex items-center gap-2">
+                    <Mail size={16} className="text-brand-red" /> Kontak & Saluran Sosial
+                  </h3>
+                  <p className="text-[10px] text-gray-400 mt-1 uppercase tracking-wider font-semibold">Kelola alamat redaksi, email keluhan, hotline bantuan, dan akun media sosial resmi portal.</p>
+                </div>
+
+                <div className="space-y-6">
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                      <MapPin size={12} className="text-brand-red" /> Alamat Fisik Kantor Redaksi
+                    </label>
+                    <input 
+                      type="text" 
+                      value={settings.address}
+                      onChange={(e) => setSettings({...settings, address: e.target.value})}
+                      placeholder="Contoh: Gedung BeritaKarya Lt. 3, Jl. Asia Afrika No. 45, Bandung"
+                      className="w-full bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-xl px-4 py-3 text-xs text-brand-black dark:text-white outline-none focus:border-brand-red/50 focus:ring-1 focus:ring-brand-red/20 transition-all font-semibold"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 flex items-center justify-between">
+                        <span className="flex items-center gap-1"><Mail size={12} className="text-brand-red" /> Email Kontak Resmi</span>
+                        {!isValidEmail(settings.contactEmail) && (
+                          <span className="text-rose-500 text-[8px] font-black">Format Email Tidak Valid!</span>
+                        )}
+                      </label>
+                      <input 
+                        type="email" 
+                        value={settings.contactEmail}
+                        onChange={(e) => setSettings({...settings, contactEmail: e.target.value})}
+                        placeholder="redaksi.bandung@beritakarya.co"
+                        className={`w-full bg-slate-50 dark:bg-slate-950/40 border rounded-xl px-4 py-3 text-xs text-brand-black dark:text-white outline-none transition-all font-semibold ${
+                          isValidEmail(settings.contactEmail) 
+                            ? 'border-gray-100 dark:border-white/5 focus:border-brand-red/50 focus:ring-1 focus:ring-brand-red/20' 
+                            : 'border-rose-500 focus:border-rose-500 focus:ring-1 focus:ring-rose-500/20'
+                        }`}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                        <Phone size={12} className="text-brand-red" /> Nomor Telepon / WhatsApp Redaksi
+                      </label>
+                      <input 
+                        type="text" 
+                        value={settings.phone}
+                        onChange={(e) => setSettings({...settings, phone: e.target.value})}
+                        placeholder="+62 812-3456-7890"
+                        className="w-full bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-xl px-4 py-3 text-xs text-brand-black dark:text-white outline-none focus:border-brand-red/50 focus:ring-1 focus:ring-brand-red/20 transition-all font-semibold"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="h-px bg-gray-100 dark:bg-white/5 my-4"></div>
+
+                  {/* SOCIAL MEDIA CHANNELS */}
+                  <div className="space-y-4">
+                    <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                      <Share2 size={12} className="text-brand-red" /> Saluran Media Sosial Resmi
+                    </label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {Object.keys(settings.socialLinks).map((key) => (
+                        <div key={key} className="space-y-1.5">
+                          <label className="text-[8px] font-black uppercase tracking-widest text-gray-400 capitalize">{key} URL</label>
+                          <input 
+                            type="text" 
+                            value={(settings.socialLinks as any)[key]}
+                            onChange={(e) => setSettings({
+                              ...settings, 
+                              socialLinks: { ...settings.socialLinks, [key]: e.target.value }
+                            })}
+                            placeholder={`https://${key}.com/profile-anda`}
+                            className="w-full bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-xl px-4 py-2 text-[10px] text-brand-black dark:text-white outline-none focus:border-brand-red/50 focus:ring-1 focus:ring-brand-red/20 transition-all font-semibold"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="h-px bg-gray-100 dark:bg-white/5 my-4"></div>
+
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Teks Footer Hak Cipta (Copyright Text)</label>
+                    <input 
+                      type="text" 
+                      value={settings.footerText}
+                      onChange={(e) => setSettings({...settings, footerText: e.target.value})}
+                      placeholder="© 2026 BeritaKarya Bandung. Hak cipta dilindungi undang-undang."
+                      className="w-full bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-xl px-4 py-3 text-xs text-brand-black dark:text-white outline-none focus:border-brand-red/50 focus:ring-1 focus:ring-brand-red/20 transition-all font-semibold"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ==================== TAB 3: GOOGLE SEARCH INDEXING API ==================== */}
+            {activeTab === 'google' && (
+              <div className="space-y-8 animate-in fade-in duration-300">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div>
+                    <h3 className="text-sm font-bold uppercase tracking-widest text-brand-black dark:text-white flex items-center gap-2">
+                      <ShieldAlert size={16} className="text-brand-red" /> Google Search Indexing API
+                    </h3>
+                    <p className="text-[10px] text-gray-400 mt-1 uppercase tracking-wider font-semibold">
+                      Sinkronisasi instan artikel Anda ke mesin pencari Google begitu tombol publikasi ditekan.
+                    </p>
+                  </div>
+                  
+                  <button
+                    type="button"
+                    onClick={() => setSettings({
+                      ...settings,
+                      googleIndexingConfig: {
+                        ...settings.googleIndexingConfig,
+                        isActive: !settings.googleIndexingConfig.isActive
+                      }
+                    })}
+                    className={`px-5 py-2.5 text-[9px] font-black uppercase tracking-widest border rounded-xl transition-all shadow-md ${
+                      settings.googleIndexingConfig.isActive
+                        ? 'bg-emerald-500 text-white border-emerald-600 shadow-emerald-500/10'
+                        : 'bg-gray-100 border-gray-200 text-gray-400 dark:bg-slate-950/40 dark:border-white/5'
+                    }`}
+                  >
+                    {settings.googleIndexingConfig.isActive ? '🔥 SINKRONISASI AKTIF' : '⏹️ SINKRONISASI NONAKTIF'}
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Google Service Account Email</label>
+                    <input 
+                      type="text" 
+                      value={settings.googleIndexingConfig.clientEmail}
+                      onChange={(e) => setSettings({
+                        ...settings,
+                        googleIndexingConfig: {
+                          ...settings.googleIndexingConfig,
+                          clientEmail: e.target.value
+                        }
+                      })}
+                      placeholder="nama-akun@id-project.iam.gserviceaccount.com"
+                      className="w-full bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-xl px-4 py-3 text-xs text-brand-black dark:text-white outline-none focus:border-brand-red/50 focus:ring-1 focus:ring-brand-red/20 transition-all font-semibold"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Private Key (PEM Format)</label>
+                      <button
+                        type="button"
+                        onClick={() => setShowPrivateKey(!showPrivateKey)}
+                        className="text-[9px] font-black text-brand-red hover:text-brand-black dark:hover:text-white uppercase tracking-widest flex items-center gap-1"
+                      >
+                        {showPrivateKey ? <EyeOff size={10} /> : <Eye size={10} />}
+                        {showPrivateKey ? 'Sembunyikan Kunci' : 'Tampilkan Kunci'}
+                      </button>
+                    </div>
+                    
+                    <div className="relative">
+                      {showPrivateKey ? (
+                        <textarea 
+                          value={settings.googleIndexingConfig.privateKey}
+                          onChange={(e) => setSettings({
+                            ...settings,
+                            googleIndexingConfig: {
+                              ...settings.googleIndexingConfig,
+                              privateKey: e.target.value
+                            }
+                          })}
+                          placeholder="-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC7...\n-----END PRIVATE KEY-----"
+                          rows={5}
+                          className="w-full bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-xl px-4 py-3 text-[10px] text-brand-black dark:text-white outline-none focus:border-brand-red/50 focus:ring-1 focus:ring-brand-red/20 transition-all font-mono resize-none leading-relaxed"
+                        />
+                      ) : (
+                        <div className="w-full bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-xl px-4 py-8 text-center text-gray-400 font-mono text-[10px] relative overflow-hidden flex flex-col items-center justify-center min-h-[140px]">
+                          <Lock size={20} className="text-gray-400 dark:text-gray-500 mb-2 animate-bounce" />
+                          <p className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400">Kunci Privat Disensor untuk Keamanan</p>
+                          <p className="text-[8px] text-gray-400/70 dark:text-gray-500/70 mt-1 uppercase tracking-widest">Klik &quot;Tampilkan Kunci&quot; di atas untuk melihat atau mengedit kunci privat</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* PREMIUM INTEGRATION GUIDE */}
+                  <div className="p-6 bg-amber-500/5 dark:bg-amber-950/20 border border-amber-500/10 rounded-2xl">
+                    <h4 className="text-[9px] font-black uppercase tracking-[0.15em] text-amber-800 dark:text-amber-400 flex items-center gap-1.5">
+                      <AlertCircle size={14} className="text-amber-600 animate-pulse" /> Panduan Mutlak Pemasangan Google Search Console:
+                    </h4>
+                    <ol className="text-[9px] text-amber-800/80 dark:text-amber-400/80 space-y-2 list-decimal pl-4 mt-3 font-bold uppercase tracking-wider leading-relaxed">
+                      <li>
+                        Buka <a href="https://console.cloud.google.com/" target="_blank" rel="noreferrer" className="text-brand-red underline inline-flex items-center gap-0.5">Google Cloud Console <ExternalLink size={8} /></a>, aktifkan **Indexing API** pada proyek Anda, buat *Service Account*, lalu unduh berkas **JSON Private Key**.
+                      </li>
+                      <li>
+                        Salin nilai `client_email` dan `private_key` dari berkas JSON tersebut ke dalam isian di atas.
+                      </li>
+                      <li>
+                        <span className="text-brand-red font-black">LANGKAH WAJIB:</span> Tambahkan alamat **Service Account Email** di atas sebagai anggota berstatus **Pemilik (Owner)** di dalam dashboard **Google Search Console** website Anda agar Google memberi izin pengajuan indeks otomatis.
+                      </li>
+                    </ol>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ==================== TAB 4: HALAMAN INFORMASI PORTAL ==================== */}
+            {activeTab === 'info' && (
+              <div className="space-y-8 animate-in fade-in duration-300">
+                <div>
+                  <h3 className="text-sm font-bold uppercase tracking-widest text-brand-black dark:text-white flex items-center gap-2">
+                    <BookOpen size={16} className="text-brand-red" /> Halaman Informasi & Legalitas Portal
+                  </h3>
+                  <p className="text-[10px] text-gray-400 mt-1 uppercase tracking-wider font-semibold">
+                    Sesuaikan halaman legalitas yang muncul di footer portal utama untuk memenuhi regulasi Dewan Pers.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Halaman: Tentang Kami (Visi & Misi)</label>
+                    <textarea 
+                      value={settings.aboutUs}
+                      onChange={(e) => setSettings({...settings, aboutUs: e.target.value})}
+                      placeholder="Tuliskan sejarah berdirinya, visi, misi, dan komitmen portal regional Anda di sini..."
+                      rows={4}
+                      className="w-full bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-xl px-4 py-3 text-xs text-brand-black dark:text-white outline-none focus:border-brand-red/50 focus:ring-1 focus:ring-brand-red/20 transition-all font-semibold"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Halaman: Kode Etik Internal</label>
+                    <textarea 
+                      value={settings.codeOfEthics}
+                      onChange={(e) => setSettings({...settings, codeOfEthics: e.target.value})}
+                      placeholder="Tuliskan aturan jurnalisme independen, etika peliputan, dan komitmen profesionalitas redaksi Anda..."
+                      rows={4}
+                      className="w-full bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-xl px-4 py-3 text-xs text-brand-black dark:text-white outline-none focus:border-brand-red/50 focus:ring-1 focus:ring-brand-red/20 transition-all font-semibold"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Halaman: Susunan Redaksi</label>
+                    <textarea 
+                      value={settings.editorial}
+                      onChange={(e) => setSettings({...settings, editorial: e.target.value})}
+                      placeholder="Daftar nama Pemimpin Redaksi, Editor, Jurnalis, Dewan Penasehat, beserta peran masing-masing..."
+                      rows={4}
+                      className="w-full bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-xl px-4 py-3 text-xs text-brand-black dark:text-white outline-none focus:border-brand-red/50 focus:ring-1 focus:ring-brand-red/20 transition-all font-semibold"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Halaman: Panduan & Informasi Periklanan</label>
+                    <textarea 
+                      value={settings.advertising}
+                      onChange={(e) => setSettings({...settings, advertising: e.target.value})}
+                      placeholder="Tuliskan ketentuan tarif iklan, jenis space iklan yang tersedia (banner/advetorial), beserta nomor kontak iklan khusus..."
+                      rows={4}
+                      className="w-full bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-xl px-4 py-3 text-xs text-brand-black dark:text-white outline-none focus:border-brand-red/50 focus:ring-1 focus:ring-brand-red/20 transition-all font-semibold"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ==================== TAB 5: TOPIK HANGAT ==================== */}
+            {activeTab === 'trending' && (
+              <div className="space-y-8 animate-in fade-in duration-300">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div>
+                    <h3 className="text-sm font-bold uppercase tracking-widest text-brand-black dark:text-white flex items-center gap-2">
+                      <Flame size={16} className="text-brand-red animate-bounce" /> Manajemen Topik Hangat (Trending Tags)
+                    </h3>
+                    <p className="text-[10px] text-gray-400 mt-1 uppercase tracking-wider font-semibold">
+                      Tentukan tag khusus yang disematkan langsung pada bar navigasi depan untuk kemudahan pencarian artikel viral.
+                    </p>
+                  </div>
+                  <span className="text-[9px] font-black text-white bg-brand-red px-3 py-1 rounded-full uppercase tracking-widest">
+                    {settings.trendingTopics.length} Topik Aktif
+                  </span>
+                </div>
+
+                <form onSubmit={addTag} className="flex gap-3">
+                  <input 
+                    type="text" 
+                    value={newTag}
+                    onChange={(e) => setNewTag(e.target.value)}
+                    placeholder="Tambah topik baru (contoh: Pilkada 2026, Gempa Jabar, Persib Juara)"
+                    className="flex-1 bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-xl px-4 py-3 text-xs text-brand-black dark:text-white outline-none focus:border-brand-red/50 focus:ring-1 focus:ring-brand-red/20 transition-all font-semibold"
+                  />
+                  <button 
+                    type="submit"
+                    className="bg-brand-black dark:bg-white/10 hover:bg-brand-red text-white px-5 py-3 transition-all rounded-xl flex items-center gap-1 shadow-md hover:shadow-lg"
+                  >
+                    <Plus size={16} />
+                    <span className="text-[9px] font-black uppercase tracking-widest hidden md:inline">Tambah</span>
+                  </button>
+                </form>
+
+                <div className="flex flex-wrap gap-3">
+                  {settings.trendingTopics.length > 0 ? (
+                    settings.trendingTopics.map((tag) => (
+                      <div 
+                        key={tag}
+                        className="group flex items-center gap-2.5 bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 px-4 py-2.5 rounded-xl transition-all hover:border-brand-red/40 hover:shadow-sm"
+                      >
+                        <span className="text-[10px] font-black uppercase tracking-widest text-brand-black dark:text-white">#{tag}</span>
+                        <button 
+                          type="button"
+                          onClick={() => removeTag(tag)}
+                          className="text-gray-400 hover:text-brand-red transition-colors duration-200"
+                        >
+                          <X size={12} />
+                        </button>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="w-full py-12 text-center border-2 border-dashed border-gray-100 dark:border-white/5 rounded-2xl">
+                      <Flame size={28} className="text-gray-300 dark:text-gray-600 mx-auto mb-2" />
+                      <p className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em]">Belum ada topik khusus daerah.</p>
+                      <p className="text-[8px] text-gray-400/80 uppercase tracking-widest mt-1">Situs depan akan secara otomatis menggunakan topik default pusat.</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+            
           </div>
         </div>
       </div>
 
-      {/* Floating/Bottom Action Bar */}
-      <div className="sticky bottom-8 z-30 flex justify-end">
-        <button 
-          onClick={handleSave}
-          disabled={saving}
-          className="flex items-center gap-3 bg-brand-red hover:bg-brand-black text-white px-8 py-4 text-xs font-black uppercase tracking-[0.2em] transition-all shadow-2xl shadow-brand-red/40 disabled:opacity-50 rounded-sm border border-white/10"
-        >
-          {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-          {saving ? 'Sedang Menyimpan...' : 'Simpan Seluruh Perubahan'}
-        </button>
-      </div>
+      {/* FLOATING ACTION BAR: TAMPIL JIKA ADA PERUBAHAN */}
+      {isDirty && (
+        <div className="fixed bottom-8 right-8 z-40 animate-in slide-in-from-bottom-8 fade-in duration-300">
+          <button 
+            onClick={handleSave}
+            disabled={saving}
+            className="flex items-center gap-3 bg-brand-red hover:bg-brand-black text-white px-8 py-4 text-xs font-black uppercase tracking-[0.2em] transition-all shadow-2xl shadow-brand-red/40 disabled:opacity-50 rounded-2xl border border-white/10"
+          >
+            {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+            {saving ? 'Sedang Menyimpan...' : 'Simpan Seluruh Perubahan'}
+          </button>
+        </div>
+      )}
+
     </div>
   )
 }
