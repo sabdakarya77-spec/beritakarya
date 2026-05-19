@@ -43,8 +43,16 @@ userRouter.get('/',
 
     // Fetch online status from Redis for each user
     const usersWithOnlineStatus = await Promise.all(users.map(async (u) => {
-      const isOnline = await redis.get(`user:online:${u.id}`)
-      return { ...u, isOnline: !!isOnline }
+      let isOnline = false
+      if (process.env.REDIS_HOST) {
+        try {
+          const onlineVal = await redis.get(`user:online:${u.id}`)
+          isOnline = !!onlineVal
+        } catch (err) {
+          // ignore
+        }
+      }
+      return { ...u, isOnline }
     }))
 
     res.json({ 
@@ -108,8 +116,16 @@ userRouter.get('/stats',
 
     // Fetch real online status from Redis
     const statsWithOnlineStatus = await Promise.all(stats.map(async (s) => {
-      const isOnline = await redis.get(`user:online:${s.id}`)
-      return { ...s, isOnline: !!isOnline }
+      let isOnline = false
+      if (process.env.REDIS_HOST) {
+        try {
+          const onlineVal = await redis.get(`user:online:${s.id}`)
+          isOnline = !!onlineVal
+        } catch (err) {
+          // ignore
+        }
+      }
+      return { ...s, isOnline }
     }))
 
     res.json({ success: true, data: statsWithOnlineStatus })
@@ -311,7 +327,13 @@ userRouter.post('/heartbeat',
     const userId = req.user.userId
     // Set online status in Redis with 60s expiration
     // This supports a 30s polling interval from the frontend
-    await redis.set(`user:online:${userId}`, '1', 'EX', 60)
+    if (process.env.REDIS_HOST) {
+      try {
+        await redis.set(`user:online:${userId}`, '1', 'EX', 60)
+      } catch (err) {
+        // ignore
+      }
+    }
     
     res.json({ success: true })
   })
