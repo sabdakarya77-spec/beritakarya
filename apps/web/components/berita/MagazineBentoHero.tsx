@@ -33,6 +33,7 @@ export function MagazineBentoHero({ articles, site }: { articles: any[], site: s
             <SmartImage 
               src={getImageUrl(lead)} 
               blur={lead.featuredImageBlur}
+              dominantColor={lead.featuredImageColor}
               context="hero_lead"
               alt={lead.title}
               fill
@@ -77,6 +78,7 @@ export function MagazineBentoHero({ articles, site }: { articles: any[], site: s
               <SmartImage 
                 src={getImageUrl(article)} 
                 blur={article.featuredImageBlur}
+                dominantColor={article.featuredImageColor}
                 context="hero_side"
                 alt={article.title}
                 fill

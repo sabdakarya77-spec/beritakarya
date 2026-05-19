@@ -109,6 +109,7 @@ export function PremiumHero({ article, site }: PremiumHeroProps) {
               <SmartImage
                 src={imageUrl}
                 blur={article.featuredImageBlur}
+                dominantColor={article.featuredImageColor}
                 context="hero_lead"
                 alt={article.title}
                 fill

@@ -35,6 +35,7 @@ export default function NewsCard({ article, variant = 'medium', site = 'pusat' }
           <SmartImage 
             src={imageUrl} 
             blur={article.featuredImageBlur}
+            dominantColor={article.featuredImageColor}
             context="hero_lead"
             alt={article.title} 
             fill
@@ -114,6 +115,7 @@ export default function NewsCard({ article, variant = 'medium', site = 'pusat' }
             <SmartImage 
               src={imageUrl} 
               blur={article.featuredImageBlur}
+              dominantColor={article.featuredImageColor}
               context="card_horizontal"
               alt={article.title} 
               fill
@@ -150,6 +152,7 @@ export default function NewsCard({ article, variant = 'medium', site = 'pusat' }
           <SmartImage 
             src={imageUrl} 
             blur={article.featuredImageBlur}
+            dominantColor={article.featuredImageColor}
             context="card"
             alt={article.title} 
             fill

@@ -240,6 +240,7 @@ export default async function ArticlePage({ params }: Props) {
             <SmartImage 
               src={coverImage} 
               blur={article.featuredImageBlur}
+              dominantColor={article.featuredImageColor}
               context="article_cover"
               alt={article.title}
               fill

@@ -24,6 +24,7 @@ interface SmartImageProps extends Omit<ImageProps, 'src' | 'blurDataURL'> {
   blur?: string | null
   context?: SmartImageContext
   fallbackSrc?: string
+  dominantColor?: string | null
 }
 
 const FALLBACK_IMAGE = '/placeholder.jpg'
@@ -34,6 +35,7 @@ export function SmartImage({
   blur,
   context = 'card',
   fallbackSrc = FALLBACK_IMAGE,
+  dominantColor,
   alt,
   className = '',
   priority = false,
@@ -72,7 +74,10 @@ export function SmartImage({
   const shouldBlur = blur && !isBase64 && errorLevel === 0
 
   return (
-    <div className={`relative overflow-hidden bg-slate-100 dark:bg-slate-800 ${className}`}>
+    <div 
+      className={`relative overflow-hidden bg-slate-100 dark:bg-slate-800 ${className}`}
+      style={dominantColor ? { backgroundColor: dominantColor } : undefined}
+    >
       {/* Loading Shimmer (Only visible while loading) */}
       {!isLoaded && !shouldBlur && (
         <div className="absolute inset-0 animate-pulse bg-slate-200 dark:bg-slate-700" />
