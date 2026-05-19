@@ -27,6 +27,33 @@ interface SmartImageProps extends Omit<ImageProps, 'src' | 'blurDataURL'> {
   dominantColor?: string | null
 }
 
+const getThumbUrl = (url: string) => {
+  if (url && url.includes('/api/v1/media/uploads/') && !url.includes('/thumbs/')) {
+    const parts = url.split('/api/v1/media/uploads/')
+    const base = parts[0]
+    const file = parts[1]
+    if (file) {
+      const fileParts = file.split('.')
+      const ext = fileParts.pop()
+      const name = fileParts.join('.')
+      return `${base}/api/v1/media/uploads/thumbs/${name}_thumb.${ext}`
+    }
+  }
+  return url
+}
+
+export const prefetchImage = (url: string) => {
+  if (typeof document === 'undefined' || !url) return
+  const existing = document.querySelector(`link[href="${url}"]`)
+  if (existing) return
+
+  const link = document.createElement('link')
+  link.rel = 'prefetch'
+  link.as = 'image'
+  link.href = url
+  document.head.appendChild(link)
+}
+
 const FALLBACK_IMAGE = '/placeholder.jpg'
 
 export function SmartImage({
@@ -44,10 +71,29 @@ export function SmartImage({
 }: SmartImageProps) {
   const [errorLevel, setErrorLevel] = useState(0) // 0: src, 1: thumb, 2: static, 3: fail
   const [isLoaded, setIsLoaded] = useState(false)
+  const [isSlow, setIsSlow] = useState(false)
+  const [userInteracted, setUserInteracted] = useState(false)
+
+  useEffect(() => {
+    if (typeof navigator !== 'undefined' && (navigator as any).connection) {
+      const conn = (navigator as any).connection
+      if (conn.effectiveType === '2g' || conn.effectiveType === '3g' || conn.saveData) {
+        setIsSlow(true)
+      }
+    }
+  }, [])
+
+  const rawSrc = src || fallbackSrc
+  const thumb = thumbUrl || getThumbUrl(rawSrc)
+
+  let finalSrc = rawSrc
+  if (isSlow && !userInteracted && thumb) {
+    finalSrc = thumb
+  }
 
   // Derive current image source based on error level
-  let imgSrc = src || fallbackSrc
-  if (errorLevel === 1 && thumbUrl) imgSrc = thumbUrl
+  let imgSrc = finalSrc
+  if (errorLevel === 1 && thumb) imgSrc = thumb
   else if (errorLevel === 2) imgSrc = fallbackSrc
   else if (errorLevel >= 3) imgSrc = ''
 
@@ -77,6 +123,8 @@ export function SmartImage({
     <div 
       className={`relative overflow-hidden bg-slate-100 dark:bg-slate-800 ${className}`}
       style={dominantColor ? { backgroundColor: dominantColor } : undefined}
+      onMouseEnter={() => setUserInteracted(true)}
+      onTouchStart={() => setUserInteracted(true)}
     >
       {/* Loading Shimmer (Only visible while loading) */}
       {!isLoaded && !shouldBlur && (

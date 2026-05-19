@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 import { ArrowUpRight, Clock, BookOpen, Bookmark, User, Share2 } from 'lucide-react';
 import Link from 'next/link';
-import { SmartImage } from './SmartImage';
+import { SmartImage, prefetchImage } from './SmartImage';
 import { cn } from '../../lib/utils';
 import EditorialBadge, { resolveArticleBadge } from './EditorialBadge';
 
@@ -11,9 +11,10 @@ interface NewsCardProps {
   article: any;
   variant?: 'large' | 'medium' | 'minimal' | 'horizontal';
   site?: string;
+  priority?: boolean;
 }
 
-export default function NewsCard({ article, variant = 'medium', site = 'pusat' }: NewsCardProps) {
+export default function NewsCard({ article, variant = 'medium', site = 'pusat', priority = false }: NewsCardProps) {
   const imageUrl = article.featuredImage || article.blocks?.find((b: any) => b.type === 'image')?.url || '/placeholder.jpg';
   const excerpt = article.blocks?.find((b: any) => b.type === 'paragraph')?.content || '';
   const date = new Date(article.publishedAt || article.createdAt).toLocaleDateString('id-ID', {
@@ -27,7 +28,7 @@ export default function NewsCard({ article, variant = 'medium', site = 'pusat' }
 
   if (variant === 'large') {
     return (
-      <Link href={`/${site}/article/${article.slug}`}>
+      <Link href={`/${site}/article/${article.slug}`} onMouseEnter={() => prefetchImage(imageUrl)}>
         <motion.article 
           whileHover={{ y: -4 }}
           className="relative min-h-[450px] h-[550px] lg:h-[700px] group overflow-hidden rounded-lg cursor-pointer w-full bg-slate-900 shadow-2xl"
@@ -81,7 +82,7 @@ export default function NewsCard({ article, variant = 'medium', site = 'pusat' }
 
   if (variant === 'minimal') {
     return (
-      <Link href={`/${site}/article/${article.slug}`}>
+      <Link href={`/${site}/article/${article.slug}`} onMouseEnter={() => prefetchImage(imageUrl)}>
         <div className="py-5 border-b border-gray-100 dark:border-white/5 last:border-0 group cursor-pointer flex justify-between items-start gap-4">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2.5">
@@ -106,7 +107,7 @@ export default function NewsCard({ article, variant = 'medium', site = 'pusat' }
 
   if (variant === 'horizontal') {
     return (
-      <Link href={`/${site}/article/${article.slug}`}>
+      <Link href={`/${site}/article/${article.slug}`} onMouseEnter={() => prefetchImage(imageUrl)}>
         <motion.article 
           whileHover={{ x: 4 }}
           className="flex gap-6 group cursor-pointer border-b border-gray-100 dark:border-white/5 pb-6 last:border-0"
@@ -120,6 +121,7 @@ export default function NewsCard({ article, variant = 'medium', site = 'pusat' }
               alt={article.title} 
               fill
               className="object-cover object-center group-hover:scale-110 transition-transform duration-700 ease-out"
+              priority={priority}
             />
           </div>
           <div className="flex-1 flex flex-col justify-center gap-2">
@@ -143,7 +145,7 @@ export default function NewsCard({ article, variant = 'medium', site = 'pusat' }
   }
 
   return (
-    <Link href={`/${site}/article/${article.slug}`}>
+    <Link href={`/${site}/article/${article.slug}`} onMouseEnter={() => prefetchImage(imageUrl)}>
       <motion.article 
         whileHover={{ y: -8 }}
         className="flex flex-col gap-5 group cursor-pointer relative"
@@ -157,6 +159,7 @@ export default function NewsCard({ article, variant = 'medium', site = 'pusat' }
             alt={article.title} 
             fill
             className="object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out"
+            priority={priority}
           />
           <div className="absolute top-4 left-4 flex flex-col gap-2">
             {badgeVariant && <EditorialBadge variant={badgeVariant} />}

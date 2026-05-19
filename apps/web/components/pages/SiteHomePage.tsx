@@ -160,7 +160,7 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-16 mb-16">
               {mainFeed.slice(0, 4).map((article: any) => (
-                <NewsCard key={article.id} article={article} site={siteParam} />
+                <NewsCard key={article.id} article={article} site={siteParam} priority={true} />
               ))}
             </div>
 

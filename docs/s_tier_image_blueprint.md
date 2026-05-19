@@ -281,7 +281,7 @@ Ini teknik yang digunakan oleh **Google Photos, Pinterest, dan Instagram**.
 
 ---
 
-### TIER 6: Progressive Image Loading Architecture
+### TIER 6: Progressive Image Loading Architecture [COMPLETED]
 **Impact: 🔥🔥 | Effort: ⏱️ 3-4 jam**
 
 #### Ini adalah "the final boss" — arsitektur loading multi-layer:
