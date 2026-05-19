@@ -421,7 +421,7 @@ export function AIDashboard() {
           {/* Top Users Table */}
           <div className="bg-[#0c121e]/40 backdrop-blur-md border border-white/5 rounded-2xl p-6 shadow-2xl space-y-6">
             <div>
-              <h3 className="text-xs font-black uppercase tracking-wider text-white">Jurnalis & Pengguna AI Teraktif</h3>
+              <h3 className="text-xs font-black uppercase tracking-wider text-white">Reporter/Kontributor & Pengguna AI Teraktif</h3>
               <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-0.5">Analisis Penggunaan Individu</p>
             </div>
             
@@ -429,7 +429,7 @@ export function AIDashboard() {
               <table className="w-full text-xs text-left border-collapse">
                 <thead>
                   <tr className="border-b border-white/5 text-gray-500 font-black uppercase tracking-widest text-[9px]">
-                    <th className="py-3 px-4">Jurnalis / Pengguna</th>
+                    <th className="py-3 px-4">Reporter / Pengguna</th>
                     <th className="py-3 px-4">Role</th>
                     <th className="py-3 px-4 text-right">Total Permintaan</th>
                     <th className="py-3 px-4 text-right">Biaya API</th>
@@ -553,7 +553,7 @@ export function AIDashboard() {
                 <Shield className="text-emerald-500 mt-0.5" size={16} />
                 <div>
                   <h4 className="text-[10px] font-black uppercase tracking-wider text-gray-300">Sistem KYC Terintegrasi</h4>
-                  <p className="text-[10px] text-gray-400 mt-1 leading-relaxed">AI hanya diizinkan untuk jurnalis dan editor yang telah lolos verifikasi berkas (KYC) demi menjaga integritas data media.</p>
+                  <p className="text-[10px] text-gray-400 mt-1 leading-relaxed">AI hanya diizinkan untuk reporter, kontributor, dan editor yang telah lolos verifikasi berkas (KYC) demi menjaga integritas data media.</p>
                 </div>
               </div>
 
