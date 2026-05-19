@@ -217,14 +217,15 @@ export default function DashboardOverview() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          {user?.role === 'superadmin' ? (
+          {(user?.role === 'superadmin' || user?.role === 'wapimred') && (
+            <ReviewQueue articles={reviewQueue} site={site} count={inReview} />
+          )}
+          {user?.role === 'superadmin' && (
             <>
               <KYCRequestsWidget requests={kycRequests} site={site} />
               <AuditLogsWidget logs={auditLogs} site={site} />
             </>
-          ) : user?.role === 'wapimred' ? (
-            <ReviewQueue articles={reviewQueue} site={site} count={inReview} />
-          ) : null}
+          )}
           <RecentActivity articles={recentActivityList} site={site} />
         </div>
 
