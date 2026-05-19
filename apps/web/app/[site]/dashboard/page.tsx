@@ -1,6 +1,7 @@
 'use client';
 
-import { BarChart3, TrendingUp, FileText } from 'lucide-react';
+import { BarChart3, TrendingUp, FileText, ShieldCheck, Activity } from 'lucide-react';
+import Link from 'next/link';
 import TrafficChart from '../../../components/dashboard/TrafficChart';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -37,6 +38,8 @@ export default function DashboardOverview() {
   const [trafficData, setTrafficData] = useState<any[]>([]);
   const [topContent, setTopContent] = useState<any[]>([]);
   const [engagementStats, setEngagementStats] = useState<any>(null);
+  const [kycRequests, setKycRequests] = useState<any[]>([]);
+  const [auditLogs, setAuditLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [greeting, setGreeting] = useState('Selamat');
   const [currentDate, setCurrentDate] = useState('');
@@ -66,6 +69,19 @@ export default function DashboardOverview() {
         setTrafficData(trafficRes.data.data);
         setTopContent(topRes.data.data);
         setEngagementStats(engRes.data.data);
+
+        if (user?.role === 'superadmin') {
+          try {
+            const [kycRes, auditRes] = await Promise.all([
+              api.get('/kyc', { params: { status: 'pending', limit: 5 } }),
+              api.get('/audit', { params: { limit: 5 } })
+            ]);
+            setKycRequests(kycRes.data.data || []);
+            setAuditLogs(auditRes.data.data?.items || []);
+          } catch (err) {
+            console.error('Failed to load admin stats:', err);
+          }
+        }
       } catch (err) {
         console.error('Failed to load dashboard data:', err);
       } finally {
@@ -115,8 +131,8 @@ export default function DashboardOverview() {
   const publishedSpark = trafficData.length > 0 ? trafficData.map(d => Math.floor(d.views / 20)) : [0,0,0,0,0,0,0];
 
   const ROLE_LABELS: Record<string, string> = {
-    superadmin: 'Superadmin',
-    wapimred: 'Wapimred',
+    superadmin: 'Pimred (CEO) / Admin IT',
+    wapimred: 'Wakil Pemimpin Redaksi (Wapimred)',
     reporter: 'Reporter',
     kontributor: 'Kontributor',
   };
@@ -201,9 +217,14 @@ export default function DashboardOverview() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          {(user?.role === 'superadmin' || user?.role === 'wapimred') && (
+          {user?.role === 'superadmin' ? (
+            <>
+              <KYCRequestsWidget requests={kycRequests} site={site} />
+              <AuditLogsWidget logs={auditLogs} site={site} />
+            </>
+          ) : user?.role === 'wapimred' ? (
             <ReviewQueue articles={reviewQueue} site={site} count={inReview} />
-          )}
+          ) : null}
           <RecentActivity articles={recentActivityList} site={site} />
         </div>
 
@@ -346,6 +367,87 @@ function AdvertiserDashboardOverview({ greeting, userName, site, currentDate }: 
             </button>
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function KYCRequestsWidget({ requests, site }: { requests: any[]; site: string }) {
+  return (
+    <div className="dash-card">
+      <div className="dash-card-header">
+        <div className="flex items-center gap-2">
+          <ShieldCheck size={16} className="text-brand-red" />
+          <h3 className="text-sm font-black text-brand-black dark:text-white uppercase tracking-tight">
+            Antrean Verifikasi KYC Reporter/Kontributor ({requests.length})
+          </h3>
+        </div>
+        <Link
+          href={`/${site}/dashboard/review/kyc`}
+          className="text-[10px] font-black uppercase tracking-widest text-brand-red hover:underline"
+        >
+          Lihat Semua →
+        </Link>
+      </div>
+      <div className="p-6 divide-y divide-gray-50 dark:divide-white/5">
+        {requests.length === 0 ? (
+          <p className="text-xs text-gray-400 py-4 text-center">Tidak ada pengajuan verifikasi KYC baru.</p>
+        ) : (
+          requests.map((req) => (
+            <div key={req.id} className="py-4 first:pt-0 last:pb-0 flex items-center justify-between gap-4">
+              <div>
+                <p className="text-xs font-black text-brand-black dark:text-white uppercase tracking-tight">{req.name}</p>
+                <p className="text-[10px] text-gray-400 mt-0.5">{req.email}</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-[9px] font-bold text-gray-400 bg-gray-100 dark:bg-white/5 px-2 py-1 rounded">
+                  {req.kycSubmittedAt ? new Date(req.kycSubmittedAt).toLocaleDateString('id-ID') : '-'}
+                </span>
+                <Link
+                  href={`/${site}/dashboard/review/kyc/${req.id}`}
+                  className="px-3 py-1.5 bg-brand-red text-white text-[9px] font-black uppercase tracking-widest hover:bg-red-700 rounded transition-colors"
+                >
+                  Review
+                </Link>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
+function AuditLogsWidget({ logs, site }: { logs: any[]; site: string }) {
+  return (
+    <div className="dash-card">
+      <div className="dash-card-header">
+        <div className="flex items-center gap-2">
+          <Activity size={16} className="text-brand-red" />
+          <h3 className="text-sm font-black text-brand-black dark:text-white uppercase tracking-tight">
+            Log Aktivitas Sistem Terkini
+          </h3>
+        </div>
+      </div>
+      <div className="p-6 divide-y divide-gray-50 dark:divide-white/5">
+        {logs.length === 0 ? (
+          <p className="text-xs text-gray-400 py-4 text-center">Tidak ada log aktivitas.</p>
+        ) : (
+          logs.map((log) => (
+            <div key={log.id} className="py-3 first:pt-0 last:pb-0 flex items-center justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold text-brand-black dark:text-white">
+                  <span className="font-black uppercase tracking-wider text-[10px] text-brand-red mr-1.5">{log.action}</span>
+                  {log.user?.name || log.userId}
+                </p>
+                <p className="text-[10px] text-gray-400 mt-0.5">Entity: {log.entityType || '-'} ({log.entityId || '-'})</p>
+              </div>
+              <span className="text-[9px] font-bold text-gray-400 tabular-nums">
+                {new Date(log.createdAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+              </span>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );
