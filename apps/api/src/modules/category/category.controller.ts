@@ -59,13 +59,37 @@ export async function getCategories(req: Request, res: Response) {
 }
 
 /**
+ * GET /api/v1/categories/tree
+ * Fetch categories in tree hierarchy structure
+ */
+export async function getCategoryTree(req: Request, res: Response) {
+  try {
+    const siteId = (req as any).site || (req.query.site as string) || (req.headers['x-site-id'] as string)
+    if (!siteId) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'SITE_REQUIRED', message: 'Site parameter required' }
+      })
+    }
+    const tree = await categoryService.getCategoryTree(siteId)
+    res.json({ success: true, data: tree })
+  } catch (error: any) {
+    const statusCode = error.statusCode || 500
+    res.status(statusCode).json({
+      success: false,
+      error: { code: 'CATEGORY_TREE_FAILED', message: error.message }
+    })
+  }
+}
+
+/**
  * POST /api/v1/categories
  * Create a new category (site-specific or global)
  * Only superadmin can create global categories (siteId=null)
  */
 export async function createCategory(req: Request, res: Response) {
   try {
-    const { name, slug, siteId, description } = req.body
+    const { name, slug, siteId, description, parentId, order, color } = req.body
     const user = (req as any).user
     const actorUserId = user?.userId
 
@@ -88,7 +112,15 @@ export async function createCategory(req: Request, res: Response) {
     }
 
     const category = await categoryService.createCategory(
-      { name, slug, siteId, description },
+      { 
+        name, 
+        slug, 
+        siteId, 
+        description, 
+        parentId: parentId || null, 
+        order: order !== undefined ? Number(order) : undefined, 
+        color: color || null 
+      },
       actorUserId
     )
 
@@ -110,12 +142,19 @@ export async function createCategory(req: Request, res: Response) {
 export async function updateCategory(req: Request, res: Response) {
   try {
     const { id } = req.params
-    const { name, description, siteId } = req.body
+    const { name, description, siteId, parentId, order, color } = req.body
     const actorUserId = (req as any).user?.userId
 
     const category = await categoryService.updateCategory(
       id,
-      { name, description, siteId },
+      { 
+        name, 
+        description, 
+        siteId, 
+        parentId: parentId !== undefined ? parentId : undefined,
+        order: order !== undefined ? Number(order) : undefined,
+        color: color !== undefined ? color : undefined
+      },
       actorUserId
     )
 

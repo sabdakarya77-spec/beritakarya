@@ -142,12 +142,17 @@ model Category {
   siteId      String? // NULL = global category (available to all sites)
   isGlobal    Boolean   @default(false) @map("is_global")
   description String?
+  parentId    String?   @map("parent_id")
+  order       Int       @default(0)
+  color       String?
   deletedAt   DateTime?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  site     Site?     @relation(fields: [siteId], references: [id])
-  articles Article[]
+  site          Site?      @relation(fields: [siteId], references: [id])
+  articles      Article[]
+  parent        Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  subCategories Category[] @relation("CategoryHierarchy")
 
   // Unique constraint: allows (slug, NULL) for global categories
   // and (slug, siteId) for site-specific categories

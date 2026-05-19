@@ -1,13 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Navbar from './Navbar';
 import SiteFooter from './SiteFooter';
 import BreakingNewsTicker from '../ui/BreakingNewsTicker';
 import AISummary from '../ui/AISummary';
 import MobileBottomNav from './MobileBottomNav';
 import FullScreenSearch from '../ui/FullScreenSearch';
-import { CATEGORIES_CONFIG } from '../../lib/constants';
+import { CATEGORIES_CONFIG, CategoryItem } from '../../lib/constants';
+import { api } from '../../lib/api';
 
 interface PublicSiteLayoutProps {
   children: React.ReactNode;
@@ -18,7 +19,34 @@ interface PublicSiteLayoutProps {
 export default function PublicSiteLayout({ children, siteConfig, initialCategory = 'Terbaru' }: PublicSiteLayoutProps) {
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const categories = CATEGORIES_CONFIG;
+  const [categories, setCategories] = useState<CategoryItem[]>(CATEGORIES_CONFIG);
+
+  useEffect(() => {
+    async function loadCategories() {
+      try {
+        const { data } = await api.get('/categories/tree');
+        if (data.success && data.data && data.data.length > 0) {
+          const mapped = [
+            { name: 'Terbaru', slug: 'Terbaru' },
+            ...data.data.map((cat: any) => ({
+              name: cat.name,
+              slug: cat.slug,
+              subCategories: cat.subCategories?.map((sub: any) => ({
+                name: sub.name,
+                slug: sub.slug
+              }))
+            })),
+            { name: 'Tersimpan', slug: 'Tersimpan' }
+          ];
+          setCategories(mapped);
+        }
+      } catch (error) {
+        console.error('Failed to load categories tree, falling back to static config', error);
+      }
+    }
+
+    loadCategories();
+  }, []);
 
   return (
     <div 

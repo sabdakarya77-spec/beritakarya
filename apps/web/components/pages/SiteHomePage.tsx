@@ -13,8 +13,17 @@ import { notFound } from 'next/navigation'
 import ScrollAnimate from '../ui/ScrollAnimate'
 import { CATEGORIES_CONFIG } from '../../lib/constants'
 
-function resolveCategoryName(slug: string): string {
+function resolveCategoryName(slug: string, categoriesTree: any[] = []): string {
   if (slug === 'Terbaru') return 'Terbaru'
+  if (slug === 'Tersimpan') return 'Tersimpan'
+  for (const cat of categoriesTree) {
+    if (cat.slug === slug) return cat.name
+    if (cat.subCategories) {
+      for (const sub of cat.subCategories) {
+        if (sub.slug === slug) return `${cat.name} / ${sub.name}`
+      }
+    }
+  }
   for (const cat of CATEGORIES_CONFIG) {
     if (cat.slug === slug) return cat.name
     if (cat.subCategories) {
@@ -54,6 +63,19 @@ async function getArticles(siteId: string, category?: string, search?: string) {
     return json?.data?.articles || json?.data?.items || []
   } catch (e) {
     console.error('Error fetching articles:', e)
+    return []
+  }
+}
+
+async function getCategories(siteId: string) {
+  try {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+    const res = await fetch(`${apiUrl}/api/v1/categories/tree?site=${siteId}`, { next: { revalidate: 60 } })
+    if (!res.ok) return []
+    const json = await res.json()
+    return json?.data || []
+  } catch (e) {
+    console.error('Error fetching categories tree:', e)
     return []
   }
 }
@@ -106,6 +128,7 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
   }
 
   const articlesList = await getArticles(siteConfig.id, categoryFilter, searchQuery)
+  const categoriesTree = await getCategories(siteConfig.id)
   const topBentoStories = articlesList.slice(0, 4)
   const minimalStories = articlesList.slice(4, 8)
   const editorChoice = articlesList.filter((a: any) => a.isFeatured || a.isExclusive)
@@ -266,7 +289,7 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
             <div className="flex items-center justify-between mb-12 border-b-8 border-brand-black dark:border-white pb-6">
               <h3 className="text-3xl font-serif font-black uppercase tracking-tighter text-brand-black dark:text-white flex items-center gap-4">
                 <span className="w-6 h-6 bg-brand-red shadow-lg shadow-brand-red/20"></span>
-                {searchQuery ? `Hasil Pencarian: ${searchQuery}` : `Berita ${resolveCategoryName(categoryFilter)}`}
+                {searchQuery ? `Hasil Pencarian: ${searchQuery}` : `Berita ${resolveCategoryName(categoryFilter, categoriesTree)}`}
               </h3>
               <div className="hidden md:flex items-center gap-6 text-[11px] font-black uppercase tracking-[0.3em] text-gray-400">
                 <span className="text-brand-red cursor-pointer border-b-2 border-brand-red pb-1">Terbaru</span>

@@ -10,10 +10,11 @@ export class CategoryService {
         ]
       },
       include: {
-        site: true
+        site: true,
+        parent: true
       },
       orderBy: {
-        createdAt: 'asc'
+        order: 'asc'
       }
     })
   }
@@ -21,11 +22,12 @@ export class CategoryService {
   async getAllCategories() {
     return await prisma.category.findMany({
       include: {
-        site: true
+        site: true,
+        parent: true
       },
       orderBy: [
         { siteId: 'asc' },
-        { createdAt: 'asc' }
+        { order: 'asc' }
       ]
     })
   }
@@ -33,8 +35,38 @@ export class CategoryService {
   async getGlobalCategories() {
     return await prisma.category.findMany({
       where: { isGlobal: true },
-      include: { site: true }
+      include: { 
+        site: true,
+        parent: true
+      },
+      orderBy: {
+        order: 'asc'
+      }
     })
+  }
+
+  async getCategoryTree(siteId: string) {
+    const all = await prisma.category.findMany({
+      where: {
+        OR: [
+          { siteId },
+          { isGlobal: true }
+        ]
+      },
+      orderBy: {
+        order: 'asc'
+      }
+    })
+
+    const parentCategories = all.filter(c => !c.parentId)
+    const subCategories = all.filter(c => c.parentId)
+
+    return parentCategories.map(parent => ({
+      ...parent,
+      subCategories: subCategories
+        .filter(sub => sub.parentId === parent.id)
+        .sort((a, b) => a.order - b.order)
+    }))
   }
 
   async createCategory(data: {
@@ -42,6 +74,9 @@ export class CategoryService {
     slug: string
     siteId?: string | null
     description?: string
+    parentId?: string | null
+    order?: number
+    color?: string | null
   }, _actorUserId: string) {
     const isGlobal = data.siteId === null
     const effectiveSiteId = data.siteId === '' ? null : data.siteId
@@ -58,15 +93,27 @@ export class CategoryService {
       )
     }
 
+    if (data.parentId) {
+      const parentExists = await prisma.category.findUnique({
+        where: { id: data.parentId }
+      })
+      if (!parentExists) {
+        throw Object.assign(new Error('Parent category not found'), { statusCode: 404 })
+      }
+    }
+
     const category = await prisma.category.create({
       data: {
         name: data.name,
         slug: data.slug,
         siteId: effectiveSiteId,
         isGlobal,
-        description: data.description
+        description: data.description,
+        parentId: data.parentId || null,
+        order: data.order !== undefined ? data.order : 0,
+        color: data.color || null
       },
-      include: { site: true }
+      include: { site: true, parent: true }
     })
 
     return category
@@ -78,6 +125,9 @@ export class CategoryService {
       name: string
       description: string
       siteId?: string | null
+      parentId?: string | null
+      order?: number
+      color?: string | null
     }>,
     _actorUserId: string
   ) {
@@ -114,6 +164,20 @@ export class CategoryService {
       }
     }
 
+    if (data.parentId !== undefined) {
+      if (data.parentId === categoryId) {
+        throw Object.assign(new Error('Category cannot be its own parent'), { statusCode: 400 })
+      }
+      if (data.parentId !== null) {
+        const parentExists = await prisma.category.findUnique({
+          where: { id: data.parentId }
+        })
+        if (!parentExists) {
+          throw Object.assign(new Error('Parent category not found'), { statusCode: 404 })
+        }
+      }
+    }
+
     const category = await prisma.category.update({
       where: { id: categoryId },
       data: {
@@ -121,9 +185,12 @@ export class CategoryService {
         description: data.description,
         siteId: data.siteId !== undefined
           ? (data.siteId === '' ? null : data.siteId)
-          : undefined
+          : undefined,
+        parentId: data.parentId !== undefined ? data.parentId : undefined,
+        order: data.order !== undefined ? data.order : undefined,
+        color: data.color !== undefined ? data.color : undefined
       },
-      include: { site: true }
+      include: { site: true, parent: true }
     })
 
     return category
