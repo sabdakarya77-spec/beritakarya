@@ -9,9 +9,11 @@ import DateTimeWeather from '../ui/DateTimeWeather';
 import { cn } from '../../lib/utils';
 import { useRouter, usePathname } from 'next/navigation';
 
+import { CategoryItem } from '../../lib/constants';
+
 interface NavbarProps {
   siteConfig: any;
-  categories: string[];
+  categories: CategoryItem[];
   selectedCategory: string;
   setSelectedCategory: (cat: string) => void;
   onSearchClick?: () => void;
@@ -31,6 +33,7 @@ export default function Navbar({
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
   
   const { user, logout } = useAuthStore();
 
@@ -189,54 +192,97 @@ export default function Navbar({
       </div>
 
       {/* Desktop Navigation */}
-      <nav className="max-w-7xl mx-auto px-4 hidden md:flex items-center justify-center h-14 border-t border-gray-50 dark:border-white/5 gap-10 text-[11px] font-bold uppercase tracking-[0.12em] text-brand-text-muted">
+      <nav className="max-w-7xl mx-auto px-4 hidden md:flex items-center justify-center h-14 border-t border-gray-50 dark:border-white/5 gap-10 text-[11px] font-bold uppercase tracking-[0.12em] text-brand-text-muted relative z-40">
         {categories.map((cat, index) => {
-          const isActive = selectedCategory === cat;
+          const isActive = selectedCategory === cat.slug || cat.subCategories?.some(sub => sub.slug === selectedCategory);
+          const hasSub = cat.subCategories && cat.subCategories.length > 0;
           return (
-            <motion.button 
-              key={cat} 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: index * 0.05 }}
-              onClick={() => handleCategoryClick(cat)}
-              className={cn(
-                "hover:text-brand-red dark:hover:text-white transition-all relative py-2 group flex items-center gap-1",
-                isActive ? "text-brand-black dark:text-white font-extrabold" : "text-gray-400 dark:text-gray-500"
-              )}
+            <div 
+              key={cat.slug}
+              className="relative py-4 flex items-center"
+              onMouseEnter={() => setHoveredCategory(cat.name)}
+              onMouseLeave={() => setHoveredCategory(null)}
             >
-              {cat === 'Tersimpan' && (
-                <Bookmark 
-                  size={12} 
-                  className={cn(
-                    "transition-colors",
-                    isActive ? "text-brand-red fill-brand-red/20" : "text-gray-400 dark:text-gray-500 group-hover:text-brand-red"
-                  )} 
-                />
-              )}
-              <span>{cat}</span>
-              {isActive && (
-                <motion.span 
-                  layoutId="activeCategoryLine"
-                  className="absolute -bottom-0.5 left-0 h-[3px] bg-brand-red w-full"
-                  transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                />
-              )}
-              {!isActive && (
-                <span className="absolute -bottom-0.5 left-0 h-[3px] bg-brand-red w-0 transition-all duration-300 group-hover:w-full" />
-              )}
-            </motion.button>
+              <motion.button 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: index * 0.05 }}
+                onClick={() => handleCategoryClick(cat.slug)}
+                className={cn(
+                  "hover:text-brand-red dark:hover:text-white transition-all relative group flex items-center gap-1",
+                  isActive ? "text-brand-black dark:text-white font-extrabold" : "text-gray-400 dark:text-gray-500"
+                )}
+              >
+                {cat.slug === 'Tersimpan' && (
+                  <Bookmark 
+                    size={12} 
+                    className={cn(
+                      "transition-colors",
+                      isActive ? "text-brand-red fill-brand-red/20" : "text-gray-400 dark:text-gray-500 group-hover:text-brand-red"
+                    )} 
+                  />
+                )}
+                <span>{cat.name}</span>
+                {isActive && (
+                  <motion.span 
+                    layoutId="activeCategoryLine"
+                    className="absolute -bottom-1 left-0 h-[3px] bg-brand-red w-full"
+                    transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                  />
+                )}
+                {!isActive && (
+                  <span className="absolute -bottom-1 left-0 h-[3px] bg-brand-red w-0 transition-all duration-300 group-hover:w-full" />
+                )}
+              </motion.button>
+
+              <AnimatePresence>
+                {hoveredCategory === cat.name && hasSub && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    transition={{ duration: 0.15, ease: "easeOut" }}
+                    className="absolute top-full left-1/2 -translate-x-1/2 mt-1 z-50 min-w-[200px] bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-gray-150 dark:border-white/10 shadow-[0_12px_40px_rgba(0,0,0,0.12)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.4)] rounded-xl p-2 flex flex-col gap-0.5"
+                  >
+                    {cat.subCategories?.map((sub) => {
+                      const isSubActive = selectedCategory === sub.slug;
+                      return (
+                        <button
+                          key={sub.slug}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCategoryClick(sub.slug);
+                            setHoveredCategory(null);
+                          }}
+                          className={cn(
+                            "px-4 py-2 text-left rounded-lg text-[10px] font-bold tracking-wider hover:bg-gray-50 dark:hover:bg-white/5 transition-colors flex items-center justify-between group/sub",
+                            isSubActive ? "text-brand-red bg-brand-red/5" : "text-gray-600 dark:text-gray-400 hover:text-brand-red dark:hover:text-white"
+                          )}
+                        >
+                          <span>{sub.name}</span>
+                          <span className={cn(
+                            "w-1 h-1 rounded-full bg-brand-red scale-0 transition-transform group-hover/sub:scale-100",
+                            isSubActive ? "scale-100" : ""
+                          )} />
+                        </button>
+                      );
+                    })}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           );
         })}
       </nav>
 
-      {/* Mobile Navigation (Horizontal Scroll) */}
+      {/* Mobile Navigation (Horizontal Scroll - Main Categories) */}
       <nav className="md:hidden max-w-7xl mx-auto border-t border-gray-50 dark:border-white/5 flex gap-2 overflow-x-auto pb-3 pt-2 px-3 no-scrollbar">
         {categories.map((cat) => {
-          const isActive = selectedCategory === cat;
+          const isActive = selectedCategory === cat.slug || cat.subCategories?.some(sub => sub.slug === selectedCategory);
           return (
             <button
-              key={cat}
-              onClick={() => handleCategoryClick(cat)}
+              key={cat.slug}
+              onClick={() => handleCategoryClick(cat.slug)}
               className={cn(
                 "shrink-0 px-3 py-2 rounded-full text-[10px] font-bold uppercase tracking-wider whitespace-nowrap border transition-all flex items-center gap-1",
                 isActive
@@ -244,17 +290,48 @@ export default function Navbar({
                   : "border-gray-200 dark:border-white/10 text-brand-text-muted dark:text-gray-400"
               )}
             >
-              {cat === 'Tersimpan' && (
+              {cat.slug === 'Tersimpan' && (
                 <Bookmark 
                   size={10} 
                   className={isActive ? "text-brand-red fill-brand-red/20" : "text-gray-400 dark:text-gray-500"} 
                 />
               )}
-              <span>{cat}</span>
+              <span>{cat.name}</span>
             </button>
           );
         })}
       </nav>
+
+      {/* Mobile Sub-Navigation (Horizontal Scroll) */}
+      {(() => {
+        const activeParent = categories.find(cat => 
+          cat.slug === selectedCategory || cat.subCategories?.some(sub => sub.slug === selectedCategory)
+        );
+        if (activeParent && activeParent.subCategories && activeParent.subCategories.length > 0) {
+          return (
+            <nav className="md:hidden max-w-7xl mx-auto flex gap-2 overflow-x-auto pb-3 pt-1.5 px-3 no-scrollbar border-t border-gray-50 dark:border-white/5 bg-gray-50/30 dark:bg-white/5">
+              {activeParent.subCategories.map((sub) => {
+                const isSubActive = selectedCategory === sub.slug;
+                return (
+                  <button
+                    key={sub.slug}
+                    onClick={() => handleCategoryClick(sub.slug)}
+                    className={cn(
+                      "shrink-0 px-2.5 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-wider whitespace-nowrap transition-all",
+                      isSubActive
+                        ? "bg-brand-red text-white"
+                        : "bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400"
+                    )}
+                  >
+                    {sub.name}
+                  </button>
+                );
+              })}
+            </nav>
+          );
+        }
+        return null;
+      })()}
     </header>
   );
 }

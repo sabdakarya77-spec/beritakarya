@@ -10,9 +10,10 @@ interface MobileBottomNavProps {
   site?: string;
   onSearchClick?: () => void;
   onMenuClick?: () => void;
+  selectedCategory?: string;
 }
 
-export default function MobileBottomNav({ site = 'pusat', onSearchClick, onMenuClick }: MobileBottomNavProps) {
+export default function MobileBottomNav({ site = 'pusat', onSearchClick, onMenuClick, selectedCategory }: MobileBottomNavProps) {
   const pathname = usePathname();
 
   const navItems = [
@@ -20,7 +21,7 @@ export default function MobileBottomNav({ site = 'pusat', onSearchClick, onMenuC
       label: 'Home',
       icon: Home,
       href: `/${site}`,
-      active: pathname === `/${site}` || pathname === `/${site}/`,
+      active: (pathname === `/${site}` || pathname === `/${site}/`) && selectedCategory !== 'Tersimpan',
     },
     {
       label: 'Search',
@@ -38,7 +39,7 @@ export default function MobileBottomNav({ site = 'pusat', onSearchClick, onMenuC
       label: 'Tersimpan',
       icon: Bookmark,
       href: `/${site}?cat=Tersimpan`,
-      active: pathname.includes('cat=Tersimpan'),
+      active: selectedCategory === 'Tersimpan',
     },
     {
       label: 'Dashboard',

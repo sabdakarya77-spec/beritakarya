@@ -7,6 +7,7 @@ import BreakingNewsTicker from '../ui/BreakingNewsTicker';
 import AISummary from '../ui/AISummary';
 import MobileBottomNav from './MobileBottomNav';
 import FullScreenSearch from '../ui/FullScreenSearch';
+import { CATEGORIES_CONFIG } from '../../lib/constants';
 
 interface PublicSiteLayoutProps {
   children: React.ReactNode;
@@ -17,7 +18,7 @@ interface PublicSiteLayoutProps {
 export default function PublicSiteLayout({ children, siteConfig, initialCategory = 'Terbaru' }: PublicSiteLayoutProps) {
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const categories = ['Terbaru', 'Nasional', 'Daerah', 'Politik', 'Ekonomi', 'Teknologi', 'Hukum', 'Tersimpan'];
+  const categories = CATEGORIES_CONFIG;
 
   return (
     <div 
@@ -52,6 +53,7 @@ export default function PublicSiteLayout({ children, siteConfig, initialCategory
       <MobileBottomNav 
         site={siteConfig.id} 
         onSearchClick={() => setIsSearchOpen(true)}
+        selectedCategory={selectedCategory}
         onMenuClick={() => {
           // mobile scroll to categories or set active tab
           const el = document.querySelector('nav.overflow-x-auto');

@@ -3,9 +3,11 @@
 import Link from 'next/link';
 import { Mail, MessageCircle, MapPin, Share2, Camera, PlayCircle } from 'lucide-react';
 
+import { CategoryItem } from '../../lib/constants';
+
 interface SiteFooterProps {
   siteConfig: any;
-  categories: string[];
+  categories: CategoryItem[];
 }
 
 export default function SiteFooter({ siteConfig, categories }: SiteFooterProps) {
@@ -67,11 +69,14 @@ export default function SiteFooter({ siteConfig, categories }: SiteFooterProps) 
 
           <div>
             <h5 className="text-xs font-bold uppercase tracking-[0.2em] mb-8 text-brand-red">Kategori</h5>
-            <ul className="text-brand-text-muted text-sm space-y-4 font-light">
-              {categories.filter(c => c !== 'Terbaru').map((cat) => (
-                <li key={cat}>
-                  <Link href={`#${cat.toLowerCase()}`} className="hover:text-brand-red transition-colors">
-                    {cat}
+            <ul className="text-brand-text-muted text-sm space-y-3 font-light grid grid-cols-2 gap-x-4 md:grid-cols-1 md:gap-x-0">
+              {categories.filter(c => c.slug !== 'Terbaru' && c.slug !== 'Tersimpan').map((cat) => (
+                <li key={cat.slug}>
+                  <Link 
+                    href={`/${siteConfig.id}?cat=${encodeURIComponent(cat.slug)}`} 
+                    className="hover:text-brand-red transition-colors text-xs font-semibold uppercase tracking-wider block py-1"
+                  >
+                    {cat.name}
                   </Link>
                 </li>
               ))}
@@ -84,7 +89,8 @@ export default function SiteFooter({ siteConfig, categories }: SiteFooterProps) 
               <li><Link href={`/${siteConfig.id}/p/about`} className="hover:text-brand-red transition-colors">Tentang Kami</Link></li>
               <li><Link href={`/${siteConfig.id}/p/ethics`} className="hover:text-brand-red transition-colors">Kode Etik</Link></li>
               <li><Link href={`/${siteConfig.id}/p/editorial`} className="hover:text-brand-red transition-colors">Redaksi</Link></li>
-              <li><Link href={`/${siteConfig.id}/p/ads`} className="hover:text-brand-red transition-colors">Iklan</Link></li>
+              <li><Link href={`/${siteConfig.id}/p/partnership`} className="hover:text-brand-red transition-colors">Kemitraan & Kerja Sama</Link></li>
+              <li><Link href={`/${siteConfig.id}/p/ads`} className="hover:text-brand-red transition-colors">Info Iklan (Rate Card)</Link></li>
             </ul>
           </div>
 
