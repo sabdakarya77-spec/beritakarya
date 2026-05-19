@@ -32,7 +32,7 @@ export default function AdSpace({
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
         
         // Fetch active regional advertisements
-        const res = await fetch(`${apiUrl}/api/v1/ad/public?site=${siteParam}`);
+        const res = await fetch(`${apiUrl}/api/v1/ads/public?site=${siteParam}`);
         if (!res.ok) return;
         const json = await res.json();
         
@@ -43,7 +43,7 @@ export default function AdSpace({
             setAd(matchedAd);
             
             // AUTO-TRACK: Record Impression when ad is rendered
-            fetch(`${apiUrl}/api/v1/ad/track/${matchedAd.id}?action=impression`, {
+            fetch(`${apiUrl}/api/v1/ads/track/${matchedAd.id}?action=impression`, {
               method: 'POST'
             }).catch(() => {});
           }
@@ -65,7 +65,7 @@ export default function AdSpace({
     if (!ad) return;
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
     // AUTO-TRACK: Record Click when ad is clicked by visitor
-    fetch(`${apiUrl}/api/v1/ad/track/${ad.id}?action=click`, {
+    fetch(`${apiUrl}/api/v1/ads/track/${ad.id}?action=click`, {
       method: 'POST'
     }).catch(() => {});
   };

@@ -123,16 +123,16 @@ export default function AdsDashboard() {
       if (user?.role === 'superadmin' || user?.role === 'wapimred') {
         const [adsRes, pkgsRes, bookingsRes] = await Promise.all([
           api.get('/ads'),
-          api.get('/ad/packages'),
-          api.get('/ad/bookings/all').catch(() => ({ data: { data: [] } }))
+          api.get('/ads/packages'),
+          api.get('/ads/bookings/all').catch(() => ({ data: { data: [] } }))
         ]);
         setAds(adsRes.data.data || []);
         setPackages(pkgsRes.data.data || []);
         setBookings(bookingsRes.data.data || []);
       } else if (user?.role === 'advertiser') {
         const [pkgsRes, bookingsRes] = await Promise.all([
-          api.get('/ad/packages'),
-          api.get('/ad/bookings/my').catch(() => ({ data: { data: [] } }))
+          api.get('/ads/packages'),
+          api.get('/ads/bookings/my').catch(() => ({ data: { data: [] } }))
         ]);
         setPackages(pkgsRes.data.data || []);
         setBookings(bookingsRes.data.data || []);
@@ -175,9 +175,9 @@ export default function AdsDashboard() {
       };
 
       if (editingPkgId) {
-        await api.patch(`/ad/packages/${editingPkgId}`, payload);
+        await api.patch(`/ads/packages/${editingPkgId}`, payload);
       } else {
-        await api.post('/ad/packages', payload);
+        await api.post('/ads/packages', payload);
       }
 
       setPkgName('');
@@ -195,7 +195,7 @@ export default function AdsDashboard() {
   const handleDeletePackage = async (id: string) => {
     if (!confirm('Apakah Anda yakin ingin menghapus paket iklan ini?')) return;
     try {
-      await api.delete(`/ad/packages/${id}`);
+      await api.delete(`/ads/packages/${id}`);
       await fetchData();
     } catch (error: any) {
       alert(error.response?.data?.error?.message || 'Gagal menghapus paket');
@@ -210,7 +210,7 @@ export default function AdsDashboard() {
     }
     setIsSubmittingBooking(true);
     try {
-      const bookingRes = await api.post('/ad/bookings', {
+      const bookingRes = await api.post('/ads/bookings', {
         packageId: selectedPkgId,
         siteId: site,
         imageUrl: advImageUrl,
@@ -223,7 +223,7 @@ export default function AdsDashboard() {
 
       // Upload payment proof if provided
       if (advPaymentProof) {
-        await api.post(`/ad/bookings/${newBookingId}/pay`, {
+        await api.post(`/ads/bookings/${newBookingId}/pay`, {
           paymentProof: advPaymentProof
         });
       }
@@ -250,7 +250,7 @@ export default function AdsDashboard() {
   const handleApproveBooking = async (id: string) => {
     if (!confirm('Apakah Anda yakin ingin menyetujui iklan ini dan meluncurkannya ke website tujuan?')) return;
     try {
-      await api.post(`/ad/bookings/${id}/approve`);
+      await api.post(`/ads/bookings/${id}/approve`);
       await fetchData();
       alert('Sukses menyetujui iklan! Iklan kini telah disinkronkan dan aktif di website cabang.');
     } catch (error: any) {
@@ -261,7 +261,7 @@ export default function AdsDashboard() {
   const handleRejectBooking = async () => {
     if (!showRejectModal) return;
     try {
-      await api.post(`/ad/bookings/${showRejectModal}/reject`, {
+      await api.post(`/ads/bookings/${showRejectModal}/reject`, {
         rejectionNotes
       });
       setShowRejectModal(null);
