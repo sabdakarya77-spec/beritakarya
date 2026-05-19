@@ -55,7 +55,7 @@ export async function recordView(data: {
 }
 
 export async function getActiveReaderCount(siteId: string): Promise<number> {
-  if (!process.env.REDIS_HOST) return 0
+  if (!process.env.REDIS_HOST && !process.env.REDIS_URL) return 0
   try {
     const now = Date.now()
     const key = `site:${siteId}:active_readers`
