@@ -207,7 +207,7 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
                       <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-2">Kolom Analisis</span>
                       <Link href={`/${siteParam}/artikel/${article.slug}`}>
                         <h4 className="text-xl font-serif font-black text-brand-black dark:text-white hover:text-brand-red transition-colors leading-tight line-clamp-3 mb-2">
-                          "{article.title}"
+                          &ldquo;{article.title}&rdquo;
                         </h4>
                       </Link>
                       <p className="text-xs text-gray-500 dark:text-gray-400 font-light line-clamp-3 leading-relaxed">
