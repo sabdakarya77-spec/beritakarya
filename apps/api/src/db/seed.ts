@@ -48,7 +48,13 @@ async function main() {
     { name: 'Ekonomi', slug: 'ekonomi', description: 'Analisis pasar, kebijakan finansial, dan bisnis makro.' },
     { name: 'Teknologi', slug: 'teknologi', description: 'Perkembangan AI, gadget terbaru, dan riset ilmiah.' },
     { name: 'Daerah', slug: 'daerah', description: 'Informasi lokal dari pelosok nusantara.' },
-    { name: 'Hukum', slug: 'hukum', description: 'Kasus peradilan, investigasi kriminal, dan penegakan hukum.' }
+    { name: 'Hukum', slug: 'hukum', description: 'Kasus peradilan, investigasi kriminal, dan penegakan hukum.' },
+    { name: 'Olahraga', slug: 'olahraga', description: 'Berita seputar kompetisi olahraga nasional dan internasional, Piala Dunia, serta Timnas Garuda.' },
+    { name: 'Opini', slug: 'opini', description: 'Kolom analisis, tajuk rencana, dan wawancara mendalam.' },
+    { name: 'Investigasi', slug: 'investigasi', description: 'Laporan investigasi eksklusif dan mendalam.' },
+    { name: 'Gaya Hidup', slug: 'lifestyle', description: 'Ragam informasi wisata, kesehatan, seni budaya, dan otomotif.' },
+    { name: 'Advertorial', slug: 'advertorial', description: 'Rilis pers resmi dan info bisnis kemitraan.' },
+    { name: 'Video', slug: 'video', description: 'Dokumenter eksklusif, galeri foto jurnalistik, dan rekaman podcast.' }
   ]
 
   const categoriesMap: Record<string, string> = {}

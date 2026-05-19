@@ -35,10 +35,24 @@ async function main() {
   })
 
   // 2. Categories
-  const categories = ['Nasional', 'Daerah', 'Politik', 'Ekonomi', 'Teknologi', 'Hukum', 'Saved']
+  const categories = [
+    'Nasional', 
+    'Daerah', 
+    'Politik', 
+    'Ekonomi', 
+    'Teknologi', 
+    'Hukum',
+    'Olahraga',
+    'Opini',
+    'Investigasi',
+    'Gaya Hidup',
+    'Advertorial',
+    'Video'
+  ]
   const catMap: Record<string, string> = {}
   for (const cat of categories) {
-    const slug = cat.toLowerCase().replace(' ', '-')
+    let slug = cat.toLowerCase().replace(' ', '-')
+    if (slug === 'gaya-hidup') slug = 'lifestyle'
     const created = await prisma.category.upsert({
       where: { slug_siteId: { slug, siteId: PUSAT_ID } },
       update: {},
