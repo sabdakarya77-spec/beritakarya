@@ -129,7 +129,7 @@ export default function ReviewQueuePage() {
           </div>
           <h1 className="text-2xl font-black text-brand-black dark:text-white tracking-tight">Antrian Review</h1>
           <p className="text-xs text-gray-400 mt-1">
-            Kelola alur persetujuan post dari wartawan ke publikasi.
+            Kelola alur persetujuan post dari reporter dan kontributor ke publikasi.
           </p>
         </div>
         <button
@@ -352,7 +352,7 @@ export default function ReviewQueuePage() {
                 {reviewModal.title}
               </p>
               <div className="mb-5">
-                <label className="dash-label block mb-2">Catatan untuk wartawan (opsional)</label>
+                <label className="dash-label block mb-2">Catatan untuk reporter/kontributor (opsional)</label>
                 <textarea
                   value={reviewNotes}
                   onChange={e => setReviewNotes(e.target.value)}

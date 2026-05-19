@@ -108,7 +108,7 @@ export default function UsersDashboard() {
             Manajemen Pengguna
           </h1>
           <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-            Kelola akun wartawan dan tim redaksi
+            Kelola akun reporter, kontributor, dan tim redaksi
             {!showAll && <span className="text-red-600 font-semibold"> di {siteId}</span>}
           </p>
         </div>

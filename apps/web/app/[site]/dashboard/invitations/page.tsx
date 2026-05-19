@@ -131,7 +131,7 @@ export default function InvitationsDashboard() {
                   type="email" 
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="wartawan@email.com"
+                  placeholder="reporter@email.com"
                   className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm outline-none focus:border-red-500 transition-all"
                   required
                 />

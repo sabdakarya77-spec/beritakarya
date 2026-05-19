@@ -469,7 +469,7 @@ export default function AdminDashboardPage() {
               </p>
 
               <p className="text-xs text-gray-400 leading-relaxed mb-8">
-                Apakah Anda yakin ingin menghapus situs <code className="text-red-400 font-extrabold text-xs px-1.5 py-0.5 bg-red-950/30 rounded border border-red-500/20">{deleteConfirm}</code>? Tindakan ini akan menghapus seluruh artikel, kategori, media, dan data wartawan yang berafiliasi dengan situs tersebut secara permanen!
+                Apakah Anda yakin ingin menghapus situs <code className="text-red-400 font-extrabold text-xs px-1.5 py-0.5 bg-red-950/30 rounded border border-red-500/20">{deleteConfirm}</code>? Tindakan ini akan menghapus seluruh artikel, kategori, media, dan data reporter yang berafiliasi dengan situs tersebut secara permanen!
               </p>
 
               <div className="flex justify-end gap-3 pt-5 border-t border-white/5">
