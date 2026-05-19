@@ -1,6 +1,6 @@
 import { prisma } from '../../db/client'
 
-export async function getTrafficStats(siteId: string, days: number = 7) {
+export async function getTrafficStats(siteId: string, days: number = 7, authorId?: string) {
   const startDate = new Date()
   startDate.setDate(startDate.getDate() - days)
   startDate.setHours(0, 0, 0, 0)
@@ -9,7 +9,8 @@ export async function getTrafficStats(siteId: string, days: number = 7) {
     by: ['createdAt'],
     where: {
       siteId,
-      createdAt: { gte: startDate }
+      createdAt: { gte: startDate },
+      ...(authorId && { article: { authorId } })
     },
     _count: {
       id: true
@@ -43,9 +44,13 @@ export async function getTrafficStats(siteId: string, days: number = 7) {
     .sort((a, b) => a.date.localeCompare(b.date))
 }
 
-export async function getTopContent(siteId: string, limit: number = 5) {
+export async function getTopContent(siteId: string, limit: number = 5, authorId?: string) {
   return prisma.article.findMany({
-    where: { siteId, status: 'published' },
+    where: { 
+      siteId, 
+      status: 'published',
+      ...(authorId && { authorId })
+    },
     orderBy: { viewCount: 'desc' },
     take: limit,
     select: {
@@ -58,18 +63,22 @@ export async function getTopContent(siteId: string, limit: number = 5) {
   })
 }
 
-export async function getEngagementStats(siteId: string) {
+export async function getEngagementStats(siteId: string, authorId?: string) {
   const [viewStats, shareStats, totalComments] = await Promise.all([
     prisma.article.aggregate({
-      where: { siteId, deletedAt: null },
+      where: { siteId, deletedAt: null, ...(authorId && { authorId }) },
       _sum: { viewCount: true }
     }),
     prisma.article.aggregate({
-      where: { siteId, deletedAt: null },
+      where: { siteId, deletedAt: null, ...(authorId && { authorId }) },
       _sum: { shareCount: true }
     }),
     prisma.comment.count({
-      where: { siteId, status: 'approved' }
+      where: { 
+        siteId, 
+        status: 'approved',
+        ...(authorId && { article: { authorId } })
+      }
     })
   ])
 

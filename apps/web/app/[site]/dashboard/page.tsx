@@ -23,7 +23,6 @@ import { QuickActions } from '../../../components/dashboard/QuickActions';
 interface Article {
   id: string;
   title: string;
-  slug?: string;
   status: string;
   category?: { name: string };
   author?: { name: string };
@@ -127,18 +126,6 @@ export default function DashboardOverview() {
   const catEntries = Object.entries(catMap).sort((a, b) => b[1] - a[1]).slice(0, 5);
   const catMax = catEntries[0]?.[1] || 1;
 
-  const personalTopContent = [...articles]
-    .filter(a => a.status === 'published')
-    .sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0))
-    .slice(0, 5)
-    .map(a => ({
-      id: a.id,
-      title: a.title,
-      slug: a.slug,
-      viewCount: a.viewCount || 0,
-      category: a.category
-    }));
-
   // Sparkline data from real traffic
   const trafficSpark = trafficData.length > 0 ? trafficData.map(d => d.views) : [0,0,0,0,0,0,0];
   const publishedSpark = trafficData.length > 0 ? trafficData.map(d => Math.floor(d.views / 20)) : [0,0,0,0,0,0,0];
@@ -199,31 +186,18 @@ export default function DashboardOverview() {
         <div className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
             <div>
-              <p className="dash-label mb-1">
-                {(user?.role === 'reporter' || user?.role === 'kontributor') ? 'Total Views Artikel Saya' : 'Total Views (7 Hari)'}
-              </p>
+              <p className="dash-label mb-1">Total Views (7 Hari)</p>
               <p className="text-4xl font-black text-brand-black dark:text-white tabular-nums">
-                {(user?.role === 'reporter' || user?.role === 'kontributor')
-                  ? totalViews.toLocaleString('id-ID')
-                  : trafficData.reduce((acc, curr) => acc + curr.views, 0).toLocaleString('id-ID')
-                }
+                {trafficData.reduce((acc, curr) => acc + curr.views, 0).toLocaleString('id-ID')}
               </p>
             </div>
             <div>
-              <p className="dash-label mb-1">
-                {(user?.role === 'reporter' || user?.role === 'kontributor') ? 'Peringkat Penulisan' : 'Sumber Trafik Utama'}
-              </p>
-              {(user?.role === 'reporter' || user?.role === 'kontributor') ? (
-                <p className="text-sm font-black text-brand-black dark:text-white mt-1 uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-                  Kontributor Aktif
-                </p>
-              ) : (
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="px-2 py-1 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase rounded">Direct</span>
-                  <span className="px-2 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 text-[10px] font-black uppercase rounded">Google</span>
-                  <span className="px-2 py-1 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-[10px] font-black uppercase rounded">Social</span>
-                </div>
-              )}
+              <p className="dash-label mb-1">Sumber Trafik Utama</p>
+              <div className="flex items-center gap-2 mt-1">
+                <span className="px-2 py-1 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase rounded">Direct</span>
+                <span className="px-2 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 text-[10px] font-black uppercase rounded">Google</span>
+                <span className="px-2 py-1 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-[10px] font-black uppercase rounded">Social</span>
+              </div>
             </div>
             <div>
               <p className="dash-label mb-1">Engagement Rate</p>
@@ -257,7 +231,7 @@ export default function DashboardOverview() {
 
         <div className="space-y-6">
           <CategoryPerformance catEntries={catEntries} catMax={catMax} />
-          <TopContent topContent={(user?.role === 'reporter' || user?.role === 'kontributor') ? personalTopContent : topContent} site={site} />
+          <TopContent topContent={topContent} site={site} />
           <QuickActions site={site} userRole={user?.role} />
           
           <div className="dash-card p-6 text-center bg-gradient-to-br from-brand-red/5 to-violet-500/5 border-brand-red/10">
