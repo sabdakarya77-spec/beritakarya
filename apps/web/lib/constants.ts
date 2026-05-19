@@ -1,7 +1,7 @@
 export const ROLE_LABELS: Record<string, string> = {
   superadmin: 'Pimred (CEO) / Admin IT',
   wapimred: 'Wakil Pemimpin Redaksi (Wapimred)',
-  reporter: 'Reporter (Jurnalis Internal)',
+  reporter: 'Reporter (Internal)',
   kontributor: 'Kontributor (Penulis Lepas)',
   advertiser: 'Pengiklan',
   reader: 'Pembaca'

@@ -87,7 +87,7 @@ export async function checkFact(
 ): Promise<AIResult<FactCheckResult>> {
   return callAI(async () => {
     const raw = await chatComplete(
-      `Kamu adalah pemeriksa fakta (fact-checker) profesional dan jurnalis investigasi senior Indonesia.
+      `Kamu adalah pemeriksa fakta (fact-checker) profesional dan reporter investigasi senior Indonesia.
 Tugasmu adalah menganalisis klaim-klaim faktual utama dalam teks yang diberikan dan memverifikasi kredibilitasnya.
 Rules:
 - Pilah maksimal 5 klaim penting dalam teks yang membutuhkan verifikasi fakta.

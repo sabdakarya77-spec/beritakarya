@@ -165,7 +165,7 @@ class EmailService {
   ): Promise<boolean> {
     const roleLabels: Record<string, string> = {
       reader: 'Pembaca',
-      reporter: 'Reporter (Jurnalis Internal)',
+      reporter: 'Reporter (Internal)',
       kontributor: 'Kontributor (Penulis Lepas)',
       advertiser: 'Pengiklan',
       wapimred: 'Wakil Pemimpin Redaksi',
