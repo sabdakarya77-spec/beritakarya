@@ -186,7 +186,7 @@ const SIZES_MAP = {
 
 ---
 
-### TIER 4: AVIF Support & Nginx Optimization
+### ✅ TIER 4: AVIF Support & Nginx Optimization
 **Impact: 🔥🔥🔥 | Effort: ⏱️ 1-2 jam**
 
 #### Masalah saat ini:
