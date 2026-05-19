@@ -379,7 +379,7 @@ function PublicBlock({ block }: { block: Block }) {
           <div className="relative aspect-video rounded-xl overflow-hidden shadow-lg border border-gray-100 dark:border-white/5">
             <SmartImage 
               src={block.url} 
-              context="article_cover"
+              context="article_block"
               alt={block.alt || 'Post image'}
               fill
               className="object-cover"
@@ -407,7 +407,7 @@ function PublicBlock({ block }: { block: Block }) {
               <div className="relative aspect-[4/3] rounded-xl overflow-hidden shadow-lg border border-gray-100 dark:border-white/5">
                 <SmartImage 
                   src={block.url || '/placeholder.jpg'} 
-                  context="article_cover"
+                  context="media_text"
                   alt={block.alt || 'Post image'}
                   fill
                   className="object-cover"

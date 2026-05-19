@@ -119,7 +119,7 @@ export default function Navbar({
                   src={siteConfig.logoUrl} 
                   alt={siteConfig.name} 
                   fill 
-                  context="gallery_thumb"
+                  context="logo"
                   className="object-contain"
                   priority
                 />

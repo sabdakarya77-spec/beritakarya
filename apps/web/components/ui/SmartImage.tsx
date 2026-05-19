@@ -11,6 +11,9 @@ const SIZES_MAP = {
   gallery_thumb: '56px',
   gallery_full: '100vw',
   article_cover: '100vw',
+  article_block: '(max-width: 768px) 100vw, 760px',
+  media_text: '(max-width: 768px) 100vw, 380px',
+  logo: '200px',
 }
 
 export type SmartImageContext = keyof typeof SIZES_MAP

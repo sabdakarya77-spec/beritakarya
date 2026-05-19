@@ -97,7 +97,7 @@ export function MediaTextBlock({ block }: Props) {
                   src={block.url}
                   alt={block.alt || 'Media & Text block image'}
                   fill
-                  context="card"
+                  context="media_text"
                   className="object-cover rounded-t-xl transition-transform duration-300 group-hover/img:scale-102"
                 />
                 {/* Image Controls Hover Layer */}

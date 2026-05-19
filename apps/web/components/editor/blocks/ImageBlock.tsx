@@ -82,7 +82,7 @@ export function ImageBlock({ block }: { block: TImageBlock }) {
         width={1600}
         height={900}
         fill={false}
-        context="card"
+        context="article_block"
         className="w-full rounded-xl object-cover max-h-96 h-auto"
       />
       <button
