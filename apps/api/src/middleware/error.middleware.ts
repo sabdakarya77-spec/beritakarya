@@ -5,6 +5,7 @@ import { logger } from '../lib/logger'
 import { env } from '../lib/env'
 import { AppError } from '../utils/AppError'
 // Import type augmentation to recognize `site` property on Request
+import { Prisma } from '@prisma/client'
 import '../types/express'
 
 export function errorMiddleware(
@@ -22,6 +23,21 @@ export function errorMiddleware(
     userId: req.user?.userId,
     site: req.site,
   })
+
+  if (err instanceof Prisma.PrismaClientKnownRequestError) {
+    if (err.code === 'P2002') {
+      const target = err.meta?.target as string[] | undefined
+      const isEmail = target?.includes('email')
+      const message = isEmail ? 'Email sudah terdaftar' : `Nilai untuk ${target?.join(', ') || 'kolom'} sudah terdaftar`
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'UNIQUE_CONSTRAINT_ERROR',
+          message
+        }
+      })
+    }
+  }
 
   if (err instanceof ZodError) {
     return res.status(400).json({

@@ -28,8 +28,9 @@ export function validatePassword(password: string): boolean {
 }
 
 export async function loginUser(email: string, password: string) {
+  const normalizedEmail = email.toLowerCase().trim()
   const user = await prisma.user.findFirst({ 
-    where: { email, deletedAt: null } 
+    where: { email: normalizedEmail, deletedAt: null } 
   })
   if (!user) throw new AppError('Email atau password salah', 401, 'UNAUTHORIZED')
 
@@ -43,8 +44,9 @@ export async function registerUser(
   email: string, password: string, name: string,
   role: Role, siteId: string | null
 ) {
+  const normalizedEmail = email.toLowerCase().trim()
   const exists = await prisma.user.findFirst({ 
-    where: { email, deletedAt: null } 
+    where: { email: normalizedEmail } 
   })
   if (exists) throw new AppError('Email sudah terdaftar', 400, 'BAD_REQUEST')
 
@@ -54,7 +56,7 @@ export async function registerUser(
 
   const passwordHash = await bcrypt.hash(password, 10)
   const user = await prisma.user.create({
-    data: { email, passwordHash, name, role, siteId }
+    data: { email: normalizedEmail, passwordHash, name, role, siteId }
   })
   return generateTokenPair(user)
 }
@@ -101,8 +103,9 @@ export async function logoutUser(userId: string, refreshToken: string) {
 }
 
 export async function forgotPassword(email: string) {
+  const normalizedEmail = email.toLowerCase().trim()
   const user = await prisma.user.findFirst({ 
-    where: { email, deletedAt: null } 
+    where: { email: normalizedEmail, deletedAt: null } 
   })
   if (!user) {
     // Return success to prevent email enumeration
@@ -122,7 +125,8 @@ export async function forgotPassword(email: string) {
 }
 
 export async function resetPassword(email: string, token: string, newPassword: string) {
-  const user = await prisma.user.findUnique({ where: { email } })
+  const normalizedEmail = email.toLowerCase().trim()
+  const user = await prisma.user.findUnique({ where: { email: normalizedEmail } })
   if (!user) throw new AppError('Token tidak valid atau sudah expired', 401, 'UNAUTHORIZED')
 
   const secret = env.RESET_SECRET || ACCESS_SECRET!
