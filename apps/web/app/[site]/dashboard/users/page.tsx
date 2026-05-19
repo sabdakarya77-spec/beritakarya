@@ -10,7 +10,7 @@ interface User {
   id: string;
   name: string;
   email: string;
-  role: 'superadmin' | 'wapimred' | 'jurnalis' | 'reader';
+  role: 'superadmin' | 'wapimred' | 'reporter' | 'kontributor' | 'reader' | 'advertiser';
   siteId?: string | null;
   createdAt: string;
 }
@@ -70,17 +70,21 @@ export default function UsersDashboard() {
     const styles = {
       superadmin: 'bg-red-100 text-red-800 border-red-300',
       wapimred: 'bg-blue-100 text-blue-800 border-blue-300',
-      jurnalis: 'bg-green-100 text-green-800 border-green-300',
+      reporter: 'bg-green-100 text-green-800 border-green-300',
+      kontributor: 'bg-teal-100 text-teal-800 border-teal-300',
+      advertiser: 'bg-yellow-100 text-yellow-800 border-yellow-300',
       reader: 'bg-gray-100 text-gray-800 border-gray-300'
     };
     return styles[role as keyof typeof styles] || styles.reader;
   };
-
+  
   const getRoleLabel = (role: string) => {
     const labels = {
       superadmin: 'Superadmin',
       wapimred: 'Wapimred',
-      jurnalis: 'Wartawan',
+      reporter: 'Reporter (Internal)',
+      kontributor: 'Kontributor (Lepas)',
+      advertiser: 'Pengiklan',
       reader: 'Pembaca'
     };
     return labels[role as keyof typeof labels] || role;
@@ -156,9 +160,9 @@ export default function UsersDashboard() {
           </p>
         </div>
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
-          <p className="text-xs text-gray-500 uppercase tracking-widest">Wartawan</p>
+          <p className="text-xs text-gray-500 uppercase tracking-widest">Reporter / Kontributor</p>
           <p className="text-2xl font-bold text-green-600 mt-1">
-            {visibleUsers.filter(u => u.role === 'jurnalis').length}
+            {visibleUsers.filter(u => u.role === 'reporter').length} / {visibleUsers.filter(u => u.role === 'kontributor').length}
           </p>
         </div>
       </div>
@@ -265,7 +269,9 @@ export default function UsersDashboard() {
                         className="text-xs bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-2 py-1 outline-none"
                       >
                         <option value="reader">Pembaca</option>
-                        <option value="jurnalis">Wartawan</option>
+                        <option value="reporter">Reporter (Internal)</option>
+                        <option value="kontributor">Kontributor (Lepas)</option>
+                        <option value="advertiser">Pengiklan</option>
                         <option value="wapimred">Wapimred</option>
                         <option value="superadmin">Superadmin</option>
                       </select>

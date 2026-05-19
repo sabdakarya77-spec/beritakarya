@@ -335,7 +335,7 @@ adminRouter.patch('/roles/:role/quota', requireAuth, requireAdmin, asyncHandler(
   const role = req.params.role as Role
   
   // Basic validation to prevent Prisma errors with invalid role strings
-  const validRoles: Role[] = ['reader', 'jurnalis', 'wapimred', 'superadmin']
+  const validRoles: Role[] = ['reader', 'reporter', 'kontributor', 'wapimred', 'superadmin', 'advertiser']
   if (!validRoles.includes(role)) {
     return res.status(400).json({
       success: false,

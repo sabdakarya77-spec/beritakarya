@@ -16,7 +16,7 @@ const mockResponse = {
       refreshToken: 'refresh-token-456',
       user: {
         id: 'u-1', email: 'test@bandung.com',
-        name: 'Test', role: 'jurnalis', siteId: 'bandung',
+        name: 'Test', role: 'reporter', siteId: 'bandung',
         isVerified: false, kycStatus: 'UNSUBMITTED', kycNotes: null, kycSubmittedAt: null
       }
     }
@@ -51,7 +51,7 @@ describe('authStore', () => {
   })
 
   it('logout menghapus user', async () => {
-    useAuthStore.setState({ user: { id: 'u-1', email: 'x', name: 'x', role: 'jurnalis', siteId: 'bandung', isVerified: false, kycStatus: 'UNSUBMITTED', kycNotes: null, kycSubmittedAt: null } })
+    useAuthStore.setState({ user: { id: 'u-1', email: 'x', name: 'x', role: 'reporter', siteId: 'bandung', isVerified: false, kycStatus: 'UNSUBMITTED', kycNotes: null, kycSubmittedAt: null } })
     vi.mocked(api.post).mockResolvedValue({ data: {} })
 
     await useAuthStore.getState().logout()

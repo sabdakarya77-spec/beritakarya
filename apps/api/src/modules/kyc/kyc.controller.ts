@@ -456,7 +456,7 @@ kycRouter.patch('/:userId/verify',
           kycNotes: `${status.toUpperCase()} at ${new Date().toISOString()}${notes ? ` - ${notes}` : ''}`,
           kycReviewedBy: req.user!.userId,
           kycReviewedAt: new Date(),
-          role: isApproved ? 'jurnalis' : undefined // Promote to jurnalis if approved
+          role: isApproved ? 'reporter' : undefined // Promote to reporter if approved
         }
       })
 

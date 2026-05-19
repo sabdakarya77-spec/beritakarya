@@ -38,7 +38,7 @@ export default function AuthorCard({ author, site, variant = 'card', className }
         <div className="flex flex-col min-w-0">
           <span className="text-xs font-bold text-brand-black dark:text-white truncate">{author.name}</span>
           <span className="text-[10px] text-gray-400 uppercase tracking-widest font-bold">
-            {ROLE_LABELS[author.role || 'journalist'] || author.role}
+            {ROLE_LABELS[author.role || 'reporter'] || author.role}
           </span>
         </div>
       </div>
@@ -54,7 +54,7 @@ export default function AuthorCard({ author, site, variant = 'card', className }
         <div className="flex-1 min-w-0">
           <h4 className="text-sm font-black text-brand-black dark:text-white uppercase tracking-tight">{author.name}</h4>
           <p className="text-[10px] font-bold text-brand-red uppercase tracking-widest mt-0.5">
-            {ROLE_LABELS[author.role || 'journalist'] || author.role}
+            {ROLE_LABELS[author.role || 'reporter'] || author.role}
           </p>
           {author.email && (
             <p className="text-[10px] text-gray-400 mt-2 flex items-center gap-1 font-medium">

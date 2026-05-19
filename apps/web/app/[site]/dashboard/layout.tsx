@@ -55,14 +55,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       // Jika user null setelah AuthInit selesai checkAuth, 
       // middleware.ts (Next.js) sudah handle redirect ke /login via cookie check
       if (user) {
-        const allowedRoles = ['superadmin', 'wapimred', 'jurnalis', 'advertiser']
+        const allowedRoles = ['superadmin', 'wapimred', 'reporter', 'kontributor', 'advertiser']
         if (!allowedRoles.includes(user.role)) {
           router.push(`/${site}`)
           return
         }
 
-        // KYC Gatekeeping: jurnalis and wapimred MUST be verified (isVerified === true)
-        const isKycRequired = ['jurnalis', 'wapimred'].includes(user.role)
+        // KYC Gatekeeping: reporter, kontributor, and wapimred MUST be verified (isVerified === true)
+        const isKycRequired = ['reporter', 'kontributor', 'wapimred'].includes(user.role)
         const targetKycPath = `/${site}/dashboard/kyc`
         
         if (isKycRequired && !user.isVerified && pathname !== targetKycPath) {
@@ -100,10 +100,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {
           label: 'Utama',
           items: [
-            { name: 'Ringkasan', href: `/${site}/dashboard`, icon: LayoutDashboard, roles: ['superadmin', 'wapimred', 'jurnalis'] },
-            { name: 'Post', href: `/${site}/dashboard/articles`, icon: FileText, roles: ['superadmin', 'wapimred', 'jurnalis'] },
-            { name: 'Media', href: `/${site}/dashboard/media`, icon: ImageIcon, roles: ['superadmin', 'wapimred', 'jurnalis'] },
-            ...(user && !user.isVerified ? [{ name: 'Verifikasi KYC', href: `/${site}/dashboard/kyc`, icon: ClipboardCheck, roles: ['superadmin', 'wapimred', 'jurnalis'] }] : []),
+            { name: 'Ringkasan', href: `/${site}/dashboard`, icon: LayoutDashboard, roles: ['superadmin', 'wapimred', 'reporter', 'kontributor'] },
+            { name: 'Post', href: `/${site}/dashboard/articles`, icon: FileText, roles: ['superadmin', 'wapimred', 'reporter', 'kontributor'] },
+            { name: 'Media', href: `/${site}/dashboard/media`, icon: ImageIcon, roles: ['superadmin', 'wapimred', 'reporter', 'kontributor'] },
+            ...(user && !user.isVerified ? [{ name: 'Verifikasi KYC', href: `/${site}/dashboard/kyc`, icon: ClipboardCheck, roles: ['superadmin', 'wapimred', 'reporter', 'kontributor'] }] : []),
           ]
         },
     {
@@ -205,7 +205,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <div className="space-y-0.5">
                   {filteredItems.map((item) => {
                     const isActive = item.href === activeHref
-                    const isKycRequired = user && ['jurnalis', 'wapimred'].includes(user.role)
+                    const isKycRequired = user && ['reporter', 'kontributor', 'wapimred'].includes(user.role)
                     const isLocked = isKycRequired && !user.isVerified && item.href !== `/${site}/dashboard/kyc`
                     const Icon = isLocked ? Lock : item.icon
                     return (
@@ -309,7 +309,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <p className="px-3 text-[9px] font-black text-gray-600 uppercase tracking-[0.2em] mb-2">{section.label}</p>
                 {filteredItems.map((item) => {
                   const isActive = item.href === activeHref
-                  const isKycRequired = user && ['jurnalis', 'wapimred'].includes(user.role)
+                  const isKycRequired = user && ['reporter', 'kontributor', 'wapimred'].includes(user.role)
                   const isLocked = isKycRequired && !user.isVerified && item.href !== `/${site}/dashboard/kyc`
                   const Icon = isLocked ? Lock : item.icon
                   return (

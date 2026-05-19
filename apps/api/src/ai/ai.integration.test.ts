@@ -20,7 +20,7 @@ vi.mock('./write.service', () => ({
 
 vi.mock('../middleware/auth.middleware', () => ({
   requireAuth: (_: any, __: any, next: any) => {
-    _.user = { userId: 'u1', role: 'journalist', siteId: 'bandung' }
+    _.user = { userId: 'u1', role: 'reporter', siteId: 'bandung' }
     next()
   }
 }))

@@ -30,7 +30,7 @@ describe('auth.service', () => {
     const hash = await bcrypt.hash('password123', 10)
     vi.mocked(prisma.user.findFirst).mockResolvedValue({
       id: 'user-1', email: 'test@test.com', name: 'Test',
-      role: 'journalist', siteId: 'bandung', passwordHash: hash,
+      role: 'reporter', siteId: 'bandung', passwordHash: hash,
       createdAt: new Date(), updatedAt: new Date()
     } as any)
     vi.mocked(prisma.refreshToken.create).mockResolvedValue({} as any)

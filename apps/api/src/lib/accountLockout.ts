@@ -12,8 +12,12 @@ const failedAttempts = new Map<string, FailedAttempt>()
 
 export async function checkAccountLockout(email: string): Promise<boolean> {
   if (process.env.REDIS_HOST) {
-    const attempts = await redis.get(`lockout:${email}`)
-    return attempts ? parseInt(attempts) >= MAX_ATTEMPTS : false
+    try {
+      const attempts = await redis.get(`lockout:${email}`)
+      return attempts ? parseInt(attempts) >= MAX_ATTEMPTS : false
+    } catch {
+      // Fallback to memory map below
+    }
   }
 
   // Fallback memory
@@ -31,13 +35,17 @@ export async function checkAccountLockout(email: string): Promise<boolean> {
 
 export async function recordFailedAttempt(email: string): Promise<void> {
   if (process.env.REDIS_HOST) {
-    const key = `lockout:${email}`
-    const current = await redis.incr(key)
-    if (current === 1) {
-      // Set TTL hanya saat pertama kali insert
-      await redis.expire(key, LOCKOUT_DURATION)
+    try {
+      const key = `lockout:${email}`
+      const current = await redis.incr(key)
+      if (current === 1) {
+        // Set TTL hanya saat pertama kali insert
+        await redis.expire(key, LOCKOUT_DURATION)
+      }
+      return
+    } catch {
+      // Fallback to memory map below
     }
-    return
   }
 
   // Fallback memory
@@ -49,8 +57,12 @@ export async function recordFailedAttempt(email: string): Promise<void> {
 
 export async function resetFailedAttempts(email: string): Promise<void> {
   if (process.env.REDIS_HOST) {
-    await redis.del(`lockout:${email}`)
-    return
+    try {
+      await redis.del(`lockout:${email}`)
+      return
+    } catch {
+      // Fallback to memory map below
+    }
   }
 
   // Fallback memory

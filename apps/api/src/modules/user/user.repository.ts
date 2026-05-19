@@ -2,7 +2,7 @@ import { prisma } from '../../db/client'
 
 export async function getTeamStats(siteId: string) {
   const users = await prisma.user.findMany({
-    where: { siteId, role: 'jurnalis' },
+    where: { siteId, role: { in: ['reporter', 'kontributor'] } },
     select: {
       id: true,
       name: true,

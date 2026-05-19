@@ -120,7 +120,7 @@ export default function KYCPage() {
         </motion.div>
         <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Akun Terverifikasi</h1>
         <p className="text-slate-600 dark:text-slate-400 max-w-md">
-          Selamat! Identitas Anda telah berhasil diverifikasi. Anda sekarang memiliki akses penuh untuk menerbitkan berita sebagai Jurnalis.
+          Selamat! Identitas Anda telah berhasil diverifikasi. Anda sekarang memiliki akses penuh untuk menerbitkan berita sebagai Reporter.
         </p>
         <button 
           onClick={() => router.push(`/${siteId}/dashboard/articles/new`)}

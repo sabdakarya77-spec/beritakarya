@@ -244,7 +244,7 @@ export default function KYCDetailReviewPage() {
               </div>
               <div className="flex items-start gap-3">
                 <ShieldCheck className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                <p className="text-[11px] text-slate-300 leading-relaxed">Persetujuan akan secara otomatis mempromosikan peran pengguna menjadi Jurnalis.</p>
+                <p className="text-[11px] text-slate-300 leading-relaxed">Persetujuan akan secara otomatis mempromosikan peran pengguna menjadi Reporter.</p>
               </div>
             </div>
           </div>

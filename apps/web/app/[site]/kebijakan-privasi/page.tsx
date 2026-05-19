@@ -29,7 +29,7 @@ export default function PrivacyPolicyPage() {
     {
       icon: <Trash2 className="w-6 h-6 text-orange-500" />,
       title: 'Retensi & Penghapusan',
-      content: 'Sesuai dengan kebijakan regulasi, kami menyimpan data verifikasi selama 5 (lima) tahun sejak tanggal pengajuan atau selama akun Anda aktif sebagai jurnalis. Setelah masa tersebut, data akan dihapus atau dianonimkan secara permanen.'
+      content: 'Sesuai dengan kebijakan regulasi, kami menyimpan data verifikasi selama 5 (lima) tahun sejak tanggal pengajuan atau selama akun Anda aktif sebagai reporter atau kontributor. Setelah masa tersebut, data akan dihapus atau dianonimkan secara permanen.'
     }
   ]
 
@@ -100,7 +100,7 @@ export default function PrivacyPolicyPage() {
                 <div>
                   <h4 className="font-semibold text-blue-900 dark:text-blue-300">Persetujuan Anda</h4>
                   <p className="mt-1 text-sm text-blue-800 dark:text-blue-400 opacity-90 leading-relaxed">
-                    Dengan mengunggah dokumen identitas, Anda memberikan persetujuan eksplisit kepada kami untuk memproses data tersebut sesuai dengan tujuan verifikasi jurnalis dan kebijakan yang tertera di atas.
+                    Dengan mengunggah dokumen identitas, Anda memberikan persetujuan eksplisit kepada kami untuk memproses data tersebut sesuai dengan tujuan verifikasi reporter dan kontributor serta kebijakan yang tertera di atas.
                   </p>
                 </div>
               </div>

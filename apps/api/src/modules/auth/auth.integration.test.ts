@@ -25,7 +25,7 @@ const mockTokens = {
     id: 'u-1', 
     email: 'test@test.com', 
     name: 'Test', 
-    role: 'journalist', 
+    role: 'reporter', 
     siteId: 'bandung',
     isVerified: true,
     kycStatus: 'APPROVED',

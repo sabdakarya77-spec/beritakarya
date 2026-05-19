@@ -27,11 +27,11 @@ import {
 import { prisma } from '../../db/client'
 import type { JWTPayload } from '@beritakarya/types'
 
-const jurnalisBandung: JWTPayload = {
-  userId: 'u-1', role: 'jurnalis', siteId: 'bandung', iat: 0, exp: 0
+const reporterBandung: JWTPayload = {
+  userId: 'u-1', role: 'reporter', siteId: 'bandung', iat: 0, exp: 0
 }
-const jurnalisSurabaya: JWTPayload = {
-  userId: 'u-2', role: 'jurnalis', siteId: 'surabaya', iat: 0, exp: 0
+const reporterSurabaya: JWTPayload = {
+  userId: 'u-2', role: 'reporter', siteId: 'surabaya', iat: 0, exp: 0
 }
 const editorPusat: JWTPayload = {
   userId: 'u-3', role: 'wapimred', siteId: null, iat: 0, exp: 0
@@ -48,7 +48,7 @@ const mockArticle = (overrides = {}) => ({
 describe('getArticleById — multi-site isolation', () => {
   beforeEach(async () => {
     vi.clearAllMocks()
-    vi.mocked(prisma.user.findUnique).mockResolvedValue({ role: 'jurnalis', kycStatus: 'APPROVED' } as any)
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({ role: 'reporter', kycStatus: 'APPROVED' } as any)
   })
 
   it('throw 404 jika artikel tidak ditemukan di site', async () => {
@@ -68,14 +68,14 @@ describe('getArticleById — multi-site isolation', () => {
 describe('createArticle — siteId injection', () => {
   beforeEach(async () => {
     vi.clearAllMocks()
-    vi.mocked(prisma.user.findUnique).mockResolvedValue({ role: 'jurnalis', kycStatus: 'APPROVED' } as any)
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({ role: 'reporter', kycStatus: 'APPROVED' } as any)
   })
 
   it('inject siteId dari request, bukan dari body', async () => {
     vi.mocked(repo.slugExists).mockResolvedValue(false)
     vi.mocked(repo.createArticle).mockResolvedValue(mockArticle() as any)
 
-    await createArticle({ title: 'Artikel Baru' }, jurnalisBandung, 'bandung')
+    await createArticle({ title: 'Artikel Baru' }, reporterBandung, 'bandung')
 
     expect(repo.createArticle).toHaveBeenCalledWith(
       expect.objectContaining({ siteId: 'bandung', authorId: 'u-1' })
@@ -89,7 +89,7 @@ describe('createArticle — siteId injection', () => {
       .mockResolvedValueOnce(false)
     vi.mocked(repo.createArticle).mockResolvedValue(mockArticle() as any)
 
-    await createArticle({ title: 'Artikel Baru' }, jurnalisBandung, 'bandung')
+    await createArticle({ title: 'Artikel Baru' }, reporterBandung, 'bandung')
 
     expect(repo.createArticle).toHaveBeenCalledWith(
       expect.objectContaining({ slug: 'artikel-baru-3' })
@@ -100,14 +100,14 @@ describe('createArticle — siteId injection', () => {
 describe('updateArticle — ownership', () => {
   beforeEach(async () => {
     vi.clearAllMocks()
-    vi.mocked(prisma.user.findUnique).mockResolvedValue({ role: 'jurnalis', kycStatus: 'APPROVED' } as any)
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({ role: 'reporter', kycStatus: 'APPROVED' } as any)
   })
 
-  it('journalist hanya bisa edit artikel miliknya', async () => {
+  it('reporter hanya bisa edit artikel miliknya', async () => {
     vi.mocked(repo.findArticleById).mockResolvedValue(
       mockArticle({ authorId: 'user-lain' }) as any
     )
-    const err = await updateArticle('art-1', 'bandung', { title: 'baru' }, jurnalisBandung).catch(e => e)
+    const err = await updateArticle('art-1', 'bandung', { title: 'baru' }, reporterBandung).catch(e => e)
     expect(err.statusCode).toBe(403)
   })
 
@@ -147,20 +147,20 @@ describe('publishArticle', () => {
 describe('deleteArticle — permission', () => {
   beforeEach(async () => {
     vi.clearAllMocks()
-    vi.mocked(prisma.user.findUnique).mockResolvedValue({ role: 'jurnalis', kycStatus: 'APPROVED' } as any)
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({ role: 'reporter', kycStatus: 'APPROVED' } as any)
   })
 
-  it('journalist dari site lain tidak bisa delete', async () => {
+  it('reporter dari site lain tidak bisa delete', async () => {
     vi.mocked(repo.findArticleById).mockResolvedValue(
       mockArticle({ authorId: 'u-1', siteId: 'bandung' }) as any
     )
-    const err = await deleteArticle('art-1', 'bandung', jurnalisSurabaya).catch(e => e)
+    const err = await deleteArticle('art-1', 'bandung', reporterSurabaya).catch(e => e)
     expect(err.statusCode).toBe(403)
   })
 
-  it('journalist bisa delete artikel miliknya sendiri', async () => {
+  it('reporter bisa delete artikel miliknya sendiri', async () => {
     vi.mocked(repo.findArticleById).mockResolvedValue(mockArticle() as any)
     vi.mocked(repo.deleteArticle).mockResolvedValue({} as any)
-    await expect(deleteArticle('art-1', 'bandung', jurnalisBandung)).resolves.not.toThrow()
+    await expect(deleteArticle('art-1', 'bandung', reporterBandung)).resolves.not.toThrow()
   })
 })

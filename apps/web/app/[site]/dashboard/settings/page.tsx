@@ -850,7 +850,7 @@ export default function SettingsPage() {
                       ref={editorialRef}
                       value={settings.editorial}
                       onChange={(e) => setSettings({...settings, editorial: e.target.value})}
-                      placeholder="Daftar nama Pemimpin Redaksi, Editor, Jurnalis, Dewan Penasehat, beserta peran masing-masing..."
+                      placeholder="Daftar nama Pemimpin Redaksi, Editor, Reporter, Kontributor, Dewan Penasehat, beserta peran masing-masing..."
                       rows={5}
                       className="w-full bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-xl px-4 py-3 text-xs text-brand-black dark:text-white outline-none focus:border-brand-red/50 focus:ring-1 focus:ring-brand-red/20 transition-all font-semibold resize-none overflow-hidden"
                     />

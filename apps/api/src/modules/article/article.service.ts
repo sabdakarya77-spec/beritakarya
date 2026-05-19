@@ -35,8 +35,8 @@ export async function getArticles(
 
   const opts: any = { ...query }
   
-  // If user is a journalist, they can only see their own articles
-  if (user?.role === 'jurnalis') {
+  // If user is a reporter or kontributor, they can only see their own articles
+  if (user?.role === 'reporter' || user?.role === 'kontributor') {
     opts.authorId = user.userId
   }
 
@@ -47,7 +47,7 @@ export async function getArticleById(id: string, siteId: string, user?: JWTPaylo
   const article = await repo.findArticleById(id, siteId)
   if (!article) throw Object.assign(new Error('Post tidak ditemukan'), { statusCode: 404 })
   
-  // Authorization: Journalists can only view their own articles (unless published, but dashboard usually shows drafts)
+  // Authorization: Reporters and kontributors can only view their own articles (unless published, but dashboard usually shows drafts)
   if (user && !['superadmin', 'wapimred'].includes(user.role) && article.authorId !== user.userId) {
     throw Object.assign(new Error('Anda tidak punya akses ke post ini'), { statusCode: 403 })
   }
@@ -106,8 +106,8 @@ export async function createArticle(
     throw Object.assign(new Error('Akses ditolak: Pembaca tidak dapat membuat artikel'), { statusCode: 403 })
   }
 
-  // KYC validation: Journalists must be APPROVED to create articles
-  if (dbUser.role === 'jurnalis' && dbUser.kycStatus !== 'APPROVED') {
+  // KYC validation: Reporters and kontributors must be APPROVED to create articles
+  if ((dbUser.role === 'reporter' || dbUser.role === 'kontributor') && dbUser.kycStatus !== 'APPROVED') {
     throw Object.assign(new Error('Akses ditolak: Verifikasi identitas (KYC) Anda belum disetujui'), { statusCode: 403 })
   }
 
@@ -166,8 +166,8 @@ export async function updateArticle(
     throw Object.assign(new Error('Akses ditolak: Pembaca tidak dapat mengubah artikel'), { statusCode: 403 })
   }
 
-  // KYC validation: Journalists must be APPROVED to update articles
-  if (dbUser.role === 'jurnalis' && dbUser.kycStatus !== 'APPROVED') {
+  // KYC validation: Reporters and kontributors must be APPROVED to update articles
+  if ((dbUser.role === 'reporter' || dbUser.role === 'kontributor') && dbUser.kycStatus !== 'APPROVED') {
     throw Object.assign(new Error('Akses ditolak: Verifikasi identitas (KYC) Anda belum disetujui'), { statusCode: 403 })
   }
 
@@ -202,8 +202,8 @@ export async function updateArticle(
     }
   }
 
-  // Prevent journalists from setting certain statuses directly
-  if (user.role === 'jurnalis' && input.status && !['draft', 'submitted'].includes(input.status)) {
+  // Prevent reporters and kontributors from setting certain statuses directly
+  if ((user.role === 'reporter' || user.role === 'kontributor') && input.status && !['draft', 'submitted'].includes(input.status)) {
      if (article.status !== 'revision' && input.status !== 'submitted') {
         throw Object.assign(new Error('Hanya Wapimred yang dapat mengubah status ke ' + input.status), { statusCode: 403 })
      }

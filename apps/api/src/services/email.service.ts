@@ -133,7 +133,7 @@ class EmailService {
           
           ${status === 'approved' 
             ? `<p>Verifikasi identitas Anda (KYC) telah <strong style="color: #22c55e;">DISETUJUI</strong>. 
-               Anda sekarang dapat sepenuhnya menggunakan fitur platform BeritaKarya sebagai <strong>Jurnalis</strong>.</p>
+               Anda sekarang dapat sepenuhnya menggunakan fitur platform BeritaKarya sebagai <strong>Reporter</strong>.</p>
                <p>Anda bisa:</p>
                <ul>
                  <li>Membuat dan menerbitkan artikel</li>
@@ -165,7 +165,9 @@ class EmailService {
   ): Promise<boolean> {
     const roleLabels: Record<string, string> = {
       reader: 'Pembaca',
-      journalist: 'Jurnalis',
+      reporter: 'Reporter (Jurnalis Internal)',
+      kontributor: 'Kontributor (Penulis Lepas)',
+      advertiser: 'Pengiklan',
       wapimred: 'Wakil Pemimpin Redaksi',
       superadmin: 'Superadmin'
     }

@@ -18,7 +18,8 @@ enum KycStatus {
 
 enum Role {
   reader
-  jurnalis
+  reporter
+  kontributor
   wapimred
   superadmin
   advertiser

@@ -22,7 +22,7 @@ async function main() {
   // const trustedEmails = ['admin@beritakarya.co.id']
   // await prisma.user.updateMany({
   //   where: { email: { in: trustedEmails } },
-  //   data: { isVerified: true, role: 'jurnalis' }
+  //   data: { isVerified: true, role: 'reporter' }
   // })
 
   console.log('✨ Backfill completed successfully.')

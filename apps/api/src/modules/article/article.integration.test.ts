@@ -16,7 +16,7 @@ vi.mock('../../middleware/site.middleware', () => ({
   },
   requireSiteAccess: (req: any, res: any, next: any) => {
     if (!req.user) return next()
-    if (['journalist', 'pimred'].includes(req.user.role) && req.user.siteId !== req.site) {
+    if (['reporter', 'kontributor'].includes(req.user.role) && req.user.siteId !== req.site) {
       return res.status(403).json({ success: false, error: { code: 'SITE_FORBIDDEN', message: 'Akses ditolak' } })
     }
     next()
@@ -47,8 +47,8 @@ function makeToken(payload: object) {
   return jwt.sign(payload, 'test-secret-key-minimal-32-chars-long', { expiresIn: '1h' })
 }
 
-const tokenBandung  = makeToken({ userId: 'u-1', role: 'journalist', siteId: 'bandung' })
-const tokenEditor   = makeToken({ userId: 'u-3', role: 'editor',     siteId: null })
+const tokenBandung  = makeToken({ userId: 'u-1', role: 'reporter', siteId: 'bandung' })
+const tokenEditor   = makeToken({ userId: 'u-3', role: 'wapimred',     siteId: null })
 
 const mockArticles = {
   items: [{ id: 'a-1', title: 'Test', status: 'draft', siteId: 'bandung' }],
@@ -60,7 +60,7 @@ describe('Multi-site isolation — GET /articles', () => {
     vi.clearAllMocks()
   })
 
-  it('journalist bandung BISA akses site bandung', async () => {
+  it('reporter bandung BISA akses site bandung', async () => {
     vi.mocked(articleService.getArticles).mockResolvedValue(mockArticles as any)
     const res = await request(app)
       .get('/api/v1/articles?site=bandung')
@@ -70,7 +70,7 @@ describe('Multi-site isolation — GET /articles', () => {
     expect(res.body.success).toBe(true)
   })
 
-  it('journalist bandung TIDAK BISA akses site surabaya → 403', async () => {
+  it('reporter bandung TIDAK BISA akses site surabaya → 403', async () => {
     const res = await request(app)
       .get('/api/v1/articles?site=surabaya')
       .set('Authorization', `Bearer ${tokenBandung}`)
@@ -79,7 +79,7 @@ describe('Multi-site isolation — GET /articles', () => {
     expect(res.body.error.code).toBe('SITE_FORBIDDEN')
   })
 
-  it('editor pusat BISA akses site manapun', async () => {
+  it('wapimred pusat BISA akses site manapun', async () => {
     vi.mocked(articleService.getArticles).mockResolvedValue(mockArticles as any)
     const res = await request(app)
       .get('/api/v1/articles?site=surabaya')

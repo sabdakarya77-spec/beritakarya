@@ -70,7 +70,7 @@ userRouter.get('/stats',
       where: { 
         siteId, 
         deletedAt: null,
-        role: { in: ['jurnalis', 'wapimred', 'superadmin'] }
+        role: { in: ['reporter', 'kontributor', 'wapimred', 'superadmin'] }
       },
       select: {
         id: true,
@@ -154,7 +154,7 @@ userRouter.put('/:id/role',
     const { id } = req.params
     const { role, siteId } = req.body
 
-    const validRoles = ['reader', 'jurnalis', 'wapimred', 'superadmin']
+    const validRoles = ['reader', 'reporter', 'kontributor', 'wapimred', 'superadmin', 'advertiser']
     if (!validRoles.includes(role)) {
       return res.status(400).json({
         success: false,

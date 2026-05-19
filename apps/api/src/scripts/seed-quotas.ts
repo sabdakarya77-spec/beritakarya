@@ -23,11 +23,19 @@ async function main() {
       modelRestriction: null
     },
     {
-      role: Role.jurnalis,
+      role: Role.reporter,
       dailyRequests: 100,
       dailyTokens: 50000,
       monthlyBudget: 50.00,
       allowedFeatures: JSON.stringify(['rewrite', 'expand', 'headline', 'seo', 'grammar', 'readability', 'fact-check', 'caption']),
+      modelRestriction: null
+    },
+    {
+      role: Role.kontributor,
+      dailyRequests: 30,
+      dailyTokens: 15000,
+      monthlyBudget: 15.00,
+      allowedFeatures: JSON.stringify(['rewrite', 'expand', 'grammar', 'readability', 'caption']),
       modelRestriction: null
     },
     {

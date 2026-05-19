@@ -29,8 +29,8 @@ export function requireSiteAccess(resourceSiteId: string | ((req: Request) => st
       }
     }
 
-    // Journalist & Reader tidak punya akses admin
-    if (req.user.role === 'jurnalis' || req.user.role === 'reader') {
+    // Reporter, Kontributor, Advertiser & Reader tidak punya akses admin
+    if (['reporter', 'kontributor', 'reader', 'advertiser'].includes(req.user.role)) {
       return res.status(403).json({
         success: false,
         error: { code: 'FORBIDDEN', message: 'Role tidak memiliki akses admin' }
