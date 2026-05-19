@@ -1,26 +1,19 @@
 import Redis from 'ioredis'
 import { env } from './env'
 
-const redisOptions = {
+export const redis = new Redis({
+  host: env.REDIS_HOST,
+  port: parseInt(env.REDIS_PORT),
+  password: env.REDIS_PASSWORD || undefined,
   retryStrategy: (times: number) => {
     // Stop retrying if not configured or after 3 attempts to avoid log spam
-    const hasRedis = !!(process.env.REDIS_HOST || process.env.REDIS_URL)
-    if (!hasRedis || times > 3) return null
+    if (!process.env.REDIS_HOST || times > 3) return null
     return Math.min(times * 50, 2000)
   }
-}
-
-export const redis = env.REDIS_URL
-  ? new Redis(env.REDIS_URL, redisOptions)
-  : new Redis({
-      host: env.REDIS_HOST,
-      port: parseInt(env.REDIS_PORT),
-      password: env.REDIS_PASSWORD,
-      ...redisOptions
-    })
+})
 
 redis.on('error', (err: Error) => {
-  if (process.env.REDIS_HOST || process.env.REDIS_URL) {
+  if (process.env.REDIS_HOST) {
     console.error('Redis Error:', err)
   }
 })
@@ -32,7 +25,7 @@ function getFullKey(key: string): string {
 }
 
 export async function getCache<T>(key: string): Promise<T | null> {
-  if (!process.env.REDIS_HOST && !process.env.REDIS_URL) return null
+  if (!process.env.REDIS_HOST) return null
   try {
     const data = await redis.get(getFullKey(key))
     if (!data) return null
@@ -43,21 +36,21 @@ export async function getCache<T>(key: string): Promise<T | null> {
 }
 
 export async function setCache(key: string, value: any, ttlSeconds: number = 3600) {
-  if (!process.env.REDIS_HOST && !process.env.REDIS_URL) return
+  if (!process.env.REDIS_HOST) return
   try {
     await redis.set(getFullKey(key), JSON.stringify(value), 'EX', ttlSeconds)
   } catch {}
 }
 
 export async function deleteCache(key: string) {
-  if (!process.env.REDIS_HOST && !process.env.REDIS_URL) return
+  if (!process.env.REDIS_HOST) return
   try {
     await redis.del(getFullKey(key))
   } catch {}
 }
 
 export async function clearPattern(pattern: string): Promise<void> {
-  if (!process.env.REDIS_HOST && !process.env.REDIS_URL) return
+  if (!process.env.REDIS_HOST) return
   try {
     const fullPattern = pattern.startsWith(KEY_PREFIX) ? pattern : `${KEY_PREFIX}${pattern}`
     const keys = await redis.keys(fullPattern)
