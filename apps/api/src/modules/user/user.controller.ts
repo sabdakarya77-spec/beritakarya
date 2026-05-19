@@ -260,7 +260,8 @@ userRouter.put('/:id/role',
         updated.name,
         oldRole,
         updated.role,
-        req.user!.name || 'Superadmin'
+        req.user!.name || 'Superadmin',
+        updated.siteId
       )
     } catch (emailErr) {
       logger.error('Gagal mengirim email notifikasi perubahan peran:', emailErr)

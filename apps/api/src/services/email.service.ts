@@ -161,7 +161,8 @@ class EmailService {
     userName: string, 
     oldRole: string, 
     newRole: string,
-    changedByName: string
+    changedByName: string,
+    siteId?: string | null
   ): Promise<boolean> {
     const roleLabels: Record<string, string> = {
       reader: 'Pembaca',
@@ -174,10 +175,14 @@ class EmailService {
 
     const subject = `🔄 Perubahan Peran Akun Anda - BeritaKarya`
     
+    const baseUrl = process.env.FRONTEND_URL || 'https://beritakarya.co'
+    const dashboardSlug = siteId || 'pusat'
+    const dashboardUrl = `${baseUrl}/${dashboardSlug}/dashboard`
+    
     const html = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; line-height: 1.6;">
-        <div style="background: #e11d48; color: white; padding: 20px; text-align: center;">
-          <h1 style="margin: 0; font-size: 24px;">BeritaKarya</h1>
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; line-height: 1.6; color: #333;">
+        <div style="background: #e11d48; padding: 20px; text-align: center;">
+          <img src="${baseUrl}/logo.png" alt="BeritaKarya" style="max-height: 40px; margin: 0 auto; display: block;" onerror="this.onerror=null; this.parentNode.innerHTML='<h1 style=\\'margin: 0; font-size: 24px; color: white;\\'>BeritaKarya</h1>';"/>
         </div>
         
         <div style="padding: 30px; background: #f9f9f9;">
@@ -188,19 +193,25 @@ class EmailService {
           <p>Peran akun Anda telah diubah oleh <strong>${changedByName}</strong>:</p>
           
           <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #3b82f6;">
-            <p><strong>Peran sebelumnya:</strong> ${roleLabels[oldRole] || oldRole}</p>
-            <p><strong>Peran baru:</strong> <span style="color: #3b82f6; font-weight: bold;">${roleLabels[newRole] || newRole}</span></p>
+            <p style="margin-top: 0;"><strong>Peran sebelumnya:</strong> ${roleLabels[oldRole] || oldRole}</p>
+            <p style="margin-bottom: 0;"><strong>Peran baru:</strong> <span style="color: #3b82f6; font-weight: bold;">${roleLabels[newRole] || newRole}</span></p>
           </div>
           
-          <p>Perubahan ini berlaku langsung. Anda mungkin perlu login ulang untuk melihat perubahan izin akses.</p>
+          <p>Perubahan ini berlaku langsung. Silakan akses Dashboard Redaksi untuk melihat menu dan izin akses baru Anda.</p>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${dashboardUrl}" style="background-color: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Buka Dashboard Redaksi</a>
+          </div>
           
           <p style="font-size: 14px; color: #666;">
-            Jika Anda merasa tidak menyetujui perubahan ini, hubungi administrator.
+            Jika Anda merasa tidak menyetujui perubahan ini atau butuh bantuan, <a href="mailto:support@beritakarya.co" style="color: #3b82f6; text-decoration: none;">hubungi administrator</a>.
           </p>
         </div>
         
-        <div style="background: #f0f0f0; padding: 15px; text-align: center; font-size: 12px; color: #666;">
-          <p>Email ini dikirim otomatis. Mohon jangan membalas email ini.</p>
+        <div style="background: #f0f0f0; padding: 20px; text-align: center; font-size: 12px; color: #666;">
+          <p style="margin-bottom: 10px;">Email ini dikirim otomatis. Mohon jangan membalas email ini.</p>
+          <p style="font-weight: bold; margin-bottom: 5px;">PT. BeritaKarya Nusantara</p>
+          <p style="margin-top: 0; margin-bottom: 15px;">Jl. Kembang Raya No.10, Jakarta Selatan, 12190</p>
           <p>&copy; ${new Date().getFullYear()} BeritaKarya Nusantara</p>
         </div>
       </div>
