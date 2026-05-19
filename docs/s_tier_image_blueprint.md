@@ -231,7 +231,7 @@ Lalu Nginx bisa serve AVIF langsung (tanpa Next.js proxy) berdasarkan `Accept` h
 
 ---
 
-### TIER 5: Dominant Color Extraction
+### TIER 5: Dominant Color Extraction [COMPLETED]
 **Impact: 🔥🔥🔥 | Effort: ⏱️ 1-2 jam**
 
 #### Masalah saat ini:
