@@ -7,7 +7,6 @@ import Link from 'next/link';
 import { SmartImage } from '../ui/SmartImage';
 import DateTimeWeather from '../ui/DateTimeWeather';
 import { cn } from '../../lib/utils';
-
 import { useRouter, usePathname } from 'next/navigation';
 
 interface NavbarProps {
@@ -15,6 +14,7 @@ interface NavbarProps {
   categories: string[];
   selectedCategory: string;
   setSelectedCategory: (cat: string) => void;
+  onSearchClick?: () => void;
 }
 
 import { useAuthStore } from '../../store/authStore';
@@ -24,10 +24,10 @@ export default function Navbar({
   categories,
   selectedCategory,
   setSelectedCategory,
+  onSearchClick,
 }: NavbarProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
@@ -46,14 +46,6 @@ export default function Navbar({
     // Navigate to homepage with category param
     const site = pathname.split('/')[1] || 'pusat';
     router.push(`/${site}?cat=${encodeURIComponent(cat)}`);
-  };
-
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!searchQuery.trim()) return;
-    const site = pathname.split('/')[1] || 'pusat';
-    router.push(`/${site}?q=${encodeURIComponent(searchQuery)}`);
-    setIsSearchOpen(false);
   };
 
   return (
@@ -75,35 +67,15 @@ export default function Navbar({
 
       {/* Main Bar */}
       <div className="max-w-7xl mx-auto px-4 min-h-[5.5rem] sm:h-24 grid grid-cols-[1fr_auto_1fr] items-center gap-4">
-        {/* Left: Menu & Search */}
+        {/* Left: Search (Desktop Only) */}
         <div className="flex items-center gap-4">
           <button 
-            aria-label="Buka Menu"
-            className="md:hidden p-2 hover:bg-gray-50 rounded-full transition-colors text-brand-black"
+            onClick={onSearchClick}
+            className="hidden md:block p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-full transition-colors text-brand-black dark:text-white"
+            aria-label="Cari berita"
           >
-            <Menu size={22} strokeWidth={1.5} />
+            <Search size={22} strokeWidth={1.5} />
           </button>
-          
-          <div className={cn("relative flex items-center transition-all duration-300 h-10", isSearchOpen ? "w-full md:w-72" : "w-10")}>
-            <button 
-              onClick={() => setIsSearchOpen(!isSearchOpen)}
-              className="absolute left-0 top-1/2 -translate-y-1/2 p-2 hover:bg-gray-100 rounded-full transition-colors text-brand-black z-10"
-            >
-              <Search size={20} strokeWidth={1.5} />
-            </button>
-            <form onSubmit={handleSearchSubmit} className="w-full h-full">
-              <input 
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Cari berita terkini..."
-                className={cn(
-                  "absolute inset-0 pl-10 pr-4 h-full bg-gray-100 dark:bg-white/5 border border-transparent focus:border-brand-red/30 focus:bg-white dark:focus:bg-brand-black outline-none text-sm transition-all duration-300 rounded-full text-brand-black dark:text-white shadow-inner",
-                  isSearchOpen ? "opacity-100 w-full" : "opacity-0 w-0 pointer-events-none"
-                )}
-              />
-            </form>
-          </div>
         </div>
 
         {/* Center: Logo */}
@@ -130,8 +102,8 @@ export default function Navbar({
                 <span className="text-brand-black group-hover:opacity-90 transition-opacity">KARYA</span>
               </h1>
             )}
-            <span className="text-[8px] sm:text-[9px] tracking-[0.35em] sm:tracking-[0.5em] font-bold text-brand-text-muted mt-1 uppercase transition-all group-hover:tracking-[0.6em]">
-              {siteConfig?.description?.slice(0, 40) + (siteConfig?.description?.length > 40 ? '...' : '') || "Jernih Melihat Nusantara"}
+            <span className="text-[8px] sm:text-[9px] tracking-[0.35em] sm:tracking-[0.5em] font-bold text-brand-text-muted mt-1 uppercase transition-all group-hover:tracking-[0.6em] text-center max-w-[280px]">
+              Jernih Melihat Nusantara
             </span>
           </Link>
         </motion.div>

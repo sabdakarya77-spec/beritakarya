@@ -29,7 +29,7 @@ export default function EditorialBadge({ variant, className, size = 'sm' }: Edit
     <span
       className={cn(
         'inline-flex items-center gap-1 font-black uppercase tracking-widest',
-        size === 'sm' ? 'px-2 py-0.5 text-[8px]' : 'px-3 py-1 text-[10px]',
+        size === 'sm' ? 'px-2 py-0.5 text-[10px]' : 'px-2.5 py-1 text-[11px]',
         config.classes,
         className
       )}
@@ -41,7 +41,7 @@ export default function EditorialBadge({ variant, className, size = 'sm' }: Edit
         </span>
       )}
       {config.icon && !config.pulse && (
-        <span className="text-[7px] opacity-80">{config.icon}</span>
+        <span className="text-[9px] opacity-80">{config.icon}</span>
       )}
       {config.label}
     </span>

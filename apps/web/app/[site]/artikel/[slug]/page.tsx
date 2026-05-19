@@ -15,6 +15,7 @@ import { Metadata } from 'next'
 import { cn } from '../../../../lib/utils'
 import CommentSection from '../../../../components/ui/CommentSection'
 import FontSizeControl from '../../../../components/ui/FontSizeControl'
+import ImageLightboxWrapper from '../../../../components/ui/ImageLightboxWrapper'
 
 interface Props {
   params: { site: string; slug: string }
@@ -151,7 +152,8 @@ export default async function ArticlePage({ params }: Props) {
       <ReadingProgress />
       <ShareSidebar title={article.title} />
       
-      <article className="min-h-screen bg-white dark:bg-slate-950">
+      <ImageLightboxWrapper>
+        <article className="min-h-screen bg-white dark:bg-slate-950">
         {/* --- HEADER SECTION --- */}
         <header className="w-full bg-brand-surface dark:bg-white/[0.02] py-16 md:py-32 border-b border-gray-100 dark:border-white/5">
           <div className="max-w-4xl mx-auto px-4 text-center md:text-left">
@@ -345,7 +347,7 @@ export default async function ArticlePage({ params }: Props) {
           </aside>
         </div>
       </article>
-
+      </ImageLightboxWrapper>
 
     </PublicSiteLayout>
   )

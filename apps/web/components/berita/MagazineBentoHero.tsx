@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { SmartImage } from '../ui/SmartImage';
 import { cn } from '../../lib/utils';
 import EditorialBadge, { resolveArticleBadge } from '../ui/EditorialBadge';
+import { getCategoryColor } from '../../lib/constants';
 
 export function MagazineBentoHero({ articles, site }: { articles: any[], site: string }) {
   if (!articles || articles.length === 0) return null;
@@ -29,7 +30,7 @@ export function MagazineBentoHero({ articles, site }: { articles: any[], site: s
         
         {/* BIG LEAD ARTICLE (Col Span 8) */}
         {lead && (
-          <Link href={`/${site}/article/${lead.slug}`} className="lg:col-span-8 relative rounded-2xl overflow-hidden group/lead block h-[400px] lg:h-full">
+          <Link href={`/${site}/artikel/${lead.slug}`} className="lg:col-span-8 relative rounded-2xl overflow-hidden group/lead block h-[400px] lg:h-full">
             <SmartImage 
               src={getImageUrl(lead)} 
               blur={lead.featuredImageBlur}
@@ -46,7 +47,7 @@ export function MagazineBentoHero({ articles, site }: { articles: any[], site: s
             <div className="absolute bottom-0 left-0 p-6 lg:p-10 w-full md:w-4/5">
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
                 <div className="flex flex-wrap items-center gap-3 mb-4">
-                  <span className="px-3 py-1 bg-brand-red text-white text-[9px] font-black uppercase tracking-widest rounded-sm">
+                  <span className={cn("px-3 py-1 text-[11px] font-black uppercase tracking-widest rounded-sm shadow-sm", getCategoryColor(lead.category?.name))}>
                     {lead.category?.name || 'Headline'}
                   </span>
                   {resolveArticleBadge(lead) && <EditorialBadge variant={resolveArticleBadge(lead)!} size="sm" />}
@@ -72,7 +73,7 @@ export function MagazineBentoHero({ articles, site }: { articles: any[], site: s
           {sideArticles.map((article: any, index: number) => (
             <Link 
               key={article.id} 
-              href={`/${site}/article/${article.slug}`}
+              href={`/${site}/artikel/${article.slug}`}
               className="relative flex-1 rounded-2xl overflow-hidden group/side block min-h-[150px]"
             >
               <SmartImage 
@@ -88,7 +89,7 @@ export function MagazineBentoHero({ articles, site }: { articles: any[], site: s
               
               <div className="absolute bottom-0 left-0 p-5 w-full">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-brand-red text-[8px] font-black uppercase tracking-widest">
+                  <span className={cn("text-[11px] font-black uppercase tracking-widest px-2 py-0.5 rounded-sm", getCategoryColor(article.category?.name))}>
                     {article.category?.name || 'Terkini'}
                   </span>
                 </div>

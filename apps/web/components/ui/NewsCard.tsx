@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { SmartImage, prefetchImage } from './SmartImage';
 import { cn } from '../../lib/utils';
 import EditorialBadge, { resolveArticleBadge } from './EditorialBadge';
+import { getCategoryColor } from '../../lib/constants';
 
 interface NewsCardProps {
   article: any;
@@ -28,7 +29,7 @@ export default function NewsCard({ article, variant = 'medium', site = 'pusat', 
 
   if (variant === 'large') {
     return (
-      <Link href={`/${site}/article/${article.slug}`} onMouseEnter={() => prefetchImage(imageUrl)}>
+      <Link href={`/${site}/artikel/${article.slug}`} onMouseEnter={() => prefetchImage(imageUrl)}>
         <motion.article 
           whileHover={{ y: -4 }}
           className="relative min-h-[450px] h-[550px] lg:h-[700px] group overflow-hidden rounded-lg cursor-pointer w-full bg-slate-900 shadow-2xl"
@@ -45,10 +46,10 @@ export default function NewsCard({ article, variant = 'medium', site = 'pusat', 
           />
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
           
-          <div className="absolute bottom-0 left-0 p-8 md:p-16 w-full max-w-5xl">
+          <div className="absolute bottom-0 left-0 p-8 pb-32 md:pb-16 md:p-16 w-full max-w-5xl">
             <div className="flex items-center gap-3 mb-6">
               {badgeVariant && <EditorialBadge variant={badgeVariant} size="md" />}
-              <span className="inline-block px-3 py-1 bg-brand-red text-white text-[10px] uppercase font-black tracking-[0.2em]">
+              <span className="inline-block px-3 py-1 text-[11px] uppercase font-black tracking-[0.2em] rounded-sm shadow-sm bg-brand-red text-white">
                 {article.category?.name || 'UMUM'}
               </span>
             </div>
@@ -60,7 +61,7 @@ export default function NewsCard({ article, variant = 'medium', site = 'pusat', 
             </p>
             <div className="flex flex-wrap items-center gap-y-4 gap-x-6 text-white/50 text-[11px] font-bold uppercase tracking-[0.15em] border-t border-white/10 pt-8">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-brand-red flex items-center justify-center text-white text-[10px] font-black">
+                <div className="w-8 h-8 rounded-full bg-brand-red flex items-center justify-center text-white text-[11px] font-black">
                   {article.author?.name?.[0] || 'R'}
                 </div>
                 <span>By <strong className="text-white">{article.author?.name || 'Redaksi'}</strong></span>
@@ -82,19 +83,19 @@ export default function NewsCard({ article, variant = 'medium', site = 'pusat', 
 
   if (variant === 'minimal') {
     return (
-      <Link href={`/${site}/article/${article.slug}`} onMouseEnter={() => prefetchImage(imageUrl)}>
+      <Link href={`/${site}/artikel/${article.slug}`} onMouseEnter={() => prefetchImage(imageUrl)}>
         <div className="py-5 border-b border-gray-100 dark:border-white/5 last:border-0 group cursor-pointer flex justify-between items-start gap-4">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2.5">
               {badgeVariant && <EditorialBadge variant={badgeVariant} size="sm" />}
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-red">
+              <span className={cn("text-[11px] font-black uppercase tracking-[0.2em] px-2 py-0.5 rounded-sm", getCategoryColor(article.category?.name))}>
                 {article.category?.name || 'UMUM'}
               </span>
             </div>
             <h3 className="font-serif text-xl font-black leading-tight text-brand-black dark:text-white group-hover:text-brand-red transition-colors tracking-tight">
               {article.title}
             </h3>
-            <div className="flex items-center gap-3 mt-3 text-[10px] text-brand-text-muted font-bold uppercase tracking-widest">
+            <div className="flex items-center gap-3 mt-3 text-[11px] text-brand-text-muted font-bold uppercase tracking-widest">
               <span>{date}</span>
               <span className="opacity-30">•</span>
               <span>{readTime}</span>
@@ -107,7 +108,7 @@ export default function NewsCard({ article, variant = 'medium', site = 'pusat', 
 
   if (variant === 'horizontal') {
     return (
-      <Link href={`/${site}/article/${article.slug}`} onMouseEnter={() => prefetchImage(imageUrl)}>
+      <Link href={`/${site}/artikel/${article.slug}`} onMouseEnter={() => prefetchImage(imageUrl)}>
         <motion.article 
           whileHover={{ x: 4 }}
           className="flex gap-6 group cursor-pointer border-b border-gray-100 dark:border-white/5 pb-6 last:border-0"
@@ -127,14 +128,14 @@ export default function NewsCard({ article, variant = 'medium', site = 'pusat', 
           <div className="flex-1 flex flex-col justify-center gap-2">
             <div className="flex items-center gap-2">
               {badgeVariant && <EditorialBadge variant={badgeVariant} />}
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-red">
+              <span className={cn("text-[11px] font-black uppercase tracking-[0.2em] px-2 py-0.5 rounded-sm", getCategoryColor(article.category?.name))}>
                 {article.category?.name || 'UMUM'}
               </span>
             </div>
             <h3 className="font-serif text-xl font-black leading-tight text-brand-black dark:text-white group-hover:text-brand-red transition-colors tracking-tight">
               {article.title}
             </h3>
-            <div className="hidden md:flex items-center gap-4 mt-1 text-[10px] font-bold uppercase tracking-widest text-brand-text-muted">
+            <div className="hidden md:flex items-center gap-4 mt-1 text-[11px] font-bold uppercase tracking-widest text-brand-text-muted">
                <span className="flex items-center gap-1"><User size={10}/> {article.author?.name || 'Redaksi'}</span>
                <span>{date}</span>
             </div>
@@ -145,7 +146,7 @@ export default function NewsCard({ article, variant = 'medium', site = 'pusat', 
   }
 
   return (
-    <Link href={`/${site}/article/${article.slug}`} onMouseEnter={() => prefetchImage(imageUrl)}>
+    <Link href={`/${site}/artikel/${article.slug}`} onMouseEnter={() => prefetchImage(imageUrl)}>
       <motion.article 
         whileHover={{ y: -8 }}
         className="flex flex-col gap-5 group cursor-pointer relative"
@@ -167,7 +168,7 @@ export default function NewsCard({ article, variant = 'medium', site = 'pusat', 
         </div>
         <div className="flex flex-col gap-3">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-red">
+            <span className={cn("text-[11px] font-black uppercase tracking-[0.2em] px-2 py-0.5 rounded-sm", getCategoryColor(article.category?.name))}>
               {article.category?.name || 'UMUM'}
             </span>
             <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -181,9 +182,9 @@ export default function NewsCard({ article, variant = 'medium', site = 'pusat', 
           <p className="text-brand-text-muted dark:text-gray-400 text-sm line-clamp-2 leading-relaxed font-normal opacity-80">
             {excerpt}
           </p>
-          <div className="flex items-center gap-3 mt-2 text-[10px] font-bold uppercase tracking-widest text-brand-text-muted">
+          <div className="flex items-center gap-3 mt-2 text-[11px] font-bold uppercase tracking-widest text-brand-text-muted">
              <div className="flex items-center gap-1.5">
-               <div className="w-5 h-5 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center text-[8px] font-black">
+               <div className="w-5 h-5 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center text-[10px] font-black">
                  {article.author?.name?.[0] || 'R'}
                </div>
                <span>{article.author?.name || 'Redaksi'}</span>

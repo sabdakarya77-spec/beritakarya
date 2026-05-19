@@ -10,6 +10,7 @@ import NewsletterForm from '../ui/NewsletterForm'
 import { PremiumHero } from '../berita/PremiumHero'
 import { MagazineBentoHero } from '../berita/MagazineBentoHero'
 import { notFound } from 'next/navigation'
+import ScrollAnimate from '../ui/ScrollAnimate'
 
 type SearchParams = {
   cat?: string
@@ -93,7 +94,11 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
   const articlesList = await getArticles(siteConfig.id, categoryFilter, searchQuery)
   const topBentoStories = articlesList.slice(0, 4)
   const minimalStories = articlesList.slice(4, 8)
-  const mainFeed = articlesList.slice(8, 16)
+  const editorChoice = articlesList.filter((a: any) => a.isFeatured || a.isExclusive)
+  const videoStories = articlesList.slice(0, 3)
+  const photojournalism = articlesList.slice(3, 6)
+  const opinionAnalisis = articlesList.slice(4, 7)
+  const mainFeed = articlesList.slice(4, 12)
   const popular = articlesList.slice(0, 5)
 
   const defaultTags = ['Politik', 'Ekonomi', 'Investigasi', 'Teknologi', 'Gaya Hidup', 'Hiburan']
@@ -103,19 +108,19 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
 
   return (
     <PublicSiteLayout siteConfig={siteConfig} initialCategory={categoryFilter}>
-      <main id="main-content" className="max-w-7xl mx-auto px-4 py-8">
-        <div className="flex justify-center mb-12">
+      <main id="main-content" className="max-w-7xl mx-auto px-4 py-4 md:py-8 pb-28 md:pb-8">
+        <div className="flex justify-center mb-4 md:mb-10">
           <AdSpace type="leaderboard" />
         </div>
 
         {!searchQuery && categoryFilter === 'Terbaru' && (
-          <div className="mb-24 -mx-4 lg:-mx-10 border-b border-gray-100 dark:border-white/5 pb-16 bg-gray-50/30 dark:bg-white/[0.01] px-4 lg:px-10 pt-8">
+          <div className="mb-8 md:mb-24 -mx-4 lg:-mx-10 border-b border-gray-100 dark:border-white/5 pb-8 md:pb-16 bg-gray-50/30 dark:bg-white/[0.01] px-4 lg:px-10 pt-4 md:pt-8">
             <MagazineBentoHero articles={topBentoStories} site={siteParam} />
 
             {/* 4 Minimal Stories Row */}
-            <div className="border-t border-gray-100 dark:border-white/5 pt-8">
-              <div className="flex items-center gap-2 mb-8">
-                <Zap size={16} className="text-brand-red" />
+            <div className="border-t border-gray-100 dark:border-white/5 pt-4 md:pt-8">
+              <div className="flex items-center gap-2 mb-4 md:mb-8">
+                <Zap size={16} className="text-brand-red animate-pulse" />
                 <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-brand-black dark:text-white">Fokus Redaksi</h3>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -124,6 +129,103 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
                 ))}
               </div>
             </div>
+
+            {/* 1. PILIHAN EDITOR */}
+            <ScrollAnimate className="border-t border-gray-100 dark:border-white/5 pt-6 md:pt-12 mt-6 md:mt-12">
+              <div className="flex items-center gap-2 mb-4 md:mb-8">
+                <Star size={16} className="text-amber-500 fill-amber-500" />
+                <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-brand-black dark:text-white">Pilihan Editor</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {editorChoice.slice(0, 3).map((article: any) => (
+                  <div key={article.id} className="border border-amber-100 dark:border-amber-950/30 p-5 rounded-2xl bg-amber-50/10 dark:bg-amber-950/5 hover:shadow-xl transition-all duration-300">
+                    <NewsCard article={article} variant="medium" site={siteParam} />
+                  </div>
+                ))}
+              </div>
+            </ScrollAnimate>
+
+            {/* 2. BERITA VIDEO (DARK THEMING PREMIUM) */}
+            <ScrollAnimate className="border-t border-gray-100 dark:border-white/5 pt-6 md:pt-12 mt-6 md:mt-12 bg-slate-950 -mx-4 lg:-mx-10 px-4 lg:px-10 py-8 md:py-12 rounded-3xl text-white">
+              <div className="flex items-center gap-2 mb-4 md:mb-8">
+                <Zap size={16} className="text-red-500 fill-red-500" />
+                <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-white">Laporan Video Eksklusif</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {videoStories.map((article: any) => (
+                  <div key={article.id} className="group relative rounded-2xl overflow-hidden aspect-video bg-black shadow-lg">
+                    {/* Simulated video play button overlay */}
+                    <div className="absolute inset-0 bg-black/40 group-hover:bg-black/60 transition-colors z-10 flex items-center justify-center">
+                      <div className="w-14 h-14 bg-white/20 backdrop-blur-md border border-white/40 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform group-hover:bg-brand-red group-hover:border-transparent">
+                        <span className="text-white text-lg ml-1">▶</span>
+                      </div>
+                    </div>
+                    {article.featuredImage && (
+                      <img src={article.featuredImage} alt={article.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[4s]" />
+                    )}
+                    <div className="absolute bottom-0 left-0 p-5 w-full bg-gradient-to-t from-black via-black/80 to-transparent z-20">
+                      <span className="text-[9px] font-black text-brand-red uppercase tracking-widest block mb-1">Video Report</span>
+                      <h4 className="text-sm font-bold text-white line-clamp-2">{article.title}</h4>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </ScrollAnimate>
+
+            {/* 3. FOTO JURNALISTIK */}
+            <ScrollAnimate className="border-t border-gray-100 dark:border-white/5 pt-6 md:pt-12 mt-6 md:mt-12">
+              <div className="flex items-center gap-2 mb-4 md:mb-8">
+                <span className="text-brand-red">📷</span>
+                <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-brand-black dark:text-white">Foto Jurnalistik</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {photojournalism.map((article: any) => (
+                  <div key={article.id} className="relative aspect-[4/5] rounded-3xl overflow-hidden group shadow-lg">
+                    {article.featuredImage && (
+                      <img src={article.featuredImage} alt={article.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-[5s]" />
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent" />
+                    <div className="absolute bottom-0 left-0 p-6 z-10 w-full">
+                      <span className="text-[9px] font-black text-brand-red uppercase tracking-widest block mb-2">Jurnal Foto</span>
+                      <h4 className="text-base font-serif font-black text-white leading-snug line-clamp-3">{article.title}</h4>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </ScrollAnimate>
+
+            {/* 4. OPINI & ANALISIS (CLASSICAL NEWSPAPER SERIF STYLE) */}
+            <ScrollAnimate className="border-t border-gray-100 dark:border-white/5 pt-6 md:pt-12 mt-6 md:mt-12">
+              <div className="flex items-center gap-2 mb-4 md:mb-8">
+                <span className="text-brand-red">✍️</span>
+                <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-brand-black dark:text-white">Opini & Analisis</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 divide-y md:divide-y-0 md:divide-x divide-gray-100 dark:divide-white/5">
+                {opinionAnalisis.map((article: any, idx: number) => (
+                  <div key={article.id} className={`pt-6 md:pt-0 ${idx > 0 ? 'md:pl-8' : ''} flex flex-col justify-between h-full gap-4`}>
+                    <div>
+                      <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-2">Kolom Analisis</span>
+                      <Link href={`/${siteParam}/artikel/${article.slug}`}>
+                        <h4 className="text-xl font-serif font-black text-brand-black dark:text-white hover:text-brand-red transition-colors leading-tight line-clamp-3 mb-2">
+                          "{article.title}"
+                        </h4>
+                      </Link>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 font-light line-clamp-3 leading-relaxed">
+                        {article.excerpt || article.blocks?.find((b: any) => b.type === 'paragraph')?.content || ''}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 mt-4 pt-4 border-t border-gray-50 dark:border-white/5">
+                      <div className="w-6 h-6 rounded-full bg-brand-red/10 flex items-center justify-center text-[10px] font-black text-brand-red">
+                        {article.author?.name?.charAt(0) || 'S'}
+                      </div>
+                      <span className="text-[10px] font-black text-brand-black dark:text-white uppercase tracking-wider">
+                        {article.author?.name || 'Redaksi'}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </ScrollAnimate>
           </div>
         )}
 
@@ -131,13 +233,13 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
           <div className="flex items-center gap-6 overflow-x-auto no-scrollbar px-4">
             <div className="flex items-center gap-2 shrink-0 bg-brand-black dark:bg-white text-white dark:text-brand-black px-4 py-2 rounded-sm shadow-lg">
               <TrendingUp size={14} />
-              <span className="text-[10px] font-black uppercase tracking-[0.2em]">Trending</span>
+              <span className="text-[11px] font-black uppercase tracking-[0.2em]">Trending</span>
             </div>
             {tags.map(tag => (
               <Link
                 key={tag}
                 href={`/${siteParam}?q=${encodeURIComponent(tag)}`}
-                className="shrink-0 px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 hover:text-brand-red transition-all hover:scale-105"
+                className="shrink-0 px-4 py-1.5 text-[11px] font-black uppercase tracking-[0.2em] text-gray-400 hover:text-brand-red transition-all hover:scale-105"
               >
                 #{tag}
               </Link>
@@ -152,7 +254,7 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
                 <span className="w-6 h-6 bg-brand-red shadow-lg shadow-brand-red/20"></span>
                 {searchQuery ? `Hasil Pencarian: ${searchQuery}` : `Berita ${categoryFilter}`}
               </h3>
-              <div className="hidden md:flex items-center gap-6 text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">
+              <div className="hidden md:flex items-center gap-6 text-[11px] font-black uppercase tracking-[0.3em] text-gray-400">
                 <span className="text-brand-red cursor-pointer border-b-2 border-brand-red pb-1">Terbaru</span>
                 <span className="cursor-pointer hover:text-brand-black dark:hover:text-white transition-colors">Populer</span>
               </div>
@@ -166,8 +268,8 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
 
             <div className="mb-16 p-8 bg-brand-grey dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/5">
               <div className="flex justify-between items-center mb-6">
-                <span className="text-[9px] font-black uppercase tracking-[0.3em] text-gray-400">Sponsorship</span>
-                <span className="text-[9px] font-bold text-gray-300">ADVERTISEMENT</span>
+                <span className="text-[11px] font-black uppercase tracking-[0.3em] text-gray-400">Sponsorship</span>
+                <span className="text-[11px] font-bold text-gray-300">ADVERTISEMENT</span>
               </div>
               <AdSpace type="in-feed" className="mx-auto" />
             </div>

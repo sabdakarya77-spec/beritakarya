@@ -46,7 +46,7 @@ export function PremiumHero({ article, site }: PremiumHeroProps) {
                 {badgeVariant && <EditorialBadge variant={badgeVariant} size="md" />}
               </div>
 
-              <Link href={`/${site}/article/${article.slug}`}>
+              <Link href={`/${site}/artikel/${article.slug}`}>
                 <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif font-black text-brand-black dark:text-white leading-[0.95] tracking-tighter hover:text-brand-red transition-colors duration-500">
                   {article.title}
                 </h1>
@@ -78,7 +78,7 @@ export function PremiumHero({ article, site }: PremiumHeroProps) {
 
                 <div className="mt-10 flex items-center gap-4">
                   <Link 
-                    href={`/${site}/article/${article.slug}`}
+                    href={`/${site}/artikel/${article.slug}`}
                     className="group flex items-center gap-3 bg-brand-black dark:bg-white text-white dark:text-brand-black px-8 py-4 rounded-full text-xs font-black uppercase tracking-widest hover:bg-brand-red dark:hover:bg-brand-red dark:hover:text-white transition-all shadow-xl shadow-brand-black/10"
                   >
                     Baca Selengkapnya

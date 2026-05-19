@@ -25,6 +25,7 @@ interface SmartImageProps extends Omit<ImageProps, 'src' | 'blurDataURL'> {
   context?: SmartImageContext
   fallbackSrc?: string
   dominantColor?: string | null
+  wrapperClassName?: string
 }
 
 const getThumbUrl = (url: string) => {
@@ -65,6 +66,7 @@ export function SmartImage({
   dominantColor,
   alt,
   className = '',
+  wrapperClassName = '',
   priority = false,
   fill = true,
   ...props
@@ -121,7 +123,7 @@ export function SmartImage({
 
   return (
     <div 
-      className={`relative overflow-hidden bg-slate-100 dark:bg-slate-800 ${className}`}
+      className={`overflow-hidden bg-slate-100 dark:bg-slate-800 ${fill ? 'absolute inset-0 w-full h-full' : 'relative'} ${wrapperClassName}`}
       style={dominantColor ? { backgroundColor: dominantColor } : undefined}
       onMouseEnter={() => setUserInteracted(true)}
       onTouchStart={() => setUserInteracted(true)}
@@ -150,9 +152,10 @@ export function SmartImage({
           onLoad={() => setIsLoaded(true)}
           onError={handleError}
           className={`
-            transition-opacity duration-700 ease-in-out
+            transition-all duration-700 ease-in-out
             ${isLoaded ? 'opacity-100' : 'opacity-0'}
-            ${!fill && !props.width && !props.height ? 'w-full h-full object-cover' : ''}
+            ${fill ? 'absolute inset-0 w-full h-full' : ''}
+            ${className}
           `}
         />
       )}

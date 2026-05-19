@@ -14,6 +14,11 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
+        hostname: 'images.unsplash.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
         hostname: 'api.beritakarya.co',
         pathname: '/api/v1/media/uploads/**',
       },

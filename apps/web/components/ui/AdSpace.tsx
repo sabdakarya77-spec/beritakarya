@@ -148,29 +148,40 @@ export default function AdSpace({
     }
   }
 
-  // 3. Fallback: Default Placeholder (When no ad is active in this regional slot)
+  // 3. Fallback: Mock Data Gemini AI Advertisement
   return (
-    <div className={cn(
-      "bg-gray-50/20 dark:bg-white/[0.01] border border-gray-100 dark:border-white/5 flex flex-col items-center justify-center relative overflow-hidden group",
-      styles[type],
-      className
-    )}>
-      <span className="absolute top-2 left-3 text-[8px] font-black uppercase tracking-[0.2em] text-gray-400">
+    <a 
+      href="https://gemini.google.com"
+      target="_blank"
+      rel="noopener noreferrer"
+      className={cn(
+        "border border-white/10 flex flex-col items-center justify-center relative overflow-hidden group bg-gradient-to-br from-indigo-950 via-purple-900 to-slate-900",
+        styles[type],
+        className
+      )}
+    >
+      <span className="absolute top-2 left-3 z-10 text-[8px] font-black uppercase tracking-[0.2em] text-white bg-blue-600 px-2.5 py-0.5 shadow-lg">
         {label}
       </span>
       
-      <div className="flex flex-col items-center gap-2 opacity-40 group-hover:opacity-60 transition-opacity">
-        <div className="w-10 h-10 border-2 border-dashed border-gray-200 dark:border-white/10 flex items-center justify-center">
-          <ExternalLink size={16} className="text-gray-300" />
-        </div>
-        <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">
-          Premium Slot
+      {/* Abstract AI background elements */}
+      <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1620712943543-bcc4688e7485?q=80&w=800&auto=format&fit=crop')] bg-cover bg-center opacity-30 mix-blend-overlay group-hover:scale-105 transition-transform duration-700" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+
+      {/* Content */}
+      <div className="relative z-10 flex flex-col items-center text-center px-4">
+        <h4 className="text-xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-300 to-pink-300 tracking-tight mb-2 font-sans leading-none">
+          Google Gemini Advanced
+        </h4>
+        {type !== 'leaderboard' && (
+          <p className="text-white/80 text-[10px] md:text-xs max-w-sm mb-4 font-light">
+            Experience the next generation of AI. Write, plan, learn, and create.
+          </p>
+        )}
+        <span className={cn("rounded-full bg-white text-black font-bold uppercase tracking-widest hover:bg-gray-200 transition-colors", type === 'leaderboard' ? "px-3 py-1 text-[9px] mt-2" : "px-4 py-1.5 text-[10px]")}>
+          Try Now
         </span>
       </div>
-
-      {/* Decorative corners */}
-      <div className="absolute top-0 right-0 w-4 h-4 border-t border-r border-gray-200 dark:border-white/10" />
-      <div className="absolute bottom-0 left-0 w-4 h-4 border-b border-l border-gray-200 dark:border-white/10" />
-    </div>
+    </a>
   );
 }
