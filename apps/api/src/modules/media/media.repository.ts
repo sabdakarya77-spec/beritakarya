@@ -13,6 +13,7 @@ export async function createMedia(data: {
   altText?: string;
   caption?: string;
   credit?: string;
+  dominantColor?: string;
 }) {
   return prisma.media.create({ data })
 }

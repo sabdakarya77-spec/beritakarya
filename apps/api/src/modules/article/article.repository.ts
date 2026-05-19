@@ -25,7 +25,7 @@ export async function findArticlesBySite(
         id: true, title: true, slug: true, status: true,
         siteId: true, authorId: true, publishedAt: true, createdAt: true,
         isBreaking: true, isExclusive: true, isFeatured: true,
-        featuredImage: true, featuredImageBlur: true,
+        featuredImage: true, featuredImageBlur: true, featuredImageColor: true,
         viewCount: true, wordCount: true, readingTimeMin: true,
         category: { select: { name: true } },
         author: { select: { id: true, name: true, role: true } }
@@ -84,7 +84,7 @@ export async function updateArticle(
     isBreaking: boolean; isExclusive: boolean; isFeatured: boolean;
     wordCount: number; readingTimeMin: number; publishedAt: Date;
     reviewNotes: string; reviewedBy: string; reviewedAt: Date;
-    featuredImage: string; featuredImageBlur?: string | null;
+    featuredImage: string; featuredImageBlur?: string | null; featuredImageColor?: string | null;
   }>
 ) {
   return prisma.article.update({ where: { id }, data: data as any })

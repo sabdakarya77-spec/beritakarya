@@ -196,6 +196,7 @@ model Article {
   metaDescription   String?
   featuredImage     String? // URL gambar utama
   featuredImageBlur String? // Base64 blur hash (10x10 webp)
+  featuredImageColor String? // Hex dominant color
 
   // Article Metadata
   wordCount      Int? // Jumlah kata
@@ -294,6 +295,7 @@ model Media {
   url            String
   thumbUrl       String
   blurHash       String? // Base64 blur hash (10x10 webp)
+  dominantColor  String? // Hex dominant color (#2B579C)
   width          Int
   height         Int
   originalFormat String

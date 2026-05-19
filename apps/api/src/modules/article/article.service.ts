@@ -211,16 +211,23 @@ export async function updateArticle(
 
   let data: any = { ...input }
   
-  // [S-Tier] Propagate blur hash if featuredImage is updated
-  if (input.featuredImage && input.featuredImage !== article.featuredImage) {
-    const media = await prisma.media.findFirst({
-      where: { url: input.featuredImage },
-      select: { blurHash: true }
-    })
-    if (media && media.blurHash) {
-      data.featuredImageBlur = media.blurHash
-    } else if (!input.featuredImage) {
+  // [S-Tier] Propagate blur hash and dominant color if featuredImage is updated
+  if ('featuredImage' in input) {
+    if (input.featuredImage) {
+      const media = await prisma.media.findFirst({
+        where: { url: input.featuredImage },
+        select: { blurHash: true, dominantColor: true }
+      })
+      if (media) {
+        data.featuredImageBlur = media.blurHash || null
+        data.featuredImageColor = media.dominantColor || null
+      } else {
+        data.featuredImageBlur = null
+        data.featuredImageColor = null
+      }
+    } else {
       data.featuredImageBlur = null
+      data.featuredImageColor = null
     }
   }
 

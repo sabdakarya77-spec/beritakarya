@@ -131,6 +131,7 @@ async function processImage(buffer: Buffer, filename: string, options: { skipWat
   }
 
   let blurHash = ''
+  let dominantColor = ''
   try {
     await sharp(buffer).resize(400).webp({ quality: 70 }).toFile(thumbPath)
 
@@ -140,8 +141,18 @@ async function processImage(buffer: Buffer, filename: string, options: { skipWat
       .webp({ quality: 20 })
       .toBuffer()
     blurHash = `data:image/webp;base64,${blurBuffer.toString('base64')}`
+
+    // Extract dominant color
+    const stats = await sharp(buffer).stats()
+    const dominant = stats.dominant
+    if (dominant) {
+      const r = dominant.r.toString(16).padStart(2, '0')
+      const g = dominant.g.toString(16).padStart(2, '0')
+      const b = dominant.b.toString(16).padStart(2, '0')
+      dominantColor = `#${r}${g}${b}`.toUpperCase()
+    }
   } catch (err) {
-    logger.error('[Media] Failed to save thumbnail or generate blurHash:', err)
+    logger.error('[Media] Failed to save thumbnail, generate blurHash or extract color:', err)
     // Clean up full image if thumbnail fails
     try {
       if (fs.existsSync(fullPath)) {
@@ -155,7 +166,7 @@ async function processImage(buffer: Buffer, filename: string, options: { skipWat
 
   const finalMeta = await sharp(fullPath).metadata()
   return {
-    fullName, thumbName, blurHash,
+    fullName, thumbName, blurHash, dominantColor,
     width: finalMeta.width ?? meta.width ?? 0,
     height: finalMeta.height ?? meta.height ?? 0,
     originalFormat: meta.format ?? 'unknown'
@@ -186,6 +197,7 @@ mediaRouter.post(
     let width = 0
     let height = 0
     let originalFormat = ''
+    let dominantColor = ''
 
     if (req.file.mimetype === 'application/pdf') {
       const fullName = `${id}.pdf`
@@ -217,6 +229,7 @@ mediaRouter.post(
         width = processed.width
         height = processed.height
         originalFormat = processed.originalFormat
+        dominantColor = processed.dominantColor
       } catch (err: any) {
         logger.error('[Media] Image processing failed:', err)
         return res.status(500).json({
@@ -239,7 +252,8 @@ mediaRouter.post(
       siteId: req.site,
       altText: req.body.altText || (isLogo ? 'Logo Situs' : ''),
       caption: req.body.caption,
-      credit: req.body.credit
+      credit: req.body.credit,
+      dominantColor
     })
 
     res.status(201).json({
