@@ -25,8 +25,10 @@ async function main() {
       // media.url usually starts with /uploads/
       // Example: /uploads/cover.webp -> C:\...\apps\api\uploads\cover.webp
       let localPath = ''
-      if (media.url.startsWith('/uploads/')) {
-        localPath = path.join(process.cwd(), media.url)
+      if (media.url.includes('/uploads/')) {
+        const parts = media.url.split('/uploads/')
+        const filename = parts[parts.length - 1]
+        localPath = path.join(process.cwd(), 'uploads', filename)
       } else {
         console.log(`⚠️ Skipping external or invalid URL: ${media.url}`)
         failed++
