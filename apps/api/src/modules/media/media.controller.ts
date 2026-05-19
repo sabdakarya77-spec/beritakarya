@@ -177,6 +177,7 @@ mediaRouter.post(
   '/upload',
   requireAuth,
   siteMiddleware,
+  requireSiteAccess,
   upload.single('file'),
   asyncHandler(async (req: Request, res: Response) => {
     if (!req.file) {
@@ -268,6 +269,7 @@ mediaRouter.get(
   '/',
   requireAuth,
   siteMiddleware,
+  requireSiteAccess,
   asyncHandler(async (req: Request, res: Response) => {
     const page = parseInt(req.query.page as string) || 1
     const limit = Math.min(parseInt(req.query.limit as string) || 30, 100)
