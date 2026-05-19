@@ -1,6 +1,6 @@
 'use client';
 
-import { Search, Menu, User as UserIcon, Bell, Globe, Moon, Sun, FileText } from 'lucide-react';
+import { Search, Menu, User as UserIcon, Bell, Globe, Moon, Sun, FileText, Bookmark } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -189,44 +189,71 @@ export default function Navbar({
       </div>
 
       {/* Desktop Navigation */}
-      <nav className="max-w-7xl mx-auto px-4 hidden md:flex items-center justify-center h-14 border-t border-gray-50 gap-10 text-[11px] font-bold uppercase tracking-[0.12em] text-brand-text-muted">
-        {categories.map((cat, index) => (
-          <motion.button 
-            key={cat} 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: index * 0.05 }}
-            onClick={() => handleCategoryClick(cat)}
-            className={cn(
-              "hover:text-brand-red transition-all relative py-2 group",
-              selectedCategory === cat ? "text-brand-black" : ""
-            )}
-          >
-            {cat}
-            <span className={cn(
-              "absolute -bottom-0.5 left-0 h-[3px] bg-brand-red transition-all duration-300 group-hover:w-full",
-              selectedCategory === cat ? "w-full" : "w-0"
-            )} />
-          </motion.button>
-        ))}
+      <nav className="max-w-7xl mx-auto px-4 hidden md:flex items-center justify-center h-14 border-t border-gray-50 dark:border-white/5 gap-10 text-[11px] font-bold uppercase tracking-[0.12em] text-brand-text-muted">
+        {categories.map((cat, index) => {
+          const isActive = selectedCategory === cat;
+          return (
+            <motion.button 
+              key={cat} 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: index * 0.05 }}
+              onClick={() => handleCategoryClick(cat)}
+              className={cn(
+                "hover:text-brand-red dark:hover:text-white transition-all relative py-2 group flex items-center gap-1",
+                isActive ? "text-brand-black dark:text-white font-extrabold" : "text-gray-400 dark:text-gray-500"
+              )}
+            >
+              {cat === 'Tersimpan' && (
+                <Bookmark 
+                  size={12} 
+                  className={cn(
+                    "transition-colors",
+                    isActive ? "text-brand-red fill-brand-red/20" : "text-gray-400 dark:text-gray-500 group-hover:text-brand-red"
+                  )} 
+                />
+              )}
+              <span>{cat}</span>
+              {isActive && (
+                <motion.span 
+                  layoutId="activeCategoryLine"
+                  className="absolute -bottom-0.5 left-0 h-[3px] bg-brand-red w-full"
+                  transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                />
+              )}
+              {!isActive && (
+                <span className="absolute -bottom-0.5 left-0 h-[3px] bg-brand-red w-0 transition-all duration-300 group-hover:w-full" />
+              )}
+            </motion.button>
+          );
+        })}
       </nav>
 
       {/* Mobile Navigation (Horizontal Scroll) */}
-      <nav className="md:hidden max-w-7xl mx-auto border-t border-gray-50 flex gap-2 overflow-x-auto pb-3 pt-2 px-3 no-scrollbar">
-        {categories.map((cat) => (
-          <button
-            key={cat}
-            onClick={() => handleCategoryClick(cat)}
-            className={cn(
-              "shrink-0 px-3 py-2 rounded-full text-[10px] font-bold uppercase tracking-wider whitespace-nowrap border transition-colors",
-              selectedCategory === cat
-                ? "border-brand-red bg-brand-red/10 text-brand-black"
-                : "border-gray-200 text-brand-text-muted"
-            )}
-          >
-            {cat}
-          </button>
-        ))}
+      <nav className="md:hidden max-w-7xl mx-auto border-t border-gray-50 dark:border-white/5 flex gap-2 overflow-x-auto pb-3 pt-2 px-3 no-scrollbar">
+        {categories.map((cat) => {
+          const isActive = selectedCategory === cat;
+          return (
+            <button
+              key={cat}
+              onClick={() => handleCategoryClick(cat)}
+              className={cn(
+                "shrink-0 px-3 py-2 rounded-full text-[10px] font-bold uppercase tracking-wider whitespace-nowrap border transition-all flex items-center gap-1",
+                isActive
+                  ? "border-brand-red bg-brand-red/10 text-brand-red dark:text-white"
+                  : "border-gray-200 dark:border-white/10 text-brand-text-muted dark:text-gray-400"
+              )}
+            >
+              {cat === 'Tersimpan' && (
+                <Bookmark 
+                  size={10} 
+                  className={isActive ? "text-brand-red fill-brand-red/20" : "text-gray-400 dark:text-gray-500"} 
+                />
+              )}
+              <span>{cat}</span>
+            </button>
+          );
+        })}
       </nav>
     </header>
   );

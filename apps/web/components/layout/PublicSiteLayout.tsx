@@ -17,7 +17,7 @@ interface PublicSiteLayoutProps {
 export default function PublicSiteLayout({ children, siteConfig, initialCategory = 'Terbaru' }: PublicSiteLayoutProps) {
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const categories = ['Terbaru', 'Nasional', 'Daerah', 'Politik', 'Ekonomi', 'Teknologi', 'Hukum', 'Saved'];
+  const categories = ['Terbaru', 'Nasional', 'Daerah', 'Politik', 'Ekonomi', 'Teknologi', 'Hukum', 'Tersimpan'];
 
   return (
     <div 

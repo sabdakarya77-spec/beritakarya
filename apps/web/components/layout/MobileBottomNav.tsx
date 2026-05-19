@@ -35,10 +35,10 @@ export default function MobileBottomNav({ site = 'pusat', onSearchClick, onMenuC
       active: false,
     },
     {
-      label: 'Saved',
+      label: 'Tersimpan',
       icon: Bookmark,
-      href: `/${site}?cat=Saved`,
-      active: pathname.includes('cat=Saved'),
+      href: `/${site}?cat=Tersimpan`,
+      active: pathname.includes('cat=Tersimpan'),
     },
     {
       label: 'Dashboard',

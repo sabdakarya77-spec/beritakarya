@@ -27,7 +27,7 @@ async function getArticles(siteId: string, category?: string, search?: string) {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
     let url = `${apiUrl}/api/v1/articles/public?site=${siteId}&limit=25`
 
-    if (category && category !== 'Terbaru' && category !== 'Saved') {
+    if (category && category !== 'Terbaru' && category !== 'Tersimpan') {
       url += `&category=${encodeURIComponent(category)}`
     }
     if (search) {
@@ -109,7 +109,7 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
   return (
     <PublicSiteLayout siteConfig={siteConfig} initialCategory={categoryFilter}>
       <main id="main-content" className="max-w-7xl mx-auto px-4 py-4 md:py-8 pb-28 md:pb-8">
-        <div className="flex justify-center mb-4 md:mb-10">
+        <div className="flex justify-center mt-4 md:mt-8 mb-6 md:mb-12">
           <AdSpace type="leaderboard" />
         </div>
 
