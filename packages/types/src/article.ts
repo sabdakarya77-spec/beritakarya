@@ -10,6 +10,9 @@ export interface Article {
   authorId: string
   blocks: Block[]
   status: ArticleStatus
+  featuredImage?: string
+  featuredImageBlur?: string
+  featuredImageColor?: string
   metaTitle?: string
   metaDescription?: string
   publishedAt?: Date
