@@ -218,6 +218,10 @@ kycRouter.post('/submit',
     const userId = req.user!.userId
     const siteId = req.site!
 
+    // req.site bisa berisi nilai virtual ('pusat', 'all') yang bukan ID Site nyata di DB.
+    // Untuk operasi database (AuditLog, Notification), gunakan siteId user yang sebenarnya.
+    const dbSiteId = (req.user as any)?.siteId || null
+
     const files = req.files as { [fieldname: string]: Express.Multer.File[] }
     const idCard = files?.['idCard']?.[0]
     const familyCard = files?.['familyCard']?.[0]
@@ -350,33 +354,40 @@ kycRouter.post('/submit',
         })
 
         // Audit log
-        await tx.auditLog.create({
-          data: {
-            userId,
-            siteId,
-            action: 'kyc.submit',
-            entityType: 'user',
-            entityId: userId,
-            newValue: { hasIdCard: true, hasFamilyCard: !!familyCard }
-          }
-        })
+        // Hanya buat AuditLog jika user memiliki siteId yang valid (ada di DB)
+        if (dbSiteId) {
+          await tx.auditLog.create({
+            data: {
+              userId,
+              siteId: dbSiteId,
+              action: 'kyc.submit',
+              entityType: 'user',
+              entityId: userId,
+              newValue: { hasIdCard: true, hasFamilyCard: !!familyCard }
+            }
+          })
+        }
 
         return u
       })
 
       // 4. Notify Admins
+      // Cari admin berdasarkan siteId user yang sebenarnya, atau semua superadmin
+      const adminWhere = dbSiteId
+        ? { siteId: dbSiteId, role: { in: ['superadmin', 'wapimred'] } }
+        : { role: { in: ['superadmin'] } } // Jika tidak ada siteId, notify semua superadmin
+
       const admins = await prisma.user.findMany({
-        where: {
-          siteId,
-          role: { in: ['superadmin', 'wapimred'] }
-        },
-        select: { id: true }
+        where: adminWhere as any,
+        select: { id: true, siteId: true }
       })
 
       for (const admin of admins) {
+        const notifSiteId = admin.siteId || dbSiteId
+        if (!notifSiteId) continue // Skip jika tidak ada siteId valid
         await sendNotification({
           userId: admin.id,
-          siteId,
+          siteId: notifSiteId,
           type: 'kyc_submitted',
           title: '📝 Pengajuan KYC Baru',
           message: `User ${updatedUser.name} telah mengajukan verifikasi identitas.`,
@@ -460,29 +471,31 @@ kycRouter.patch('/:userId/verify',
         }
       })
 
-      // Audit log
-      await tx.auditLog.create({
-        data: {
-          userId: req.user!.userId,
-          siteId: targetUser.siteId!,
-          action: `kyc.${status}`,
-          entityType: 'user',
-          entityId: userId,
-          newValue: { status, notes }
-        }
-      })
+      // Audit log — hanya jika target user memiliki siteId yang valid
+      if (targetUser.siteId) {
+        await tx.auditLog.create({
+          data: {
+            userId: req.user!.userId,
+            siteId: targetUser.siteId,
+            action: `kyc.${status}`,
+            entityType: 'user',
+            entityId: userId,
+            newValue: { status, notes }
+          }
+        })
 
-      // Notify User
-      await sendNotification({
-        userId,
-        siteId: targetUser.siteId!,
-        type: isApproved ? 'kyc_approved' : 'kyc_rejected',
-        title: isApproved ? '✅ KYC Disetujui' : '❌ KYC Ditolak',
-        message: isApproved 
-          ? 'Selamat! Verifikasi identitas Anda telah disetujui. Anda sekarang dapat menerbitkan berita.'
-          : `Verifikasi identitas Anda ditolak. Alasan: ${notes || 'Tidak memenuhi syarat'}.`,
-        link: '/dashboard/settings'
-      })
+        // Notify User
+        await sendNotification({
+          userId,
+          siteId: targetUser.siteId,
+          type: isApproved ? 'kyc_approved' : 'kyc_rejected',
+          title: isApproved ? '✅ KYC Disetujui' : '❌ KYC Ditolak',
+          message: isApproved 
+            ? 'Selamat! Verifikasi identitas Anda telah disetujui. Anda sekarang dapat menerbitkan berita.'
+            : `Verifikasi identitas Anda ditolak. Alasan: ${notes || 'Tidak memenuhi syarat'}.`,
+          link: '/dashboard/settings'
+        })
+      }
     })
 
     res.json({ success: true, data: { message: `KYC ${status} berhasil` } })
