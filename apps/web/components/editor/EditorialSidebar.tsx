@@ -17,10 +17,10 @@ export function EditorialSidebar() {
   const { 
     isSidebarOpen, toggleSidebar, activeTab, setActiveTab,
     categoryId, tags, featuredImage, isBreaking, isExclusive, isFeatured,
-    metaTitle, metaDescription, updateArticleData, title, articleId
+    metaTitle, metaDescription, updateArticleData, title, articleId, siteId
   } = useEditorStore();
 
-  const [categories, setCategories] = useState<{id: string, name: string}[]>([]);
+  const [categoriesTree, setCategoriesTree] = useState<any[]>([]);
   const [tagInput, setTagInput] = useState('');
   const [versions, setVersions] = useState<any[]>([]);
   const [loadingVersions, setLoadingVersions] = useState(false);
@@ -51,12 +51,14 @@ export function EditorialSidebar() {
   useEffect(() => {
     const loadCategories = async () => {
       try {
-        const { data } = await api.get('/categories');
-        setCategories(data.data || []);
+        const { data } = await api.get('/categories/tree', {
+          params: siteId ? { site: siteId } : undefined
+        });
+        setCategoriesTree(data.data || []);
       } catch (e) { console.error(e); }
     };
     if (isSidebarOpen) loadCategories();
-  }, [isSidebarOpen]);
+  }, [isSidebarOpen, siteId]);
 
   useEffect(() => {
     const loadVersions = async () => {
@@ -233,7 +235,16 @@ export function EditorialSidebar() {
                         className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-xl text-xs font-bold text-brand-black dark:text-white outline-none focus:border-brand-red transition-all appearance-none"
                       >
                         <option value="">Pilih Kategori...</option>
-                        {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                        {categoriesTree.map(parent => (
+                          <optgroup key={parent.id} label={parent.name}>
+                            <option value={parent.id}>{parent.name} (Utama)</option>
+                            {parent.subCategories?.map((sub: any) => (
+                              <option key={sub.id} value={sub.id}>
+                                &nbsp;&nbsp;↳ {sub.name}
+                              </option>
+                            ))}
+                          </optgroup>
+                        ))}
                       </select>
                     </div>
                   </div>

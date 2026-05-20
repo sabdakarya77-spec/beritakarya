@@ -5,12 +5,40 @@ export async function findArticlesBySite(
   siteId: string,
   opts: { status?: string; search?: string; category?: string; page?: number; limit?: number; authorId?: string } = {}
 ) {
-  const { status, search, category, page = 1, limit = 20, authorId } = opts
+  const categoryFilter: Prisma.ArticleWhereInput = {}
+  if (category) {
+    const catRecord = await prisma.category.findFirst({
+      where: {
+        OR: [
+          { name: { equals: category, mode: 'insensitive' } },
+          { slug: { equals: category, mode: 'insensitive' } }
+        ],
+        OR: [
+          { siteId },
+          { isGlobal: true }
+        ]
+      },
+      include: {
+        subCategories: {
+          select: { id: true }
+        }
+      }
+    })
+    
+    if (catRecord) {
+      const ids = [catRecord.id, ...catRecord.subCategories.map(sub => sub.id)]
+      categoryFilter.categoryId = { in: ids }
+    } else {
+      // If a category is requested but doesn't exist, ensure we return nothing
+      categoryFilter.categoryId = 'non-existent-category'
+    }
+  }
+
   const where: Prisma.ArticleWhereInput = {
     siteId,
     ...(status && { status: status as ArticleStatus }),
     ...(authorId && { authorId }),
-    ...(category && { category: { name: { equals: category, mode: 'insensitive' } } }),
+    ...categoryFilter,
     ...(search && { 
       OR: [
         { title: { contains: search, mode: 'insensitive' } },
