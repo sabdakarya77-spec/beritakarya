@@ -424,6 +424,32 @@ kycRouter.post('/submit',
   })
 )
 
+// PATCH /:userId/reset-lock - Admin reset KYC lock (akibat terlalu banyak percobaan gagal)
+kycRouter.patch('/:userId/reset-lock',
+  ...withSite,
+  requireRole(['superadmin']),
+  asyncHandler(async (req: Request, res: Response) => {
+    const { userId } = req.params
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId, deletedAt: null },
+      select: { id: true, name: true, kycAttempts: true, kycLockedUntil: true }
+    })
+
+    if (!user) {
+      return res.status(404).json({ success: false, error: { message: 'User tidak ditemukan' } })
+    }
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { kycAttempts: 0, kycLockedUntil: null }
+    })
+
+    logger.info(`[KYC] Lock reset for userId=${userId} by admin=${req.user!.userId}`)
+    res.json({ success: true, data: { message: `KYC lock berhasil direset untuk ${user.name}` } })
+  })
+)
+
 // PATCH /:userId/verify - Admin verify KYC (approve/reject)
 kycRouter.patch('/:userId/verify',
   ...withSite,
@@ -438,7 +464,7 @@ kycRouter.patch('/:userId/verify',
 
     const targetUser = await prisma.user.findUnique({
       where: { id: userId, deletedAt: null },
-      select: { siteId: true, kycNotes: true, name: true }
+      select: { siteId: true, kycNotes: true, name: true, role: true }
     })
 
     if (!targetUser) {
@@ -467,7 +493,8 @@ kycRouter.patch('/:userId/verify',
           kycNotes: `${status.toUpperCase()} at ${new Date().toISOString()}${notes ? ` - ${notes}` : ''}`,
           kycReviewedBy: req.user!.userId,
           kycReviewedAt: new Date(),
-          role: isApproved ? 'reporter' : undefined // Promote to reporter if approved
+          // Promote to reporter if approved, unless they are already superadmin or wapimred
+          role: (isApproved && !['superadmin', 'wapimred'].includes(targetUser.role)) ? 'reporter' : undefined
         }
       })
 
