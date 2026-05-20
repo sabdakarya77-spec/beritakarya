@@ -54,11 +54,12 @@ export default function ReviewQueuePage() {
        const [artRes, statsRes] = await Promise.all([
          api.get('/articles', { 
            params: { 
+             site,
              limit: 50, 
              status: activeTab 
            } 
          }),
-         api.get('/articles/stats')
+         api.get('/articles/stats', { params: { site } })
        ]);
        setArticles(artRes.data.data.articles || artRes.data.data.items || []);
        setStats(statsRes.data.data || {});
@@ -84,14 +85,14 @@ export default function ReviewQueuePage() {
     setActionLoading(articleId + action);
     try {
       if (action === 'publish') {
-        await api.post(`/articles/${articleId}/publish`);
+        await api.post(`/articles/${articleId}/publish`, undefined, { params: { site } });
       } else {
         const newStatus = action === 'approve' ? 'approved' : action === 'reject' ? 'archived' : 'revision';
         await api.patch(`/articles/${articleId}`, {
           status: newStatus,
           reviewNotes: reviewNotes || undefined,
           reviewedBy: user?.id,
-        });
+        }, { params: { site } });
       }
       setReviewModal(null);
       setReviewNotes('');

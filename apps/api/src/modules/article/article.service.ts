@@ -147,7 +147,7 @@ export async function updateArticle(
     title: string; blocks: any[]; metaTitle: string; metaDescription: string; 
     categoryId: string | null; tags: string[]; status: string;
     isBreaking: boolean; isExclusive: boolean; isFeatured: boolean;
-    featuredImage: string; reviewNotes: string;
+    featuredImage: string; reviewNotes: string; reviewedBy: string;
   }>,
   user: JWTPayload
 ) {

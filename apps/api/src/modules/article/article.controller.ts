@@ -53,6 +53,12 @@ articleRouter.put('/:id', ...withSite, asyncHandler(async (req: Request, res: Re
   res.json({ success: true, data: article })
 }))
 
+articleRouter.patch('/:id', ...withSite, asyncHandler(async (req: Request, res: Response) => {
+  const input = updateArticleSchema.parse(req.body)
+  const article = await service.updateArticle(req.params.id, req.site!, input, req.user!)
+  res.json({ success: true, data: article })
+}))
+
 articleRouter.post('/:id/publish', ...withSite, asyncHandler(async (req: Request, res: Response) => {
   const article = await service.publishArticle(req.params.id, req.site!, req.user!)
   res.json({ success: true, data: article })

@@ -78,6 +78,7 @@ export const updateArticleSchema = z.object({
   isFeatured: z.boolean().optional(),
   featuredImage: z.string().optional(),
   reviewNotes: z.string().optional(),
+  reviewedBy: z.string().optional(),
   slug: z.string().optional(),
 })
 
