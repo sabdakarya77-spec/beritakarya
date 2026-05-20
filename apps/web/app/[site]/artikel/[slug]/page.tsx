@@ -115,7 +115,7 @@ export default async function ArticlePage({ params }: Props) {
   const relatedArticles = await getRelatedArticles(siteParam, slugParam, article.category?.name)
   const coverImage = article.featuredImage || article.blocks.find((b: any) => b.type === 'image')?.url || '/placeholder.jpg'
   const excerpt = article.blocks.find((b: any) => b.type === 'paragraph')?.content || ''
-  const articleUrl = `${process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'}/${siteParam}/post/${slugParam}`
+  const articleUrl = `${process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'}/${siteParam}/artikel/${slugParam}`
 
   const jsonLd = {
     "@context": "https://schema.org",

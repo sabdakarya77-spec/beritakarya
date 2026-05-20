@@ -1,6 +1,19 @@
 import { prisma } from '../../db/client'
 
 export class CategoryService {
+  // Helper: Convert flat list to tree structure
+  buildCategoryTree(categories: any[]): any[] {
+    const parentCategories = categories.filter(c => !c.parentId)
+    const subCategories = categories.filter(c => c.parentId)
+
+    return parentCategories.map(parent => ({
+      ...parent,
+      subCategories: subCategories
+        .filter(sub => sub.parentId === parent.id)
+        .sort((a, b) => (a.order || 0) - (b.order || 0))
+    })).sort((a, b) => (a.order || 0) - (b.order || 0))
+  }
+
   async getSiteCategories(siteId: string) {
     return await prisma.category.findMany({
       where: {
@@ -58,15 +71,7 @@ export class CategoryService {
       }
     })
 
-    const parentCategories = all.filter(c => !c.parentId)
-    const subCategories = all.filter(c => c.parentId)
-
-    return parentCategories.map(parent => ({
-      ...parent,
-      subCategories: subCategories
-        .filter(sub => sub.parentId === parent.id)
-        .sort((a, b) => a.order - b.order)
-    }))
+    return this.buildCategoryTree(all)
   }
 
   async createCategory(data: {

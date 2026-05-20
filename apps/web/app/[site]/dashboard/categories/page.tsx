@@ -14,6 +14,7 @@ interface Category {
   order?: number;
   color?: string | null;
   parent?: Category | null;
+  subCategories?: Category[];
 }
 
 const COLOR_PRESETS: Record<string, { label: string; bg: string; text: string; border: string; hex: string }> = {
@@ -60,7 +61,8 @@ export default function CategoriesDashboard() {
       if (isGlobalView) {
         queryParams.view = 'all';
       }
-      const { data } = await api.get('/categories', { params: queryParams });
+      // Use /categories/tree endpoint to get hierarchical structure (synced with homepage & editor)
+      const { data } = await api.get('/categories/tree', { params: queryParams });
       if (data.success) {
         setCategories(data.data);
       }
@@ -159,35 +161,23 @@ export default function CategoriesDashboard() {
     }
   };
 
-  // Build hierarchically ordered list of categories for rendering
-  const parentCategories = categories.filter(c => !c.parentId);
-  const subCategories = categories.filter(c => c.parentId);
-
-  // Group to exclude cyclic parents when editing
-  const potentialParents = parentCategories.filter(
-    parent => !editingCategory || parent.id !== editingCategory.id
-  );
-
-  const orderedCategories: (Category & { isSub?: boolean; parentName?: string })[] = [];
-  parentCategories
-    .sort((a, b) => (a.order || 0) - (b.order || 0))
-    .forEach(parent => {
-      orderedCategories.push(parent);
-      const children = subCategories
-        .filter(sub => sub.parentId === parent.id)
-        .sort((a, b) => (a.order || 0) - (b.order || 0));
-      children.forEach(child => {
-        orderedCategories.push({ ...child, isSub: true, parentName: parent.name });
-      });
+  // Flatten tree structure for table display
+  const flattenCategories = (cats: Category[], isSub = false): (Category & { isSub?: boolean })[] => {
+    return cats.flatMap(cat => {
+      const result: (Category & { isSub?: boolean })[] = [isSub ? { ...cat, isSub: true } : cat];
+      if (cat.subCategories && cat.subCategories.length > 0) {
+        result.push(...flattenCategories(cat.subCategories, true));
+      }
+      return result;
     });
+  };
 
-  // Flat orphans (if any subcategory parent is missing or not fetched)
-  subCategories.forEach(sub => {
-    const parentExists = parentCategories.some(p => p.id === sub.parentId);
-    if (!parentExists) {
-      orderedCategories.push({ ...sub, isSub: true, parentName: 'Induk Tidak Ditemukan' });
-    }
-  });
+  const orderedCategories = flattenCategories(categories);
+
+  // Get parent candidates (only top-level categories) for dropdown, excluding self when editing
+  const potentialParents = categories.filter(
+    parent => !parent.parentId && (!editingCategory || parent.id !== editingCategory.id)
+  );
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 pb-20 px-4">
@@ -297,9 +287,12 @@ export default function CategoriesDashboard() {
                       {p.name} {p.isGlobal ? '(Global)' : ''}
                     </option>
                   ))}
+                  {potentialParents.length === 0 && categories.length > 0 && (
+                    <option value="" disabled>Semua kategori sudah memiliki induk</option>
+                  )}
                 </select>
                 <p className="text-[11px] text-gray-400 mt-2">
-                  Pilih induk jika ingin menjadikan kategori ini sebagai Sub-menu.
+                  Pilih induk jika ingin menjadikan kategori ini sebagai Sub-menu. Hanya kategori utama yang dapat dipilih sebagai induk.
                 </p>
               </div>
 
@@ -502,7 +495,7 @@ export default function CategoriesDashboard() {
             
             <div className="flex items-center justify-between px-6 py-4 bg-gray-50 dark:bg-gray-900/30 border-t border-gray-150 dark:border-gray-700">
               <p className="text-xs font-black uppercase tracking-wider text-gray-400">
-                Total: {categories.length} Rubrik / Menu
+                Total: {orderedCategories.length} Rubrik / Menu
               </p>
               {isGlobalView && (
                 <p className="text-[11px] text-purple-600 dark:text-purple-400 font-bold">
@@ -522,7 +515,7 @@ export default function CategoriesDashboard() {
               Hapus Kategori?
             </h3>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 leading-relaxed">
-              Apakah Anda yakin ingin menghapus rubrik <strong>&quot;{deleteConfirm.name}&quot;</strong>? 
+              Apakah Anda yakin ingin menghapus rubrik <strong>"{deleteConfirm.name}"</strong>? 
               Jika rubrik ini adalah kategori utama, semua relasi sub-kategori di bawahnya akan kehilangan induknya. Tindakan ini permanen.
             </p>
             <div className="flex justify-end gap-3">

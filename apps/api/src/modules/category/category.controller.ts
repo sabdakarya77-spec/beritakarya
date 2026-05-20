@@ -61,18 +61,46 @@ export async function getCategories(req: Request, res: Response) {
 /**
  * GET /api/v1/categories/tree
  * Fetch categories in tree hierarchy structure
+ * - Regular users: site-specific + global categories (tree format)
+ * - Superadmin with ?view=all: all categories across sites (tree format)
+ * - Superadmin with ?view=global: only global categories (tree format)
  */
 export async function getCategoryTree(req: Request, res: Response) {
   try {
+    const { view } = req.query
+    const user = (req as any).user
     const siteId = (req as any).site || (req.query.site as string) || (req.headers['x-site-id'] as string)
-    if (!siteId) {
-      return res.status(400).json({
-        success: false,
-        error: { code: 'SITE_REQUIRED', message: 'Site parameter required' }
-      })
+
+    // Superadmin-only routes
+    if (view === 'global' || view === 'all') {
+      if (!user || user.role !== 'superadmin') {
+        return res.status(403).json({
+          success: false,
+          error: { code: 'FORBIDDEN', message: 'Superadmin access required' }
+        })
+      }
     }
-    const tree = await categoryService.getCategoryTree(siteId)
-    res.json({ success: true, data: tree })
+
+    let categories
+
+    if (view === 'global') {
+      // Superadmin: get only global categories
+      categories = await categoryService.getGlobalCategories()
+    } else if (view === 'all') {
+      // Superadmin: get all categories (site-specific + global)
+      categories = await categoryService.getAllCategories()
+    } else {
+      // Regular: site-specific + global (for the current site)
+      if (!siteId) {
+        return res.status(400).json({
+          success: false,
+          error: { code: 'SITE_REQUIRED', message: 'Site parameter required' }
+        })
+      }
+      categories = await categoryService.getCategoryTree(siteId)
+    }
+
+    res.json({ success: true, data: categories })
   } catch (error: any) {
     const statusCode = error.statusCode || 500
     res.status(statusCode).json({

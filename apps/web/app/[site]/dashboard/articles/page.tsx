@@ -380,7 +380,7 @@ export default function ArticlesPage() {
                       {article.status === 'published' && (
                         <>
                           <Link
-                            href={`/${site}/post/${article.slug}`}
+                            href={`/${site}/artikel/${article.slug}`}
                             target="_blank"
                             className="p-2 text-gray-400 hover:text-brand-black dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 rounded-lg transition-all"
                             title="Lihat post"
@@ -461,8 +461,8 @@ export default function ArticlesPage() {
                     // Show current page, and few pages around it
                     if (totalPages > 5) {
                       if (i + 1 !== 1 && i + 1 !== totalPages && Math.abs(page - (i + 1)) > 1) {
-                        if (Math.abs(page - (i + 1)) === 2) return <span key={i} className="text-gray-300">...</span>
-                        return null
+                        if (Math.abs(page - (i + 1)) === 2) return <span key={i} className="text-gray-300">...</span>;
+                        return null;
                       }
                     }
                     return (
