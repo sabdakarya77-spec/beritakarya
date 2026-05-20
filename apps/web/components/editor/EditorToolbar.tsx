@@ -36,7 +36,7 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export function EditorToolbar() {
-  const { status, saving, saveArticle, publishArticle, submitForReview, lastSaved, toggleSidebar, isFocusMode, toggleFocusMode } = useEditorStore();
+  const { status, saving, saveError, saveArticle, publishArticle, submitForReview, lastSaved, toggleSidebar, isFocusMode, toggleFocusMode } = useEditorStore();
   const { user } = useAuthStore();
   const { site } = useParams<{ site: string }>();
   const router = useRouter();
@@ -84,6 +84,11 @@ export function EditorToolbar() {
             <div className="flex items-center gap-1.5">
               <div className="w-2 h-2 bg-brand-red rounded-full animate-pulse" />
               Auto-Saving...
+            </div>
+          ) : saveError ? (
+            <div className="flex items-center gap-1.5 text-red-500" title={saveError}>
+              <div className="w-2 h-2 bg-red-500 rounded-full" />
+              Gagal Simpan
             </div>
           ) : (
             <div className="flex items-center gap-1.5">

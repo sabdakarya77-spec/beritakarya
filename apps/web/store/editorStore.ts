@@ -9,8 +9,10 @@ export interface EditorState {
   blocks: Block[]
   status: ArticleStatus
   saving: boolean
+  saveError: string | null
   lastSaved: Date | null
   isDirty: boolean
+  isLoading: boolean
   undoStack: Block[][]
   
   // Metadata & Editorial
@@ -76,8 +78,10 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   blocks: [{ id: uuidv4(), type: 'paragraph', content: '' }],
   status: 'draft',
   saving: false,
+  saveError: null,
   lastSaved: null,
   isDirty: false,
+  isLoading: false,
   undoStack: [],
   
   metaTitle: '',
@@ -160,24 +164,37 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   },
 
   loadArticle: async (id, siteId) => {
-    const { data } = await api.get(`/articles/${id}`)
-    const article = data.data
-    set({
-      articleId: article.id,
-      title: article.title,
-      blocks: article.blocks,
-      status: article.status,
-      metaTitle: article.metaTitle || '',
-      metaDescription: article.metaDescription || '',
-      categoryId: article.categoryId,
-      tags: article.tags || [],
-      featuredImage: article.featuredImage || '',
-      isBreaking: article.isBreaking || false,
-      isExclusive: article.isExclusive || false,
-      isFeatured: article.isFeatured || false,
-      isDirty: false,
-      undoStack: []
-    })
+    set({ isLoading: true, saveError: null })
+    try {
+      const { data } = await api.get(`/articles/${id}`)
+      const article = data.data
+      // [FIX] Guard against null/undefined blocks from DB
+      const rawBlocks = article.blocks
+      const blocks: Block[] = Array.isArray(rawBlocks) && rawBlocks.length > 0
+        ? rawBlocks
+        : [{ id: uuidv4(), type: 'paragraph' as const, content: '' }]
+      set({
+        articleId: article.id,
+        title: article.title || '',
+        blocks,
+        status: article.status,
+        metaTitle: article.metaTitle || '',
+        metaDescription: article.metaDescription || '',
+        categoryId: article.categoryId || null,
+        tags: article.tags || [],
+        featuredImage: article.featuredImage || '',
+        isBreaking: article.isBreaking || false,
+        isExclusive: article.isExclusive || false,
+        isFeatured: article.isFeatured || false,
+        isDirty: false,
+        isLoading: false,
+        undoStack: []
+      })
+    } catch (err: any) {
+      console.error('Failed to load article:', err)
+      const message = err?.response?.data?.message || err?.message || 'Gagal memuat artikel'
+      set({ isLoading: false, saveError: message })
+    }
   },
 
   saveArticle: async () => {
@@ -186,7 +203,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     const firstBlock = s.blocks[0] as any
     if (!s.articleId && !s.title.trim() && s.blocks.length <= 1 && (!firstBlock || !firstBlock.content)) return
 
-    set({ saving: true })
+    set({ saving: true, saveError: null })
     try {
       const payload = {
         title: s.title || 'Tanpa Judul', 
@@ -219,9 +236,10 @@ export const useEditorStore = create<EditorState>((set, get) => ({
         const newUrl = window.location.pathname.replace('/new', `/${newArticle.id}`)
         window.history.replaceState(null, '', newUrl)
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to save article:', err)
-      set({ saving: false })
+      const message = err?.response?.data?.message || err?.message || 'Gagal menyimpan artikel'
+      set({ saving: false, saveError: message })
     }
   },
 
@@ -260,7 +278,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   reset: () => set({
     articleId: null, title: '', status: 'draft',
     blocks: [{ id: uuidv4(), type: 'paragraph', content: '' }],
-    saving: false, lastSaved: null, isDirty: false, undoStack: [],
+    saving: false, saveError: null, lastSaved: null, isDirty: false, isLoading: false, undoStack: [],
     metaTitle: '', metaDescription: '', categoryId: null, tags: [],
     featuredImage: '', isBreaking: false, isExclusive: false, isFeatured: false,
     isSidebarOpen: false, activeTab: 'content'
