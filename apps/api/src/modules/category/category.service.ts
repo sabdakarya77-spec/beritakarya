@@ -66,6 +66,10 @@ export class CategoryService {
           { isGlobal: true }
         ]
       },
+      include: {
+        site: true,
+        parent: true
+      },
       orderBy: {
         order: 'asc'
       }

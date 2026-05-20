@@ -12,6 +12,7 @@ import { api } from '../../lib/api';
 import { cn } from '../../lib/utils';
 import Image from 'next/image';
 import { useToastStore } from '../../store/toastStore';
+import type { Category } from '@beritakarya/types';
 
 export function EditorialSidebar() {
   const { 
@@ -20,7 +21,7 @@ export function EditorialSidebar() {
     metaTitle, metaDescription, updateArticleData, title, articleId, siteId
   } = useEditorStore();
 
-  const [categoriesTree, setCategoriesTree] = useState<any[]>([]);
+  const [categoriesTree, setCategoriesTree] = useState<Category[]>([]);
   const [tagInput, setTagInput] = useState('');
   const [versions, setVersions] = useState<any[]>([]);
   const [loadingVersions, setLoadingVersions] = useState(false);
@@ -238,7 +239,7 @@ export function EditorialSidebar() {
                         {categoriesTree.map(parent => (
                           <optgroup key={parent.id} label={parent.name}>
                             <option value={parent.id}>{parent.name} (Utama)</option>
-                            {parent.subCategories?.map((sub: any) => (
+                            {parent.subCategories?.map((sub: Category) => (
                               <option key={sub.id} value={sub.id}>
                                 &nbsp;&nbsp;↳ {sub.name}
                               </option>

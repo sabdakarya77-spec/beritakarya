@@ -3,37 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { api } from '../../../../lib/api';
-
-interface Category {
-  id: string;
-  name: string;
-  slug: string;
-  siteId?: string | null;
-  isGlobal?: boolean;
-  parentId?: string | null;
-  order?: number;
-  color?: string | null;
-  parent?: Category | null;
-  subCategories?: Category[];
-}
-
-const COLOR_PRESETS: Record<string, { label: string; bg: string; text: string; border: string; hex: string }> = {
-  slate: { label: 'Slate (Umum)', bg: 'bg-slate-50 dark:bg-slate-900/40', text: 'text-slate-700 dark:text-slate-300', border: 'border-slate-200 dark:border-slate-800', hex: '#64748b' },
-  red: { label: 'Red (Investigasi)', bg: 'bg-red-50 dark:bg-red-950/20', text: 'text-red-700 dark:text-red-400', border: 'border-red-100 dark:border-red-900/30', hex: '#ef4444' },
-  orange: { label: 'Orange (Olahraga)', bg: 'bg-orange-50 dark:bg-orange-950/20', text: 'text-orange-700 dark:text-orange-400', border: 'border-orange-100 dark:border-orange-900/30', hex: '#f97316' },
-  amber: { label: 'Amber (Daerah)', bg: 'bg-amber-50 dark:bg-amber-950/20', text: 'text-amber-700 dark:text-amber-400', border: 'border-amber-100 dark:border-amber-900/30', hex: '#f59e0b' },
-  yellow: { label: 'Yellow (Advertorial)', bg: 'bg-yellow-50 dark:bg-yellow-950/20', text: 'text-yellow-700 dark:text-yellow-400', border: 'border-yellow-100 dark:border-yellow-900/30', hex: '#eab308' },
-  green: { label: 'Green (Kesehatan)', bg: 'bg-green-50 dark:bg-green-950/20', text: 'text-green-700 dark:text-green-400', border: 'border-green-100 dark:border-green-900/30', hex: '#22c55e' },
-  emerald: { label: 'Emerald (Ekonomi)', bg: 'bg-emerald-50 dark:bg-emerald-950/20', text: 'text-emerald-700 dark:text-emerald-400', border: 'border-emerald-100 dark:border-emerald-900/30', hex: '#10b981' },
-  teal: { label: 'Teal (Gaya Hidup)', bg: 'bg-teal-50 dark:bg-teal-950/20', text: 'text-teal-700 dark:text-teal-400', border: 'border-teal-100 dark:border-teal-900/30', hex: '#14b8a6' },
-  sky: { label: 'Sky (Video)', bg: 'bg-sky-50 dark:bg-sky-950/20', text: 'text-sky-700 dark:text-sky-400', border: 'border-sky-100 dark:border-sky-900/30', hex: '#0ea5e9' },
-  blue: { label: 'Blue (Teknologi)', bg: 'bg-blue-50 dark:bg-blue-950/20', text: 'text-blue-700 dark:text-blue-400', border: 'border-blue-100 dark:border-blue-900/30', hex: '#3b82f6' },
-  indigo: { label: 'Indigo (Opini)', bg: 'bg-indigo-50 dark:bg-indigo-950/20', text: 'text-indigo-700 dark:text-indigo-400', border: 'border-indigo-100 dark:border-indigo-900/30', hex: '#6366f1' },
-  violet: { label: 'Violet (Politik)', bg: 'bg-violet-50 dark:bg-violet-950/20', text: 'text-violet-700 dark:text-violet-400', border: 'border-violet-100 dark:border-violet-900/30', hex: '#8b5cf6' },
-  purple: { label: 'Purple (Hiburan)', bg: 'bg-purple-50 dark:bg-purple-950/20', text: 'text-purple-700 dark:text-purple-400', border: 'border-purple-100 dark:border-purple-900/30', hex: '#a855f7' },
-  pink: { label: 'Pink (Kreatif)', bg: 'bg-pink-50 dark:bg-pink-950/20', text: 'text-pink-700 dark:text-pink-400', border: 'border-pink-100 dark:border-pink-900/30', hex: '#ec4899' },
-  rose: { label: 'Rose (Nasional)', bg: 'bg-rose-50 dark:bg-rose-950/20', text: 'text-rose-700 dark:text-rose-400', border: 'border-rose-100 dark:border-rose-900/30', hex: '#f43f5e' }
-};
+import type { Category } from '@beritakarya/types';
+import { getCategoryColor } from '../../../../lib/constants';
 
 export default function CategoriesDashboard() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -41,7 +12,6 @@ export default function CategoriesDashboard() {
   const [slug, setSlug] = useState('');
   const [parentId, setParentId] = useState('');
   const [order, setOrder] = useState('0');
-  const [color, setColor] = useState('slate');
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [loading, setLoading] = useState(false);
   const [isGlobalView, setIsGlobalView] = useState(false);
@@ -96,7 +66,6 @@ export default function CategoriesDashboard() {
         slug,
         parentId: parentId || null,
         order: order ? Number(order) : 0,
-        color: color || 'slate',
         siteId: isGlobalView ? null : siteId
       };
 
@@ -112,7 +81,6 @@ export default function CategoriesDashboard() {
       setSlug('');
       setParentId('');
       setOrder('0');
-      setColor('slate');
       setEditingCategory(null);
       fetchCategories();
     } catch (error: any) {
@@ -128,7 +96,6 @@ export default function CategoriesDashboard() {
     setSlug(cat.slug);
     setParentId(cat.parentId || '');
     setOrder(String(cat.order || 0));
-    setColor(cat.color || 'slate');
   };
 
   const cancelEdit = () => {
@@ -137,7 +104,6 @@ export default function CategoriesDashboard() {
     setSlug('');
     setParentId('');
     setOrder('0');
-    setColor('slate');
   };
 
   const handleDeleteRequest = (cat: Category) => {
@@ -311,36 +277,16 @@ export default function CategoriesDashboard() {
                   />
                 </div>
 
-                {/* Accent Color Selection */}
+                {/* Color Info (read-only) */}
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Warna Aksen</label>
-                  <select
-                    value={color}
-                    onChange={(e) => setColor(e.target.value)}
-                    className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm outline-none focus:border-rose-500 transition-all font-semibold"
-                  >
-                    {Object.entries(COLOR_PRESETS).map(([key, item]) => (
-                      <option key={key} value={key}>
-                        {item.label}
-                      </option>
-                    ))}
-                  </select>
+                  <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Warna Otomatis</label>
+                  <div className="flex items-center gap-2 px-3 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl">
+                    <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-black border uppercase tracking-wider ${getCategoryColor(name || 'umum')}`}>
+                      {name || 'Nama Kategori'}
+                    </span>
+                    <span className="text-[11px] text-gray-400">(otomatis dari nama)</span>
+                  </div>
                 </div>
-              </div>
-
-              {/* Color preview bar */}
-              <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl border border-dashed border-gray-200 dark:border-gray-700">
-                <span className="text-[11px] font-bold text-gray-400 uppercase">Preview:</span>
-                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-extrabold border ${
-                  COLOR_PRESETS[color]?.bg || COLOR_PRESETS.slate.bg
-                } ${
-                  COLOR_PRESETS[color]?.text || COLOR_PRESETS.slate.text
-                } ${
-                  COLOR_PRESETS[color]?.border || COLOR_PRESETS.slate.border
-                }`}>
-                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: COLOR_PRESETS[color]?.hex || COLOR_PRESETS.slate.hex }}></span>
-                  {name || 'Nama Kategori'}
-                </span>
               </div>
 
               <button 
@@ -359,6 +305,7 @@ export default function CategoriesDashboard() {
               <div className="text-xs leading-relaxed space-y-1">
                 <p className="font-bold">Tips Struktur Navigasi:</p>
                 <p>Urutan (Order) menentukan posisi dari kiri-ke-kanan pada navigasi publik. Gunakan urutan yang rapat (misal 1, 2, 3) untuk visualisasi yang rapi.</p>
+                <p className="mt-2">Warna kategori ditentukan otomatis berdasarkan nama dan konsisten dengan tampilan homepage.</p>
               </div>
             </div>
           </div>
@@ -381,7 +328,7 @@ export default function CategoriesDashboard() {
                       Urutan
                     </th>
                     <th className="px-6 py-4 text-left text-xs font-black uppercase tracking-widest text-gray-400">
-                      Aksen Warna
+                      Warna Tampil (Homepage)
                     </th>
                     <th className="px-6 py-4 text-right text-xs font-black uppercase tracking-widest text-gray-400">
                       Aksi
@@ -401,7 +348,6 @@ export default function CategoriesDashboard() {
                     </tr>
                   ) : (
                     orderedCategories.map(cat => {
-                      const colorInfo = COLOR_PRESETS[cat.color || 'slate'] || COLOR_PRESETS.slate;
                       return (
                         <tr 
                           key={cat.id} 
@@ -444,15 +390,8 @@ export default function CategoriesDashboard() {
                             </span>
                           </td>
                           <td className="px-6 py-4">
-                            <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-black border uppercase tracking-wider ${
-                              colorInfo.bg
-                            } ${
-                              colorInfo.text
-                            } ${
-                              colorInfo.border
-                            }`}>
-                              <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: colorInfo.hex }}></span>
-                              {cat.color || 'slate'}
+                            <span className={getCategoryColor(cat.name)}>
+                              {cat.name}
                             </span>
                           </td>
                           <td className="px-6 py-4 text-right space-x-1">
@@ -515,7 +454,7 @@ export default function CategoriesDashboard() {
               Hapus Kategori?
             </h3>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 leading-relaxed">
-              Apakah Anda yakin ingin menghapus rubrik <strong>&quot;{deleteConfirm.name}&quot;</strong>? 
+              Apakah Anda yakin ingin menghapus rubrik <strong>"{deleteConfirm.name}"</strong>? 
               Jika rubrik ini adalah kategori utama, semua relasi sub-kategori di bawahnya akan kehilangan induknya. Tindakan ini permanen.
             </p>
             <div className="flex justify-end gap-3">
