@@ -51,7 +51,7 @@ COPY --from=builder --chown=apiuser:nodejs /app/apps/api/node_modules /app/apps/
 
 # Berikan izin akses ke apiuser
 # Pastikan folder uploads ada dan punya izin yang benar
-RUN mkdir -p /app/apps/api/uploads && chown -R apiuser:nodejs /app/apps/api/uploads
+RUN mkdir -p /app/apps/api/uploads/kyc && chown -R apiuser:nodejs /app/apps/api/uploads
 
 USER apiuser
 EXPOSE 3001

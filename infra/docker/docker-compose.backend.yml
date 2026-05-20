@@ -32,6 +32,7 @@ services:
       - API_URL=https://api.beritakarya.co
       - REDIS_HOST=redis
       - MEILISEARCH_HOST=http://meilisearch:7700
+      - KYC_STORAGE_PATH=/app/apps/api/uploads/kyc  # Arahkan ke volume yang sudah di-mount & punya izin apiuser
     env_file:
       - ./.env
     expose:
