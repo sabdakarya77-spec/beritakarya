@@ -5,6 +5,7 @@ import type { Block, ArticleStatus } from '@beritakarya/types'
 
 export interface EditorState {
   articleId: string | null
+  siteId: string | null
   title: string
   blocks: Block[]
   status: ArticleStatus
@@ -39,6 +40,7 @@ export interface EditorState {
   moveBlock: (id: string, direction: 'up' | 'down') => void
   reorderBlocks: (fromIdx: number, toIdx: number) => void
   undo: () => void
+  setSiteId: (siteId: string) => void
   
   // Data Sync
   loadArticle: (id: string, siteId: string) => Promise<void>
@@ -50,7 +52,7 @@ export interface EditorState {
   setActiveTab: (tab: EditorState['activeTab']) => void
   publishArticle: () => Promise<void>
   submitForReview: () => Promise<void>
-  reset: () => void
+  reset: (siteId?: string) => void
 }
 
 function defaultBlock(type: Block['type']): Block {
@@ -74,6 +76,7 @@ let saveTimer: ReturnType<typeof setTimeout> | null = null
 
 export const useEditorStore = create<EditorState>((set, get) => ({
   articleId: null,
+  siteId: null,
   title: '',
   blocks: [{ id: uuidv4(), type: 'paragraph', content: '' }],
   status: 'draft',
@@ -101,6 +104,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     set({ title, isDirty: true })
     scheduleAutoSave(get)
   },
+  setSiteId: (siteId) => set({ siteId }),
 
   setBlocks: (blocks) => {
     set((s) => ({ undoStack: [...s.undoStack.slice(-20), s.blocks], blocks, isDirty: true }))
@@ -164,9 +168,11 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   },
 
   loadArticle: async (id, siteId) => {
-    set({ isLoading: true, saveError: null })
+    set({ isLoading: true, saveError: null, siteId })
     try {
-      const { data } = await api.get(`/articles/${id}`)
+      const { data } = await api.get(`/articles/${id}`, {
+        params: siteId ? { site: siteId } : undefined
+      })
       const article = data.data
       // [FIX] Guard against null/undefined blocks from DB
       const rawBlocks = article.blocks
@@ -217,13 +223,14 @@ export const useEditorStore = create<EditorState>((set, get) => ({
         isExclusive: s.isExclusive,
         isFeatured: s.isFeatured
       }
+      const params = s.siteId ? { params: { site: s.siteId } } : undefined
 
       if (s.articleId) {
-        await api.put(`/articles/${s.articleId}`, payload)
+        await api.put(`/articles/${s.articleId}`, payload, params)
         set({ saving: false, lastSaved: new Date(), isDirty: false })
       } else {
         // Create new article
-        const { data } = await api.post('/articles', payload)
+        const { data } = await api.post('/articles', payload, params)
         const newArticle = data.data
         set({ 
           articleId: newArticle.id, 
@@ -256,27 +263,27 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   setActiveTab: (activeTab) => set({ activeTab }),
 
   publishArticle: async () => {
-    const { articleId } = get()
+    const { articleId, siteId } = get()
     if (!articleId) return
     await get().saveArticle()
-    await api.post(`/articles/${articleId}/publish`)
+    await api.post(`/articles/${articleId}/publish`, undefined, siteId ? { params: { site: siteId } } : undefined)
     set({ status: 'published' })
   },
 
   submitForReview: async () => {
-    const { articleId } = get()
+    const { articleId, siteId } = get()
     if (!articleId) {
       await get().saveArticle()
     }
     const freshId = get().articleId
     if (!freshId) return
 
-    await api.put(`/articles/${freshId}`, { status: 'submitted' })
+    await api.put(`/articles/${freshId}`, { status: 'submitted' }, siteId ? { params: { site: siteId } } : undefined)
     set({ status: 'submitted' })
   },
 
-  reset: () => set({
-    articleId: null, title: '', status: 'draft',
+  reset: (siteId?: string) => set({
+    articleId: null, siteId: siteId ?? null, title: '', status: 'draft',
     blocks: [{ id: uuidv4(), type: 'paragraph', content: '' }],
     saving: false, saveError: null, lastSaved: null, isDirty: false, isLoading: false, undoStack: [],
     metaTitle: '', metaDescription: '', categoryId: null, tags: [],

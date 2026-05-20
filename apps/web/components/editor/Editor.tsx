@@ -15,15 +15,16 @@ interface EditorProps {
 }
 
 export function Editor({ articleId, siteId }: EditorProps) {
-  const { loadArticle, saveArticle, undo, isFocusMode, reset } = useEditorStore()
+  const { loadArticle, saveArticle, undo, isFocusMode, reset, setSiteId, isLoading, saveError } = useEditorStore()
 
   useEffect(() => {
+    setSiteId(siteId)
     if (articleId && articleId !== 'new') {
       loadArticle(articleId, siteId)
     } else if (articleId === 'new') {
-      reset()
+      reset(siteId)
     }
-  }, [articleId, siteId, loadArticle, reset])
+  }, [articleId, siteId, loadArticle, reset, setSiteId])
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
@@ -73,6 +74,17 @@ export function Editor({ articleId, siteId }: EditorProps) {
         {isFocusMode && (
           <div className="mb-16">
             <TitleInput />
+          </div>
+        )}
+
+        {isLoading && (
+          <div className="mb-6 rounded-xl border border-gray-200 bg-white/80 p-4 text-sm text-gray-700 dark:border-white/10 dark:bg-slate-900/80 dark:text-gray-200">
+            Memuat artikel…
+          </div>
+        )}
+        {saveError && (
+          <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/30 dark:bg-red-900/10 dark:text-red-200">
+            {saveError}
           </div>
         )}
 
