@@ -5,17 +5,25 @@ export async function findArticlesBySite(
   siteId: string,
   opts: { status?: string; search?: string; category?: string; page?: number; limit?: number; authorId?: string } = {}
 ) {
+  const { status, search, category, page = 1, limit = 20, authorId } = opts
   const categoryFilter: Prisma.ArticleWhereInput = {}
+
   if (category) {
     const catRecord = await prisma.category.findFirst({
       where: {
-        OR: [
-          { name: { equals: category, mode: 'insensitive' } },
-          { slug: { equals: category, mode: 'insensitive' } }
-        ],
-        OR: [
-          { siteId },
-          { isGlobal: true }
+        AND: [
+          {
+            OR: [
+              { name: { equals: category, mode: 'insensitive' } },
+              { slug: { equals: category, mode: 'insensitive' } }
+            ]
+          },
+          {
+            OR: [
+              { siteId },
+              { isGlobal: true }
+            ]
+          }
         ]
       },
       include: {
@@ -26,11 +34,11 @@ export async function findArticlesBySite(
     })
     
     if (catRecord) {
-      const ids = [catRecord.id, ...catRecord.subCategories.map(sub => sub.id)]
+      const ids = [catRecord.id, ...catRecord.subCategories.map((sub: { id: string }) => sub.id)]
       categoryFilter.categoryId = { in: ids }
     } else {
-      // If a category is requested but doesn't exist, ensure we return nothing
-      categoryFilter.categoryId = 'non-existent-category'
+      // Return no results if category doesn't exist
+      categoryFilter.categoryId = { in: [] }
     }
   }
 
@@ -46,6 +54,9 @@ export async function findArticlesBySite(
       ]
     })
   }
+
+  const skip = (page - 1) * limit
+
   const [items, total] = await Promise.all([
     prisma.article.findMany({
       where,
@@ -59,7 +70,7 @@ export async function findArticlesBySite(
         author: { select: { id: true, name: true, role: true } }
       },
       orderBy: { createdAt: 'desc' },
-      skip: (page - 1) * limit,
+      skip,
       take: limit
     }),
     prisma.article.count({ where })
