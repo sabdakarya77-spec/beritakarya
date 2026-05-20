@@ -84,9 +84,13 @@ export class WatermarkService {
       composites.push({ input: Buffer.from(stampSvg), top: 0, left: 0, blend: 'over' })
 
       // Write watermarked image to a temp file first, then replace original
+      // NOTE: fs.rename() GAGAL lintas device (EXDEV) di Docker karena /tmp (tmpfs)
+      // dan bind-mounted volume dianggap filesystem berbeda.
+      // fs.copyFile() + fs.unlink() bekerja di semua kondisi.
       const tmpPath = `${imagePath}.wm.tmp`
       await sharp(imageBuffer).composite(composites).toFile(tmpPath)
-      await fs.rename(tmpPath, imagePath)
+      await fs.copyFile(tmpPath, imagePath)
+      await fs.unlink(tmpPath).catch(() => {})
 
       logger.info(`[WatermarkService] Watermark applied: ${path.basename(imagePath)}`)
     } catch (error: any) {
@@ -133,8 +137,12 @@ export class WatermarkService {
 
     await fs.mkdir(finalDir, { recursive: true })
 
-    // Move temp → final location first
-    await fs.rename(tempPath, finalPath)
+    // Copy temp → final location, lalu hapus temp.
+    // fs.rename() GAGAL lintas device (EXDEV) di Docker karena /tmp (tmpfs)
+    // dan bind-mounted volume dianggap filesystem berbeda.
+    // fs.copyFile() + fs.unlink() bekerja di semua kondisi.
+    await fs.copyFile(tempPath, finalPath)
+    await fs.unlink(tempPath).catch(() => {}) // cleanup temp, abaikan error
 
     // Apply watermark in-place on the permanent file
     await WatermarkService.applyWatermark(finalPath)
