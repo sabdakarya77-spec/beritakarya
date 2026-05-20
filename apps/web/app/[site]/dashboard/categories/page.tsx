@@ -218,7 +218,7 @@ export default function CategoriesDashboard() {
           </button>
           
           {isGlobalView && (
-            <div className="text-[11px] text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-900/20 px-3 py-2 rounded-xl border border-purple-100 dark:border-purple-900/30 hidden md:block">
+            <div className="text-[11px] text-purple-600 dark:text-purple-400 font-bold bg-purple-50 dark:bg-purple-900/20 px-3 py-2 rounded-xl border border-purple-100 dark:border-purple-900/30 hidden md:block">
               Superadmin Mode: Mengelola kategori global / lintas situs.
             </div>
           )}
