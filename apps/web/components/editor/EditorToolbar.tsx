@@ -68,7 +68,7 @@ export function EditorToolbar() {
         </button>
         <div className="h-6 w-px bg-gray-100 dark:bg-white/5" />
         <div className="flex items-center gap-3">
-          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-black dark:text-white">Editorial Desk</span>
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-black dark:text-white">Ruang Editor</span>
           <div className={cn(
             "px-2 py-0.5 rounded-sm text-[9px] font-black uppercase tracking-widest border",
             STATUS_COLORS[status] || STATUS_COLORS.draft
