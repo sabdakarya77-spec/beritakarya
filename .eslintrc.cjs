@@ -40,7 +40,19 @@ module.exports = {
         'react/no-unknown-property': ['error', { ignore: ['jsx'] }],
         'react-hooks/exhaustive-deps': 'off',
         'react-hooks/set-state-in-effect': 'off',
-        'react-hooks/no-set-state-in-effect': 'off'
+        'react-hooks/no-set-state-in-effect': 'off',
+        // Enforce Container usage in public pages
+        'no-restricted-syntax': [
+          'error',
+          {
+            selector: 'JSXElement > JSXElement[name.selector="main, section, article, div"][className*="max-w-"][className*="mx-auto"]:not([class*="Container"])',
+            message: 'Use <Container> component instead of manual max-w-* mx-auto classes. See docs/design-system/layout-system.md'
+          },
+          {
+            selector: 'JSXElement > JSXElement[name.selector="main, section, article, div"][className*="-mx-4"][className*="lg:-mx-10"]:not([class*="md:-mx-8"])',
+            message: 'Bleed sections must use Container with bleed prop: <Container bleed>. Ensure responsive padding: px-4 md:px-8 lg:px-10'
+          }
+        ]
       },
       settings: {
         react: {

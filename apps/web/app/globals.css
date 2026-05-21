@@ -44,6 +44,31 @@
     --dash-sidebar-hover: rgba(255,255,255,0.05);
     --dash-card: #FFFFFF;
     --dash-border: #E2E8F0;
+
+    /* ==================== CONTAINER SYSTEM TOKENS ==================== */
+    /* Horizontal Padding (Container Gutters) */
+    --container-padding-mobile: 1rem;    /* px-4 = 16px */
+    --container-padding-tablet: 2rem;    /* md:px-8 = 32px */
+    --container-padding-desktop: 2.5rem; /* lg:px-10 = 40px */
+    
+    /* Container Max Widths */
+    --container-max-width: 80rem;       /* max-w-7xl = 1280px */
+    --content-max-width: 47.5rem;       /* max-w-[760px] for optimal reading */
+    
+    /* Bleeding Edge System */
+    --bleed-mobile: -1rem;              /* -mx-4 */
+    --bleed-tablet: -2rem;              /* md:-mx-8 */
+    --bleed-desktop: -2.5rem;           /* lg:-mx-10 */
+    
+    /* Grid Gaps */
+    --gap-regular: 1.5rem;             /* gap-6 */
+    --gap-wide: 3rem;                   /* lg:gap-12 */
+    --gap-wider: 5rem;                  /* lg:gap-20 */
+    
+    /* Border Radius */
+    --radius-card: 1.5rem;              /* rounded-3xl */
+    --radius-button: 0.75rem;           /* rounded-xl */
+    --radius-input: 0.5rem;             /* rounded-lg */
   }
 
   .dark {

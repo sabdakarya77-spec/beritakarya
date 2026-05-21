@@ -26,6 +26,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
+      '@': resolve(__dirname, './'),
       '@beritakarya/types':  resolve(__dirname, '../../packages/types/src/index.ts'),
       '@beritakarya/utils':  resolve(__dirname, '../../packages/utils/src/index.ts'),
       '@beritakarya/config': resolve(__dirname, '../../packages/config/src/index.ts')

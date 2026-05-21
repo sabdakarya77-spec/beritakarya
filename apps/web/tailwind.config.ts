@@ -47,6 +47,21 @@ const config: Config = {
           '0%': { transform: 'translateX(0%)' },
           '100%': { transform: 'translateX(-100%)' },
         }
+      },
+      /* ==================== CONTAINER SYSTEM TOKENS ==================== */
+      spacing: {
+        'container-mobile': 'var(--container-padding-mobile)',
+        'container-tablet': 'var(--container-padding-tablet)',
+        'container-desktop': 'var(--container-padding-desktop)',
+      },
+      maxWidth: {
+        'container': 'var(--container-max-width)',
+        'content': 'var(--content-max-width)',
+      },
+      borderRadius: {
+        'card': 'var(--radius-card)',
+        'button': 'var(--radius-button)',
+        'input': 'var(--radius-input)',
       }
     },
   },

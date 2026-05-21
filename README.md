@@ -224,6 +224,66 @@ Test menggunakan **Vitest** dengan **Supertest** untuk integration test.
 
 ---
 
+## 📐 Layout System & Container Component
+
+**Phase 2 Migration Complete (21 Mei 2026)**
+
+Kami telah mengimplementasikan sistem layout terstandar yang memastikan konsistensi lintas semua halaman publik. Fitur utama:
+
+- **Container Component** — Komponen layout reusable dengan padding responsif
+- **Dual-Width Strategy** — 760px untuk konten teks, 1280px untuk media
+- **Bleed Support** — Dukungan edge-to-edge untuk hero sections
+- **Design Tokens** — CSS custom properties untuk maintainability
+
+### Usage
+
+```tsx
+import { Container } from '@/components/layout/Container'
+
+// Standard width (1280px max)
+<Container>
+  <main>Page content</main>
+</Container>
+
+// Reading-optimized (760px max)
+<Container size="content">
+  <article>Article body</article>
+</Container>
+
+// Full-bleed sections
+<Container bleed>
+  <section className="bg-cover">Hero</section>
+</Container>
+```
+
+### Documentation
+- 📖 [Layout System Guide](./docs/design-system/layout-system.md)
+- ✅ [Migration Summary](./PHASE_2_MIGRATION_SUMMARY.md)
+- 🚀 [Deployment Checklist](./DEPLOYMENT_CHECKLIST_PHASE_2.md)
+
+---
+
+## 🔍 Visual Regression Testing
+
+Untuk memastikan konsistensi layout, kami menggunakan Playwright:
+
+```bash
+# Install E2E testing dependencies
+pnpm --filter @beritakarya/web add -D @playwright/test
+
+# Run visual regression tests
+pnpm --filter @beritakarya/web e2e
+```
+
+Test suite mencakup:
+- Horizontal overflow checks pada semua viewport
+- Container padding consistency
+- Bleed section validation
+- CLS (Cumulative Layout Shift) monitoring
+- Snapshot testing untuk baseline layouts
+
+---
+
 ## 📋 Backup Database
 
 Script backup tersedia di `infra/scripts/backup-database.sh`.
