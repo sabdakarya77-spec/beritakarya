@@ -112,7 +112,13 @@ export async function createArticle(data: {
   title: string; slug: string; siteId: string
   authorId: string; categoryId?: string | null; tags?: any; blocks?: any[]
 }) {
-  return prisma.article.create({ data: { ...data, blocks: data.blocks ?? [] } })
+  return prisma.article.create({
+    data: { ...data, blocks: data.blocks ?? [] },
+    include: {
+      category: { select: { name: true } },
+      author: { select: { id: true, name: true, role: true } }
+    }
+  })
 }
 
 export async function updateArticle(
@@ -126,7 +132,14 @@ export async function updateArticle(
     featuredImage: string; featuredImageBlur?: string | null; featuredImageColor?: string | null;
   }>
 ) {
-  return prisma.article.update({ where: { id }, data: data as any })
+  return prisma.article.update({
+    where: { id },
+    data: data as any,
+    include: {
+      category: { select: { name: true } },
+      author: { select: { id: true, name: true, role: true } }
+    }
+  })
 }
 
 export async function deleteArticle(id: string) {
