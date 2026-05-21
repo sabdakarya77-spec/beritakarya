@@ -52,7 +52,7 @@ export async function createArticleWithSlugRetry(
 export async function updateArticleWithSlugRetry(
   id: string,
   siteId: string,
-  data: Parameters<typeof repo.updateArticle>[2] & { slug?: string }
+  data: Parameters<typeof repo.updateArticle>[2]
 ) {
   if (!data.slug) {
     return repo.updateArticle(id, siteId, data)

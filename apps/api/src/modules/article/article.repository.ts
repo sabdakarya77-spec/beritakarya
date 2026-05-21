@@ -156,7 +156,7 @@ export async function createArticle(data: {
 export async function updateArticle(
   id: string, siteId: string,
   data: Partial<{ 
-    title: string; blocks: any[]; metaTitle: string; metaDescription: string; 
+    title: string; slug: string; blocks: any[]; metaTitle: string; metaDescription: string; 
     status: string; categoryId: string | null; tags: any;
     isBreaking: boolean; isExclusive: boolean; isFeatured: boolean;
     wordCount: number; readingTimeMin: number; publishedAt: Date;
