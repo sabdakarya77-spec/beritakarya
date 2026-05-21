@@ -65,7 +65,7 @@ export const createArticleSchema = z.object({
   categoryId: z.string().optional().nullable(),
   tags: z.array(z.string()).default([]),
   blocks: blocksField,
-  metaTitle: z.string().max(70).optional(),
+  metaTitle: z.string().max(60).optional(),
   metaDescription: z.string().max(160).optional(),
   isBreaking: z.boolean().optional(),
   isExclusive: z.boolean().optional(),
@@ -79,7 +79,7 @@ export const updateArticleSchema = z.object({
   tags: z.array(z.string()).optional(),
   blocks: blocksField.optional(),
   scheduledAt: z.coerce.date().optional().nullable(),
-  metaTitle: z.string().max(70).optional(),
+  metaTitle: z.string().max(60).optional(),
   metaDescription: z.string().max(160).optional(),
   // [FIX] Extended status enum to cover all workflow states
   status: z.enum(['draft','submitted','review','revision','approved','scheduled','published','archived']).optional(),
@@ -91,7 +91,7 @@ export const updateArticleSchema = z.object({
   featuredImage: z.string().optional(),
   reviewNotes: z.string().optional(),
   reviewedBy: z.string().optional(),
-  slug: z.string().optional(),
+  // [FIX] Removed slug field - service auto-generates from title change
 })
 
 export const articleQuerySchema = z.object({

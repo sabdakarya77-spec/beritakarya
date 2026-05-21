@@ -1692,7 +1692,7 @@ Ensures race conditions are caught at DB level (infinite loop check should be ad
   categoryId: z.string().optional().nullable(),
   tags: z.array(z.string()).default([]),
   blocks: z.array(blockSchema).default([]),
-  metaTitle: z.string().max(70).optional(),
+  metaTitle: z.string().max(60).optional(),
   metaDescription: z.string().max(160).optional(),
   isBreaking: z.boolean().optional(),
   isExclusive: z.boolean().optional(),
@@ -1711,7 +1711,7 @@ Ensures race conditions are caught at DB level (infinite loop check should be ad
   publishedAt: z.coerce.date().optional(),
   reviewNotes: z.string().optional(),
   reviewedBy: z.string().optional(),
-  slug: z.string().optional(),  // Actually auto-generated, shouldn't be passed
+
 }
 ```
 

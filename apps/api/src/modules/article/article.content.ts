@@ -1,3 +1,4 @@
+const MIN_WORDS = 50
 const MAX_BLOCKS = 200
 const MAX_WORDS = 100_000
 
@@ -30,6 +31,12 @@ export function validateArticleContentLimits(blocks?: any[]): void {
     )
   }
   const words = countWords(extractTextFromBlocks(blocks))
+  if (words < MIN_WORDS) {
+    throw Object.assign(
+      new Error(`Minimal ${MIN_WORDS} kata untuk membuat artikel`),
+      { statusCode: 400 }
+    )
+  }
   if (words > MAX_WORDS) {
     throw Object.assign(
       new Error(`Konten melebihi batas ${MAX_WORDS.toLocaleString('id-ID')} kata`),

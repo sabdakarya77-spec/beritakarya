@@ -607,7 +607,14 @@ export async function indexGoogleArticle(id: string, siteId: string) {
     where: { id: siteId }
   })
 
-  const domain = site?.domain || 'beritakarya.co'
+  if (!site?.domain) {
+    throw Object.assign(
+      new Error(`Domain tidak dikonfigurasi untuk site ${siteId}`),
+      { statusCode: 500 }
+    )
+  }
+  
+  const domain = site.domain
   const protocol = domain.includes('localhost') || domain.includes('127.0.0.1') ? 'http' : 'https'
   const articleUrl = `${protocol}://${domain}/artikel/${article.slug}`
 

@@ -65,12 +65,6 @@ articleRouter.put('/:id', articleUpdateLimiter, ...withSite, asyncHandler(async 
   res.json({ success: true, data: article })
 }))
 
-articleRouter.patch('/:id', articleUpdateLimiter, ...withSite, asyncHandler(async (req: Request, res: Response) => {
-  const input = updateArticleSchema.parse(req.body)
-  const article = await service.updateArticle(req.params.id, req.site!, input, req.user!)
-  res.json({ success: true, data: article })
-}))
-
 articleRouter.post('/:id/publish', ...withSite, asyncHandler(async (req: Request, res: Response) => {
   const { forcePublish } = publishArticleSchema.parse(req.body ?? {})
   const article = await service.publishArticle(
