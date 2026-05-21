@@ -49,6 +49,14 @@ const editorPusat: JWTPayload = {
   userId: 'u-3', role: 'wapimred', siteId: null, iat: 0, exp: 0
 }
 
+/** Minimal 50 kata — syarat publish setelah fix draft save */
+const publishReadyBlocks = () => [
+  {
+    type: 'paragraph' as const,
+    content: Array.from({ length: 50 }, (_, i) => `kata${i + 1}`).join(' ')
+  }
+]
+
 const mockArticle = (overrides = {}) => ({
   id: 'art-1', title: 'Test', slug: 'test',
   siteId: 'bandung', authorId: 'u-1',
@@ -171,7 +179,9 @@ describe('publishArticle', () => {
   })
 
   it('set status published dari approved', async () => {
-    vi.mocked(repo.findArticleById).mockResolvedValue(mockArticle({ status: 'approved' }) as any)
+    vi.mocked(repo.findArticleById).mockResolvedValue(
+      mockArticle({ status: 'approved', blocks: publishReadyBlocks() }) as any
+    )
     vi.mocked(repo.updateArticle).mockResolvedValue(
       mockArticle({ status: 'published', slug: 'test' }) as any
     )
@@ -189,7 +199,9 @@ describe('publishArticle', () => {
   })
 
   it('re-indexes Meilisearch and invalidates Redis cache on publish', async () => {
-    vi.mocked(repo.findArticleById).mockResolvedValue(mockArticle({ status: 'approved' }) as any)
+    vi.mocked(repo.findArticleById).mockResolvedValue(
+      mockArticle({ status: 'approved', blocks: publishReadyBlocks() }) as any
+    )
     vi.mocked(repo.updateArticle).mockResolvedValue(
       mockArticle({ status: 'published', slug: 'test' }) as any
     )
