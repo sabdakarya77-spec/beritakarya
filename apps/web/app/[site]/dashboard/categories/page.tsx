@@ -456,7 +456,7 @@ export default function CategoriesDashboard() {
               Hapus Kategori?
             </h3>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 leading-relaxed">
-              Apakah Anda yakin ingin menghapus rubrik <strong>"{deleteConfirm.name}"</strong>? 
+              Apakah Anda yakin ingin menghapus rubrik <strong>&ldquo;{deleteConfirm.name}&rdquo;</strong>? 
               Jika rubrik ini adalah kategori utama, semua relasi sub-kategori di bawahnya akan kehilangan induknya. Tindakan ini permanen.
             </p>
             <div className="flex justify-end gap-3">
