@@ -82,6 +82,19 @@
     @apply tracking-tight transition-colors duration-500;
     color: var(--brand-text);
   }
+
+  /* Fix native select dropdown options visibility in light/dark modes */
+  select option,
+  select optgroup {
+    background-color: #ffffff;
+    color: #0f172a;
+  }
+
+  .dark select option,
+  .dark select optgroup {
+    background-color: #1e293b;
+    color: #f8fafc;
+  }
 }
 
 @layer components {

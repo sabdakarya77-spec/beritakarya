@@ -237,12 +237,12 @@ export function EditorialSidebar() {
                         onChange={(e) => updateArticleData({ categoryId: e.target.value })}
                         className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-xl text-xs font-bold text-brand-black dark:text-white outline-none focus:border-brand-red transition-all appearance-none"
                       >
-                        <option value="">Pilih Kategori...</option>
+                        <option value="" className="bg-white dark:bg-slate-800 text-brand-black dark:text-white">Pilih Kategori...</option>
                         {categoriesTree.map(parent => (
-                          <optgroup key={parent.id} label={parent.name}>
-                            <option value={parent.id}>{parent.name} (Utama)</option>
+                          <optgroup key={parent.id} label={parent.name} className="bg-white dark:bg-slate-800 text-brand-black dark:text-white">
+                            <option value={parent.id} className="bg-white dark:bg-slate-800 text-brand-black dark:text-white">{parent.name} (Utama)</option>
                             {parent.subCategories?.map((sub: Category) => (
-                              <option key={sub.id} value={sub.id}>
+                              <option key={sub.id} value={sub.id} className="bg-white dark:bg-slate-800 text-brand-black dark:text-white">
                                 &nbsp;&nbsp;↳ {sub.name}
                               </option>
                             ))}
