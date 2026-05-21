@@ -64,7 +64,6 @@ export function Editor({ articleId, siteId }: EditorProps) {
               <div className="w-8 h-8 rounded-lg bg-brand-red text-white flex items-center justify-center font-serif italic text-sm shadow-lg shadow-brand-red/20">B</div>
               <div className="flex flex-col">
                 <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">Ruang Editor</span>
-                <span className="text-[9px] font-bold text-brand-red uppercase tracking-widest mt-0.5">Konten Investigasi & Analisis</span>
               </div>
             </div>
             <TitleInput />
