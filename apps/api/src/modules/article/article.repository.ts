@@ -83,6 +83,53 @@ export async function findArticlesBySite(
   return { items, total, page, limit, totalPages: Math.ceil(total / limit) }
 }
 
+export async function findArticlesByIds(
+  siteId: string,
+  ids: string[],
+  opts: { authorId?: string } = {}
+) {
+  if (ids.length === 0) return []
+
+  return prisma.article.findMany({
+    where: {
+      id: { in: ids },
+      siteId,
+      ...articleNotDeleted,
+      ...(opts.authorId && { authorId: opts.authorId })
+    },
+    select: {
+      id: true, title: true, slug: true, status: true,
+      siteId: true, authorId: true, publishedAt: true, createdAt: true, updatedAt: true,
+      isBreaking: true, isExclusive: true, isFeatured: true,
+      featuredImage: true, featuredImageBlur: true, featuredImageColor: true,
+      viewCount: true, wordCount: true, readingTimeMin: true,
+      blocks: true, tags: true, metaTitle: true, metaDescription: true,
+      category: { select: { name: true } },
+      author: { select: { id: true, name: true, role: true } }
+    }
+  })
+}
+
+export async function findDueScheduledArticles(limit = 50) {
+  return prisma.article.findMany({
+    where: {
+      status: 'scheduled',
+      ...articleNotDeleted,
+      scheduledAt: { lte: new Date() }
+    },
+    orderBy: { scheduledAt: 'asc' },
+    take: limit,
+    select: {
+      id: true,
+      siteId: true,
+      authorId: true,
+      slug: true,
+      title: true,
+      status: true
+    }
+  })
+}
+
 export async function findArticleById(id: string, siteId: string) {
   return prisma.article.findFirst({
     where: { id, siteId, ...articleNotDeleted },
@@ -160,6 +207,7 @@ export async function updateArticle(
     status: string; categoryId: string | null; tags: any;
     isBreaking: boolean; isExclusive: boolean; isFeatured: boolean;
     wordCount: number; readingTimeMin: number; publishedAt: Date;
+    scheduledAt: Date | null;
     reviewNotes: string; reviewedBy: string; reviewedAt: Date;
     featuredImage: string; featuredImageBlur?: string | null; featuredImageColor?: string | null;
   }>

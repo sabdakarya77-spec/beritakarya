@@ -7,7 +7,8 @@ import { errorMiddleware } from '../../middleware/error.middleware'
 
 vi.mock('./article.service')
 vi.mock('../../lib/rateLimit', () => ({
-  apiLimiter: (_: any, __: any, n: any) => n()
+  apiLimiter: (_: any, __: any, n: any) => n(),
+  articleWriteLimiter: (_: any, __: any, n: any) => n()
 }))
 vi.mock('../../middleware/site.middleware', () => ({
   siteMiddleware: (req: any, _: any, next: any) => {

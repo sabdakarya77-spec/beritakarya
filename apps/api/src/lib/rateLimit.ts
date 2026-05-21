@@ -43,6 +43,26 @@ export const apiLimiter = rateLimit({
   legacyHeaders: false
 })
 
+/** Limit article create bursts per authenticated user (or IP). */
+export const articleWriteLimiter = rateLimit({
+  store: createStore('article-write'),
+  windowMs: 60 * 60 * 1000,
+  max: 30,
+  keyGenerator: (req) => {
+    const user = (req as { user?: { userId?: string } }).user
+    return user?.userId ? `user:${user.userId}` : `ip:${req.ip}`
+  },
+  message: {
+    success: false,
+    error: {
+      code: 'RATE_LIMITED',
+      message: 'Terlalu banyak pembuatan artikel. Coba lagi dalam 1 jam.'
+    }
+  },
+  standardHeaders: true,
+  legacyHeaders: false
+})
+
 export const aiLimiter = rateLimit({
   store: createStore('ai'),
   windowMs: 60 * 60 * 1000,

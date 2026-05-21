@@ -55,11 +55,16 @@ export const blockSchema = z.discriminatedUnion('type', [
   }),
 ])
 
+const blocksField = z
+  .array(blockSchema)
+  .max(200, 'Maksimal 200 blok konten per artikel')
+  .default([])
+
 export const createArticleSchema = z.object({
   title: z.string().min(5, 'Judul minimal 5 karakter').max(200),
   categoryId: z.string().optional().nullable(),
   tags: z.array(z.string()).default([]),
-  blocks: z.array(blockSchema).default([]),
+  blocks: blocksField,
   metaTitle: z.string().max(70).optional(),
   metaDescription: z.string().max(160).optional(),
   isBreaking: z.boolean().optional(),
@@ -72,7 +77,8 @@ export const updateArticleSchema = z.object({
   title: z.string().min(5).max(200).optional(),
   categoryId: z.string().optional().nullable(),
   tags: z.array(z.string()).optional(),
-  blocks: z.array(blockSchema).optional(),
+  blocks: blocksField.optional(),
+  scheduledAt: z.coerce.date().optional().nullable(),
   metaTitle: z.string().max(70).optional(),
   metaDescription: z.string().max(160).optional(),
   // [FIX] Extended status enum to cover all workflow states
@@ -94,4 +100,13 @@ export const articleQuerySchema = z.object({
   category: z.string().optional(),
   page: z.coerce.number().positive().default(1),
   limit: z.coerce.number().positive().max(100).default(20)
+})
+
+/** Public list / sitemap — allows larger page size. */
+export const publicArticleQuerySchema = articleQuerySchema.extend({
+  limit: z.coerce.number().positive().max(100).default(100)
+})
+
+export const publishArticleSchema = z.object({
+  forcePublish: z.coerce.boolean().optional().default(false)
 })

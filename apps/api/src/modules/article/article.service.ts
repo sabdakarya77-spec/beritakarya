@@ -11,6 +11,32 @@ import { recordView } from '../analytics/analytics.service'
 import * as searchService from './search.service'
 import { getCache, setCache, deleteCache } from '../../lib/redis'
 import { googleIndexingService } from '../../services/google-indexing.service'
+import { applySeoDefaults, validateArticleContentLimits } from './article.content'
+import { finalizeArticlePublish } from './article.publish'
+
+const PUBLISH_ALLOWED_STATUSES = ['approved', 'scheduled'] as const
+
+export function assertCanPublish(
+  article: { status: string },
+  user: JWTPayload,
+  forcePublish?: boolean
+): void {
+  if (article.status === 'published') {
+    throw Object.assign(new Error('Post sudah terbit'), { statusCode: 400 })
+  }
+  if (PUBLISH_ALLOWED_STATUSES.includes(article.status as (typeof PUBLISH_ALLOWED_STATUSES)[number])) {
+    return
+  }
+  if (forcePublish && user.role === 'superadmin') {
+    return
+  }
+  throw Object.assign(
+    new Error(
+      `Post harus berstatus disetujui (approved) atau terjadwal (scheduled) sebelum diterbitkan. Status saat ini: ${article.status}`
+    ),
+    { statusCode: 400 }
+  )
+}
 
 export async function getArticles(
   siteId: string,
@@ -24,15 +50,41 @@ export async function getArticles(
       status: query.status
     })
     
-    if (searchResult) {
-      // In a real app, we'd fetch full objects from DB using IDs from search results
-      // or ensure Meilisearch has all needed fields. 
-      // For now, we'll return the search hits directly as articles.
+    if (searchResult?.hits?.length) {
+      const ids = searchResult.hits
+        .map((hit: { id?: string }) => hit.id)
+        .filter((id: string | undefined): id is string => typeof id === 'string')
+
+      const listOpts: { authorId?: string } = {}
+      if (user?.role === 'reporter' || user?.role === 'kontributor') {
+        listOpts.authorId = user.userId
+      }
+
+      const hydrated = await repo.findArticlesByIds(siteId, ids, listOpts)
+      const byId = new Map(hydrated.map((a) => [a.id, a] as const))
+      const items = ids.flatMap((id: string) => {
+        const row = byId.get(id)
+        return row ? [row] : []
+      })
+
+      const limit = query.limit || 20
+      const total = searchResult.estimatedTotalHits ?? items.length
       return {
-        items: searchResult.hits,
-        total: searchResult.estimatedTotalHits,
-        page: 1,
-        limit: query.limit || 20
+        items,
+        total,
+        page: query.page || 1,
+        limit,
+        totalPages: Math.max(1, Math.ceil(total / limit))
+      }
+    }
+
+    if (searchResult) {
+      return {
+        items: [],
+        total: 0,
+        page: query.page || 1,
+        limit: query.limit || 20,
+        totalPages: 0
       }
     }
   }
@@ -126,6 +178,13 @@ export async function createArticle(
     throw Object.assign(new Error('Akses ditolak: Verifikasi identitas (KYC) Anda belum disetujui'), { statusCode: 403 })
   }
 
+  validateArticleContentLimits(input.blocks)
+  const withSeo = applySeoDefaults({
+    title: input.title,
+    blocks: input.blocks,
+    metaDescription: input.metaDescription
+  })
+
   const slug = await resolveUniqueSlug(input.title, siteId)
   const article = await createArticleWithSlugRetry({
     title: input.title,
@@ -134,9 +193,9 @@ export async function createArticle(
     authorId: user.userId,
     categoryId: input.categoryId,
     tags: input.tags ?? [],
-    blocks: input.blocks ?? [],
+    blocks: withSeo.blocks ?? [],
     metaTitle: input.metaTitle,
-    metaDescription: input.metaDescription,
+    metaDescription: withSeo.metaDescription,
     isBreaking: input.isBreaking ?? false,
     isExclusive: input.isExclusive ?? false,
     isFeatured: input.isFeatured ?? false,
@@ -226,7 +285,20 @@ export async function updateArticle(
      }
   }
 
+  if (input.blocks) {
+    validateArticleContentLimits(input.blocks)
+  }
+
   let data: any = { ...input }
+
+  if (input.blocks && !input.metaDescription?.trim()) {
+    const withSeo = applySeoDefaults({
+      title: input.title || article.title,
+      blocks: input.blocks,
+      metaDescription: input.metaDescription
+    })
+    if (withSeo.metaDescription) data.metaDescription = withSeo.metaDescription
+  }
   
   // [S-Tier] Propagate blur hash and dominant color if featuredImage is updated
   if ('featuredImage' in input) {
@@ -334,62 +406,64 @@ export async function updateArticle(
   return updated
 }
 
-export async function publishArticle(id: string, siteId: string, user: JWTPayload) {
+export async function publishArticle(
+  id: string,
+  siteId: string,
+  user: JWTPayload,
+  options?: { forcePublish?: boolean }
+) {
   const article = await repo.findArticleById(id, siteId)
   if (!article) throw Object.assign(new Error('Post tidak ditemukan'), { statusCode: 404 })
-  
+
   if (!['superadmin', 'wapimred'].includes(user.role)) {
-    throw Object.assign(new Error('Akses ditolak: Hanya Wapimred dan Superadmin yang dapat mem-publish post'), { statusCode: 403 })
+    throw Object.assign(
+      new Error('Akses ditolak: Hanya Wapimred dan Superadmin yang dapat mem-publish post'),
+      { statusCode: 403 }
+    )
   }
 
-  const updated = await repo.updateArticle(id, siteId, {
-    status: 'published',
-    publishedAt: new Date()
-  } as any)
+  assertCanPublish(article, user, options?.forcePublish)
 
-  // Auto-save version on publish
   await saveArticleVersion(id, user.userId, siteId)
 
-  // Notify author
-  await sendNotification({
-    userId: updated.authorId,
-    siteId,
-    type: 'post_reviewed',
-    title: 'Post Berhasil Terbit!',
-    message: `Selamat! Post "${updated.title}" Anda telah disetujui and terbit sekarang.`,
-    link: `/${siteId}/artikel/${updated.slug}`
-  })
+  return finalizeArticlePublish(id, siteId, article, { userId: user.userId })
+}
 
-  await repo.createAuditLog({
-    userId: user.userId,
-    siteId,
-    action: 'post.publish',
-    entityType: 'post',
-    entityId: id,
-    oldValue: article,
-    newValue: updated
-  })
+export async function getDueScheduledArticles(siteId: string, user: JWTPayload) {
+  if (!['superadmin', 'wapimred'].includes(user.role)) {
+    throw Object.assign(new Error('Akses ditolak'), { statusCode: 403 })
+  }
 
-  // [SEO Indexing API Automation] Auto-submit URL to Google Indexing API on publish
-  prisma.site.findUnique({ where: { id: siteId } }).then(site => {
-    if (site) {
-      const domain = site.domain || 'beritakarya.co'
-      const protocol = domain.includes('localhost') || domain.includes('127.0.0.1') ? 'http' : 'https'
-      const articleUrl = `${protocol}://${domain}/artikel/${updated.slug}`
-      googleIndexingService.submitUrl(siteId, articleUrl, 'URL_UPDATED')
-        .then(res => console.log('Auto Google Indexing API trigger result:', res))
-        .catch(err => console.error('Auto Google Indexing API trigger error:', err))
+  const rows = await repo.findDueScheduledArticles(100)
+  return rows.filter((r) => r.siteId === siteId)
+}
+
+export async function processDueScheduledArticles(): Promise<{
+  published: number
+  failed: number
+}> {
+  const due = await repo.findDueScheduledArticles(50)
+  let published = 0
+  let failed = 0
+
+  for (const row of due) {
+    try {
+      const article = await repo.findArticleById(row.id, row.siteId)
+      if (!article || article.status !== 'scheduled') continue
+
+      await saveArticleVersion(row.id, row.authorId, row.siteId)
+      await finalizeArticlePublish(row.id, row.siteId, article, {
+        userId: row.authorId,
+        auditAction: 'post.publish.scheduled'
+      })
+      published++
+    } catch (err) {
+      failed++
+      console.error(`Scheduled publish failed for ${row.id}:`, err)
     }
-  }).catch(err => console.error('Failed to fetch site details for indexing:', err))
+  }
 
-  searchService.indexArticle(updated).catch(err =>
-    console.error('Failed to index article on publish:', err)
-  )
-  deleteCache(`article:${siteId}:${updated.slug}`).catch(err =>
-    console.error('Failed to invalidate article cache on publish:', err)
-  )
-
-  return updated
+  return { published, failed }
 }
 
 export async function deleteArticle(id: string, siteId: string, user: JWTPayload) {

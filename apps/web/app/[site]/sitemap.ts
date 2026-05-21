@@ -1,15 +1,38 @@
 import { MetadataRoute } from 'next'
 
+const SITEMAP_PAGE_SIZE = 100
+const SITEMAP_MAX_PAGES = 50
+
 async function getArticles(site: string) {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+  const all: any[] = []
+
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
-    const res = await fetch(`${apiUrl}/api/v1/articles/public?site=${site}&limit=100`, { cache: 'no-store' })
-    if (!res.ok) return []
-    const json = await res.json()
-    return json.data?.articles || json.data?.items || []
-  } catch (e) {
+    for (let page = 1; page <= SITEMAP_MAX_PAGES; page++) {
+      const params = new URLSearchParams({
+        site,
+        limit: String(SITEMAP_PAGE_SIZE),
+        page: String(page)
+      })
+      const res = await fetch(
+        `${apiUrl}/api/v1/articles/public?${params.toString()}`,
+        { cache: 'no-store' }
+      )
+      if (!res.ok) break
+
+      const json = await res.json()
+      const data = json.data
+      const items = data?.articles || data?.items || []
+      all.push(...items)
+
+      const totalPages = data?.totalPages ?? 1
+      if (page >= totalPages || items.length === 0) break
+    }
+  } catch {
     return []
   }
+
+  return all
 }
 
 async function getCategories(site: string) {
@@ -19,7 +42,7 @@ async function getCategories(site: string) {
     if (!res.ok) return []
     const json = await res.json()
     return json.data || []
-  } catch (e) {
+  } catch {
     return []
   }
 }
@@ -32,33 +55,30 @@ export default async function sitemap({ params }: { params: { site: string } }):
   const articles = await getArticles(site)
   const categories = await getCategories(site)
 
-  // 1. Homepage
   const entries: MetadataRoute.Sitemap = [
     {
       url: siteUrl,
       lastModified: new Date(),
       changeFrequency: 'always',
-      priority: 1,
-    },
+      priority: 1
+    }
   ]
 
-  // 2. Categories
-  categories.forEach((cat: any) => {
+  categories.forEach((cat: { name: string }) => {
     entries.push({
       url: `${siteUrl}?cat=${encodeURIComponent(cat.name)}`,
       lastModified: new Date(),
       changeFrequency: 'daily',
-      priority: 0.8,
+      priority: 0.8
     })
   })
 
-  // 3. Articles
-  articles.forEach((article: any) => {
+  articles.forEach((article: { slug: string; publishedAt?: string; updatedAt?: string }) => {
     entries.push({
       url: `${siteUrl}/artikel/${article.slug}`,
       lastModified: new Date(article.publishedAt || article.updatedAt || new Date()),
       changeFrequency: 'monthly',
-      priority: 0.6,
+      priority: 0.6
     })
   })
 

@@ -33,7 +33,7 @@ import * as searchService from './search.service'
 import { deleteCache } from '../../lib/redis'
 import {
   getArticleById, createArticle, updateArticle,
-  publishArticle, deleteArticle
+  publishArticle, deleteArticle, assertCanPublish
 } from './article.service'
 import { prisma } from '../../db/client'
 import type { JWTPayload } from '@beritakarya/types'
@@ -140,10 +140,18 @@ describe('publishArticle', () => {
   beforeEach(async () => {
     vi.clearAllMocks()
     vi.mocked(prisma.user.findUnique).mockResolvedValue({ role: 'wapimred', kycStatus: 'APPROVED' } as any)
+    vi.mocked(repo.getNextVersionNumber).mockResolvedValue(1)
+    vi.mocked(repo.createVersion).mockResolvedValue({ id: 'v-1' } as any)
   })
 
-  it('set status published dan publishedAt', async () => {
-    vi.mocked(repo.findArticleById).mockResolvedValue(mockArticle() as any)
+  it('menolak publish dari status draft', async () => {
+    vi.mocked(repo.findArticleById).mockResolvedValue(mockArticle({ status: 'draft' }) as any)
+    const err = await publishArticle('art-1', 'bandung', editorPusat).catch((e) => e)
+    expect(err.statusCode).toBe(400)
+  })
+
+  it('set status published dari approved', async () => {
+    vi.mocked(repo.findArticleById).mockResolvedValue(mockArticle({ status: 'approved' }) as any)
     vi.mocked(repo.updateArticle).mockResolvedValue(
       mockArticle({ status: 'published', slug: 'test' }) as any
     )
@@ -154,8 +162,14 @@ describe('publishArticle', () => {
     )
   })
 
+  it('superadmin forcePublish dari draft', () => {
+    expect(() =>
+      assertCanPublish({ status: 'draft' }, { ...editorPusat, role: 'superadmin' }, true)
+    ).not.toThrow()
+  })
+
   it('re-indexes Meilisearch and invalidates Redis cache on publish', async () => {
-    vi.mocked(repo.findArticleById).mockResolvedValue(mockArticle() as any)
+    vi.mocked(repo.findArticleById).mockResolvedValue(mockArticle({ status: 'approved' }) as any)
     vi.mocked(repo.updateArticle).mockResolvedValue(
       mockArticle({ status: 'published', slug: 'test' }) as any
     )

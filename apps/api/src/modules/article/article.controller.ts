@@ -1,10 +1,17 @@
 import { Router, Request, Response } from 'express'
 import * as service from './article.service'
-import { createArticleSchema, updateArticleSchema, articleQuerySchema } from './article.validator'
+import {
+  createArticleSchema,
+  updateArticleSchema,
+  articleQuerySchema,
+  publicArticleQuerySchema,
+  publishArticleSchema
+} from './article.validator'
 import { requireAuth } from '../../middleware/auth.middleware'
 import { siteMiddleware, requireSiteAccess } from '../../middleware/site.middleware'
 import { asyncHandler } from '../../utils/asyncHandler'
 import { anonymizeIP } from '@beritakarya/utils'
+import { articleWriteLimiter } from '../../lib/rateLimit'
 
 export const articleRouter: Router = Router()
 
@@ -20,9 +27,14 @@ articleRouter.get('/slug/:slug', siteMiddleware, asyncHandler(async (req: Reques
 }))
 
 articleRouter.get('/public', siteMiddleware, asyncHandler(async (req: Request, res: Response) => {
-  const query = articleQuerySchema.parse(req.query)
+  const query = publicArticleQuerySchema.parse(req.query)
   const result = await service.getArticles(req.site!, { ...query, status: 'published' })
   res.json({ success: true, data: result })
+}))
+
+articleRouter.get('/scheduled/due', ...withSite, asyncHandler(async (req: Request, res: Response) => {
+  const items = await service.getDueScheduledArticles(req.site!, req.user!)
+  res.json({ success: true, data: items })
 }))
 
 articleRouter.get('/stats', ...withSite, asyncHandler(async (req: any, res: any) => {
@@ -41,7 +53,7 @@ articleRouter.get('/:id', ...withSite, asyncHandler(async (req: Request, res: Re
   res.json({ success: true, data: article })
 }))
 
-articleRouter.post('/', ...withSite, asyncHandler(async (req: Request, res: Response) => {
+articleRouter.post('/', articleWriteLimiter, ...withSite, asyncHandler(async (req: Request, res: Response) => {
   const input = createArticleSchema.parse(req.body)
   const article = await service.createArticle(input, req.user!, req.site!)
   res.status(201).json({ success: true, data: article })
@@ -60,7 +72,13 @@ articleRouter.patch('/:id', ...withSite, asyncHandler(async (req: Request, res: 
 }))
 
 articleRouter.post('/:id/publish', ...withSite, asyncHandler(async (req: Request, res: Response) => {
-  const article = await service.publishArticle(req.params.id, req.site!, req.user!)
+  const { forcePublish } = publishArticleSchema.parse(req.body ?? {})
+  const article = await service.publishArticle(
+    req.params.id,
+    req.site!,
+    req.user!,
+    { forcePublish }
+  )
   res.json({ success: true, data: article })
 }))
 

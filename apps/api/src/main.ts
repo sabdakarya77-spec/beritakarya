@@ -42,6 +42,7 @@ import { asyncHandler } from './utils/asyncHandler'
 import cookieParser from 'cookie-parser'
 import csurf from 'csurf'
 import { getMeilisearchCircuitStatus } from './modules/article/search.service'
+import { processDueScheduledArticles } from './modules/article/article.service'
 
 // Import global type augmentation (must be before other imports)
 import './types/express'
@@ -305,6 +306,20 @@ cron.schedule('0 1 * * *', async () => {
     await runTokenCleanup()
   } catch (err) {
     logger.error('Token cleanup failed:', err)
+  }
+})
+
+// Every 5 minutes: auto-publish scheduled articles that are due
+cron.schedule('*/5 * * * *', async () => {
+  try {
+    const result = await processDueScheduledArticles()
+    if (result.published > 0 || result.failed > 0) {
+      logger.info(
+        `Scheduled publish: ${result.published} published, ${result.failed} failed`
+      )
+    }
+  } catch (err) {
+    logger.error('Scheduled article publish failed:', err)
   }
 })
 
