@@ -12,8 +12,8 @@
     "db:migrate:deploy": "prisma migrate deploy",
     "db:generate": "prisma generate",
     "db:studio": "prisma studio",
-    "db:seed": "ts-node src/db/seed.ts",
-    "cleanup:trial": "ts-node scripts/cleanup-trial-content.ts"
+    "db:seed": "ts-node --project tsconfig.scripts.json src/db/seed.ts",
+    "cleanup:trial": "ts-node --project tsconfig.scripts.json scripts/cleanup-trial-content.ts"
   },
   "dependencies": {
     "@beritakarya/config": "workspace:*",
