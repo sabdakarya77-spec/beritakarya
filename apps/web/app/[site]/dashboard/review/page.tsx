@@ -88,7 +88,7 @@ export default function ReviewQueuePage() {
         await api.post(`/articles/${articleId}/publish`, undefined, { params: { site } });
       } else {
         const newStatus = action === 'approve' ? 'approved' : action === 'reject' ? 'archived' : 'revision';
-        await api.patch(`/articles/${articleId}`, {
+        await api.put(`/articles/${articleId}`, {
           status: newStatus,
           reviewNotes: reviewNotes || undefined,
           reviewedBy: user?.id,
