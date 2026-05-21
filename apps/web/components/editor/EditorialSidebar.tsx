@@ -449,7 +449,7 @@ export function EditorialSidebar() {
             <div className="p-6 border-t border-gray-50 dark:border-white/5 bg-gray-50/30 dark:bg-white/[0.02]">
               <button 
                 onClick={() => toggleSidebar(false)}
-                className="w-full py-4 bg-brand-black dark:bg-white text-white dark:text-brand-black text-[11px] font-black uppercase tracking-[0.2em] rounded-2xl hover:opacity-90 transition-all shadow-xl"
+                className="w-full py-4 bg-brand-black dark:bg-white text-white dark:text-slate-900 text-[11px] font-black uppercase tracking-[0.2em] rounded-2xl hover:opacity-90 transition-all shadow-xl"
               >
                 Terapkan Perubahan
               </button>
