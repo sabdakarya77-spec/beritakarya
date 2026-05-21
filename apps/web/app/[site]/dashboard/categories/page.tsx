@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { api } from '../../../../lib/api';
 import type { Category } from '@beritakarya/types';
-import { getCategoryColor } from '../../../../lib/constants';
+import { getCategoryColor, CATEGORIES_CONFIG } from '../../../../lib/constants';
 
 export default function CategoriesDashboard() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -129,6 +129,96 @@ export default function CategoriesDashboard() {
     }
   };
 
+  const handleSeedDefaults = async () => {
+    setLoading(true);
+    try {
+      // 1. Get existing categories slugs to prevent duplicate insertions
+      const existingSlugs = new Map<string, string>(); // slug lowercase -> id
+      const flatten = (items: Category[]) => {
+        for (const item of items) {
+          existingSlugs.set(item.slug.toLowerCase(), item.id);
+          if (item.subCategories) {
+            flatten(item.subCategories);
+          }
+        }
+      };
+      flatten(categories);
+
+      // 2. Filter categories to insert (skipping system/dynamic filters like Terbaru and Tersimpan)
+      const defaultCats = CATEGORIES_CONFIG.filter(
+        cat => cat.slug !== 'Terbaru' && cat.slug !== 'Tersimpan'
+      );
+
+      let createdParentCount = 0;
+      let createdSubCount = 0;
+
+      // 3. Insert parent categories first
+      for (const cat of defaultCats) {
+        const parentSlugNormalized = cat.slug.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+        let parentIdToUse = existingSlugs.get(parentSlugNormalized);
+
+        // If parent category does not exist, create it
+        if (!parentIdToUse) {
+          try {
+            const payload = {
+              name: cat.name,
+              slug: parentSlugNormalized,
+              parentId: null,
+              order: defaultCats.indexOf(cat) + 1,
+              siteId: isGlobalView ? null : siteId
+            };
+            const { data } = await api.post('/categories', payload);
+            if (data.success && data.data?.id) {
+              parentIdToUse = data.data.id;
+              existingSlugs.set(parentSlugNormalized, parentIdToUse);
+              createdParentCount++;
+            }
+          } catch (err: any) {
+            console.error(`Gagal membuat parent ${cat.name}`, err);
+          }
+        }
+
+        // 4. Insert subcategories under the parent category
+        if (parentIdToUse && cat.subCategories) {
+          for (const sub of cat.subCategories) {
+            const subSlugNormalized = sub.slug.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+            const subExists = existingSlugs.has(subSlugNormalized);
+
+            if (!subExists) {
+              try {
+                const subPayload = {
+                  name: sub.name,
+                  slug: subSlugNormalized,
+                  parentId: parentIdToUse,
+                  order: cat.subCategories.indexOf(sub) + 1,
+                  siteId: isGlobalView ? null : siteId
+                };
+                await api.post('/categories', subPayload);
+                existingSlugs.set(subSlugNormalized, 'created');
+                createdSubCount++;
+              } catch (err: any) {
+                console.error(`Gagal membuat subkategori ${sub.name}`, err);
+              }
+            }
+          }
+        }
+      }
+
+      if (createdParentCount > 0 || createdSubCount > 0) {
+        showToast(`Berhasil memuat ${createdParentCount} Kategori Utama dan ${createdSubCount} Sub-Kategori!`);
+      } else {
+        showToast('Semua kategori default sudah ada di database.', 'success');
+      }
+      
+      fetchCategories();
+    } catch (error: any) {
+      console.error('Gagal memuat kategori default', error);
+      showToast('Gagal memuat kategori default', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Flatten tree structure for table display
   const flattenCategories = (cats: Category[], isSub = false): (Category & { isSub?: boolean })[] => {
     return cats.flatMap(cat => {
@@ -174,6 +264,15 @@ export default function CategoriesDashboard() {
 
         {/* Superadmin Toggle */}
         <div className="flex items-center gap-3 self-stretch md:self-auto justify-between">
+          <button
+            onClick={handleSeedDefaults}
+            disabled={loading}
+            className="px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-105 dark:hover:bg-gray-800 rounded-xl text-xs font-bold transition-all duration-200 disabled:opacity-50 flex items-center gap-1.5 shadow-sm"
+            title="Muat kategori standar homepage ke database"
+          >
+            <span>✨</span> {loading ? 'Memuat...' : 'Muat Default'}
+          </button>
+
           <button
             onClick={() => setIsGlobalView(!isGlobalView)}
             className={`px-4 py-2 rounded-xl text-xs font-bold tracking-wider uppercase transition-all duration-200 border ${
@@ -341,10 +440,19 @@ export default function CategoriesDashboard() {
                   {orderedCategories.length === 0 ? (
                     <tr>
                       <td colSpan={5} className="px-6 py-16 text-center">
-                        <div className="flex flex-col items-center gap-3 text-gray-400">
+                        <div className="flex flex-col items-center gap-4 max-w-sm mx-auto text-gray-400">
                           <span className="text-5xl">📂</span>
-                          <span className="text-sm font-bold uppercase tracking-widest">Belum ada kategori</span>
-                          <p className="text-xs">Mulai dengan menambahkan kategori baru di form di samping.</p>
+                          <span className="text-sm font-bold uppercase tracking-widest text-gray-550 dark:text-gray-300">Belum ada kategori</span>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            Mulai dengan menambahkan kategori baru melalui form di samping, atau langsung muat seluruh kategori bawaan (default) yang sesuai dengan tampilan homepage.
+                          </p>
+                          <button
+                            onClick={handleSeedDefaults}
+                            disabled={loading}
+                            className="mt-2 px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold text-xs shadow-lg shadow-rose-600/10 hover:shadow-rose-600/20 hover:shadow-xl transition-all duration-200 disabled:opacity-50 flex items-center gap-2 uppercase tracking-wider"
+                          >
+                            <span>✨</span> {loading ? 'Memuat...' : 'Muat Kategori Default'}
+                          </button>
                         </div>
                       </td>
                     </tr>
