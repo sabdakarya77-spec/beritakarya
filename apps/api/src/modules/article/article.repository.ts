@@ -83,7 +83,8 @@ export async function findArticleById(id: string, siteId: string) {
     where: { id, siteId },
     include: { 
       author: { select: { id: true, name: true, email: true, role: true } },
-      category: { select: { name: true } }
+      category: { select: { name: true } },
+      blocks: true
     }
   })
 }
@@ -93,7 +94,8 @@ export async function findArticleBySlug(slug: string, siteId: string) {
     where: { siteId_slug: { siteId, slug } },
     include: { 
       author: { select: { id: true, name: true, role: true } },
-      category: { select: { name: true } }
+      category: { select: { name: true } },
+      blocks: true
     }
   })
 }
@@ -103,7 +105,8 @@ export async function findPublishedArticleBySlug(slug: string, siteId: string) {
     where: { siteId, slug, status: 'published' },
     include: { 
       author: { select: { id: true, name: true, role: true } },
-      category: { select: { name: true } }
+      category: { select: { name: true } },
+      blocks: true
     }
   })
 }
