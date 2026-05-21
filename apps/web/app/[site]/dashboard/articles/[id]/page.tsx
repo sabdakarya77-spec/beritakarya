@@ -1,17 +1,19 @@
 import { Editor } from '../../../../../components/editor/Editor'
 
 interface Props {
-  params: { site: string; id: string }
+  params: Promise<{ site: string; id: string }>
 }
 
-export default function ArticleEditorPage({ params }: Props) {
+export default async function ArticleEditorPage({ params }: Props) {
+  const resolvedParams = await params
   return (
     <main className="min-h-screen bg-white">
-      <Editor articleId={params.id} siteId={params.site} />
+      <Editor articleId={resolvedParams.id} siteId={resolvedParams.site} />
     </main>
   )
 }
 
-export function generateMetadata({ params }: Props) {
-  return { title: `Editor — ${params.site} | BeritaKarya` }
+export async function generateMetadata({ params }: Props) {
+  const resolvedParams = await params
+  return { title: `Editor — ${resolvedParams.site} | BeritaKarya` }
 }
