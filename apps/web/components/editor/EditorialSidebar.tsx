@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState, useRef } from 'react';
+import { useParams } from 'next/navigation';
 import { api } from '../../lib/api';
 import { cn } from '../../lib/utils';
 import Image from 'next/image';
@@ -21,6 +22,7 @@ export function EditorialSidebar() {
     metaTitle, metaDescription, updateArticleData, title, articleId, siteId
   } = useEditorStore();
 
+  const params = useParams();
   const [categoriesTree, setCategoriesTree] = useState<Category[]>([]);
   const [tagInput, setTagInput] = useState('');
   const [versions, setVersions] = useState<any[]>([]);
@@ -53,13 +55,13 @@ export function EditorialSidebar() {
     const loadCategories = async () => {
       try {
         const { data } = await api.get('/categories/tree', {
-          params: siteId ? { site: siteId } : undefined
+          params: { site: siteId || (params?.site as string) || 'pusat' }
         });
         setCategoriesTree(data.data || []);
       } catch (e) { console.error(e); }
     };
     if (isSidebarOpen) loadCategories();
-  }, [isSidebarOpen, siteId]);
+  }, [isSidebarOpen, siteId, params?.site]);
 
   useEffect(() => {
     const loadVersions = async () => {

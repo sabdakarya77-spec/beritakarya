@@ -11,20 +11,11 @@ import { PremiumHero } from '../berita/PremiumHero'
 import { MagazineBentoHero } from '../berita/MagazineBentoHero'
 import { notFound } from 'next/navigation'
 import ScrollAnimate from '../ui/ScrollAnimate'
-import { CATEGORIES_CONFIG } from '../../lib/constants'
 
 function resolveCategoryName(slug: string, categoriesTree: any[] = []): string {
   if (slug === 'Terbaru') return 'Terbaru'
   if (slug === 'Tersimpan') return 'Tersimpan'
   for (const cat of categoriesTree) {
-    if (cat.slug === slug) return cat.name
-    if (cat.subCategories) {
-      for (const sub of cat.subCategories) {
-        if (sub.slug === slug) return `${cat.name} / ${sub.name}`
-      }
-    }
-  }
-  for (const cat of CATEGORIES_CONFIG) {
     if (cat.slug === slug) return cat.name
     if (cat.subCategories) {
       for (const sub of cat.subCategories) {

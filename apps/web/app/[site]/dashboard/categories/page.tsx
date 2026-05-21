@@ -30,6 +30,8 @@ export default function CategoriesDashboard() {
       const queryParams: Record<string, string> = {};
       if (isGlobalView) {
         queryParams.view = 'all';
+      } else {
+        queryParams.site = siteId;
       }
       // Use /categories/tree endpoint to get hierarchical structure (synced with homepage & editor)
       const { data } = await api.get('/categories/tree', { params: queryParams });
@@ -44,7 +46,7 @@ export default function CategoriesDashboard() {
 
   useEffect(() => {
     fetchCategories();
-  }, [isGlobalView]);
+  }, [isGlobalView, siteId]);
 
   // Auto-generate slug from name
   useEffect(() => {

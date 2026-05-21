@@ -24,7 +24,9 @@ export default function PublicSiteLayout({ children, siteConfig, initialCategory
   useEffect(() => {
     async function loadCategories() {
       try {
-        const { data } = await api.get('/categories/tree');
+        const { data } = await api.get('/categories/tree', {
+          params: { site: siteConfig.id }
+        });
         if (data.success && data.data && data.data.length > 0) {
           const mapped = [
             { name: 'Terbaru', slug: 'Terbaru' },
@@ -46,7 +48,7 @@ export default function PublicSiteLayout({ children, siteConfig, initialCategory
     }
 
     loadCategories();
-  }, []);
+  }, [siteConfig.id]);
 
   return (
     <div 
