@@ -1,17 +1,17 @@
 import { MetadataRoute } from 'next'
 
-const SITEMAP_PAGE_SIZE = 100
-const SITEMAP_MAX_PAGES = 50
+const SITEMAP_MAX_PAGES = 50 // Safety cap
 
 async function getArticles(site: string) {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
   const all: any[] = []
 
   try {
+    // Fetch all published articles by paginating with larger page size
     for (let page = 1; page <= SITEMAP_MAX_PAGES; page++) {
       const params = new URLSearchParams({
         site,
-        limit: String(SITEMAP_PAGE_SIZE),
+        limit: '1000', // Use maximum allowed
         page: String(page)
       })
       const res = await fetch(

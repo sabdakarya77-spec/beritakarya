@@ -1,17 +1,34 @@
 import { prisma } from '../../db/client'
 
 export class CategoryService {
-  // Helper: Convert flat list to tree structure
+  // Helper: Convert flat list to recursive tree structure
   buildCategoryTree(categories: any[]): any[] {
-    const parentCategories = categories.filter(c => !c.parentId)
-    const subCategories = categories.filter(c => c.parentId)
+    const map = new Map<string, any>()
+    const roots: any[] = []
 
-    return parentCategories.map(parent => ({
-      ...parent,
-      subCategories: subCategories
-        .filter(sub => sub.parentId === parent.id)
-        .sort((a, b) => (a.order || 0) - (b.order || 0))
-    })).sort((a, b) => (a.order || 0) - (b.order || 0))
+    // Initialize map with nodes having empty children array
+    for (const cat of categories) {
+      map.set(cat.id, { ...cat, subCategories: [] })
+    }
+
+    // Build tree by assigning children to parents
+    for (const cat of categories) {
+      const node = map.get(cat.id)
+      if (cat.parentId && map.has(cat.parentId)) {
+        map.get(cat.parentId).subCategories.push(node)
+      } else {
+        roots.push(node)
+      }
+    }
+
+    // Sort recursively by order
+    const sortRecursive = (nodes: any[]) => {
+      nodes.sort((a, b) => (a.order || 0) - (b.order || 0))
+      nodes.forEach(node => sortRecursive(node.subCategories))
+    }
+    sortRecursive(roots)
+
+    return roots
   }
 
   // Helper: Deduplicate categories by slug, preferring site-specific over global

@@ -13,6 +13,7 @@ import { getCache, setCache, deleteCache } from '../../lib/redis'
 import { googleIndexingService } from '../../services/google-indexing.service'
 import { applySeoDefaults, validateArticleContentLimits } from './article.content'
 import { finalizeArticlePublish } from './article.publish'
+import { blockSchema } from './article.validator'
 
 const PUBLISH_ALLOWED_STATUSES = ['approved', 'scheduled'] as const
 
@@ -179,6 +180,19 @@ export async function createArticle(
   }
 
   validateArticleContentLimits(input.blocks)
+  
+  // [FIX] Block validation in service layer (defense in depth)
+  if (input.blocks) {
+    try {
+      blockSchema.parse(input.blocks)
+    } catch (err) {
+      if (err instanceof Error) {
+        throw Object.assign(new Error(`Invalid block structure: ${err.message}`), { statusCode: 400 })
+      }
+      throw err
+    }
+  }
+
   const withSeo = applySeoDefaults({
     title: input.title,
     blocks: input.blocks,
@@ -287,6 +301,18 @@ export async function updateArticle(
 
   if (input.blocks) {
     validateArticleContentLimits(input.blocks)
+  }
+
+  // [FIX] Block validation in service layer (defense in depth)
+  if (input.blocks) {
+    try {
+      blockSchema.parse(input.blocks)
+    } catch (err) {
+      if (err instanceof Error) {
+        throw Object.assign(new Error(`Invalid block structure: ${err.message}`), { statusCode: 400 })
+      }
+      throw err
+    }
   }
 
   let data: any = { ...input }

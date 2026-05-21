@@ -2,15 +2,14 @@ export function generateSlug(title: string): string {
   return title
     .toLowerCase()
     .trim()
-    .replace(/[àáâãäå]/g, 'a')
-    .replace(/[èéêë]/g, 'e')
-    .replace(/[ìíîï]/g, 'i')
-    .replace(/[òóôõö]/g, 'o')
-    .replace(/[ùúûü]/g, 'u')
-    .replace(/[ñ]/g, 'n')
-    .replace(/[^a-z0-9\s-]/g, '')
+    // Convert spaces to dashes first
     .replace(/\s+/g, '-')
+    // Remove any character that is NOT: Unicode letter, number, or dash
+    // \p{L} matches any Unicode letter (including é, ñ, ü, etc.)
+    .replace(/[^\p{L}0-9-]/gu, '')
+    // Remove duplicate dashes
     .replace(/-+/g, '-')
+    // Remove leading/trailing dashes
     .replace(/^-|-$/g, '')
 }
 

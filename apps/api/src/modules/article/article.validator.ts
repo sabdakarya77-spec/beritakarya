@@ -57,7 +57,7 @@ export const blockSchema = z.discriminatedUnion('type', [
 
 const blocksField = z
   .array(blockSchema)
-  .max(200, 'Maksimal 200 blok konten per artikel')
+  .max(500, 'Maksimal 500 blok konten per artikel')
   .default([])
 
 export const createArticleSchema = z.object({
