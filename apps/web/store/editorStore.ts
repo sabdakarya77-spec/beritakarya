@@ -232,7 +232,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     try {
       const payload = {
         title: (s.title || 'Tanpa Judul').trim(),
-        blocks: normalizeArticleBlocks(s.blocks) as Block[],
+        blocks: normalizeArticleBlocks(s.blocks) as unknown as Block[],
         metaTitle: s.metaTitle?.slice(0, 60) || undefined,
         metaDescription: s.metaDescription?.slice(0, 160) || undefined,
         categoryId: s.categoryId || null,
