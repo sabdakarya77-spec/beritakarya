@@ -23,7 +23,7 @@ type Options = {
 }
 
 function parseArgs(): Options {
-  const args = process.argv.slice(2)
+  const args = process.argv.slice(2).filter((a) => a !== '--')
   let site = 'pusat'
   let dryRun = false
   let confirm = false
