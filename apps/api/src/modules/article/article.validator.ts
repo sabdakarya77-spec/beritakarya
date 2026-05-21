@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { normalizeArticleBlocks } from '@beritakarya/utils'
 
 const baseBlock = z.object({ id: z.string() })
 
@@ -55,14 +56,22 @@ export const blockSchema = z.discriminatedUnion('type', [
   }),
 ])
 
-const blocksField = z
-  .array(blockSchema)
-  .max(500, 'Maksimal 500 blok konten per artikel')
-  .default([])
+const blocksField = z.preprocess(
+  (val) => normalizeArticleBlocks(val),
+  z
+    .array(blockSchema)
+    .max(500, 'Maksimal 500 blok konten per artikel')
+    .default([])
+)
+
+const optionalCategoryId = z.preprocess(
+  (val) => (val === '' || val === undefined ? null : val),
+  z.string().nullable().optional()
+)
 
 export const createArticleSchema = z.object({
   title: z.string().trim().min(1, 'Judul wajib diisi').max(200),
-  categoryId: z.string().optional().nullable(),
+  categoryId: optionalCategoryId,
   tags: z.array(z.string()).default([]),
   blocks: blocksField,
   metaTitle: z.string().max(60).optional(),
@@ -74,8 +83,8 @@ export const createArticleSchema = z.object({
 })
 
 export const updateArticleSchema = z.object({
-  title: z.string().min(5).max(200).optional(),
-  categoryId: z.string().optional().nullable(),
+  title: z.string().min(1).max(200).optional(),
+  categoryId: optionalCategoryId,
   tags: z.array(z.string()).optional(),
   blocks: blocksField.optional(),
   scheduledAt: z.coerce.date().optional().nullable(),

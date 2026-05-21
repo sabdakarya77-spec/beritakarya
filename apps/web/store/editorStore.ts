@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { v4 as uuidv4 } from 'uuid'
+import { normalizeArticleBlocks } from '@beritakarya/utils'
 import { api } from '../lib/api'
 import type { Block, ArticleStatus } from '@beritakarya/types'
 
@@ -36,6 +37,7 @@ export interface EditorState {
   setBlocks: (blocks: Block[]) => void
   addBlock: (type: Block['type'], afterId?: string) => void
   updateBlock: (id: string, data: Partial<Block>) => void
+  replaceBlock: (id: string, type: Block['type']) => void
   removeBlock: (id: string) => void
   moveBlock: (id: string, direction: 'up' | 'down') => void
   reorderBlocks: (fromIdx: number, toIdx: number) => void
@@ -53,6 +55,12 @@ export interface EditorState {
   publishArticle: () => Promise<void>
   submitForReview: () => Promise<void>
   reset: (siteId?: string) => void
+}
+
+export function createDefaultBlock(type: Block['type'], existingId?: string): Block {
+  const block = defaultBlock(type)
+  if (existingId) block.id = existingId
+  return block
 }
 
 function defaultBlock(type: Block['type']): Block {
@@ -125,6 +133,17 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   updateBlock: (id, data) => {
     set((s) => ({
       blocks: s.blocks.map(b => b.id === id ? { ...b, ...data } as Block : b),
+      isDirty: true
+    }))
+    scheduleAutoSave(get)
+  },
+
+  replaceBlock: (id, type) => {
+    set((s) => ({
+      undoStack: [...s.undoStack.slice(-20), s.blocks],
+      blocks: s.blocks.map(b =>
+        b.id === id ? createDefaultBlock(type, id) : b
+      ),
       isDirty: true
     }))
     scheduleAutoSave(get)
@@ -212,13 +231,13 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     set({ saving: true, saveError: null })
     try {
       const payload = {
-        title: s.title || 'Tanpa Judul', 
-        blocks: s.blocks, 
-        metaTitle: s.metaTitle, 
-        metaDescription: s.metaDescription,
-        categoryId: s.categoryId,
+        title: (s.title || 'Tanpa Judul').trim(),
+        blocks: normalizeArticleBlocks(s.blocks) as Block[],
+        metaTitle: s.metaTitle?.slice(0, 60) || undefined,
+        metaDescription: s.metaDescription?.slice(0, 160) || undefined,
+        categoryId: s.categoryId || null,
         tags: s.tags,
-        featuredImage: s.featuredImage,
+        featuredImage: s.featuredImage || undefined,
         isBreaking: s.isBreaking,
         isExclusive: s.isExclusive,
         isFeatured: s.isFeatured

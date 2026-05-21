@@ -5,7 +5,7 @@ import { useAuthStore } from '../store/authStore';
 import { api } from '../lib/api';
 
 export function AuthInit() {
-  const { user, checkAuth } = useAuthStore();
+  const { user, isLoading, checkAuth } = useAuthStore();
   const hasChecked = useRef(false);
 
   useEffect(() => {
@@ -36,7 +36,7 @@ export function AuthInit() {
     const interval = setInterval(sendHeartbeat, 30000);
 
     return () => clearInterval(interval);
-  }, [user]);
+  }, [user, isLoading]);
 
   return null;
 }

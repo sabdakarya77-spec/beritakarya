@@ -11,6 +11,7 @@ import { recordView } from '../analytics/analytics.service'
 import * as searchService from './search.service'
 import { getCache, setCache, deleteCache } from '../../lib/redis'
 import { googleIndexingService } from '../../services/google-indexing.service'
+import { normalizeArticleBlocks } from '@beritakarya/utils'
 import { applySeoDefaults, validateArticleContentLimits } from './article.content'
 import { finalizeArticlePublish } from './article.publish'
 import { blockSchema } from './article.validator'
@@ -179,18 +180,25 @@ export async function createArticle(
     throw Object.assign(new Error('Akses ditolak: Verifikasi identitas (KYC) Anda belum disetujui'), { statusCode: 403 })
   }
 
-  validateArticleContentLimits(input.blocks)
+  const normalizedBlocks = input.blocks
+    ? (normalizeArticleBlocks(input.blocks) as typeof input.blocks)
+    : input.blocks
+  validateArticleContentLimits(normalizedBlocks)
 
   // [FIX] Block validation in service layer (defense in depth)
-  if (input.blocks) {
+  if (normalizedBlocks) {
     try {
-      blockSchema.parse(input.blocks)
+      blockSchema.parse(normalizedBlocks)
     } catch (err) {
       if (err instanceof Error) {
-        throw Object.assign(new Error(`Invalid block structure: ${err.message}`), { statusCode: 400 })
+        throw Object.assign(
+          new Error(`Struktur blok tidak valid: ${err.message}`),
+          { statusCode: 400, code: 'INVALID_BLOCKS' }
+        )
       }
       throw err
     }
+    input.blocks = normalizedBlocks
   }
 
   const withSeo = applySeoDefaults({
@@ -300,20 +308,21 @@ export async function updateArticle(
   }
 
   if (input.blocks) {
+    const normalizedBlocks = normalizeArticleBlocks(input.blocks) as typeof input.blocks
     const requireMinWords = input.status === 'submitted'
-    validateArticleContentLimits(input.blocks, { requireMinWords })
-  }
-
-  // [FIX] Block validation in service layer (defense in depth)
-  if (input.blocks) {
+    validateArticleContentLimits(normalizedBlocks, { requireMinWords })
     try {
-      blockSchema.parse(input.blocks)
+      blockSchema.parse(normalizedBlocks)
     } catch (err) {
       if (err instanceof Error) {
-        throw Object.assign(new Error(`Invalid block structure: ${err.message}`), { statusCode: 400 })
+        throw Object.assign(
+          new Error(`Struktur blok tidak valid: ${err.message}`),
+          { statusCode: 400, code: 'INVALID_BLOCKS' }
+        )
       }
       throw err
     }
+    input.blocks = normalizedBlocks
   }
 
   let data: any = { ...input }

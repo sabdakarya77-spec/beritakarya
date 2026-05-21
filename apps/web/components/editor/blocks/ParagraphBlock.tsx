@@ -16,7 +16,7 @@ const BLOCK_TYPES: { type: Block['type']; label: string; desc: string }[] = [
 ]
 
 export function ParagraphBlock({ block }: { block: TParagraphBlock }) {
-  const { updateBlock } = useEditorStore()
+  const { updateBlock, replaceBlock } = useEditorStore()
   const ref = useRef<HTMLDivElement>(null)
   const [showMenu, setShowMenu] = useState(false)
 
@@ -30,7 +30,7 @@ export function ParagraphBlock({ block }: { block: TParagraphBlock }) {
   }
 
   const handleSelect = (type: Block['type']) => {
-    updateBlock(block.id, { type, content: '' })
+    replaceBlock(block.id, type)
     setShowMenu(false)
   }
 

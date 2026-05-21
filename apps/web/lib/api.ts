@@ -78,7 +78,13 @@ const processQueue = (error: unknown) => {
 
 // Daftar endpoint auth yang TIDAK boleh trigger auto-refresh
 // karena kegagalannya sudah di-handle langsung oleh pemanggil
-const AUTH_SKIP_REFRESH_URLS = ['/auth/me', '/auth/refresh', '/auth/login', '/auth/register']
+const AUTH_SKIP_REFRESH_URLS = [
+  '/auth/me',
+  '/auth/refresh',
+  '/auth/login',
+  '/auth/register',
+  '/users/heartbeat'
+]
 
 api.interceptors.response.use(
   (res) => res,

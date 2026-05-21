@@ -69,12 +69,17 @@ export function errorMiddleware(
   }
 
   const statusCode = err.statusCode || 500
-  const message = env.NODE_ENV === 'production'
-    ? 'Terjadi kesalahan server'
-    : err.message
+  const isClientError = statusCode >= 400 && statusCode < 500
+  const message =
+    env.NODE_ENV === 'production' && !isClientError
+      ? 'Terjadi kesalahan server'
+      : err.message || 'Terjadi kesalahan server'
 
   res.status(statusCode).json({
     success: false,
-    error: { code: 'SERVER_ERROR', message }
+    error: {
+      code: err.code || (isClientError ? 'CLIENT_ERROR' : 'SERVER_ERROR'),
+      message
+    }
   })
 }
