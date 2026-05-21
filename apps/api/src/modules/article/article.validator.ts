@@ -56,13 +56,19 @@ export const blockSchema = z.discriminatedUnion('type', [
   }),
 ])
 
+export const blocksArraySchema = z
+  .array(blockSchema)
+  .max(500, 'Maksimal 500 blok konten per artikel')
+
 const blocksField = z.preprocess(
   (val) => normalizeArticleBlocks(val),
-  z
-    .array(blockSchema)
-    .max(500, 'Maksimal 500 blok konten per artikel')
-    .default([])
+  blocksArraySchema.default([])
 )
+
+/** Validasi array blok (bukan single block). */
+export function parseArticleBlocks(blocks: unknown) {
+  return blocksArraySchema.parse(normalizeArticleBlocks(blocks))
+}
 
 const optionalCategoryId = z.preprocess(
   (val) => (val === '' || val === undefined ? null : val),

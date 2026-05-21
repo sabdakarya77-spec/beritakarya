@@ -11,10 +11,9 @@ import { recordView } from '../analytics/analytics.service'
 import * as searchService from './search.service'
 import { getCache, setCache, deleteCache } from '../../lib/redis'
 import { googleIndexingService } from '../../services/google-indexing.service'
-import { normalizeArticleBlocks } from '@beritakarya/utils'
 import { applySeoDefaults, validateArticleContentLimits } from './article.content'
 import { finalizeArticlePublish } from './article.publish'
-import { blockSchema } from './article.validator'
+import { parseArticleBlocks } from './article.validator'
 
 const PUBLISH_ALLOWED_STATUSES = ['approved', 'scheduled'] as const
 
@@ -180,15 +179,9 @@ export async function createArticle(
     throw Object.assign(new Error('Akses ditolak: Verifikasi identitas (KYC) Anda belum disetujui'), { statusCode: 403 })
   }
 
-  const normalizedBlocks = input.blocks
-    ? (normalizeArticleBlocks(input.blocks) as typeof input.blocks)
-    : input.blocks
-  validateArticleContentLimits(normalizedBlocks)
-
-  // [FIX] Block validation in service layer (defense in depth)
-  if (normalizedBlocks) {
+  if (input.blocks) {
     try {
-      blockSchema.parse(normalizedBlocks)
+      input.blocks = parseArticleBlocks(input.blocks) as typeof input.blocks
     } catch (err) {
       if (err instanceof Error) {
         throw Object.assign(
@@ -198,7 +191,7 @@ export async function createArticle(
       }
       throw err
     }
-    input.blocks = normalizedBlocks
+    validateArticleContentLimits(input.blocks)
   }
 
   const withSeo = applySeoDefaults({
@@ -308,11 +301,9 @@ export async function updateArticle(
   }
 
   if (input.blocks) {
-    const normalizedBlocks = normalizeArticleBlocks(input.blocks) as typeof input.blocks
     const requireMinWords = input.status === 'submitted'
-    validateArticleContentLimits(normalizedBlocks, { requireMinWords })
     try {
-      blockSchema.parse(normalizedBlocks)
+      input.blocks = parseArticleBlocks(input.blocks) as typeof input.blocks
     } catch (err) {
       if (err instanceof Error) {
         throw Object.assign(
@@ -322,7 +313,7 @@ export async function updateArticle(
       }
       throw err
     }
-    input.blocks = normalizedBlocks
+    validateArticleContentLimits(input.blocks, { requireMinWords })
   }
 
   let data: any = { ...input }
