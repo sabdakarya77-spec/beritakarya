@@ -119,7 +119,7 @@ export default function ArticlesPage() {
   const handleSubmitToReview = async (articleId: string) => {
     setActionLoading(articleId);
     try {
-      await api.patch(`/articles/${articleId}`, { status: 'submitted' });
+      await api.put(`/articles/${articleId}`, { status: 'submitted' });
       await load();
     } catch (e: any) {
       alert(e.response?.data?.error?.message || 'Gagal mengirim ke editor');
