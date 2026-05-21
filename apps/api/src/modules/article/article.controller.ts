@@ -11,7 +11,7 @@ import { requireAuth } from '../../middleware/auth.middleware'
 import { siteMiddleware, requireSiteAccess } from '../../middleware/site.middleware'
 import { asyncHandler } from '../../utils/asyncHandler'
 import { anonymizeIP } from '@beritakarya/utils'
-import { articleWriteLimiter } from '../../lib/rateLimit'
+import { articleWriteLimiter, articleUpdateLimiter } from '../../lib/rateLimit'
 
 export const articleRouter: Router = Router()
 
@@ -59,13 +59,13 @@ articleRouter.post('/', articleWriteLimiter, ...withSite, asyncHandler(async (re
   res.status(201).json({ success: true, data: article })
 }))
 
-articleRouter.put('/:id', ...withSite, asyncHandler(async (req: Request, res: Response) => {
+articleRouter.put('/:id', articleUpdateLimiter, ...withSite, asyncHandler(async (req: Request, res: Response) => {
   const input = updateArticleSchema.parse(req.body)
   const article = await service.updateArticle(req.params.id, req.site!, input, req.user!)
   res.json({ success: true, data: article })
 }))
 
-articleRouter.patch('/:id', ...withSite, asyncHandler(async (req: Request, res: Response) => {
+articleRouter.patch('/:id', articleUpdateLimiter, ...withSite, asyncHandler(async (req: Request, res: Response) => {
   const input = updateArticleSchema.parse(req.body)
   const article = await service.updateArticle(req.params.id, req.site!, input, req.user!)
   res.json({ success: true, data: article })

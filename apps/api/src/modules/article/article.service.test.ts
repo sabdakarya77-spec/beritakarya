@@ -20,7 +20,8 @@ vi.mock('../../services/google-indexing.service', () => ({
 }))
 vi.mock('./search.service', () => ({
   indexArticle: vi.fn().mockResolvedValue(undefined),
-  deleteIndexedArticle: vi.fn().mockResolvedValue(undefined)
+  deleteIndexedArticle: vi.fn().mockResolvedValue(undefined),
+  searchArticles: vi.fn()
 }))
 vi.mock('../../lib/redis', () => ({
   getCache: vi.fn(),
@@ -32,7 +33,7 @@ import * as repo from './article.repository'
 import * as searchService from './search.service'
 import { deleteCache } from '../../lib/redis'
 import {
-  getArticleById, createArticle, updateArticle,
+  getArticleById, getArticles, createArticle, updateArticle,
   publishArticle, deleteArticle, assertCanPublish
 } from './article.service'
 import { prisma } from '../../db/client'
@@ -54,6 +55,25 @@ const mockArticle = (overrides = {}) => ({
   blocks: [], status: 'draft',
   createdAt: new Date(), updatedAt: new Date(),
   ...overrides
+})
+
+describe('getArticles — Meilisearch hydrate', () => {
+  beforeEach(() => vi.clearAllMocks())
+
+  it('mengambil artikel lengkap dari DB, bukan hit Meilisearch mentah', async () => {
+    vi.mocked(searchService.searchArticles).mockResolvedValue({
+      hits: [{ id: 'art-1', title: 'partial' }],
+      estimatedTotalHits: 1
+    } as any)
+    vi.mocked(repo.findArticlesByIds).mockResolvedValue([
+      mockArticle({ id: 'art-1', viewCount: 42, author: { name: 'Rep', role: 'reporter' } })
+    ] as any)
+
+    const result = await getArticles('bandung', { search: 'test' })
+
+    expect(repo.findArticlesByIds).toHaveBeenCalledWith('bandung', ['art-1'], {})
+    expect(result.items[0]).toMatchObject({ id: 'art-1', viewCount: 42 })
+  })
 })
 
 describe('getArticleById — multi-site isolation', () => {

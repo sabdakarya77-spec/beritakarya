@@ -400,8 +400,15 @@ export async function updateArticle(
   // Re-indexing
   searchService.indexArticle(updated).catch(err => console.error('Failed to index article:', err))
 
-  // Invalidate cache
-  deleteCache(`article:${siteId}:${updated.slug}`).catch(() => {})
+  // Invalidate cache (old slug too if title/slug changed)
+  const invalidateCache = (slug: string) =>
+    deleteCache(`article:${siteId}:${slug}`).catch((err) =>
+      console.error(`Failed to invalidate article cache on update (${slug}):`, err)
+    )
+  await invalidateCache(updated.slug)
+  if (article.slug && article.slug !== updated.slug) {
+    await invalidateCache(article.slug)
+  }
 
   return updated
 }

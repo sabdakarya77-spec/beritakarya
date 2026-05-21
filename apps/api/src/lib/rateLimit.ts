@@ -44,19 +44,37 @@ export const apiLimiter = rateLimit({
 })
 
 /** Limit article create bursts per authenticated user (or IP). */
+const articleRateLimitKey = (req: { ip?: string; user?: { userId?: string } }) => {
+  const user = (req as { user?: { userId?: string } }).user
+  return user?.userId ? `user:${user.userId}` : `ip:${req.ip}`
+}
+
 export const articleWriteLimiter = rateLimit({
   store: createStore('article-write'),
   windowMs: 60 * 60 * 1000,
   max: 30,
-  keyGenerator: (req) => {
-    const user = (req as { user?: { userId?: string } }).user
-    return user?.userId ? `user:${user.userId}` : `ip:${req.ip}`
-  },
+  keyGenerator: articleRateLimitKey,
   message: {
     success: false,
     error: {
       code: 'RATE_LIMITED',
       message: 'Terlalu banyak pembuatan artikel. Coba lagi dalam 1 jam.'
+    }
+  },
+  standardHeaders: true,
+  legacyHeaders: false
+})
+
+export const articleUpdateLimiter = rateLimit({
+  store: createStore('article-update'),
+  windowMs: 60 * 60 * 1000,
+  max: 120,
+  keyGenerator: articleRateLimitKey,
+  message: {
+    success: false,
+    error: {
+      code: 'RATE_LIMITED',
+      message: 'Terlalu banyak pembaruan artikel. Coba lagi dalam 1 jam.'
     }
   },
   standardHeaders: true,
