@@ -80,7 +80,7 @@ export async function getPublishedArticleBySlug(
   recordView({
     siteId,
     articleId: article.id,
-    path: `/post/${slug}`,
+    path: `/artikel/${slug}`,
     ...meta
   }).catch(err => console.error('Failed to record view:', err))
   
@@ -88,7 +88,18 @@ export async function getPublishedArticleBySlug(
 }
 
 export async function createArticle(
-  input: { title: string; blocks?: any[]; categoryId?: string | null; tags?: string[] },
+  input: { 
+    title: string; 
+    blocks?: any[]; 
+    categoryId?: string | null; 
+    tags?: string[];
+    metaTitle?: string;
+    metaDescription?: string;
+    isBreaking?: boolean;
+    isExclusive?: boolean;
+    isFeatured?: boolean;
+    featuredImage?: string;
+  },
   user: JWTPayload, siteId: string
 ) {
   // Fetch fresh user data to check KYC status and current role
@@ -123,7 +134,13 @@ export async function createArticle(
     authorId: user.userId,
     categoryId: input.categoryId,
     tags: input.tags ?? [],
-    blocks: input.blocks ?? []
+    blocks: input.blocks ?? [],
+    metaTitle: input.metaTitle,
+    metaDescription: input.metaDescription,
+    isBreaking: input.isBreaking ?? false,
+    isExclusive: input.isExclusive ?? false,
+    isFeatured: input.isFeatured ?? false,
+    featuredImage: input.featuredImage ?? ''
   })
 
   await repo.createAuditLog({
@@ -343,7 +360,7 @@ export async function publishArticle(id: string, siteId: string, user: JWTPayloa
     type: 'post_reviewed',
     title: 'Post Berhasil Terbit!',
     message: `Selamat! Post "${updated.title}" Anda telah disetujui and terbit sekarang.`,
-    link: `/${siteId}/post/${updated.slug}`
+    link: `/${siteId}/artikel/${updated.slug}`
   })
 
   await repo.createAuditLog({
@@ -361,7 +378,7 @@ export async function publishArticle(id: string, siteId: string, user: JWTPayloa
     if (site) {
       const domain = site.domain || 'beritakarya.co'
       const protocol = domain.includes('localhost') || domain.includes('127.0.0.1') ? 'http' : 'https'
-      const articleUrl = `${protocol}://${domain}/post/${updated.slug}`
+      const articleUrl = `${protocol}://${domain}/artikel/${updated.slug}`
       googleIndexingService.submitUrl(siteId, articleUrl, 'URL_UPDATED')
         .then(res => console.log('Auto Google Indexing API trigger result:', res))
         .catch(err => console.error('Auto Google Indexing API trigger error:', err))
@@ -476,7 +493,7 @@ export async function indexGoogleArticle(id: string, siteId: string) {
 
   const domain = site?.domain || 'beritakarya.co'
   const protocol = domain.includes('localhost') || domain.includes('127.0.0.1') ? 'http' : 'https'
-  const articleUrl = `${protocol}://${domain}/post/${article.slug}`
+  const articleUrl = `${protocol}://${domain}/artikel/${article.slug}`
 
   const result = await googleIndexingService.submitUrl(siteId, articleUrl, 'URL_UPDATED')
   return result

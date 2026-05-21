@@ -14,8 +14,39 @@ export class CategoryService {
     })).sort((a, b) => (a.order || 0) - (b.order || 0))
   }
 
+  // Helper: Deduplicate categories by slug, preferring site-specific over global
+  deduplicateCategories(categories: any[], siteId: string): any[] {
+    const slugMap = new Map<string, any>()
+    for (const cat of categories) {
+      const existing = slugMap.get(cat.slug)
+      if (!existing || (cat.siteId === siteId && existing.siteId !== siteId)) {
+        slugMap.set(cat.slug, cat)
+      }
+    }
+
+    const deduplicated = Array.from(slugMap.values())
+
+    const idMapping = new Map<string, string>()
+    for (const cat of categories) {
+      const active = slugMap.get(cat.slug)
+      if (active && active.id !== cat.id) {
+        idMapping.set(cat.id, active.id)
+      }
+    }
+
+    return deduplicated.map(cat => {
+      if (cat.parentId && idMapping.has(cat.parentId)) {
+        return {
+          ...cat,
+          parentId: idMapping.get(cat.parentId)
+        }
+      }
+      return cat
+    })
+  }
+
   async getSiteCategories(siteId: string) {
-    return await prisma.category.findMany({
+    const all = await prisma.category.findMany({
       where: {
         OR: [
           { siteId },
@@ -30,6 +61,7 @@ export class CategoryService {
         order: 'asc'
       }
     })
+    return this.deduplicateCategories(all, siteId)
   }
 
   async getAllCategories() {
@@ -49,8 +81,8 @@ export class CategoryService {
     return await prisma.category.findMany({
       where: { isGlobal: true },
       include: { 
-        site: true,
-        parent: true
+      site: true,
+      parent: true
       },
       orderBy: {
         order: 'asc'
@@ -75,7 +107,8 @@ export class CategoryService {
       }
     })
 
-    return this.buildCategoryTree(all)
+    const deduplicated = this.deduplicateCategories(all, siteId)
+    return this.buildCategoryTree(deduplicated)
   }
 
   async createCategory(data: {

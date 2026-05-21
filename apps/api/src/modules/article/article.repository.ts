@@ -130,6 +130,9 @@ export async function findPublishedArticleBySlug(slug: string, siteId: string) {
 export async function createArticle(data: {
   title: string; slug: string; siteId: string
   authorId: string; categoryId?: string | null; tags?: any; blocks?: any[]
+  metaTitle?: string; metaDescription?: string
+  isBreaking?: boolean; isExclusive?: boolean; isFeatured?: boolean;
+  featuredImage?: string;
 }) {
   return prisma.article.create({
     data: { ...data, blocks: data.blocks ?? [] },

@@ -20,8 +20,8 @@ export function constructMetadata({
   const baseUrl = process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'
   const url = slug 
     ? siteParam
-      ? `${baseUrl}/${siteParam}/post/${slug}`
-      : `${baseUrl}/post/${slug}`
+      ? `${baseUrl}/${siteParam}/artikel/${slug}`
+      : `${baseUrl}/artikel/${slug}`
     : siteParam
       ? `${baseUrl}/${siteParam}`
       : `${baseUrl}/`

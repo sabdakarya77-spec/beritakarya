@@ -59,7 +59,13 @@ export const createArticleSchema = z.object({
   title: z.string().min(5, 'Judul minimal 5 karakter').max(200),
   categoryId: z.string().optional().nullable(),
   tags: z.array(z.string()).default([]),
-  blocks: z.array(blockSchema).default([])
+  blocks: z.array(blockSchema).default([]),
+  metaTitle: z.string().max(70).optional(),
+  metaDescription: z.string().max(160).optional(),
+  isBreaking: z.boolean().optional(),
+  isExclusive: z.boolean().optional(),
+  isFeatured: z.boolean().optional(),
+  featuredImage: z.string().optional(),
 })
 
 export const updateArticleSchema = z.object({

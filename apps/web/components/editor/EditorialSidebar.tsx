@@ -334,7 +334,15 @@ export function EditorialSidebar() {
                       {metaTitle || title || 'Judul Post...'}
                     </h4>
                     <p className="text-sm text-green-700 dark:text-green-500/80 line-clamp-1">
-                      beritakarya.co › {categoryId || 'post'} › ...
+                      beritakarya.co › {(() => {
+                        if (!categoryId) return 'artikel';
+                        for (const parent of categoriesTree) {
+                          if (parent.id === categoryId) return parent.slug || parent.name?.toLowerCase();
+                          const sub = parent.subCategories?.find((s: Category) => s.id === categoryId);
+                          if (sub) return sub.slug || sub.name?.toLowerCase();
+                        }
+                        return 'artikel';
+                      })()} › ...
                     </p>
                     <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2">
                       {metaDescription || 'Tulis deskripsi meta untuk meningkatkan performa pencarian di mesin pencari...'}
