@@ -48,14 +48,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 async function getArticle(site: string, slug: string) {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
-  const res = await fetch(
-    `${apiUrl}/api/v1/articles/slug/${slug}?site=${site}`,
-    { next: { revalidate: 60 } }
-  )
-  if (!res.ok) return null
-  const data = await res.json()
-  return data.data
+  try {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+    const res = await fetch(
+      `${apiUrl}/api/v1/articles/slug/${slug}?site=${site}`,
+      { next: { revalidate: 60 } }
+    )
+    if (!res.ok) return null
+    const data = await res.json()
+    return data.data
+  } catch (e) {
+    console.error('Failed to get article:', e)
+    return null
+  }
 }
 
 async function getRelatedArticles(site: string, currentSlug: string, category?: string) {
@@ -68,7 +73,7 @@ async function getRelatedArticles(site: string, currentSlug: string, category?: 
     })
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
     const res = await fetch(
-      `${apiUrl}/api/v1/articles?${params.toString()}`,
+      `${apiUrl}/api/v1/articles/public?${params.toString()}`,
       { next: { revalidate: 60 } }
     )
     if (!res.ok) return []

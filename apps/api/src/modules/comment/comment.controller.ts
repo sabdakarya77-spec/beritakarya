@@ -3,8 +3,31 @@ import { prisma } from '../../db/client'
 import { requireAuth } from '../../middleware/auth.middleware'
 import { siteMiddleware, requireSiteAccess } from '../../middleware/site.middleware'
 import { asyncHandler } from '../../utils/asyncHandler'
+import * as service from './comment.service'
 
 export const commentRouter = Router() as any
+
+commentRouter.get('/article/:articleId',
+  siteMiddleware,
+  asyncHandler(async (req: any, res: any) => {
+    const comments = await service.getArticleComments(req.params.articleId, req.site!)
+    res.json({ success: true, data: comments })
+  })
+)
+
+commentRouter.post('/article/:articleId',
+  siteMiddleware,
+  asyncHandler(async (req: any, res: any) => {
+    const { content, authorName, authorEmail, parentId } = req.body
+    const comment = await service.addComment(
+      req.params.articleId,
+      req.site!,
+      { content, authorName, authorEmail, parentId },
+      req.user
+    )
+    res.status(201).json({ success: true, data: comment })
+  })
+)
 
 commentRouter.get('/',
   requireAuth,
