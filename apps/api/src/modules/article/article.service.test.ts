@@ -18,8 +18,19 @@ vi.mock('../../services/google-indexing.service', () => ({
     submitUrl: vi.fn().mockResolvedValue({ success: true })
   }
 }))
+vi.mock('./search.service', () => ({
+  indexArticle: vi.fn().mockResolvedValue(undefined),
+  deleteIndexedArticle: vi.fn().mockResolvedValue(undefined)
+}))
+vi.mock('../../lib/redis', () => ({
+  getCache: vi.fn(),
+  setCache: vi.fn(),
+  deleteCache: vi.fn().mockResolvedValue(undefined)
+}))
 
 import * as repo from './article.repository'
+import * as searchService from './search.service'
+import { deleteCache } from '../../lib/redis'
 import {
   getArticleById, createArticle, updateArticle,
   publishArticle, deleteArticle
@@ -134,13 +145,23 @@ describe('publishArticle', () => {
   it('set status published dan publishedAt', async () => {
     vi.mocked(repo.findArticleById).mockResolvedValue(mockArticle() as any)
     vi.mocked(repo.updateArticle).mockResolvedValue(
-      mockArticle({ status: 'published' }) as any
+      mockArticle({ status: 'published', slug: 'test' }) as any
     )
     await publishArticle('art-1', 'bandung', editorPusat)
     expect(repo.updateArticle).toHaveBeenCalledWith(
       'art-1', 'bandung',
       expect.objectContaining({ status: 'published', publishedAt: expect.any(Date) })
     )
+  })
+
+  it('re-indexes Meilisearch and invalidates Redis cache on publish', async () => {
+    vi.mocked(repo.findArticleById).mockResolvedValue(mockArticle() as any)
+    vi.mocked(repo.updateArticle).mockResolvedValue(
+      mockArticle({ status: 'published', slug: 'test' }) as any
+    )
+    await publishArticle('art-1', 'bandung', editorPusat)
+    expect(searchService.indexArticle).toHaveBeenCalled()
+    expect(deleteCache).toHaveBeenCalledWith('article:bandung:test')
   })
 })
 
@@ -158,9 +179,12 @@ describe('deleteArticle — permission', () => {
     expect(err.statusCode).toBe(403)
   })
 
-  it('reporter bisa delete artikel miliknya sendiri', async () => {
-    vi.mocked(repo.findArticleById).mockResolvedValue(mockArticle() as any)
-    vi.mocked(repo.deleteArticle).mockResolvedValue({} as any)
+  it('reporter bisa soft-delete artikel miliknya sendiri', async () => {
+    vi.mocked(repo.findArticleById).mockResolvedValue(mockArticle({ slug: 'test' }) as any)
+    vi.mocked(repo.softDeleteArticle).mockResolvedValue({ id: 'art-1', slug: 'test' } as any)
     await expect(deleteArticle('art-1', 'bandung', reporterBandung)).resolves.not.toThrow()
+    expect(repo.softDeleteArticle).toHaveBeenCalledWith('art-1')
+    expect(searchService.deleteIndexedArticle).toHaveBeenCalledWith('art-1')
+    expect(deleteCache).toHaveBeenCalledWith('article:bandung:test')
   })
 })

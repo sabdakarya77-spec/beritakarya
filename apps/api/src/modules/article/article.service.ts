@@ -1,5 +1,9 @@
 import * as repo from './article.repository'
-import { generateSlug } from '@beritakarya/utils'
+import {
+  resolveUniqueSlug,
+  createArticleWithSlugRetry,
+  updateArticleWithSlugRetry
+} from './article.slug'
 import type { JWTPayload } from '@beritakarya/types'
 import { sendNotification } from '../notification/notification.controller'
 import { prisma } from '../../db/client'
@@ -122,12 +126,8 @@ export async function createArticle(
     throw Object.assign(new Error('Akses ditolak: Verifikasi identitas (KYC) Anda belum disetujui'), { statusCode: 403 })
   }
 
-  let slug = generateSlug(input.title)
-  let counter = 2
-  while (await repo.slugExists(slug, siteId)) {
-    slug = `${generateSlug(input.title)}-${counter++}`
-  }
-  const article = await repo.createArticle({
+  const slug = await resolveUniqueSlug(input.title, siteId)
+  const article = await createArticleWithSlugRetry({
     title: input.title,
     slug,
     siteId,
@@ -250,12 +250,7 @@ export async function updateArticle(
 
   // Handle Slug Change
   if (input.title && input.title !== article.title) {
-    let slug = generateSlug(input.title)
-    let counter = 2
-    while (await repo.slugExists(slug, siteId, id)) {
-      slug = `${generateSlug(input.title)}-${counter++}`
-    }
-    data.slug = slug
+    data.slug = await resolveUniqueSlug(input.title, siteId, id)
   }
 
   // Auto-calculate word count and reading time if blocks changed
@@ -269,7 +264,9 @@ export async function updateArticle(
     data.readingTimeMin = Math.max(1, Math.ceil(words / 200))
   }
 
-  const updated = await repo.updateArticle(id, siteId, data)
+  const updated = data.slug
+    ? await updateArticleWithSlugRetry(id, siteId, data)
+    : await repo.updateArticle(id, siteId, data)
 
   // Auto-save version on submission
   if (input.status === 'submitted') {
@@ -385,6 +382,13 @@ export async function publishArticle(id: string, siteId: string, user: JWTPayloa
     }
   }).catch(err => console.error('Failed to fetch site details for indexing:', err))
 
+  searchService.indexArticle(updated).catch(err =>
+    console.error('Failed to index article on publish:', err)
+  )
+  deleteCache(`article:${siteId}:${updated.slug}`).catch(err =>
+    console.error('Failed to invalidate article cache on publish:', err)
+  )
+
   return updated
 }
 
@@ -405,10 +409,15 @@ export async function deleteArticle(id: string, siteId: string, user: JWTPayload
     oldValue: article
   })
 
-  // Remove from index
-  searchService.deleteIndexedArticle(id).catch(err => console.error('Failed to delete indexed article:', err))
+  // Remove from search index and public cache
+  searchService.deleteIndexedArticle(id).catch(err =>
+    console.error('Failed to delete indexed article:', err)
+  )
+  deleteCache(`article:${siteId}:${article.slug}`).catch(err =>
+    console.error('Failed to invalidate article cache on delete:', err)
+  )
 
-  return repo.deleteArticle(id)
+  return repo.softDeleteArticle(id)
 }
 
 export async function getArticleVersions(articleId: string) {
@@ -462,7 +471,7 @@ export async function restoreArticleVersion(versionId: string, siteId: string, u
 export async function getArticleStats(siteId: string) {
   const counts = await prisma.article.groupBy({
     by: ['status'],
-    where: { siteId },
+    where: { siteId, deletedAt: null },
     _count: { id: true }
   })
   

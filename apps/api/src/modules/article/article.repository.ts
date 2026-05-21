@@ -1,6 +1,9 @@
 import { prisma } from '../../db/client'
 import type { Prisma, ArticleStatus } from '@prisma/client'
 
+/** Active articles only — excludes soft-deleted rows. */
+export const articleNotDeleted: Prisma.ArticleWhereInput = { deletedAt: null }
+
 export async function findArticlesBySite(
   siteId: string,
   opts: { status?: string; search?: string; category?: string; page?: number; limit?: number; authorId?: string } = {}
@@ -44,6 +47,7 @@ export async function findArticlesBySite(
 
   const where: Prisma.ArticleWhereInput = {
     siteId,
+    ...articleNotDeleted,
     ...(status && { status: status as ArticleStatus }),
     ...(authorId && { authorId }),
     ...categoryFilter,
@@ -81,7 +85,7 @@ export async function findArticlesBySite(
 
 export async function findArticleById(id: string, siteId: string) {
   return prisma.article.findFirst({
-    where: { id, siteId },
+    where: { id, siteId, ...articleNotDeleted },
     select: {
       id: true, title: true, slug: true, status: true,
       siteId: true, authorId: true, publishedAt: true, createdAt: true, updatedAt: true,
@@ -96,8 +100,8 @@ export async function findArticleById(id: string, siteId: string) {
 }
 
 export async function findArticleBySlug(slug: string, siteId: string) {
-  return prisma.article.findUnique({
-    where: { siteId_slug: { siteId, slug } },
+  return prisma.article.findFirst({
+    where: { siteId, slug, ...articleNotDeleted },
     select: {
       id: true, title: true, slug: true, status: true,
       siteId: true, authorId: true, publishedAt: true, createdAt: true, updatedAt: true,
@@ -113,7 +117,7 @@ export async function findArticleBySlug(slug: string, siteId: string) {
 
 export async function findPublishedArticleBySlug(slug: string, siteId: string) {
   return prisma.article.findFirst({
-    where: { siteId, slug, status: 'published' },
+    where: { siteId, slug, status: 'published', ...articleNotDeleted },
     select: {
       id: true, title: true, slug: true, status: true,
       siteId: true, authorId: true, publishedAt: true, createdAt: true, updatedAt: true,
@@ -176,16 +180,25 @@ export async function updateArticle(
   })
 }
 
-export async function deleteArticle(id: string) {
-  return prisma.article.delete({ 
+export async function softDeleteArticle(id: string) {
+  return prisma.article.update({
     where: { id },
-    select: { id: true, title: true, slug: true }
+    data: { deletedAt: new Date() },
+    select: { id: true, title: true, slug: true, siteId: true }
   })
 }
 
+/** @deprecated Use softDeleteArticle — kept as alias for callers migrating gradually. */
+export const deleteArticle = softDeleteArticle
+
 export async function slugExists(slug: string, siteId: string, excludeId?: string) {
   const article = await prisma.article.findFirst({
-    where: { slug, siteId, ...(excludeId && { id: { not: excludeId } }) },
+    where: {
+      slug,
+      siteId,
+      ...articleNotDeleted,
+      ...(excludeId && { id: { not: excludeId } })
+    },
     select: { id: true }
   })
   return !!article
