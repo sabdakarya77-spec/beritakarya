@@ -22,7 +22,15 @@ export function buildMetaDescriptionExcerpt(blocks: any[] | undefined, maxLen = 
   return text.length <= maxLen ? text : `${text.slice(0, maxLen - 3).trim()}...`
 }
 
-export function validateArticleContentLimits(blocks?: any[]): void {
+export type ArticleContentLimitOptions = {
+  /** Wajib untuk submit/publish; draft boleh disimpan di bawah batas ini. */
+  requireMinWords?: boolean
+}
+
+export function validateArticleContentLimits(
+  blocks?: any[],
+  options: ArticleContentLimitOptions = {}
+): void {
   if (!blocks) return
   if (blocks.length > MAX_BLOCKS) {
     throw Object.assign(
@@ -31,9 +39,9 @@ export function validateArticleContentLimits(blocks?: any[]): void {
     )
   }
   const words = countWords(extractTextFromBlocks(blocks))
-  if (words < MIN_WORDS) {
+  if (options.requireMinWords && words < MIN_WORDS) {
     throw Object.assign(
-      new Error(`Minimal ${MIN_WORDS} kata untuk membuat artikel`),
+      new Error(`Minimal ${MIN_WORDS} kata sebelum artikel dapat dikirim atau diterbitkan`),
       { statusCode: 400 }
     )
   }

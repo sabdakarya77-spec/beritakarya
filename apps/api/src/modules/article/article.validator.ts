@@ -61,7 +61,7 @@ const blocksField = z
   .default([])
 
 export const createArticleSchema = z.object({
-  title: z.string().min(5, 'Judul minimal 5 karakter').max(200),
+  title: z.string().trim().min(1, 'Judul wajib diisi').max(200),
   categoryId: z.string().optional().nullable(),
   tags: z.array(z.string()).default([]),
   blocks: blocksField,

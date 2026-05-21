@@ -40,4 +40,14 @@ describe('article.content', () => {
     }))
     expect(() => validateArticleContentLimits(blocks)).toThrow(/200 blok/)
   })
+
+  it('allows short draft content without requireMinWords', () => {
+    const blocks = [{ type: 'paragraph' as const, content: 'Draft singkat.' }]
+    expect(() => validateArticleContentLimits(blocks)).not.toThrow()
+  })
+
+  it('rejects short content when requireMinWords is set', () => {
+    const blocks = [{ type: 'paragraph' as const, content: 'Draft singkat.' }]
+    expect(() => validateArticleContentLimits(blocks, { requireMinWords: true })).toThrow(/50 kata/)
+  })
 })

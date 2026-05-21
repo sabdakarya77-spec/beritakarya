@@ -180,7 +180,7 @@ export async function createArticle(
   }
 
   validateArticleContentLimits(input.blocks)
-  
+
   // [FIX] Block validation in service layer (defense in depth)
   if (input.blocks) {
     try {
@@ -300,7 +300,8 @@ export async function updateArticle(
   }
 
   if (input.blocks) {
-    validateArticleContentLimits(input.blocks)
+    const requireMinWords = input.status === 'submitted'
+    validateArticleContentLimits(input.blocks, { requireMinWords })
   }
 
   // [FIX] Block validation in service layer (defense in depth)
@@ -456,6 +457,10 @@ export async function publishArticle(
   }
 
   assertCanPublish(article, user, options?.forcePublish)
+  validateArticleContentLimits(
+    Array.isArray(article.blocks) ? (article.blocks as any[]) : [],
+    { requireMinWords: true }
+  )
 
   await saveArticleVersion(id, user.userId, siteId)
 

@@ -245,7 +245,17 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       }
     } catch (err: any) {
       console.error('Failed to save article:', err)
-      const message = err?.response?.data?.message || err?.message || 'Gagal menyimpan artikel'
+      const apiError = err?.response?.data?.error
+      const details = apiError?.details as { field?: string; message?: string }[] | undefined
+      const detailText = details?.length
+        ? details.map((d) => d.message || d.field).filter(Boolean).join('; ')
+        : ''
+      const message =
+        detailText ||
+        apiError?.message ||
+        err?.response?.data?.message ||
+        err?.message ||
+        'Gagal menyimpan artikel'
       set({ saving: false, saveError: message })
     }
   },
