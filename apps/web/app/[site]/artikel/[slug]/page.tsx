@@ -11,11 +11,12 @@ import ShareSidebar from '../../../../components/ui/ShareSidebar'
 import AuthorCard from '../../../../components/ui/AuthorCard'
 import EditorialBadge from '../../../../components/ui/EditorialBadge'
 import { resolveArticleBadge } from '../../../../lib/resolveArticleBadge'
-import { Share2, Link as LinkIcon, BookOpen, Printer, MessageCircle, MessageSquare, X as XIcon } from 'lucide-react'
+import { Share2, Link as LinkIcon, BookOpen, MessageSquare, X as XIcon } from 'lucide-react'
 import { Metadata } from 'next'
 import { cn } from '../../../../lib/utils'
 import CommentSection from '../../../../components/ui/CommentSection'
 import FontSizeControl from '../../../../components/ui/FontSizeControl'
+import ArticleActions from '../../../../components/ui/ArticleActions'
 import ImageLightboxWrapper from '../../../../components/ui/ImageLightboxWrapper'
 import { Container } from '../../../../components/layout/Container'
 
@@ -226,18 +227,7 @@ export default async function ArticlePage({ params }: Props) {
                 <div className="ml-auto hidden lg:flex items-center gap-4">
                   <FontSizeControl />
                   <div className="w-px h-6 bg-gray-100 dark:bg-white/10 mx-2" />
-                  <button 
-                    onClick={() => typeof window !== 'undefined' && window.print()}
-                    className="p-2 text-gray-400 hover:text-brand-red transition-all"
-                  >
-                    <Printer size={18} />
-                  </button>
-                  <button 
-                    onClick={() => document.getElementById('comments')?.scrollIntoView({ behavior: 'smooth' })}
-                    className="p-2 text-gray-400 hover:text-brand-red transition-all"
-                  >
-                    <MessageCircle size={18} />
-                  </button>
+                  <ArticleActions />
                 </div>
               </div>
             </Container>
