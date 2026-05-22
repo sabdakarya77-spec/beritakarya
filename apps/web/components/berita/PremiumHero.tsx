@@ -5,7 +5,8 @@ import { ArrowRight, Clock, BookOpen, Share2, Bookmark } from 'lucide-react';
 import Link from 'next/link';
 import { SmartImage } from '../ui/SmartImage';
 import { cn } from '../../lib/utils';
-import EditorialBadge, { resolveArticleBadge } from '../ui/EditorialBadge';
+import EditorialBadge from '../ui/EditorialBadge';
+import { resolveArticleBadge } from '../../lib/resolveArticleBadge';
 
 interface PremiumHeroProps {
   article: any;

@@ -26,6 +26,10 @@ interface SmartImageProps extends Omit<ImageProps, 'src' | 'blurDataURL'> {
   fallbackSrc?: string
   dominantColor?: string | null
   wrapperClassName?: string
+  // Additional custom props that might be passed but not valid for <img>
+  text?: any
+  content?: any
+  body?: any
 }
 
 const getThumbUrl = (url: string) => {
@@ -76,6 +80,10 @@ export function SmartImage({
   const [isSlow, setIsSlow] = useState(false)
   const [userInteracted, setUserInteracted] = useState(false)
 
+  // Filter out non-Image props that could cause React errors when spread onto <img>
+  // These props are valid for custom usage but not valid DOM attributes for <img>
+  const { text, content, body, ...validImageProps } = props as any;
+
   useEffect(() => {
     if (typeof navigator !== 'undefined' && (navigator as any).connection) {
       const conn = (navigator as any).connection
@@ -122,7 +130,7 @@ export function SmartImage({
   const shouldBlur = blur && !isBase64 && errorLevel === 0
 
   return (
-    <div 
+    <div
       className={`overflow-hidden bg-slate-100 dark:bg-slate-800 ${fill ? 'absolute inset-0 w-full h-full' : 'relative'} ${wrapperClassName}`}
       style={dominantColor ? { backgroundColor: dominantColor } : undefined}
       onMouseEnter={() => setUserInteracted(true)}
@@ -132,7 +140,7 @@ export function SmartImage({
       {!isLoaded && !shouldBlur && (
         <div className="absolute inset-0 animate-pulse bg-slate-200 dark:bg-slate-700" />
       )}
-      
+
       {hasFatalError || !imgSrc ? (
         <div className="absolute inset-0 flex items-center justify-center bg-slate-100 dark:bg-slate-800">
           <svg className="w-12 h-12 text-slate-300 dark:text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -141,7 +149,7 @@ export function SmartImage({
         </div>
       ) : (
         <Image
-          {...props}
+          {...validImageProps}
           src={imgSrc}
           alt={alt || 'Gambar BeritaKarya'}
           fill={fill}

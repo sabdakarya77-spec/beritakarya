@@ -5,7 +5,8 @@ import { ArrowUpRight, Clock, BookOpen, Bookmark, User, Share2 } from 'lucide-re
 import Link from 'next/link';
 import { SmartImage, prefetchImage } from './SmartImage';
 import { cn } from '../../lib/utils';
-import EditorialBadge, { resolveArticleBadge } from './EditorialBadge';
+import EditorialBadge from './EditorialBadge';
+import { resolveArticleBadge } from '../../lib/resolveArticleBadge';
 import { getCategoryColor } from '../../lib/constants';
 
 interface NewsCardProps {
