@@ -146,7 +146,7 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
         </Container>
 
         {!searchQuery && categoryFilter === 'terbaru' && (
-          <>
+          <Container>
             <Container bleed className="mb-8 md:mb-24 border-b border-gray-100 dark:border-white/5 pb-8 md:pb-16 bg-gray-50/30 dark:bg-white/[0.01] pt-4 md:pt-8">
               <MagazineBentoHero articles={topBentoStories} site={siteParam} />
 
@@ -260,7 +260,7 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
                 </div>
               </ScrollAnimate>
             </Container>
-          </>
+          </Container>
         )}
 
         <Container>
