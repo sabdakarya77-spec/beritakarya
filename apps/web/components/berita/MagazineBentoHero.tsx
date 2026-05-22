@@ -27,7 +27,7 @@ export function MagazineBentoHero({ articles, site }: { articles: any[], site: s
       {/* Dynamic Background Glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-brand-red/5 dark:bg-brand-red/10 blur-[100px] -z-10 rounded-full" />
       
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-2 lg:gap-4 h-auto lg:h-[600px]">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 h-auto lg:h-[600px]">
         
         {/* BIG LEAD ARTICLE (Col Span 8) */}
         {lead && (
@@ -70,7 +70,7 @@ export function MagazineBentoHero({ articles, site }: { articles: any[], site: s
         )}
 
         {/* SIDE ARTICLES (Col Span 4) */}
-        <div className="lg:col-span-4 flex flex-col gap-2 lg:gap-4 h-full">
+        <div className="lg:col-span-4 flex flex-col gap-4 lg:gap-6 h-full">
           {sideArticles.map((article: any, index: number) => (
             <Link 
               key={article.id} 

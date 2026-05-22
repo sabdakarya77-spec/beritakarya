@@ -48,7 +48,7 @@ export function PremiumHero({ article, site }: PremiumHeroProps) {
               </div>
 
               <Link href={`/${site}/artikel/${article.slug}`}>
-                <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif font-black text-brand-black dark:text-white leading-[0.95] tracking-tighter hover:text-brand-red transition-colors duration-500">
+                <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif font-black text-brand-black dark:text-white leading-[0.95] tracking-tighter hover:text-brand-red transition-colors duration-500">
                   {article.title}
                 </h1>
               </Link>

@@ -17,6 +17,7 @@ interface NavbarProps {
   selectedCategory: string;
   setSelectedCategory: (cat: string) => void;
   onSearchClick?: () => void;
+  onMenuClick?: () => void;
 }
 
 import { useAuthStore } from '../../store/authStore';
@@ -54,10 +55,10 @@ export default function Navbar({
   return (
     <header className="sticky top-0 z-50 bg-[var(--bg-main)] border-b border-gray-100 dark:border-white/5 shadow-sm transition-all duration-500">
       {/* Top Bar */}
-      <div className="max-w-7xl mx-auto px-4 h-10 flex items-center justify-between border-b border-gray-50 uppercase tracking-[0.15em] text-[9px] font-bold text-brand-text-muted">
+      <div className="max-w-7xl mx-auto px-4 h-10 flex items-center justify-between border-b border-gray-50 uppercase tracking-[0.15em] text-[10px] font-bold text-brand-text-muted">
         <div className="flex items-center gap-5">
           <span className="hidden sm:flex items-center gap-1.5 hover:text-brand-red transition-colors cursor-pointer">
-            <Globe size={11} /> Global Edition
+            <Globe size={12} /> Global Edition
           </span>
           <div className="hidden sm:block w-px h-3 bg-gray-200" />
           <DateTimeWeather />
@@ -70,11 +71,18 @@ export default function Navbar({
 
       {/* Main Bar */}
       <div className="max-w-7xl mx-auto px-4 min-h-[5.5rem] sm:h-24 grid grid-cols-[1fr_auto_1fr] items-center gap-4">
-        {/* Left: Search (Desktop Only) */}
+        {/* Left: Search & Menu (Mobile) */}
         <div className="flex items-center gap-4">
           <button 
+            onClick={onMenuClick}
+            className="md:hidden p-2 -ml-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-full transition-colors text-brand-black dark:text-white"
+            aria-label="Menu"
+          >
+            <Menu size={24} strokeWidth={1.5} />
+          </button>
+          <button 
             onClick={onSearchClick}
-            className="hidden md:block p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-full transition-colors text-brand-black dark:text-white"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-full transition-colors text-brand-black dark:text-white"
             aria-label="Cari berita"
           >
             <Search size={22} strokeWidth={1.5} />
@@ -105,7 +113,7 @@ export default function Navbar({
                 <span className="text-brand-black group-hover:opacity-90 transition-opacity">KARYA</span>
               </h1>
             )}
-            <span className="text-[8px] sm:text-[9px] tracking-[0.35em] sm:tracking-[0.5em] font-bold text-brand-text-muted mt-1 uppercase transition-all group-hover:tracking-[0.6em] text-center max-w-[280px]">
+            <span className="text-[10px] tracking-[0.35em] sm:tracking-[0.5em] font-bold text-brand-text-muted mt-1.5 uppercase transition-all group-hover:tracking-[0.6em] text-center max-w-[280px]">
               Jernih Melihat Nusantara
             </span>
           </Link>

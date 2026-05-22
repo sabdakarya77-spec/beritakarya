@@ -138,14 +138,16 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
 
   return (
     <PublicSiteLayout siteConfig={siteConfig} initialCategory={categoryFilter}>
-      <Container>
-        <main id="main-content" className="py-4 md:py-8 pb-28 md:pb-8">
+      <main id="main-content" className="py-4 md:py-8 pb-28 md:pb-8">
+        <Container>
           <div className="flex justify-center mt-4 md:mt-8 mb-6 md:mb-12">
             <AdSpace type="leaderboard" />
           </div>
+        </Container>
 
-          {!searchQuery && categoryFilter === 'terbaru' && (
-            <div className="mb-8 md:mb-24 -mx-4 md:-mx-8 lg:-mx-10 px-4 md:px-8 lg:px-10 border-b border-gray-100 dark:border-white/5 pb-8 md:pb-16 bg-gray-50/30 dark:bg-white/[0.01] pt-4 md:pt-8">
+        {!searchQuery && categoryFilter === 'terbaru' && (
+          <>
+            <Container bleed className="mb-8 md:mb-24 border-b border-gray-100 dark:border-white/5 pb-8 md:pb-16 bg-gray-50/30 dark:bg-white/[0.01] pt-4 md:pt-8">
               <MagazineBentoHero articles={topBentoStories} site={siteParam} />
 
               {/* 4 Minimal Stories Row */}
@@ -257,9 +259,11 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
                   ))}
                 </div>
               </ScrollAnimate>
-            </div>
-          )}
+            </Container>
+          </>
+        )}
 
+        <Container>
           <section className="mb-16 py-8 border-y border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-white/[0.01]">
             <div className="flex items-center gap-6 overflow-x-auto no-scrollbar -mx-4 md:-mx-8 lg:-mx-10 px-4 md:px-8 lg:px-10">
               <div className="flex items-center gap-2 shrink-0 bg-brand-black dark:bg-white text-white dark:text-brand-black px-4 py-2 rounded-sm shadow-lg">
@@ -364,8 +368,8 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
               )}
             </aside>
           </div>
-        </main>
-      </Container>
+        </Container>
+      </main>
     </PublicSiteLayout>
   )
 }

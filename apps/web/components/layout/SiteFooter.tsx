@@ -19,9 +19,7 @@ export default function SiteFooter({ siteConfig, categories }: SiteFooterProps) 
             <Link href="/" className="flex flex-col mb-6">
               <span className="font-serif text-3xl font-black tracking-tighter uppercase">
                 <span className="text-brand-red">BERITA</span>
-                <span className="text-brand-black dark:text-white">
-                  {siteConfig?.name?.split(' ')[1] || 'KARYA'}
-                </span>
+                <span className="text-brand-black dark:text-white">KARYA</span>
               </span>
             </Link>
             <p className="text-brand-text-muted text-sm leading-relaxed font-light mb-8 max-w-xs opacity-80">
@@ -45,22 +43,22 @@ export default function SiteFooter({ siteConfig, categories }: SiteFooterProps) 
             </div>
             <div className="flex gap-3">
               {siteConfig?.socialLinks?.facebook && (
-                <a href={siteConfig.socialLinks.facebook} target="_blank" rel="noopener noreferrer" className="w-10 h-10 flex items-center justify-center bg-gray-100 dark:bg-white/5 hover:bg-brand-red transition-colors rounded-sm group">
+                <a href={siteConfig.socialLinks.facebook} target="_blank" rel="noopener noreferrer" className="w-10 h-10 flex items-center justify-center bg-gray-100 dark:bg-white/5 hover:bg-brand-red transition-colors rounded-xl group">
                   <Share2 size={16} className="text-brand-text-muted group-hover:text-white" />
                 </a>
               )}
               {siteConfig?.socialLinks?.twitter && (
-                <a href={siteConfig.socialLinks.twitter} target="_blank" rel="noopener noreferrer" className="w-10 h-10 flex items-center justify-center bg-gray-100 dark:bg-white/5 hover:bg-brand-red transition-colors rounded-sm group">
+                <a href={siteConfig.socialLinks.twitter} target="_blank" rel="noopener noreferrer" className="w-10 h-10 flex items-center justify-center bg-gray-100 dark:bg-white/5 hover:bg-brand-red transition-colors rounded-xl group">
                   <span className="text-brand-text-muted group-hover:text-white font-black text-sm italic">X</span>
                 </a>
               )}
               {siteConfig?.socialLinks?.instagram && (
-                <a href={siteConfig.socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="w-10 h-10 flex items-center justify-center bg-gray-100 dark:bg-white/5 hover:bg-brand-red transition-colors rounded-sm group">
+                <a href={siteConfig.socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="w-10 h-10 flex items-center justify-center bg-gray-100 dark:bg-white/5 hover:bg-brand-red transition-colors rounded-xl group">
                   <Camera size={16} className="text-brand-text-muted group-hover:text-white" />
                 </a>
               )}
               {siteConfig?.socialLinks?.youtube && (
-                <a href={siteConfig.socialLinks.youtube} target="_blank" rel="noopener noreferrer" className="w-10 h-10 flex items-center justify-center bg-gray-100 dark:bg-white/5 hover:bg-brand-red transition-colors rounded-sm group">
+                <a href={siteConfig.socialLinks.youtube} target="_blank" rel="noopener noreferrer" className="w-10 h-10 flex items-center justify-center bg-gray-100 dark:bg-white/5 hover:bg-brand-red transition-colors rounded-xl group">
                   <PlayCircle size={16} className="text-brand-text-muted group-hover:text-white" />
                 </a>
               )}
@@ -68,19 +66,23 @@ export default function SiteFooter({ siteConfig, categories }: SiteFooterProps) 
           </div>
 
           <div>
-            <h5 className="text-xs font-bold uppercase tracking-[0.2em] mb-8 text-brand-red">Kategori</h5>
-            <ul className="text-brand-text-muted text-sm space-y-3 font-light grid grid-cols-2 gap-x-4 md:grid-cols-1 md:gap-x-0">
-              {categories.filter(c => c.slug !== 'Terbaru' && c.slug !== 'Tersimpan').map((cat) => (
-                <li key={cat.slug}>
-                  <Link 
-                    href={`/${siteConfig.id}?cat=${encodeURIComponent(cat.slug)}`} 
-                    className="hover:text-brand-red transition-colors text-xs font-semibold uppercase tracking-wider block py-1"
-                  >
-                    {cat.name}
-                  </Link>
-                </li>
+            <h5 className="text-xs font-bold uppercase tracking-[0.2em] mb-6 text-brand-red">Kategori</h5>
+            <div className="flex flex-wrap gap-2">
+              {categories.filter(c => c.slug !== 'terbaru' && c.slug !== 'tersimpan').slice(0, 12).map((cat) => (
+                <Link
+                  key={cat.slug}
+                  href={`/${siteConfig.id}?cat=${encodeURIComponent(cat.slug)}`}
+                  className="px-3 py-1.5 bg-gray-100 dark:bg-white/5 hover:bg-brand-red/10 hover:text-brand-red text-[10px] font-semibold uppercase tracking-wider rounded-full transition-all"
+                >
+                  {cat.name}
+                </Link>
               ))}
-            </ul>
+            </div>
+            {categories.filter(c => c.slug !== 'terbaru' && c.slug !== 'tersimpan').length > 12 && (
+              <p className="text-[10px] text-brand-text-muted mt-3 opacity-60">
+                +{categories.filter(c => c.slug !== 'terbaru' && c.slug !== 'tersimpan').length - 12} kategori lainnya
+              </p>
+            )}
           </div>
 
           <div>
@@ -100,7 +102,7 @@ export default function SiteFooter({ siteConfig, categories }: SiteFooterProps) 
               <p className="text-brand-text-muted text-sm leading-relaxed font-light">
                 Bantu kami menjaga independensi jurnalisme dengan menjadi anggota.
               </p>
-              <button className="bg-brand-red text-white py-3 px-6 text-xs font-bold uppercase tracking-widest hover:bg-brand-black dark:hover:bg-white dark:hover:text-brand-black transition-all">
+              <button className="bg-brand-red text-white py-3 px-6 text-xs font-bold uppercase tracking-widest hover:bg-brand-black dark:hover:bg-white dark:hover:text-brand-black transition-all rounded-xl">
                 Dukung Kami
               </button>
             </div>

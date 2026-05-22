@@ -23,7 +23,13 @@ import {
   Lock,
   Phone,
   MapPin,
-  Share2
+  Share2,
+  Image,
+  Eye as EyeIcon,
+  Download,
+  FileText,
+  Shield,
+  Cookie
 } from 'lucide-react'
 import { api } from '../../../../lib/api'
 
@@ -41,6 +47,8 @@ export default function SettingsPage() {
     domain: '',
     description: '',
     logoUrl: '',
+    faviconUrl: '',
+    ogImageUrl: '',
     footerText: '',
     address: '',
     contactEmail: '',
@@ -49,6 +57,9 @@ export default function SettingsPage() {
     codeOfEthics: '',
     editorial: '',
     advertising: '',
+    privacyPolicy: '',
+    termsOfService: '',
+    cookiePolicy: '',
     socialLinks: {
       facebook: '',
       twitter: '',
@@ -192,6 +203,8 @@ export default function SettingsPage() {
           domain: data.data.domain || '',
           description: data.data.description || '',
           logoUrl: data.data.logoUrl || '',
+          faviconUrl: data.data.faviconUrl || '',
+          ogImageUrl: data.data.ogImageUrl || '',
           footerText: data.data.footerText || '',
           address: data.data.address || '',
           contactEmail: data.data.contactEmail || '',
@@ -200,6 +213,9 @@ export default function SettingsPage() {
           codeOfEthics: data.data.codeOfEthics || '',
           editorial: data.data.editorial || '',
           advertising: data.data.advertising || '',
+          privacyPolicy: data.data.privacyPolicy || '',
+          termsOfService: data.data.termsOfService || '',
+          cookiePolicy: data.data.cookiePolicy || '',
           socialLinks: {
             facebook: data.data.socialLinks?.facebook || '',
             twitter: data.data.socialLinks?.twitter || '',
@@ -295,10 +311,10 @@ export default function SettingsPage() {
   }
 
   const tabs = [
-    { id: 'basic', label: 'Identitas & Visual', icon: Globe, desc: 'Nama portal, domain, logo, & skema warna utama' },
+    { id: 'basic', label: 'Identitas & Visual', icon: Globe, desc: 'Nama portal, logo, favicon, OG image, & skema warna utama' },
     { id: 'contact', label: 'Kontak & Sosial', icon: Mail, desc: 'Alamat redaksi, hotline, & link media sosial resmi' },
     { id: 'google', label: 'Google Search API', icon: ShieldAlert, desc: 'Konfigurasi otomatis indeks artikel Google' },
-    { id: 'info', label: 'Halaman Informasi', icon: BookOpen, desc: 'Teks Tentang Kami, Kode Etik, Redaksi, & Iklan' },
+    { id: 'info', label: 'Halaman Legal', icon: BookOpen, desc: 'Tentang Kami, Kode Etik, Redaksi, Iklan, Privasi, Syarat' },
     { id: 'trending', label: 'Topik Hangat', icon: Flame, desc: 'Manajemen kata kunci trending di navigasi depan' }
   ] as const
 
@@ -329,7 +345,32 @@ export default function SettingsPage() {
               Ada Perubahan Belum Disimpan
             </span>
           )}
-          <button 
+          <a
+            href={`/${site}`}
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center gap-2 bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 px-4 py-3 text-[10px] font-black uppercase tracking-widest transition-all rounded-xl"
+          >
+            <EyeIcon size={12} />
+            Lihat Portal
+          </a>
+          <button
+            onClick={() => {
+              const settingsJson = JSON.stringify(settings, null, 2)
+              const blob = new Blob([settingsJson], { type: 'application/json' })
+              const url = URL.createObjectURL(blob)
+              const a = document.createElement('a')
+              a.href = url
+              a.download = `beritakarya-${site}-settings-${new Date().toISOString().split('T')[0]}.json`
+              a.click()
+              URL.revokeObjectURL(url)
+            }}
+            className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-400 px-4 py-3 text-[10px] font-black uppercase tracking-widest transition-all rounded-xl"
+          >
+            <Download size={12} />
+            Export
+          </button>
+          <button
             onClick={handleSave}
             disabled={saving}
             className="flex items-center gap-2 bg-brand-red hover:bg-brand-black dark:hover:bg-white dark:hover:text-black text-white px-6 py-3 text-[10px] font-black uppercase tracking-widest transition-all rounded-xl shadow-lg shadow-brand-red/20 disabled:opacity-50"
@@ -410,19 +451,20 @@ export default function SettingsPage() {
                   <h3 className="text-sm font-bold uppercase tracking-widest text-brand-black dark:text-white flex items-center gap-2">
                     <Globe size={16} className="text-brand-red" /> Identitas & Branding Utama
                   </h3>
-                  <p className="text-[10px] text-gray-400 mt-1 uppercase tracking-wider font-semibold">Tentukan jati diri digital utama untuk portal berita regional Anda.</p>
+                  <p className="text-[10px] text-gray-400 mt-1 uppercase tracking-wider font-semibold">Tentukan jati diri digital utama untuk portal berita regional Anda. <span className="text-brand-red font-bold">Brand utama "BERITA KARYA" adalah tetap.</span></p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Nama Situs / Portal Resmi</label>
-                    <input 
-                      type="text" 
+                    <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Nama Publikasi Regional <span className="text-brand-red font-bold">*</span></label>
+                    <input
+                      type="text"
                       value={settings.name}
                       onChange={(e) => setSettings({...settings, name: e.target.value})}
                       placeholder="Contoh: BeritaKarya Bandung"
                       className="w-full bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-xl px-4 py-3 text-xs text-brand-black dark:text-white outline-none focus:border-brand-red/50 focus:ring-1 focus:ring-brand-red/20 transition-all font-semibold"
                     />
+                    <p className="text-[8px] text-gray-400 mt-1">Nama ini akan muncul di SERP Google. Brand "BERITA KARYA" tetap prefix di depan.</p>
                   </div>
                   
                   <div className="space-y-2">
@@ -561,8 +603,8 @@ export default function SettingsPage() {
 
                       {contrastAdvice && (
                         <div className={`p-4 rounded-xl border flex items-start gap-2.5 ${
-                          contrastAdvice.isSafe 
-                            ? 'bg-emerald-500/5 border-emerald-500/10 text-emerald-600 dark:text-emerald-400' 
+                          contrastAdvice.isSafe
+                            ? 'bg-emerald-500/5 border-emerald-500/10 text-emerald-600 dark:text-emerald-400'
                             : 'bg-amber-500/5 border-amber-500/10 text-amber-600 dark:text-amber-400'
                         }`}>
                           <AlertCircle size={14} className="mt-0.5 flex-shrink-0" />
@@ -572,6 +614,78 @@ export default function SettingsPage() {
                           </div>
                         </div>
                       )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="h-px bg-gray-100 dark:bg-white/5 my-4"></div>
+
+                {/* FAVICON & SOCIAL SHARE IMAGE */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2">
+                      <Image size={14} className="text-brand-red" />
+                      <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Favicon (Ikon Tab Browser)</label>
+                    </div>
+                    <div className="flex flex-col gap-3">
+                      {settings.faviconUrl ? (
+                        <div className="w-16 h-16 bg-slate-50 dark:bg-slate-950/20 rounded-xl border border-dashed border-gray-200 dark:border-white/10 flex items-center justify-center p-2 relative group">
+                          <img src={settings.faviconUrl} alt="Favicon Preview" className="max-w-full max-h-full object-contain" />
+                          <button
+                            type="button"
+                            onClick={() => setSettings({...settings, faviconUrl: ''})}
+                            className="absolute -top-2 -right-2 p-1 bg-rose-500 hover:bg-rose-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <X size={10} />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="w-16 h-16 bg-slate-50 dark:bg-slate-950/20 rounded-xl border border-dashed border-gray-200 dark:border-white/10 flex items-center justify-center">
+                          <p className="text-[8px] text-gray-400 font-bold uppercase">Belum Ada</p>
+                        </div>
+                      )}
+                      <input
+                        type="text"
+                        value={settings.faviconUrl}
+                        onChange={(e) => setSettings({...settings, faviconUrl: e.target.value})}
+                        placeholder="https://.../favicon.ico"
+                        className="w-full bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-xl px-4 py-2.5 text-[10px] text-brand-black dark:text-white outline-none focus:border-brand-red/50 transition-all font-semibold"
+                      />
+                      <p className="text-[8px] text-gray-400">Format rekomendasi: ICO, PNG 32x32 atau SVG. Muncul di tab browser.</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2">
+                      <Share2 size={14} className="text-brand-red" />
+                      <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">OG Image (Share Preview)</label>
+                    </div>
+                    <div className="flex flex-col gap-3">
+                      {settings.ogImageUrl ? (
+                        <div className="w-full h-32 bg-slate-50 dark:bg-slate-950/20 rounded-xl border border-dashed border-gray-200 dark:border-white/10 flex items-center justify-center p-2 relative group overflow-hidden">
+                          <img src={settings.ogImageUrl} alt="OG Image Preview" className="max-w-full max-h-full object-contain" />
+                          <button
+                            type="button"
+                            onClick={() => setSettings({...settings, ogImageUrl: ''})}
+                            className="absolute top-2 right-2 p-1.5 bg-rose-500 hover:bg-rose-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <X size={10} />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="w-full h-32 bg-slate-50 dark:bg-slate-950/20 rounded-xl border border-dashed border-gray-200 dark:border-white/10 flex flex-col items-center justify-center text-center p-4">
+                          <Share2 size={20} className="text-gray-400 mb-2" />
+                          <p className="text-[8px] text-gray-400 font-bold uppercase">Belum Ada OG Image</p>
+                        </div>
+                      )}
+                      <input
+                        type="text"
+                        value={settings.ogImageUrl}
+                        onChange={(e) => setSettings({...settings, ogImageUrl: e.target.value})}
+                        placeholder="https://.../og-image.jpg"
+                        className="w-full bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-xl px-4 py-2.5 text-[10px] text-brand-black dark:text-white outline-none focus:border-brand-red/50 transition-all font-semibold"
+                      />
+                      <p className="text-[8px] text-gray-400">Format rekomendasi: JPG/PNG 1200x630px. Muncul saat link di-share ke WhatsApp, Facebook, Twitter.</p>
                     </div>
                   </div>
                 </div>
@@ -961,7 +1075,7 @@ export default function SettingsPage() {
 
                   <div className="space-y-2">
                     <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Halaman: Panduan & Informasi Periklanan</label>
-                    <textarea 
+                    <textarea
                       ref={advertisingRef}
                       value={settings.advertising}
                       onChange={(e) => setSettings({...settings, advertising: e.target.value})}
@@ -969,6 +1083,58 @@ export default function SettingsPage() {
                       rows={4}
                       className="w-full bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-xl px-4 py-3 text-xs text-brand-black dark:text-white outline-none focus:border-brand-red/50 focus:ring-1 focus:ring-brand-red/20 transition-all font-semibold resize-none overflow-hidden"
                     />
+                  </div>
+
+                  <div className="h-px bg-gray-100 dark:bg-white/5 my-4"></div>
+
+                  <div>
+                    <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-4 flex items-center gap-2">
+                      <Shield size={14} className="text-brand-red" /> Kebijakan Legal & Regulasi
+                    </h4>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Shield size={12} className="text-brand-red" />
+                        <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Kebijakan Privasi</label>
+                      </div>
+                      <textarea
+                        value={settings.privacyPolicy}
+                        onChange={(e) => setSettings({...settings, privacyPolicy: e.target.value})}
+                        placeholder="Tuliskan kebijakan tentang bagaimana data pengguna dikumpulkan, disimpan, dan dilindungi..."
+                        rows={4}
+                        className="w-full bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-xl px-4 py-3 text-[10px] text-brand-black dark:text-white outline-none focus:border-brand-red/50 transition-all font-semibold resize-none"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <FileText size={12} className="text-brand-red" />
+                        <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Syarat & Ketentuan</label>
+                      </div>
+                      <textarea
+                        value={settings.termsOfService}
+                        onChange={(e) => setSettings({...settings, termsOfService: e.target.value})}
+                        placeholder="Tuliskan syarat dan ketentuan penggunaan layanan portal berita..."
+                        rows={4}
+                        className="w-full bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-xl px-4 py-3 text-[10px] text-brand-black dark:text-white outline-none focus:border-brand-red/50 transition-all font-semibold resize-none"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Cookie size={12} className="text-brand-red" />
+                        <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Kebijakan Cookie</label>
+                      </div>
+                      <textarea
+                        value={settings.cookiePolicy}
+                        onChange={(e) => setSettings({...settings, cookiePolicy: e.target.value})}
+                        placeholder="Tuliskan kebijakan penggunaan cookie untuk analitik dan fungsional situs..."
+                        rows={4}
+                        className="w-full bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-xl px-4 py-3 text-[10px] text-brand-black dark:text-white outline-none focus:border-brand-red/50 transition-all font-semibold resize-none"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>

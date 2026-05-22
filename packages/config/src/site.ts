@@ -4,6 +4,8 @@ export interface SiteConfig {
   domain: string
   description?: string
   logoUrl?: string
+  faviconUrl?: string
+  ogImageUrl?: string
   footerText?: string
   socialLinks?: {
     facebook?: string
@@ -18,6 +20,9 @@ export interface SiteConfig {
   codeOfEthics?: string
   editorial?: string
   advertising?: string
+  privacyPolicy?: string
+  termsOfService?: string
+  cookiePolicy?: string
   appearance?: {
     primaryColor: string
   }

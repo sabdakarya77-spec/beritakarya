@@ -43,6 +43,8 @@ model Site {
   domain               String    @unique
   description          String?
   logoUrl              String?
+  faviconUrl           String?
+  ogImageUrl           String?
   footerText           String?
   address              String?
   contactEmail         String?
@@ -51,6 +53,9 @@ model Site {
   codeOfEthics         String?   @db.Text
   editorial            String?   @db.Text
   advertising          String?   @db.Text
+  privacyPolicy        String?   @db.Text
+  termsOfService       String?   @db.Text
+  cookiePolicy        String?   @db.Text
   socialLinks          Json?     @default("{}")
   appearance           Json?     @default("{\"primaryColor\":\"#e11d48\"}")
   trendingTopics       Json?     @default("[]")

@@ -295,9 +295,10 @@ export class SiteService {
 
     const updateData: any = {}
     const allowedFields = [
-      'name', 'domain', 'description', 'logoUrl', 'footerText', 
-      'address', 'contactEmail', 'phone', 'aboutUs', 'codeOfEthics', 
-      'editorial', 'advertising', 'socialLinks', 'appearance', 'trendingTopics',
+      'name', 'domain', 'description', 'logoUrl', 'faviconUrl', 'ogImageUrl', 'footerText',
+      'address', 'contactEmail', 'phone', 'aboutUs', 'codeOfEthics',
+      'editorial', 'advertising', 'privacyPolicy', 'termsOfService', 'cookiePolicy',
+      'socialLinks', 'appearance', 'trendingTopics',
       'googleIndexingConfig'
     ]
     

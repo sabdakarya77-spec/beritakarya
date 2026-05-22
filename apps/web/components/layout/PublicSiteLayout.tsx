@@ -6,6 +6,7 @@ import SiteFooter from './SiteFooter';
 import BreakingNewsTicker from '../ui/BreakingNewsTicker';
 import AISummary from '../ui/AISummary';
 import MobileBottomNav from './MobileBottomNav';
+import MobileMenu from './MobileMenu';
 import FullScreenSearch from '../ui/FullScreenSearch';
 import { CATEGORIES_CONFIG, CategoryItem } from '../../lib/constants';
 import { api } from '../../lib/api';
@@ -19,6 +20,7 @@ interface PublicSiteLayoutProps {
 export default function PublicSiteLayout({ children, siteConfig, initialCategory = 'terbaru' }: PublicSiteLayoutProps) {
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [categories, setCategories] = useState<CategoryItem[]>(CATEGORIES_CONFIG);
 
   useEffect(() => {
@@ -68,6 +70,7 @@ export default function PublicSiteLayout({ children, siteConfig, initialCategory
         selectedCategory={selectedCategory}
         setSelectedCategory={setSelectedCategory}
         onSearchClick={() => setIsSearchOpen(true)}
+        onMenuClick={() => setIsMenuOpen(true)}
       />
       
       {children}
@@ -84,10 +87,18 @@ export default function PublicSiteLayout({ children, siteConfig, initialCategory
         site={siteConfig.id} 
         onSearchClick={() => setIsSearchOpen(true)}
         selectedCategory={selectedCategory}
-        onMenuClick={() => {
-          // mobile scroll to categories or set active tab
-          const el = document.querySelector('nav.overflow-x-auto');
-          el?.scrollIntoView({ behavior: 'smooth' });
+        onMenuClick={() => setIsMenuOpen(true)}
+      />
+
+      <MobileMenu 
+        isOpen={isMenuOpen}
+        onClose={() => setIsMenuOpen(false)}
+        categories={categories}
+        siteConfig={siteConfig}
+        selectedCategory={selectedCategory}
+        onCategoryClick={(slug) => {
+          setSelectedCategory(slug);
+          // router push logic is handled in Navbar, but we can sync here
         }}
       />
 

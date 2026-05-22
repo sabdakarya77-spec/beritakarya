@@ -33,7 +33,7 @@ export default function NewsCard({ article, variant = 'medium', site = 'pusat', 
       <Link href={`/${site}/artikel/${article.slug}`} onMouseEnter={() => prefetchImage(imageUrl)}>
         <motion.article 
           whileHover={{ y: -4 }}
-          className="relative min-h-[450px] h-[550px] lg:h-[700px] group overflow-hidden rounded-lg cursor-pointer w-full bg-slate-900 shadow-2xl"
+          className="relative min-h-[450px] h-[550px] lg:h-[700px] group overflow-hidden rounded-3xl cursor-pointer w-full bg-slate-900 shadow-2xl"
         >
           <SmartImage 
             src={imageUrl} 
