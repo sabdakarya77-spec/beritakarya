@@ -127,7 +127,8 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
   const videoStories = articlesList.slice(0, 3)
   const photojournalism = articlesList.slice(3, 6)
   const opinionAnalisis = articlesList.slice(4, 7)
-  const mainFeed = articlesList.slice(4, 12)
+  const isCategoryFilter = categoryFilter && categoryFilter !== 'terbaru' && categoryFilter !== 'tersimpan'
+  const mainFeed = isCategoryFilter ? articlesList : articlesList.slice(4, 12)
   const popular = articlesList.slice(0, 5)
 
   const defaultTags = ['Politik', 'Ekonomi', 'Investigasi', 'Teknologi', 'Gaya Hidup', 'Hiburan']
