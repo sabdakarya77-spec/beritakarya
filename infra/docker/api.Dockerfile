@@ -46,6 +46,7 @@ COPY --from=builder --chown=apiuser:nodejs /app/apps/api/package.json /app/apps/
 COPY --from=builder --chown=apiuser:nodejs /app/apps/api/prisma /app/apps/api/prisma
 COPY --from=builder --chown=apiuser:nodejs /app/apps/api/scripts /app/apps/api/scripts
 COPY --from=builder --chown=apiuser:nodejs /app/apps/api/tsconfig.scripts.json /app/apps/api/tsconfig.scripts.json
+COPY --from=builder --chown=apiuser:nodejs /app/apps/api/src /app/apps/api/src
 COPY --from=builder --chown=apiuser:nodejs /app/package.json /app/package.json
 COPY --from=builder --chown=apiuser:nodejs /app/pnpm-workspace.yaml /app/pnpm-workspace.yaml
 COPY --from=builder --chown=apiuser:nodejs /app/apps/api/node_modules /app/apps/api/node_modules
