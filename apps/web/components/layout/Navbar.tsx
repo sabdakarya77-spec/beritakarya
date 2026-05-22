@@ -28,6 +28,7 @@ export default function Navbar({
   selectedCategory,
   setSelectedCategory,
   onSearchClick,
+  onMenuClick,
 }: NavbarProps) {
   const router = useRouter();
   const pathname = usePathname();
