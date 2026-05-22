@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { Mail, MessageCircle, MapPin, Share2, Camera, PlayCircle } from 'lucide-react';
+import { MapPin, Mail, MessageCircle } from 'lucide-react';
+import { SiFacebook, SiX, SiInstagram, SiYoutube } from 'react-icons/si';
 
 import { CategoryItem } from '../../lib/constants';
 
@@ -12,108 +13,108 @@ interface SiteFooterProps {
 
 export default function SiteFooter({ siteConfig, categories }: SiteFooterProps) {
   return (
-    <footer className="bg-brand-surface text-brand-text mt-32 pt-20 pb-10 border-t border-gray-100 dark:border-white/5 transition-colors duration-500">
+    <footer className="bg-white dark:bg-black/90 text-brand-text mt-32 pt-16 pb-12 border-t border-gray-100 dark:border-white/5 transition-colors duration-500">
       <div className="max-w-7xl mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-20">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
           <div className="col-span-1">
-            <Link href="/" className="flex flex-col mb-6">
+            <Link href="/" className="flex flex-col mb-5">
               <span className="font-serif text-3xl font-black tracking-tighter uppercase">
                 <span className="text-brand-red">BERITA</span>
                 <span className="text-brand-black dark:text-white">KARYA</span>
               </span>
             </Link>
-            <p className="text-brand-text-muted text-sm leading-relaxed font-light mb-8 max-w-xs opacity-80">
+            <p className="text-brand-text-muted text-xs leading-relaxed mb-6 max-w-xs opacity-80">
               {siteConfig?.description || "Portal berita independen yang berfokus pada kedalaman investigasi dan kejernihan melihat realitas Nusantara."}
             </p>
-            <div className="mb-6 space-y-3">
+            <div className="mb-6 space-y-2">
               <p className="text-brand-text-muted text-xs flex items-start gap-2 leading-relaxed">
-                <MapPin size={14} className="shrink-0 mt-0.5 text-brand-red" />
+                <MapPin size={12} className="shrink-0 mt-0.5 text-brand-red" />
                 <span>{siteConfig?.address || "Jl. Merdeka No. 123, Jakarta Pusat, Indonesia"}</span>
               </p>
               {siteConfig?.contactEmail && (
                 <p className="text-brand-text-muted text-xs flex items-center gap-2">
-                  <Mail size={14} className="text-brand-text-muted opacity-60" /> {siteConfig.contactEmail}
+                  <Mail size={12} className="text-brand-text-muted opacity-60" /> {siteConfig.contactEmail}
                 </p>
               )}
               {siteConfig?.phone && (
                 <p className="text-brand-text-muted text-xs flex items-center gap-2">
-                  <MessageCircle size={14} className="text-brand-text-muted opacity-60" /> {siteConfig.phone}
+                  <MessageCircle size={12} className="text-brand-text-muted opacity-60" /> {siteConfig.phone}
                 </p>
               )}
             </div>
-            <div className="flex gap-3">
+            <div className="flex gap-2">
               {siteConfig?.socialLinks?.facebook && (
-                <a href={siteConfig.socialLinks.facebook} target="_blank" rel="noopener noreferrer" className="w-10 h-10 flex items-center justify-center bg-gray-100 dark:bg-white/5 hover:bg-brand-red transition-colors rounded-xl group">
-                  <Share2 size={16} className="text-brand-text-muted group-hover:text-white" />
+                <a href={siteConfig.socialLinks.facebook} target="_blank" rel="noopener noreferrer" className="w-9 h-9 flex items-center justify-center bg-gray-100 dark:bg-white/5 hover:bg-brand-red transition-colors rounded-xl group">
+                  <SiFacebook size={14} className="text-brand-text-muted group-hover:text-white" />
                 </a>
               )}
               {siteConfig?.socialLinks?.twitter && (
-                <a href={siteConfig.socialLinks.twitter} target="_blank" rel="noopener noreferrer" className="w-10 h-10 flex items-center justify-center bg-gray-100 dark:bg-white/5 hover:bg-brand-red transition-colors rounded-xl group">
-                  <span className="text-brand-text-muted group-hover:text-white font-black text-sm italic">X</span>
+                <a href={siteConfig.socialLinks.twitter} target="_blank" rel="noopener noreferrer" className="w-9 h-9 flex items-center justify-center bg-gray-100 dark:bg-white/5 hover:bg-brand-red transition-colors rounded-xl group">
+                  <SiX size={14} className="text-brand-text-muted group-hover:text-white" />
                 </a>
               )}
               {siteConfig?.socialLinks?.instagram && (
-                <a href={siteConfig.socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="w-10 h-10 flex items-center justify-center bg-gray-100 dark:bg-white/5 hover:bg-brand-red transition-colors rounded-xl group">
-                  <Camera size={16} className="text-brand-text-muted group-hover:text-white" />
+                <a href={siteConfig.socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="w-9 h-9 flex items-center justify-center bg-gray-100 dark:bg-white/5 hover:bg-brand-red transition-colors rounded-xl group">
+                  <SiInstagram size={14} className="text-brand-text-muted group-hover:text-white" />
                 </a>
               )}
               {siteConfig?.socialLinks?.youtube && (
-                <a href={siteConfig.socialLinks.youtube} target="_blank" rel="noopener noreferrer" className="w-10 h-10 flex items-center justify-center bg-gray-100 dark:bg-white/5 hover:bg-brand-red transition-colors rounded-xl group">
-                  <PlayCircle size={16} className="text-brand-text-muted group-hover:text-white" />
+                <a href={siteConfig.socialLinks.youtube} target="_blank" rel="noopener noreferrer" className="w-9 h-9 flex items-center justify-center bg-gray-100 dark:bg-white/5 hover:bg-brand-red transition-colors rounded-xl group">
+                  <SiYoutube size={14} className="text-brand-text-muted group-hover:text-white" />
                 </a>
               )}
             </div>
           </div>
 
           <div>
-            <h5 className="text-xs font-bold uppercase tracking-[0.2em] mb-6 text-brand-red">Kategori</h5>
-            <div className="flex flex-wrap gap-2">
+            <h5 className="text-[10px] font-black uppercase tracking-[0.2em] mb-5 text-brand-red">Kategori</h5>
+            <div className="flex flex-wrap gap-1.5">
               {categories.filter(c => c.slug !== 'terbaru' && c.slug !== 'tersimpan').slice(0, 12).map((cat) => (
                 <Link
                   key={cat.slug}
                   href={`/${siteConfig.id}?cat=${encodeURIComponent(cat.slug)}`}
-                  className="px-3 py-1.5 bg-gray-100 dark:bg-white/5 hover:bg-brand-red/10 hover:text-brand-red text-[10px] font-semibold uppercase tracking-wider rounded-full transition-all"
+                  className="px-2.5 py-1 bg-gray-100 dark:bg-white/5 hover:bg-brand-red/10 hover:text-brand-red text-[9px] font-black uppercase tracking-wider rounded-full transition-all"
                 >
                   {cat.name}
                 </Link>
               ))}
             </div>
             {categories.filter(c => c.slug !== 'terbaru' && c.slug !== 'tersimpan').length > 12 && (
-              <p className="text-[10px] text-brand-text-muted mt-3 opacity-60">
+              <p className="text-[9px] text-brand-text-muted mt-3 opacity-60">
                 +{categories.filter(c => c.slug !== 'terbaru' && c.slug !== 'tersimpan').length - 12} kategori lainnya
               </p>
             )}
           </div>
 
           <div>
-            <h5 className="text-xs font-bold uppercase tracking-[0.2em] mb-8 text-brand-red">Informasi</h5>
-            <ul className="text-brand-text-muted text-sm space-y-4 font-light">
-              <li><Link href={`/${siteConfig.id}/p/about`} className="hover:text-brand-red transition-colors">Tentang Kami</Link></li>
-              <li><Link href={`/${siteConfig.id}/p/ethics`} className="hover:text-brand-red transition-colors">Kode Etik</Link></li>
-              <li><Link href={`/${siteConfig.id}/p/editorial`} className="hover:text-brand-red transition-colors">Redaksi</Link></li>
-              <li><Link href={`/${siteConfig.id}/p/partnership`} className="hover:text-brand-red transition-colors">Kemitraan & Kerja Sama</Link></li>
-              <li><Link href={`/${siteConfig.id}/p/ads`} className="hover:text-brand-red transition-colors">Info Iklan (Rate Card)</Link></li>
+            <h5 className="text-[10px] font-black uppercase tracking-[0.2em] mb-5 text-brand-red">Informasi</h5>
+            <ul className="text-brand-text-muted text-xs space-y-3">
+              <li><Link href={`/${siteConfig.id}/p/about`} className="hover:text-brand-red transition-colors font-semibold">Tentang Kami</Link></li>
+              <li><Link href={`/${siteConfig.id}/p/ethics`} className="hover:text-brand-red transition-colors font-semibold">Kode Etik</Link></li>
+              <li><Link href={`/${siteConfig.id}/p/editorial`} className="hover:text-brand-red transition-colors font-semibold">Redaksi</Link></li>
+              <li><Link href={`/${siteConfig.id}/p/partnership`} className="hover:text-brand-red transition-colors font-semibold">Kemitraan & Kerja Sama</Link></li>
+              <li><Link href={`/${siteConfig.id}/p/ads`} className="hover:text-brand-red transition-colors font-semibold">Iklan</Link></li>
             </ul>
           </div>
 
           <div>
-            <h5 className="text-xs font-bold uppercase tracking-[0.2em] mb-8 text-brand-red">Dukungan</h5>
-            <div className="flex flex-col gap-4">
-              <p className="text-brand-text-muted text-sm leading-relaxed font-light">
+            <h5 className="text-[10px] font-black uppercase tracking-[0.2em] mb-5 text-brand-red">Dukungan</h5>
+            <div className="flex flex-col gap-3">
+              <p className="text-brand-text-muted text-xs leading-relaxed">
                 Bantu kami menjaga independensi jurnalisme dengan menjadi anggota.
               </p>
-              <button className="bg-brand-red text-white py-3 px-6 text-xs font-bold uppercase tracking-widest hover:bg-brand-black dark:hover:bg-white dark:hover:text-brand-black transition-all rounded-xl">
+              <button className="bg-brand-red text-white py-2.5 px-5 text-[10px] font-black uppercase tracking-widest hover:bg-brand-black dark:hover:bg-white dark:hover:text-brand-black transition-all rounded-xl">
                 Dukung Kami
               </button>
             </div>
           </div>
         </div>
 
-        <div className="border-t border-gray-100 dark:border-white/5 pt-10 flex flex-col md:flex-row justify-between items-center gap-6">
-          <span suppressHydrationWarning className="text-[10px] uppercase font-bold tracking-[0.3em] text-brand-text-muted opacity-60">
+        <div className="border-t border-gray-100 dark:border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+          <span suppressHydrationWarning className="text-[9px] uppercase font-black tracking-[0.3em] text-brand-text-muted opacity-60">
             {siteConfig?.footerText || `© ${new Date().getFullYear()} BERITA KARYA. ALL RIGHTS RESERVED.`}
           </span>
-          <div className="flex gap-8 text-[10px] uppercase font-bold tracking-widest text-brand-text-muted opacity-60">
+          <div className="flex gap-6 text-[9px] uppercase font-black tracking-widest text-brand-text-muted opacity-60">
             <Link href="/privacy" className="hover:text-brand-red">Privacy Policy</Link>
             <Link href="/terms" className="hover:text-brand-red">Terms of Use</Link>
             <Link href="/cookies" className="hover:text-brand-red">Cookie Policy</Link>

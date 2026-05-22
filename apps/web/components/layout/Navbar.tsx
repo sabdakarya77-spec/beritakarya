@@ -1,6 +1,7 @@
 'use client';
 
 import { Search, Menu, User as UserIcon, Bell, Globe, Moon, Sun, FileText, Bookmark } from 'lucide-react';
+import { SiFacebook, SiX, SiInstagram, SiYoutube } from 'react-icons/si';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -122,6 +123,30 @@ export default function Navbar({
 
         {/* Right: Actions */}
         <div className="flex items-center justify-end gap-3 md:gap-5">
+          {/* Social Links (Desktop Only) */}
+          <div className="hidden lg:flex items-center gap-1.5">
+            {siteConfig?.socialLinks?.facebook && (
+              <a href={siteConfig.socialLinks.facebook} target="_blank" rel="noopener noreferrer" className="p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-full transition-colors text-brand-text-muted hover:text-blue-600">
+                <SiFacebook size={16} />
+              </a>
+            )}
+            {siteConfig?.socialLinks?.twitter && (
+              <a href={siteConfig.socialLinks.twitter} target="_blank" rel="noopener noreferrer" className="p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-full transition-colors text-brand-text-muted hover:text-brand-black">
+                <SiX size={16} />
+              </a>
+            )}
+            {siteConfig?.socialLinks?.instagram && (
+              <a href={siteConfig.socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-full transition-colors text-brand-text-muted hover:text-pink-600">
+                <SiInstagram size={16} />
+              </a>
+            )}
+            {siteConfig?.socialLinks?.youtube && (
+              <a href={siteConfig.socialLinks.youtube} target="_blank" rel="noopener noreferrer" className="p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-full transition-colors text-brand-text-muted hover:text-red-600">
+                <SiYoutube size={16} />
+              </a>
+            )}
+          </div>
+
           <button 
             aria-label="Notifikasi"
             className="hidden xl:flex p-2 text-brand-text-muted hover:text-brand-black transition-colors"
