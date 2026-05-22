@@ -451,7 +451,7 @@ export default function SettingsPage() {
                   <h3 className="text-sm font-bold uppercase tracking-widest text-brand-black dark:text-white flex items-center gap-2">
                     <Globe size={16} className="text-brand-red" /> Identitas & Branding Utama
                   </h3>
-                  <p className="text-[10px] text-gray-400 mt-1 uppercase tracking-wider font-semibold">Tentukan jati diri digital utama untuk portal berita regional Anda. <span className="text-brand-red font-bold">Brand utama "BERITA KARYA" adalah tetap.</span></p>
+                  <p className="text-[10px] text-gray-400 mt-1 uppercase tracking-wider font-semibold">Tentukan jati diri digital utama untuk portal berita regional Anda. <span className="text-brand-red font-bold">Brand utama &quot;BERITA KARYA&quot; adalah tetap.</span></p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -464,7 +464,7 @@ export default function SettingsPage() {
                       placeholder="Contoh: BeritaKarya Bandung"
                       className="w-full bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-xl px-4 py-3 text-xs text-brand-black dark:text-white outline-none focus:border-brand-red/50 focus:ring-1 focus:ring-brand-red/20 transition-all font-semibold"
                     />
-                    <p className="text-[8px] text-gray-400 mt-1">Nama ini akan muncul di SERP Google. Brand "BERITA KARYA" tetap prefix di depan.</p>
+                    <p className="text-[8px] text-gray-400 mt-1">Nama ini akan muncul di SERP Google. Brand &quot;BERITA KARYA&quot; tetap prefix di depan.</p>
                   </div>
                   
                   <div className="space-y-2">
