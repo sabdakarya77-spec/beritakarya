@@ -30,7 +30,7 @@ export default function LoadMoreArticles({
       const nextPage = page + 1;
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
       let url = `${apiUrl}/api/v1/articles/public?site=${siteId}&page=${nextPage}&limit=10`;
-      
+
       if (category && category !== 'Terbaru') {
         url += `&category=${encodeURIComponent(category)}`;
       }

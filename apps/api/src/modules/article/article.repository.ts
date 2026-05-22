@@ -40,7 +40,6 @@ export async function findArticlesBySite(
       const ids = [catRecord.id, ...catRecord.subCategories.map((sub: { id: string }) => sub.id)]
       categoryFilter.categoryId = { in: ids }
     } else {
-      // Return no results if category doesn't exist
       categoryFilter.categoryId = { in: [] }
     }
   }
