@@ -71,7 +71,7 @@ export async function findArticlesBySite(
         featuredImage: true, featuredImageBlur: true, featuredImageColor: true,
         viewCount: true, wordCount: true, readingTimeMin: true,
         blocks: true, tags: true, metaTitle: true, metaDescription: true,
-        category: { select: { name: true } },
+        category: { select: { id: true, name: true, slug: true } },
         author: { select: { id: true, name: true, role: true } }
       },
       orderBy: { createdAt: 'desc' },
@@ -104,7 +104,7 @@ export async function findArticlesByIds(
       featuredImage: true, featuredImageBlur: true, featuredImageColor: true,
       viewCount: true, wordCount: true, readingTimeMin: true,
       blocks: true, tags: true, metaTitle: true, metaDescription: true,
-      category: { select: { name: true } },
+      category: { select: { id: true, name: true, slug: true } },
       author: { select: { id: true, name: true, role: true } }
     }
   })
@@ -140,7 +140,7 @@ export async function findArticleById(id: string, siteId: string) {
       featuredImage: true, featuredImageBlur: true, featuredImageColor: true,
       viewCount: true, wordCount: true, readingTimeMin: true,
       blocks: true, tags: true, metaTitle: true, metaDescription: true,
-      category: { select: { name: true } },
+      category: { select: { id: true, name: true, slug: true } },
       author: { select: { id: true, name: true, email: true, role: true } }
     }
   })
@@ -156,7 +156,7 @@ export async function findArticleBySlug(slug: string, siteId: string) {
       featuredImage: true, featuredImageBlur: true, featuredImageColor: true,
       viewCount: true, wordCount: true, readingTimeMin: true,
       blocks: true, tags: true, metaTitle: true, metaDescription: true,
-      category: { select: { name: true } },
+      category: { select: { id: true, name: true, slug: true } },
       author: { select: { id: true, name: true, role: true } }
     }
   })
@@ -172,7 +172,7 @@ export async function findPublishedArticleBySlug(slug: string, siteId: string) {
       featuredImage: true, featuredImageBlur: true, featuredImageColor: true,
       viewCount: true, wordCount: true, readingTimeMin: true,
       blocks: true, tags: true, metaTitle: true, metaDescription: true,
-      category: { select: { name: true } },
+      category: { select: { id: true, name: true, slug: true } },
       author: { select: { id: true, name: true, role: true } }
     }
   })
@@ -194,7 +194,7 @@ export async function createArticle(data: {
       featuredImage: true, featuredImageBlur: true, featuredImageColor: true,
       viewCount: true, wordCount: true, readingTimeMin: true,
       blocks: true, tags: true, metaTitle: true, metaDescription: true,
-      category: { select: { name: true } },
+      category: { select: { id: true, name: true, slug: true } },
       author: { select: { id: true, name: true, role: true } }
     }
   })
@@ -222,7 +222,7 @@ export async function updateArticle(
       featuredImage: true, featuredImageBlur: true, featuredImageColor: true,
       viewCount: true, wordCount: true, readingTimeMin: true,
       blocks: true, tags: true, metaTitle: true, metaDescription: true,
-      category: { select: { name: true } },
+      category: { select: { id: true, name: true, slug: true } },
       author: { select: { id: true, name: true, role: true } }
     }
   })
