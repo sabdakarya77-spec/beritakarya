@@ -274,7 +274,7 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
                 <Link
                   key={tag}
                   href={`/${siteParam}?q=${encodeURIComponent(tag)}`}
-                  className="shrink-0 px-4 py-1.5 text-[11px] font-black uppercase tracking-[0.2em] text-gray-400 hover:text-brand-red transition-all hover:scale-105"
+                  className="shrink-0 px-4 py-1.5 text-[11px] font-black uppercase tracking-[0.2em] text-gray-400 dark:text-gray-300 hover:text-brand-red dark:hover:text-brand-red transition-all hover:scale-105"
                 >
                   #{tag}
                 </Link>

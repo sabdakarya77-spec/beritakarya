@@ -54,7 +54,7 @@ export default function PublicSiteLayout({ children, siteConfig, initialCategory
 
   return (
     <div 
-      className="min-h-screen transition-colors duration-500"
+      className="min-h-screen bg-gray-50 dark:bg-black transition-colors duration-500"
       style={{ '--brand-red': siteConfig.appearance?.primaryColor || '#e11d48' } as React.CSSProperties}
     >
       {/* Container for Breaking News to keep it aligned at the very top */}
