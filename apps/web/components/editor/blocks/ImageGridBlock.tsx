@@ -19,7 +19,7 @@ export function ImageGridBlock({ block }: Props) {
     const form = new FormData()
     form.append('file', file)
     try {
-      const { data } = await api.post('/media/upload', form, {
+      const { data } = await api.post('/media/upload?purpose=editorial', form, {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
       return { url: data.data.url, alt: file.name.replace(/.[^/.]+$/, '') }

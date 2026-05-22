@@ -187,7 +187,8 @@ mediaRouter.post(
       })
     }
 
-    const isLogo = req.query.type === 'logo'
+      const isLogo = req.query.type === 'logo'
+      const skipWatermark = isLogo || req.query.skipWatermark === 'true' || req.query.purpose === 'editorial'
 
     logger.info(`[Media] Uploading file: ${req.file.originalname} (${req.file.size} bytes), Type: ${req.query.type || 'standard'}`)
     const id = uuidv4()
@@ -223,7 +224,7 @@ mediaRouter.post(
       }
     } else {
       try {
-        processed = await processImage(req.file.buffer, id, { skipWatermark: isLogo })
+        processed = await processImage(req.file.buffer, id, { skipWatermark })
         url = `${env.API_URL}/api/v1/media/uploads/${processed.fullName}`
         thumbUrl = `${env.API_URL}/api/v1/media/uploads/thumbs/${processed.thumbName}`
         blurHash = processed.blurHash
