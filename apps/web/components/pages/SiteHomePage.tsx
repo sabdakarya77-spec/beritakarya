@@ -14,8 +14,8 @@ import ScrollAnimate from '../ui/ScrollAnimate'
 import { Container } from '../layout/Container'
 
 function resolveCategoryName(slug: string, categoriesTree: any[] = []): string {
-  if (slug === 'Terbaru') return 'Terbaru'
-  if (slug === 'Tersimpan') return 'Tersimpan'
+  if (slug === 'terbaru') return 'Terbaru'
+  if (slug === 'tersimpan') return 'Tersimpan'
   for (const cat of categoriesTree) {
     if (cat.slug === slug) return cat.name
     if (cat.subCategories) {
@@ -42,7 +42,7 @@ async function getArticles(siteId: string, category?: string, search?: string) {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
     let url = `${apiUrl}/api/v1/articles/public?site=${siteId}&limit=25`
 
-    if (category && category !== 'Terbaru' && category !== 'Tersimpan') {
+    if (category && category !== 'terbaru' && category !== 'tersimpan') {
       url += `&category=${encodeURIComponent(category)}`
     }
     if (search) {
@@ -87,7 +87,7 @@ async function getSiteSettings(siteId: string) {
 
 export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProps) {
   const resolvedSearchParams = await searchParams
-  const categoryFilter = resolvedSearchParams?.cat || 'Terbaru'
+  const categoryFilter = resolvedSearchParams?.cat || 'terbaru'
   const searchQuery = resolvedSearchParams?.q || ''
 
   const siteSettings = await getSiteSettings(siteParam)
@@ -143,7 +143,7 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
             <AdSpace type="leaderboard" />
           </div>
 
-          {!searchQuery && categoryFilter === 'Terbaru' && (
+          {!searchQuery && categoryFilter === 'terbaru' && (
             <div className="mb-8 md:mb-24 -mx-4 md:-mx-8 lg:-mx-10 px-4 md:px-8 lg:px-10 border-b border-gray-100 dark:border-white/5 pb-8 md:pb-16 bg-gray-50/30 dark:bg-white/[0.01] pt-4 md:pt-8">
               <MagazineBentoHero articles={topBentoStories} site={siteParam} />
 

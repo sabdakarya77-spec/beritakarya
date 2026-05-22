@@ -21,7 +21,7 @@ export default function MobileBottomNav({ site = 'pusat', onSearchClick, onMenuC
       label: 'Home',
       icon: Home,
       href: `/${site}`,
-      active: (pathname === `/${site}` || pathname === `/${site}/`) && selectedCategory !== 'Tersimpan',
+      active: (pathname === `/${site}` || pathname === `/${site}/`) && selectedCategory !== 'tersimpan',
     },
     {
       label: 'Search',
@@ -38,8 +38,8 @@ export default function MobileBottomNav({ site = 'pusat', onSearchClick, onMenuC
     {
       label: 'Tersimpan',
       icon: Bookmark,
-      href: `/${site}?cat=Tersimpan`,
-      active: selectedCategory === 'Tersimpan',
+      href: `/${site}?cat=tersimpan`,
+      active: selectedCategory === 'tersimpan',
     },
     {
       label: 'Dashboard',

@@ -16,7 +16,7 @@ interface PublicSiteLayoutProps {
   initialCategory?: string;
 }
 
-export default function PublicSiteLayout({ children, siteConfig, initialCategory = 'Terbaru' }: PublicSiteLayoutProps) {
+export default function PublicSiteLayout({ children, siteConfig, initialCategory = 'terbaru' }: PublicSiteLayoutProps) {
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [categories, setCategories] = useState<CategoryItem[]>(CATEGORIES_CONFIG);
@@ -29,7 +29,7 @@ export default function PublicSiteLayout({ children, siteConfig, initialCategory
         });
         if (data.success && data.data && data.data.length > 0) {
           const mapped = [
-            { name: 'Terbaru', slug: 'Terbaru' },
+            { name: 'Terbaru', slug: 'terbaru' },
             ...data.data.map((cat: any) => ({
               name: cat.name,
               slug: cat.slug,
@@ -38,7 +38,7 @@ export default function PublicSiteLayout({ children, siteConfig, initialCategory
                 slug: sub.slug
               }))
             })),
-            { name: 'Tersimpan', slug: 'Tersimpan' }
+            { name: 'Tersimpan', slug: 'tersimpan' }
           ];
           setCategories(mapped);
         }

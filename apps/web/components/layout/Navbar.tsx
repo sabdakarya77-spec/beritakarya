@@ -213,7 +213,7 @@ export default function Navbar({
                   isActive ? "text-brand-black dark:text-white font-extrabold" : "text-gray-400 dark:text-gray-500"
                 )}
               >
-                {cat.slug === 'Tersimpan' && (
+                {cat.slug === 'tersimpan' && (
                   <Bookmark 
                     size={12} 
                     className={cn(
@@ -290,10 +290,10 @@ export default function Navbar({
                   : "border-gray-200 dark:border-white/10 text-brand-text-muted dark:text-gray-400"
               )}
             >
-              {cat.slug === 'Tersimpan' && (
+              {cat.slug === 'tersimpan' && (
                 <Bookmark 
                   size={10} 
-                  className={isActive ? "text-brand-red fill-brand-red/20" : "text-gray-400 dark:text-gray-500"} 
+                  className={isActive ? "text-brand-red fill-brand-red/20" : "text-gray-400 dark:text-gray-400"} 
                 />
               )}
               <span>{cat.name}</span>

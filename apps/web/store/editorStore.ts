@@ -307,6 +307,9 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     const freshId = get().articleId
     if (!freshId) return
 
+    // Ensure all current data (including category) is saved before updating status
+    await get().saveArticle()
+
     await api.put(`/articles/${freshId}`, { status: 'submitted' }, siteId ? { params: { site: siteId } } : undefined)
     set({ status: 'submitted' })
   },
