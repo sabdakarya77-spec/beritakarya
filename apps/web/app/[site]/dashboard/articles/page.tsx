@@ -45,6 +45,32 @@ interface Article {
   isFeatured?: boolean;
 }
 
+const CAN_SUBMIT_ROLES = ['reporter', 'kontributor', 'wapimred', 'superadmin'];
+const CAN_DELETE_ROLES = ['superadmin', 'wapimred'];
+const getStatusFromQuery = (value: string | null) =>
+  value && value in STATUS_LABELS ? value : '';
+const getViewModeFromQuery = (value: string | null): 'list' | 'kanban' =>
+  value === 'kanban' ? 'kanban' : 'list';
+const getArticleActionHint = (status: string) => {
+  switch (status) {
+    case 'draft':
+      return 'Aksi utama: rapikan lalu kirim ke editor.';
+    case 'revision':
+      return 'Aksi utama: perbaiki sesuai catatan editor.';
+    case 'submitted':
+    case 'review':
+      return 'Aksi utama: pantau keputusan editorial.';
+    case 'approved':
+      return 'Aksi utama: siapkan ke tahap publikasi.';
+    case 'scheduled':
+      return 'Aksi utama: cek kesiapan jadwal terbit.';
+    case 'published':
+      return 'Aksi utama: buka hasil terbit dan distribusi.';
+    default:
+      return 'Aksi utama: buka detail post.';
+  }
+};
+
 export default function ArticlesPage() {
   const router = useRouter();
   const { site } = useParams<{ site: string }>();
@@ -52,12 +78,12 @@ export default function ArticlesPage() {
   const { user } = useAuthStore();
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('');
+  const [filter, setFilter] = useState(getStatusFromQuery(searchParams.get('status')));
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
-  const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list');
+  const [viewMode, setViewMode] = useState<'list' | 'kanban'>(getViewModeFromQuery(searchParams.get('view')));
   const [isCreating, setIsCreating] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [globalStats, setGlobalStats] = useState<Record<string, number>>({});
@@ -102,6 +128,22 @@ export default function ArticlesPage() {
   useEffect(() => {
     setPage(1);
   }, [filter, searchQuery]);
+
+  useEffect(() => {
+    const nextFilter = getStatusFromQuery(searchParams.get('status'));
+    const nextSearch = searchParams.get('search') || '';
+    const nextViewMode = getViewModeFromQuery(searchParams.get('view'));
+
+    if (nextFilter !== filter) {
+      setFilter(nextFilter);
+    }
+    if (nextSearch !== searchQuery) {
+      setSearchQuery(nextSearch);
+    }
+    if (nextViewMode !== viewMode) {
+      setViewMode(nextViewMode);
+    }
+  }, [searchParams, filter, searchQuery, viewMode]);
 
   const handleNew = async () => {
     setIsCreating(true);
@@ -172,6 +214,20 @@ export default function ArticlesPage() {
     ? ['', 'draft', 'submitted', 'revision', 'published']
     : ['', 'draft', 'submitted', 'review', 'revision', 'approved', 'scheduled', 'published'];
 
+  const canSubmitArticle = (article: Article) =>
+    article.status === 'draft' && CAN_SUBMIT_ROLES.includes(user?.role || '');
+
+  const canDeleteArticle = () => CAN_DELETE_ROLES.includes(user?.role || '');
+  const getPrimaryActionLabel = (article: Article) => {
+    if (canSubmitArticle(article)) return 'Kirim ke Editor';
+    if (article.status === 'revision') return 'Perbaiki';
+    if (article.status === 'published') return 'Lihat Terbit';
+    if (article.status === 'approved') return 'Buka Approved';
+    if (article.status === 'scheduled') return 'Cek Jadwal';
+    if (article.status === 'submitted' || article.status === 'review') return 'Pantau Status';
+    return 'Buka Post';
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
@@ -210,6 +266,24 @@ export default function ArticlesPage() {
 
       {/* Search + Filter */}
       <div className="dash-card p-4 space-y-4">
+        {(filter || searchQuery) && (
+          <div className="flex flex-wrap items-center gap-2 rounded-xl border border-brand-red/10 bg-brand-red/5 px-3 py-2.5">
+            <span className="text-[10px] font-black uppercase tracking-widest text-brand-red">
+              Fokus Aktif
+            </span>
+            {filter && (
+              <span className="rounded-full bg-white dark:bg-slate-900/70 px-2 py-1 text-[10px] font-black uppercase tracking-wide text-brand-black dark:text-white">
+                Status: {STATUS_LABELS[filter]}
+              </span>
+            )}
+            {searchQuery && (
+              <span className="rounded-full bg-white dark:bg-slate-900/70 px-2 py-1 text-[10px] font-black text-brand-black dark:text-white">
+                Cari: "{searchQuery}"
+              </span>
+            )}
+          </div>
+        )}
+
         {/* Search */}
         <div className="relative group">
           <Search size={15} className={cn(
@@ -354,66 +428,97 @@ export default function ArticlesPage() {
 
                   {/* Actions */}
                   <td className="px-4 py-4">
-                    <div className="flex justify-end items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      {/* Journalist: kirim ke editor jika masih draft */}
-                      {article.status === 'draft' && (user?.role === 'reporter' || user?.role === 'kontributor' || user?.role === 'wapimred' || user?.role === 'superadmin') && (
-                        <button
-                          onClick={() => handleSubmitToReview(article.id)}
-                          disabled={actionLoading === article.id}
-                          title="Kirim ke Editor"
-                          className="flex items-center gap-1 px-2.5 py-1.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 text-[9px] font-black uppercase tracking-widest rounded-md hover:bg-blue-100 transition-all disabled:opacity-50"
-                        >
-                          {actionLoading === article.id
-                            ? <Loader2 size={10} className="animate-spin" />
-                            : <Send size={10} />
-                          }
-                          Kirim
-                        </button>
-                      )}
-                      <Link
-                        href={`/${site}/dashboard/articles/${article.id}`}
-                        className="p-2 text-gray-400 hover:text-brand-red hover:bg-brand-red/5 rounded-lg transition-all"
-                        title="Edit"
-                      >
-                        <Edit3 size={15} />
-                      </Link>
-                      {article.status === 'published' && (
-                        <>
+                    <div className="flex flex-col items-end gap-2">
+                      <span className="text-[9px] font-bold uppercase tracking-widest text-gray-400 text-right">
+                        {getArticleActionHint(article.status)}
+                      </span>
+                      <div className="flex justify-end items-center gap-2 flex-wrap">
+                        {canSubmitArticle(article) ? (
+                          <>
+                            <button
+                              onClick={() => handleSubmitToReview(article.id)}
+                              disabled={actionLoading === article.id}
+                              title="Kirim ke editor"
+                              className="inline-flex items-center gap-1.5 px-3.5 py-2.5 bg-brand-red text-white text-[10px] font-black uppercase tracking-wide rounded-lg hover:bg-red-700 transition-all disabled:opacity-50 shadow-sm"
+                            >
+                              {actionLoading === article.id
+                                ? <Loader2 size={12} className="animate-spin" />
+                                : <Send size={12} />
+                              }
+                              {getPrimaryActionLabel(article)}
+                            </button>
+                            <Link
+                              href={`/${site}/dashboard/articles/${article.id}`}
+                              className="inline-flex items-center gap-1.5 px-3 py-2 bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-200 text-[10px] font-black uppercase tracking-wide rounded-lg hover:bg-gray-200 dark:hover:bg-white/10 transition-all"
+                              title="Edit post"
+                            >
+                              <Edit3 size={13} />
+                              Edit
+                            </Link>
+                          </>
+                        ) : article.status === 'published' ? (
+                          <>
+                            <Link
+                              href={`/${site}/artikel/${article.slug}`}
+                              target="_blank"
+                              className="inline-flex items-center gap-1.5 px-3.5 py-2.5 bg-emerald-600 text-white text-[10px] font-black uppercase tracking-wide rounded-lg hover:bg-emerald-700 transition-all shadow-sm"
+                              title="Lihat post"
+                            >
+                              <Eye size={12} />
+                              {getPrimaryActionLabel(article)}
+                            </Link>
+                            <Link
+                              href={`/${site}/dashboard/articles/${article.id}`}
+                              className="inline-flex items-center gap-1.5 px-3 py-2 bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-200 text-[10px] font-black uppercase tracking-wide rounded-lg hover:bg-gray-200 dark:hover:bg-white/10 transition-all"
+                              title="Edit post"
+                            >
+                              <Edit3 size={13} />
+                              Edit
+                            </Link>
+                            <button
+                              onClick={() => handleGoogleIndex(article.id)}
+                              disabled={actionLoading === article.id + 'index'}
+                              className="p-2 text-gray-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 rounded-lg transition-all disabled:opacity-50"
+                              title="Kirim sinyal indeks Google"
+                            >
+                              {actionLoading === article.id + 'index' ? (
+                                <Loader2 size={14} className="animate-spin text-emerald-500" />
+                              ) : (
+                                <Globe size={14} />
+                              )}
+                            </button>
+                          </>
+                        ) : (
                           <Link
-                            href={`/${site}/artikel/${article.slug}`}
-                            target="_blank"
-                            className="p-2 text-gray-400 hover:text-brand-black dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 rounded-lg transition-all"
-                            title="Lihat post"
-                          >
-                            <Eye size={15} />
-                          </Link>
-                          <button
-                            onClick={() => handleGoogleIndex(article.id)}
-                            disabled={actionLoading === article.id + 'index'}
-                            className="p-2 text-gray-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 rounded-lg transition-all disabled:opacity-50"
-                            title="⚡ Indeks Google Instan"
-                          >
-                            {actionLoading === article.id + 'index' ? (
-                              <Loader2 size={14} className="animate-spin text-emerald-500" />
-                            ) : (
-                              <Globe size={14} />
+                            href={`/${site}/dashboard/articles/${article.id}`}
+                            className={cn(
+                              'inline-flex items-center gap-1.5 px-3.5 py-2.5 text-[10px] font-black uppercase tracking-wide rounded-lg transition-all shadow-sm',
+                              article.status === 'revision'
+                                ? 'bg-amber-500 text-white hover:bg-amber-600'
+                                : article.status === 'approved'
+                                  ? 'bg-emerald-600 text-white hover:bg-emerald-700'
+                                  : 'bg-brand-black dark:bg-white text-white dark:text-slate-900 hover:opacity-90'
                             )}
+                            title="Buka post"
+                          >
+                            <Edit3 size={12} />
+                            {getPrimaryActionLabel(article)}
+                          </Link>
+                        )}
+                        {canDeleteArticle() && (
+                          <button 
+                            onClick={() => handleDelete(article.id)}
+                            disabled={actionLoading === article.id + 'del'}
+                            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-lg transition-all disabled:opacity-50"
+                            title="Hapus"
+                          >
+                            {actionLoading === article.id + 'del'
+                              ? <Loader2 size={15} className="animate-spin" />
+                              : <Trash2 size={15} />
+                            }
                           </button>
-                        </>
-                      )}
-                      {(user?.role === 'superadmin' || user?.role === 'wapimred') && (
-                        <button 
-                          onClick={() => handleDelete(article.id)}
-                          disabled={actionLoading === article.id + 'del'}
-                          className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-lg transition-all disabled:opacity-50"
-                          title="Hapus"
-                        >
-                          {actionLoading === article.id + 'del'
-                            ? <Loader2 size={15} className="animate-spin" />
-                            : <Trash2 size={15} />
-                          }
-                        </button>
-                      )}
+                        )}
+                      </div>
                     </div>
                   </td>
                 </motion.tr>

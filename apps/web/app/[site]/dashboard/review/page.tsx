@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { api } from '../../../../lib/api';
 import { useAuthStore } from '../../../../store/authStore';
@@ -10,7 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   AlertCircle, CheckCircle, XCircle, Clock, ChevronRight,
   FileText, User as UserIcon, Calendar, MessageSquare, Eye,
-  Loader2, RefreshCw
+  Loader2, RefreshCw, Zap
 } from 'lucide-react';
 import StatusBadge from '../../../../components/ui/StatusBadge';
 import { cn } from '../../../../lib/utils';
@@ -27,6 +27,7 @@ interface Article {
   readingTimeMin?: number;
   reviewNotes?: string;
   blocks?: any[];
+  isBreaking?: boolean;
 }
 
 const EMPTY_STATES: Record<string, { icon: React.ElementType; msg: string }> = {
@@ -36,14 +37,24 @@ const EMPTY_STATES: Record<string, { icon: React.ElementType; msg: string }> = {
   approved:  { icon: CheckCircle, msg: 'Tidak ada post yang sudah disetujui' },
 };
 
+type ReviewTab = 'submitted' | 'review' | 'revision' | 'approved';
+
+const getReviewTabFromQuery = (value: string | null): ReviewTab => {
+  if (value === 'review' || value === 'revision' || value === 'approved') {
+    return value;
+  }
+  return 'submitted';
+};
+
 export default function ReviewQueuePage() {
   const { site } = useParams() as { site: string };
+  const searchParams = useSearchParams();
   const { user } = useAuthStore();
   const { addToast } = useToastStore();
   const [articles, setArticles] = useState<Article[]>([]);
   const [stats, setStats] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'submitted' | 'review' | 'revision' | 'approved'>('submitted');
+  const [activeTab, setActiveTab] = useState<ReviewTab>(getReviewTabFromQuery(searchParams.get('tab')));
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [reviewModal, setReviewModal] = useState<Article | null>(null);
   const [reviewNotes, setReviewNotes] = useState('');
@@ -72,7 +83,36 @@ export default function ReviewQueuePage() {
 
   useEffect(() => { load(); }, [site, activeTab]);
 
-  const tabArticles = articles;
+  useEffect(() => {
+    const nextTab = getReviewTabFromQuery(searchParams.get('tab'));
+    if (nextTab !== activeTab) {
+      setActiveTab(nextTab);
+    }
+  }, [searchParams, activeTab]);
+
+  const getQueueHours = (article: Article) => {
+    const queueDate = new Date(article.updatedAt || article.createdAt).getTime();
+    return Math.max(1, Math.floor((Date.now() - queueDate) / (1000 * 60 * 60)));
+  };
+
+  const getQueueAgeLabel = (article: Article) => {
+    const hours = getQueueHours(article);
+    if (hours >= 48) return `${Math.floor(hours / 24)} hari antre`;
+    if (hours >= 24) return '24+ jam antre';
+    return `${hours} jam antre`;
+  };
+
+  const isLongQueue = (article: Article) => getQueueHours(article) >= 24;
+
+  const tabArticles = [...articles].sort((a, b) => {
+    if (Number(b.isBreaking) !== Number(a.isBreaking)) {
+      return Number(b.isBreaking) - Number(a.isBreaking);
+    }
+    return getQueueHours(b) - getQueueHours(a);
+  });
+
+  const breakingCount = tabArticles.filter(article => article.isBreaking).length;
+  const longQueueCount = tabArticles.filter(isLongQueue).length;
 
   const tabs = [
     { key: 'submitted', label: 'Menunggu Review', color: 'text-blue-500' },
@@ -80,6 +120,20 @@ export default function ReviewQueuePage() {
     { key: 'revision',  label: 'Perlu Revisi',    color: 'text-orange-500' },
     { key: 'approved',  label: 'Disetujui',        color: 'text-emerald-500' },
   ] as const;
+
+  const activeTabGuidance: Record<ReviewTab, string> = {
+    submitted: 'Mulai dari post breaking, lalu lanjutkan ke artikel dengan antrean terlama.',
+    review: 'Pastikan artikel yang sedang direview tidak tertahan tanpa keputusan berikutnya.',
+    revision: 'Pantau artikel revisi untuk melihat apakah umpan balik editor sudah cukup jelas.',
+    approved: 'Dorong artikel approved ke tahap terbit agar ritme publikasi tetap terjaga.',
+  };
+
+  const primaryActionHint: Record<ReviewTab, string> = {
+    submitted: 'Keputusan utama: setujui jika naskah sudah layak terbit, atau kembalikan untuk revisi bila masih perlu perbaikan.',
+    review: 'Keputusan utama: selesaikan review hari ini agar artikel tidak tertahan di meja editor.',
+    revision: 'Aksi utama: buka detail artikel dan cek apakah catatan revisi sudah cukup jelas untuk penulis.',
+    approved: 'Aksi utama: terbitkan artikel yang sudah lolos review agar ritme publikasi tetap berjalan.',
+  };
 
   const handleAction = async (articleId: string, action: 'approve' | 'reject' | 'request_revision' | 'publish') => {
     setActionLoading(articleId + action);
@@ -106,6 +160,34 @@ export default function ReviewQueuePage() {
   };
 
   const wordCount = (a: Article) => a.wordCount || (Array.isArray(a.blocks) ? a.blocks.length * 80 : 0);
+  const getCardActionHint = (article: Article) => {
+    if (activeTab === 'approved') {
+      return 'Prioritaskan terbitkan artikel ini jika seluruh unsur publikasi sudah siap.';
+    }
+    if (activeTab === 'revision') {
+      return article.reviewNotes
+        ? 'Buka detail untuk memastikan catatan revisi sudah jelas dan bisa ditindaklanjuti penulis.'
+        : 'Buka detail artikel untuk menambahkan atau meninjau arahan revisi editor.';
+    }
+    if (article.isBreaking) {
+      return 'Prioritas tertinggi: ambil keputusan cepat karena artikel ini bertanda breaking.';
+    }
+    if (isLongQueue(article)) {
+      return 'Prioritas tinggi: artikel ini sudah terlalu lama berada di antrean review.';
+    }
+    return 'Keputusan utama: setujui jika siap, atau kembalikan dengan revisi bila masih perlu perbaikan.';
+  };
+
+  const getPrimaryActionLabel = () => {
+    switch (activeTab) {
+      case 'approved':
+        return 'Terbitkan';
+      case 'revision':
+        return 'Buka Detail';
+      default:
+        return 'Setujui';
+    }
+  };
 
   if (!user || !['superadmin', 'wapimred'].includes(user.role)) {
     return (
@@ -203,6 +285,20 @@ export default function ReviewQueuePage() {
         </div>
       </div>
 
+      <div className="dash-card p-4">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-[10px] font-black uppercase tracking-widest text-brand-red">
+            Fokus Tab
+          </span>
+          <span className="rounded-full bg-brand-red/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-brand-red">
+            {tabs.find((tab) => tab.key === activeTab)?.label}
+          </span>
+          <p className="text-sm text-gray-600 dark:text-gray-300">
+            {activeTabGuidance[activeTab]}
+          </p>
+        </div>
+      </div>
+
       {/* Article List */}
       {loading ? (
         <div className="flex items-center justify-center py-20">
@@ -215,6 +311,24 @@ export default function ReviewQueuePage() {
         </div>
       ) : (
         <div className="space-y-3">
+          <div className="dash-card p-4">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">Sinyal Prioritas</span>
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-50 dark:bg-red-900/20 text-[10px] font-black text-red-600 dark:text-red-400">
+                <Zap size={11} /> {breakingCount} breaking
+              </span>
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-50 dark:bg-amber-900/20 text-[10px] font-black text-amber-600 dark:text-amber-400">
+                <Clock size={11} /> {longQueueCount} antre lama
+              </span>
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-gray-100 dark:bg-white/5 text-[10px] font-black text-gray-500 dark:text-gray-300">
+                <FileText size={11} /> Urutan otomatis: breaking lalu antre terlama
+              </span>
+            </div>
+            <p className="mt-3 text-sm text-gray-600 dark:text-gray-300">
+              {primaryActionHint[activeTab]}
+            </p>
+          </div>
+
           <AnimatePresence>
             {tabArticles.map((article, i) => (
               <motion.div
@@ -229,6 +343,16 @@ export default function ReviewQueuePage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-2 flex-wrap">
                       <StatusBadge status={article.status} />
+                      {article.isBreaking && (
+                        <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-red-600 px-2 py-0.5 bg-red-50 dark:bg-red-900/20 rounded-full">
+                          <Zap size={10} /> Breaking
+                        </span>
+                      )}
+                      {isLongQueue(article) && (
+                        <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-amber-600 px-2 py-0.5 bg-amber-50 dark:bg-amber-900/20 rounded-full">
+                          <Clock size={10} /> Antre Lama
+                        </span>
+                      )}
                       {article.category?.name && (
                         <span className="text-[9px] font-black uppercase tracking-widest text-brand-red px-2 py-0.5 bg-brand-red/5 rounded">
                           {article.category.name}
@@ -247,10 +371,25 @@ export default function ReviewQueuePage() {
                       <span className="flex items-center gap-1">
                         <UserIcon size={11} /> {article.author?.name || 'Redaksi'}
                       </span>
+                      {article.author?.role && (
+                        <span className="px-2 py-1 rounded-full bg-gray-100 dark:bg-white/5 text-[9px] font-black uppercase tracking-wide text-gray-500 dark:text-gray-300">
+                          {article.author.role}
+                        </span>
+                      )}
                       <span className="flex items-center gap-1">
                         <Calendar size={11} />
                         {new Date(article.updatedAt).toLocaleDateString('id-ID', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' })}
                       </span>
+                      <span className="flex items-center gap-1">
+                        <Clock size={11} />
+                        {getQueueAgeLabel(article)}
+                      </span>
+                      {article.readingTimeMin && (
+                        <span className="flex items-center gap-1">
+                          <FileText size={11} />
+                          {article.readingTimeMin} menit baca
+                        </span>
+                      )}
                     </div>
                     {article.reviewNotes && (
                       <div className="mt-3 p-3 bg-orange-50 dark:bg-orange-900/10 border border-orange-100 dark:border-orange-500/10 rounded-lg">
@@ -261,60 +400,80 @@ export default function ReviewQueuePage() {
                   </div>
 
                   {/* Actions */}
-                  <div className="flex flex-wrap gap-2 md:flex-col md:items-end">
-                    <Link
-                      href={`/${site}/dashboard/articles/${article.id}`}
-                      className="flex items-center gap-1.5 px-3 py-2 bg-gray-100 dark:bg-white/5 text-[10px] font-black uppercase tracking-widest rounded-lg hover:bg-gray-200 dark:hover:bg-white/10 transition-all text-gray-600 dark:text-gray-300"
-                    >
-                      <Eye size={12} /> Baca
-                    </Link>
-                    {(activeTab === 'submitted' || activeTab === 'review') && (
-                      <>
-                        <button
-                          onClick={() => handleAction(article.id, 'request_revision')}
-                          disabled={!!actionLoading}
-                          className="flex items-center gap-1.5 px-3 py-2 bg-orange-50 dark:bg-orange-900/20 text-orange-600 text-[10px] font-black uppercase tracking-widest rounded-lg hover:bg-orange-100 transition-all disabled:opacity-50"
-                        >
-                          {actionLoading === article.id + 'request_revision'
-                            ? <Loader2 size={12} className="animate-spin" />
-                            : <MessageSquare size={12} />
-                          }
-                          Revisi
-                        </button>
-                        <button
-                          onClick={() => {
-                            if (window.confirm('Apakah Anda yakin ingin menolak post ini? Post akan diarsipkan.')) {
-                              handleAction(article.id, 'reject')
-                            }
-                          }}
-                          disabled={!!actionLoading}
-                          className="flex items-center gap-1.5 px-3 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 text-[10px] font-black uppercase tracking-widest rounded-lg hover:bg-red-100 transition-all disabled:opacity-50"
-                        >
-                          {actionLoading === article.id + 'reject'
-                            ? <Loader2 size={12} className="animate-spin" />
-                            : <XCircle size={12} />
-                          }
-                          Tolak
-                        </button>
-                        <button
-                          onClick={() => { setReviewModal(article); setReviewNotes(''); }}
-                          disabled={!!actionLoading}
-                          className="flex items-center gap-1.5 px-3 py-2 bg-emerald-600 text-white text-[10px] font-black uppercase tracking-widest rounded-lg hover:bg-emerald-700 transition-all disabled:opacity-50 shadow-sm"
-                        >
-                          <CheckCircle size={12} /> Setujui
-                        </button>
-                      </>
-                    )}
-                    {activeTab === 'approved' && (
-                      <button
-                        onClick={() => handleAction(article.id, 'publish')}
-                        disabled={!!actionLoading}
-                        className="flex items-center gap-1.5 px-3 py-2 bg-brand-red text-white text-[10px] font-black uppercase tracking-widest rounded-lg hover:bg-red-700 transition-all disabled:opacity-50"
-                      >
-                        {actionLoading === article.id + 'publish' ? <Loader2 size={12} className="animate-spin" /> : <CheckCircle size={12} />}
-                        Terbitkan
-                      </button>
-                    )}
+                  <div className="w-full md:w-[280px] shrink-0">
+                    <div className="rounded-xl border border-gray-100 dark:border-white/10 bg-gray-50/80 dark:bg-white/[0.03] p-3">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-gray-500">
+                        Aksi Utama
+                      </p>
+                      <p className="mt-1 text-xs leading-relaxed text-gray-600 dark:text-gray-300">
+                        {getCardActionHint(article)}
+                      </p>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {(activeTab === 'submitted' || activeTab === 'review') && (
+                          <>
+                            <button
+                              onClick={() => { setReviewModal(article); setReviewNotes(''); }}
+                              disabled={!!actionLoading}
+                              className="flex-1 min-w-[120px] flex items-center justify-center gap-1.5 px-3.5 py-2.5 bg-emerald-600 text-white text-[10px] font-black uppercase tracking-widest rounded-lg hover:bg-emerald-700 transition-all disabled:opacity-50 shadow-sm"
+                            >
+                              <CheckCircle size={12} /> {getPrimaryActionLabel()}
+                            </button>
+                            <button
+                              onClick={() => handleAction(article.id, 'request_revision')}
+                              disabled={!!actionLoading}
+                              className="flex-1 min-w-[120px] flex items-center justify-center gap-1.5 px-3 py-2 bg-orange-50 dark:bg-orange-900/20 text-orange-600 text-[10px] font-black uppercase tracking-widest rounded-lg hover:bg-orange-100 transition-all disabled:opacity-50"
+                            >
+                              {actionLoading === article.id + 'request_revision'
+                                ? <Loader2 size={12} className="animate-spin" />
+                                : <MessageSquare size={12} />
+                              }
+                              Revisi
+                            </button>
+                            <button
+                              onClick={() => {
+                                if (window.confirm('Apakah Anda yakin ingin menolak post ini? Post akan diarsipkan.')) {
+                                  handleAction(article.id, 'reject');
+                                }
+                              }}
+                              disabled={!!actionLoading}
+                              className="flex items-center justify-center gap-1.5 px-3 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 text-[10px] font-black uppercase tracking-widest rounded-lg hover:bg-red-100 transition-all disabled:opacity-50"
+                            >
+                              {actionLoading === article.id + 'reject'
+                                ? <Loader2 size={12} className="animate-spin" />
+                                : <XCircle size={12} />
+                              }
+                              Tolak
+                            </button>
+                          </>
+                        )}
+                        {activeTab === 'approved' && (
+                          <button
+                            onClick={() => handleAction(article.id, 'publish')}
+                            disabled={!!actionLoading}
+                            className="flex-1 min-w-[140px] flex items-center justify-center gap-1.5 px-3.5 py-2.5 bg-brand-red text-white text-[10px] font-black uppercase tracking-widest rounded-lg hover:bg-red-700 transition-all disabled:opacity-50 shadow-sm"
+                          >
+                            {actionLoading === article.id + 'publish' ? <Loader2 size={12} className="animate-spin" /> : <CheckCircle size={12} />}
+                            {getPrimaryActionLabel()}
+                          </button>
+                        )}
+                        {activeTab === 'revision' && (
+                          <Link
+                            href={`/${site}/dashboard/articles/${article.id}`}
+                            className="flex-1 min-w-[140px] flex items-center justify-center gap-1.5 px-3.5 py-2.5 bg-brand-black dark:bg-white text-white dark:text-slate-900 text-[10px] font-black uppercase tracking-widest rounded-lg hover:opacity-90 transition-all shadow-sm"
+                          >
+                            <Eye size={12} /> {getPrimaryActionLabel()}
+                          </Link>
+                        )}
+                        {(activeTab === 'submitted' || activeTab === 'review' || activeTab === 'approved') && (
+                          <Link
+                            href={`/${site}/dashboard/articles/${article.id}`}
+                            className="flex items-center justify-center gap-1.5 px-3 py-2 bg-white dark:bg-slate-900/80 border border-gray-200 dark:border-white/10 text-[10px] font-black uppercase tracking-widest rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 transition-all text-gray-600 dark:text-gray-300"
+                          >
+                            <Eye size={12} /> Buka Detail
+                          </Link>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </motion.div>
