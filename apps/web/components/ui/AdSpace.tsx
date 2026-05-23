@@ -96,7 +96,7 @@ export default function AdSpace({
   };
 
   const styles = {
-    leaderboard: "w-full h-32 md:h-40 mb-8",
+    leaderboard: "w-full h-20 md:h-24 mb-6",
     rectangle: "w-full h-[250px] mb-8",
     'in-feed': "w-full h-40 mb-12"
   };

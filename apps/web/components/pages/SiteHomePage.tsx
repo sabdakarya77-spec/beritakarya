@@ -51,6 +51,7 @@ const sectionMetaClass = 'text-[10px] font-semibold text-gray-500 dark:text-gray
 type SearchParams = {
   cat?: string
   q?: string
+  tab?: string
 }
 
 type SiteHomePageProps = {
@@ -175,9 +176,11 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
   ].filter((item) => Boolean(item.href))
   const showHomepageHero = !searchQuery && categoryFilter === 'terbaru' && topBentoStories.length > 0
   const showSavedFeed = categoryFilter === 'tersimpan'
-  const showEditorFocus = showHomepageHero && minimalStories.length > 0
-  const showTrending = tags.length > 0
+  // Fokus Redaksi dan Trending dihapus untuk P1-06 (reduce cognitive load)
+  const showEditorFocus = false // Disabled for cleaner homepage
+  const showTrending = false // Disabled - tab switcher sudah cukup untuk discovery
   const showInlineSponsor = mainFeed.length > 3
+  const feedTab = resolvedSearchParams?.tab || 'terbaru';
   const showPopularSidebar = popular.length > 0
   const showEditorChoice = editorChoice.length >= 3
   const showOpinionSection = opinionAnalisis.length >= 3
@@ -246,62 +249,92 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16">
             <div className="lg:col-span-8">
-              <div className="flex items-center justify-between mb-12 border-b-8 border-brand-black dark:border-white pb-6">
-                <h3 className="text-3xl font-serif font-black uppercase tracking-tighter text-brand-black dark:text-white flex items-center gap-4">
-                  <span className="w-6 h-6 bg-brand-red shadow-lg shadow-brand-red/20"></span>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 border-b-4 border-brand-black dark:border-white pb-6">
+                <h3 className="text-2xl md:text-3xl font-serif font-black uppercase tracking-tighter text-brand-black dark:text-white flex items-center gap-3">
+                  <span className="w-4 h-4 md:w-6 md:h-6 bg-brand-red shadow-lg shadow-brand-red/20"></span>
                   {searchQuery ? `Hasil Pencarian: ${searchQuery}` : `Berita ${resolveCategoryName(categoryFilter, categoriesTree)}`}
                 </h3>
-                <div className="hidden md:flex items-center gap-3 text-[11px] font-black uppercase tracking-[0.25em] text-gray-400">
-                  <span className="inline-flex items-center gap-2 text-brand-red">
-                    <span className="w-2 h-2 rounded-full bg-brand-red"></span>
-                    Update Langsung
-                  </span>
-                </div>
+                
+                {/* Tab Switcher: Terbaru / Populer */}
+                {!searchQuery && categoryFilter === 'terbaru' && (
+                  <div className="flex items-center gap-1 bg-gray-100 dark:bg-white/5 p-1 rounded-xl">
+                    <Link
+                      href={`/${siteParam}?tab=terbaru`}
+                      className={`px-4 py-2 text-[11px] font-black uppercase tracking-wider rounded-lg transition-all ${
+                        feedTab === 'terbaru' 
+                          ? 'bg-white dark:bg-slate-800 text-brand-red shadow-sm' 
+                          : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
+                      }`}
+                    >
+                      Terbaru
+                    </Link>
+                    <Link
+                      href={`/${siteParam}?tab=populer`}
+                      className={`px-4 py-2 text-[11px] font-black uppercase tracking-wider rounded-lg transition-all flex items-center gap-1.5 ${
+                        feedTab === 'populer' 
+                          ? 'bg-white dark:bg-slate-800 text-brand-red shadow-sm' 
+                          : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
+                      }`}
+                    >
+                      <Star size={12} className={feedTab === 'populer' ? 'fill-brand-red' : ''} />
+                      Populer
+                    </Link>
+                  </div>
+                )}
               </div>
 
               {showSavedFeed ? (
                 <SavedArticlesFeed site={siteParam} />
-              ) : mainFeed.length > 0 ? (
-                <>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-16 mb-16">
-                    {mainFeed.slice(0, 4).map((article: any) => (
-                      <NewsCard key={article.id} article={article} site={siteParam} priority={true} />
-                    ))}
-                  </div>
-
-                  {showInlineSponsor && (
-                    <div className="mb-16 p-8 bg-brand-grey dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/5">
-                      <div className="flex justify-between items-center mb-6">
-                        <span className={sectionEyebrowMutedClass}>Sponsorship</span>
-                        <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-gray-400">Advertisement</span>
-                      </div>
-                      <AdSpace type="in-feed" className="mx-auto" />
-                    </div>
-                  )}
-
-                  {mainFeed.length > 4 && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-16 mb-16">
-                      {mainFeed.slice(4).map((article: any) => (
-                        <NewsCard key={article.id} article={article} site={siteParam} />
-                      ))}
-                    </div>
-                  )}
-                </>
               ) : (
-                <div className="mb-16 rounded-2xl border border-dashed border-gray-200 dark:border-white/10 bg-gray-50/70 dark:bg-white/[0.02] p-10 text-center">
-                  <p className="text-lg font-serif font-black text-brand-black dark:text-white">Belum ada berita untuk konteks ini.</p>
-                  <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">
-                    Coba kembali ke topik terbaru atau gunakan kata kunci yang lebih umum.
-                  </p>
-                  <div className="mt-6">
-                    <Link
-                      href={`/${siteParam}`}
-                      className="inline-flex items-center justify-center rounded-full bg-brand-red px-5 py-2.5 text-[11px] font-black uppercase tracking-[0.12em] text-white hover:opacity-90 transition-opacity"
-                    >
-                      Kembali Ke Berita Terbaru
-                    </Link>
-                  </div>
-                </div>
+                // Determine which feed to show based on tab
+                (() => {
+                  const displayFeed = feedTab === 'populer' && !isCategoryFilter 
+                    ? popular.slice(0, 8)  // Show popular articles when tab is "populer"
+                    : mainFeed;
+                  
+                  return displayFeed.length > 0 ? (
+                    <>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-16 mb-16">
+                        {displayFeed.slice(0, 4).map((article: any) => (
+                          <NewsCard key={article.id} article={article} site={siteParam} priority={true} />
+                        ))}
+                      </div>
+
+                      {showInlineSponsor && (
+                        <div className="mb-16 p-8 bg-brand-grey dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/5">
+                          <div className="flex justify-between items-center mb-6">
+                            <span className={sectionEyebrowMutedClass}>Sponsorship</span>
+                            <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-gray-400">Advertisement</span>
+                          </div>
+                          <AdSpace type="in-feed" className="mx-auto" />
+                        </div>
+                      )}
+
+                      {displayFeed.length > 4 && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-16 mb-16">
+                          {displayFeed.slice(4).map((article: any) => (
+                            <NewsCard key={article.id} article={article} site={siteParam} />
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="mb-16 rounded-2xl border border-dashed border-gray-200 dark:border-white/10 bg-gray-50/70 dark:bg-white/[0.02] p-10 text-center">
+                      <p className="text-lg font-serif font-black text-brand-black dark:text-white">Belum ada berita untuk konteks ini.</p>
+                      <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">
+                        Coba kembali ke topik terbaru atau gunakan kata kunci yang lebih umum.
+                      </p>
+                      <div className="mt-6">
+                        <Link
+                          href={`/${siteParam}`}
+                          className="inline-flex items-center justify-center rounded-full bg-brand-red px-5 py-2.5 text-[11px] font-black uppercase tracking-[0.12em] text-white hover:opacity-90 transition-opacity"
+                        >
+                          Kembali Ke Berita Terbaru
+                        </Link>
+                      </div>
+                    </div>
+                  );
+                })()
               )}
 
               {!showSavedFeed && (
@@ -312,81 +345,33 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
             </div>
 
             <aside className="lg:col-span-4 space-y-10">
-              <div className="p-6 bg-slate-900 rounded-2xl text-white shadow-xl border border-white/5 space-y-3">
-                <div className="pb-2">
-                  <span className={`${sectionEyebrowClass} text-brand-red`}>Akses Redaksi</span>
-                  <h4 className="text-2xl font-serif font-black leading-tight mt-3 text-white">Pilih jalur tercepat ke redaksi.</h4>
+              {/* Ikuti Kami - Social Media */}
+              {socialChannels.length > 0 && (
+                <div className="p-6 bg-slate-900 rounded-2xl text-white shadow-xl border border-white/5">
+                  <div className="pb-3">
+                    <span className={`${sectionEyebrowClass} text-brand-red`}>Ikuti Kami</span>
+                    <h4 className="text-lg font-serif font-black leading-tight mt-2 text-white">{siteConfig.name}</h4>
+                  </div>
+                  <div className="grid grid-cols-4 gap-3">
+                    {socialChannels.map((channel) => {
+                      const Icon = channel.Icon
+                      return (
+                        <a
+                          key={channel.label}
+                          href={channel.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          aria-label={channel.label}
+                          title={channel.label}
+                          className="flex flex-col items-center gap-2 p-3 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20 transition-all"
+                        >
+                          <Icon size={20} className="text-white" />
+                        </a>
+                      )
+                    })}
+                  </div>
                 </div>
-
-                {whatsappUrl && (
-                  <a
-                    href={whatsappUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group block rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-5 hover:bg-emerald-500/15 transition-colors"
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <div className="flex items-center gap-2 mb-2">
-                          <MessageCircle size={16} className="text-emerald-400" />
-                          <span className="text-[10px] font-black uppercase tracking-[0.18em] text-emerald-300/90">Kanal Utama</span>
-                        </div>
-                        <h5 className="text-base font-serif font-black text-white">WhatsApp Channel</h5>
-                        <p className="mt-3 text-sm text-white font-semibold">Update penting dan breaking news lebih cepat.</p>
-                      </div>
-                      <ArrowRight size={16} className="text-emerald-300 shrink-0 mt-1 transition-transform group-hover:translate-x-0.5" />
-                    </div>
-                  </a>
-                )}
-
-                <div className="grid gap-3">
-                  <a
-                    href={reportUrl}
-                    className="group block rounded-2xl border border-white/10 bg-white/5 p-5 hover:bg-white/10 transition-colors"
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <div className="flex items-center gap-2 mb-2">
-                          <FileText size={16} className="text-brand-red" />
-                          <span className="text-[10px] font-black uppercase tracking-[0.18em] text-white/75">Laporan</span>
-                        </div>
-                        <h5 className="text-base font-serif font-black text-white">Kirim Informasi</h5>
-                        <p className="mt-3 text-sm text-gray-300 font-light leading-relaxed">Kirim laporan atau temuan langsung ke redaksi.</p>
-                      </div>
-                      <ArrowRight size={16} className="text-white shrink-0 mt-1 transition-transform group-hover:translate-x-0.5" />
-                    </div>
-                  </a>
-
-                  {socialChannels.length > 0 && (
-                    <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="text-[10px] font-black uppercase tracking-[0.18em] text-white/75">Distribusi</span>
-                      </div>
-                      <h5 className="text-base font-serif font-black text-white">Kanal Sosial</h5>
-                      <p className="mt-3 text-sm text-gray-300 font-light leading-relaxed">Ikuti distribusi konten dari akun resmi {siteConfig.name}.</p>
-                      <div className="mt-4 flex flex-wrap gap-2.5">
-                        {socialChannels.map((channel) => {
-                          const Icon = channel.Icon
-
-                          return (
-                            <a
-                              key={channel.label}
-                              href={channel.href}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              aria-label={channel.label}
-                              className="inline-flex items-center gap-2.5 rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-[11px] font-black uppercase tracking-[0.12em] text-white hover:border-white/20 hover:bg-white/[0.06] transition-colors"
-                            >
-                              <Icon size={14} />
-                              <span>{channel.label}</span>
-                            </a>
-                          )
-                        })}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
+              )}
 
               {showPopularSidebar && (
                 <div>

@@ -14,8 +14,8 @@ interface ContainerProps {
  * @param children - Content to wrap
  * @param className - Additional CSS classes
  * @param size - Container width preset:
- *   - 'default': max-w-7xl (1280px) for general content
- *   - 'content': max-w-[760px] for optimal reading (articles, text-heavy pages)
+ *   - 'default': max-w-[1160px] (1120-1160px) for general content
+ *   - 'content': max-w-[700px] for optimal reading (articles, text-heavy pages)
  *   - 'full': max-w-full for edge-to-edge sections
  * @param bleed - When true, creates edge-to-edge effect by extending to viewport edges
  *                while maintaining inner content padding balance. Note: bleed mode
@@ -47,8 +47,8 @@ export function Container({
   bleed = false 
 }: ContainerProps) {
   const sizeClasses = {
-    default: 'max-w-7xl',
-    content: 'max-w-[760px]',
+    default: 'max-w-[1160px]',
+    content: 'max-w-[700px]',
     full: 'max-w-full'
   };
 

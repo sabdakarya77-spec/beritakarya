@@ -19,10 +19,10 @@ export function MagazineBentoHero({ articles, site }: { articles: any[], site: s
     <section className="w-full mb-16 relative">
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85%] h-[85%] bg-brand-red/5 dark:bg-brand-red/10 blur-[80px] -z-10 rounded-full" />
       
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 h-auto lg:h-[600px]">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 h-auto lg:h-[520px]">
         
         {lead && (
-          <Link href={`/${site}/artikel/${lead.slug}`} className="lg:col-span-8 relative rounded-2xl overflow-hidden group/lead block h-[400px] lg:h-full">
+          <Link href={`/${site}/artikel/${lead.slug}`} className="lg:col-span-8 relative rounded-2xl overflow-hidden group/lead block h-[320px] lg:h-full">
             <SmartImage 
               src={getImageUrl(lead)} 
               blur={lead.featuredImageBlur}
