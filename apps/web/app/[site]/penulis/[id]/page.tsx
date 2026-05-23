@@ -151,7 +151,7 @@ export default async function AuthorProfilePage({ params }: Props) {
         <section className="relative overflow-hidden border-b border-gray-100 bg-brand-surface pt-20 pb-16 dark:border-white/5 dark:bg-white/[0.02] md:pt-32 md:pb-24">
           <div className="pointer-events-none absolute inset-x-0 top-0 h-56 bg-[radial-gradient(circle_at_top_right,rgba(225,29,72,0.16),transparent_48%)]" />
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-[radial-gradient(circle_at_bottom_left,rgba(15,23,42,0.12),transparent_55%)] dark:bg-[radial-gradient(circle_at_bottom_left,rgba(255,255,255,0.05),transparent_55%)]" />
-          <Container size="content">
+          <Container>
             <Link
               href={`/${siteParam}`}
               className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.18em] text-gray-400 transition-colors hover:text-brand-red"
@@ -160,10 +160,10 @@ export default async function AuthorProfilePage({ params }: Props) {
               Kembali ke Beranda
             </Link>
 
-            <div className="relative mt-10 grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
-              <div className="rounded-[2rem] border border-gray-100 bg-white p-8 shadow-[0_24px_80px_rgba(15,23,42,0.08)] dark:border-white/5 dark:bg-white/[0.02] dark:shadow-[0_24px_80px_rgba(0,0,0,0.35)] md:p-10">
-                <div className="flex flex-col gap-8 md:flex-row md:items-start">
-                  <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-[2rem] bg-brand-red text-3xl font-serif font-black text-white shadow-[0_24px_60px_rgba(225,29,72,0.28)]">
+            <div className="relative mt-10 grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.35fr)_320px] xl:gap-8">
+              <div className="rounded-[2rem] border border-gray-100 bg-white p-6 shadow-[0_24px_80px_rgba(15,23,42,0.08)] dark:border-white/5 dark:bg-white/[0.02] dark:shadow-[0_24px_80px_rgba(0,0,0,0.35)] md:p-8 xl:p-10">
+                <div className="flex flex-col gap-6 md:flex-row md:items-start">
+                  <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-[1.6rem] bg-brand-red text-2xl font-serif font-black text-white shadow-[0_24px_60px_rgba(225,29,72,0.28)] md:h-24 md:w-24 md:text-3xl">
                     {initials}
                   </div>
                   <div className="min-w-0 flex-1">
@@ -177,13 +177,13 @@ export default async function AuthorProfilePage({ params }: Props) {
                       </span>
                     </div>
 
-                    <h1 className="mt-5 max-w-3xl text-4xl font-serif font-black tracking-tight text-brand-black dark:text-white md:text-6xl md:leading-[1.02]">
+                    <h1 className="mt-4 max-w-4xl text-3xl font-serif font-black tracking-tight text-brand-black dark:text-white sm:text-4xl lg:text-5xl xl:text-[3.75rem] xl:leading-[1.02]">
                       {profile.name}
                     </h1>
                     <p className="mt-4 text-[11px] font-black uppercase tracking-[0.24em] text-gray-400">
                       {roleLabel}
                     </p>
-                    <p className="mt-6 max-w-3xl text-lg leading-8 text-gray-600 dark:text-gray-300 md:text-[1.15rem]">
+                    <p className="mt-5 max-w-4xl text-base leading-7 text-gray-600 dark:text-gray-300 md:text-lg md:leading-8">
                       {bio}
                     </p>
                   </div>
@@ -202,7 +202,7 @@ export default async function AuthorProfilePage({ params }: Props) {
                         <FileText size={14} className="text-brand-red" />
                         Artikel Terbit
                       </div>
-                      <p className="mt-3 text-3xl font-black text-brand-black dark:text-white">
+                      <p className="mt-3 text-2xl font-black text-brand-black dark:text-white md:text-3xl">
                         {stats.publishedCount}
                       </p>
                     </div>
@@ -211,7 +211,7 @@ export default async function AuthorProfilePage({ params }: Props) {
                         <Eye size={14} className="text-brand-red" />
                         Total Dilihat
                       </div>
-                      <p className="mt-3 text-3xl font-black text-brand-black dark:text-white">
+                      <p className="mt-3 text-2xl font-black text-brand-black dark:text-white md:text-3xl">
                         {stats.totalViews.toLocaleString('id-ID')}
                       </p>
                     </div>
@@ -232,7 +232,7 @@ export default async function AuthorProfilePage({ params }: Props) {
         </section>
 
         <section className="py-16 md:py-20">
-          <Container size="content">
+          <Container>
             <div className="mb-10 flex items-center gap-3">
               <div className="h-8 w-1 bg-brand-red" />
               <div>
@@ -246,10 +246,10 @@ export default async function AuthorProfilePage({ params }: Props) {
             </div>
 
             {recentArticles.length > 0 ? (
-              <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
+              <div className="grid grid-cols-1 gap-8 xl:grid-cols-[minmax(0,1fr)_minmax(320px,0.9fr)] xl:gap-10">
                 <div className="min-w-0">
                   {featuredArticle && (
-                    <NewsCard article={featuredArticle} variant="large" site={siteParam} priority />
+                    <NewsCard article={featuredArticle} variant="medium" site={siteParam} priority />
                   )}
                 </div>
                 <div className="space-y-6">

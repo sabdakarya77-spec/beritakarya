@@ -137,37 +137,75 @@ export default async function InfoPage({ params }: { params: { site: string; slu
                   <div className="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800/80 p-8 rounded-sm shadow-xl shadow-black/5 flex flex-col justify-between">
                     <div>
                       <span className="px-2.5 py-1 bg-brand-red/10 text-brand-red text-[9px] font-black uppercase tracking-wider rounded-sm">Slot Premium</span>
-                      <h4 className="text-base font-black text-brand-black dark:text-white uppercase tracking-tight mt-4 mb-2">Leaderboard Atas (Header Banner)</h4>
+                      <h4 className="text-base font-black text-brand-black dark:text-white uppercase tracking-tight mt-4 mb-2">Leaderboard Atas</h4>
                       <p className="text-xs text-brand-text-muted leading-relaxed mb-6">
-                        Slot paling prestisius yang berada langsung di bagian atas header halaman utama. Memberikan tingkat impresi instan (First fold) tertinggi saat portal pertama kali dimuat.
+                        Slot billboard utama yang muncul di bagian atas homepage. Menjadi titik impresi pertama dan cocok untuk kampanye branding dengan visibilitas paling tinggi.
                       </p>
                       <ul className="space-y-2 mb-8 text-[11px] font-bold text-gray-500 uppercase tracking-wide">
-                        <li className="flex items-center gap-2"><ChevronRight size={14} className="text-brand-red" /> Ukuran: 970 x 90 piksel / Mobile: 320 x 50px</li>
+                        <li className="flex items-center gap-2"><ChevronRight size={14} className="text-brand-red" /> Ukuran: 970 x 90 px / Mobile: 320 x 50 px</li>
                         <li className="flex items-center gap-2"><ChevronRight size={14} className="text-brand-red" /> Format: Gambar statis, GIF, Video klip</li>
-                        <li className="flex items-center gap-2"><ChevronRight size={14} className="text-brand-red" /> Tarif: Kontrol penuh super admin</li>
+                        <li className="flex items-center gap-2"><ChevronRight size={14} className="text-brand-red" /> Penempatan: Homepage bagian atas</li>
                       </ul>
                     </div>
                     <div className="h-[90px] w-full bg-gray-50 dark:bg-white/5 border border-dashed border-gray-200 dark:border-white/10 rounded-sm flex items-center justify-center">
-                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Mockup Banner: 970 x 90</p>
+                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Mockup Banner: 970 x 90 px</p>
                     </div>
                   </div>
 
                   {/* Slot 2 */}
                   <div className="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800/80 p-8 rounded-sm shadow-xl shadow-black/5 flex flex-col justify-between">
                     <div>
-                      <span className="px-2.5 py-1 bg-brand-red/10 text-brand-red text-[9px] font-black uppercase tracking-wider rounded-sm">Slot Populer</span>
-                      <h4 className="text-base font-black text-brand-black dark:text-white uppercase tracking-tight mt-4 mb-2">Dalam Artikel (In-Feed Article Body)</h4>
+                      <span className="px-2.5 py-1 bg-brand-red/10 text-brand-red text-[9px] font-black uppercase tracking-wider rounded-sm">Slot Utama</span>
+                      <h4 className="text-base font-black text-brand-black dark:text-white uppercase tracking-tight mt-4 mb-2">Sidebar Rectangle Utama</h4>
                       <p className="text-xs text-brand-text-muted leading-relaxed mb-6">
-                        Iklan yang disisipkan secara mulus di sela-sela bacaan artikel (biasanya setelah paragraf ke-3). Memiliki tingkat klik-tayang (CTR) tertinggi karena berada tepat di jalur baca pembaca.
+                        Slot promosi utama berukuran rectangle yang muncul di sidebar homepage dan sidebar artikel. Cocok untuk kampanye yang ingin selalu terlihat di area pendamping konten.
                       </p>
                       <ul className="space-y-2 mb-8 text-[11px] font-bold text-gray-500 uppercase tracking-wide">
-                        <li className="flex items-center gap-2"><ChevronRight size={14} className="text-brand-red" /> Ukuran: 300 x 250 piksel (Rectangle)</li>
-                        <li className="flex items-center gap-2"><ChevronRight size={14} className="text-brand-red" /> Format: Gambar statis, Animasi GIF</li>
-                        <li className="flex items-center gap-2"><ChevronRight size={14} className="text-brand-red" /> Tarif: Sesuai jangkauan wilayah</li>
+                        <li className="flex items-center gap-2"><ChevronRight size={14} className="text-brand-red" /> Ukuran: 300 x 250 px (Rectangle)</li>
+                        <li className="flex items-center gap-2"><ChevronRight size={14} className="text-brand-red" /> Format: Gambar statis, GIF, Video ringkas</li>
+                        <li className="flex items-center gap-2"><ChevronRight size={14} className="text-brand-red" /> Penempatan: Sidebar homepage dan artikel</li>
                       </ul>
                     </div>
                     <div className="h-[120px] w-full bg-gray-50 dark:bg-white/5 border border-dashed border-gray-200 dark:border-white/10 rounded-sm flex items-center justify-center">
-                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Mockup Banner: 300 x 250</p>
+                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Mockup Banner: 300 x 250 px</p>
+                    </div>
+                  </div>
+
+                  {/* Slot 3 */}
+                  <div className="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800/80 p-8 rounded-sm shadow-xl shadow-black/5 flex flex-col justify-between">
+                    <div>
+                      <span className="px-2.5 py-1 bg-brand-red/10 text-brand-red text-[9px] font-black uppercase tracking-wider rounded-sm">Slot Tambahan</span>
+                      <h4 className="text-base font-black text-brand-black dark:text-white uppercase tracking-tight mt-4 mb-2">Sidebar Rectangle Sekunder</h4>
+                      <p className="text-xs text-brand-text-muted leading-relaxed mb-6">
+                        Slot iklan tambahan di sidebar halaman detail artikel. Ideal untuk kampanye pendamping, retargeting, atau promosi kedua tanpa mengambil posisi utama.
+                      </p>
+                      <ul className="space-y-2 mb-8 text-[11px] font-bold text-gray-500 uppercase tracking-wide">
+                        <li className="flex items-center gap-2"><ChevronRight size={14} className="text-brand-red" /> Ukuran: 300 x 250 px (Rectangle)</li>
+                        <li className="flex items-center gap-2"><ChevronRight size={14} className="text-brand-red" /> Format: Gambar statis, GIF, Video ringkas</li>
+                        <li className="flex items-center gap-2"><ChevronRight size={14} className="text-brand-red" /> Penempatan: Sidebar artikel posisi kedua</li>
+                      </ul>
+                    </div>
+                    <div className="h-[120px] w-full bg-gray-50 dark:bg-white/5 border border-dashed border-gray-200 dark:border-white/10 rounded-sm flex items-center justify-center">
+                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Mockup Banner: 300 x 250 px</p>
+                    </div>
+                  </div>
+
+                  {/* Slot 4 */}
+                  <div className="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800/80 p-8 rounded-sm shadow-xl shadow-black/5 flex flex-col justify-between">
+                    <div>
+                      <span className="px-2.5 py-1 bg-brand-red/10 text-brand-red text-[9px] font-black uppercase tracking-wider rounded-sm">Slot Feed</span>
+                      <h4 className="text-base font-black text-brand-black dark:text-white uppercase tracking-tight mt-4 mb-2">In-Feed Homepage</h4>
+                      <p className="text-xs text-brand-text-muted leading-relaxed mb-6">
+                        Slot sponsor yang disisipkan di area feed homepage. Cocok untuk promosi native-style karena tampil di sela alur jelajah konten utama pembaca.
+                      </p>
+                      <ul className="space-y-2 mb-8 text-[11px] font-bold text-gray-500 uppercase tracking-wide">
+                        <li className="flex items-center gap-2"><ChevronRight size={14} className="text-brand-red" /> Ukuran: 300 x 250 px (Rectangle)</li>
+                        <li className="flex items-center gap-2"><ChevronRight size={14} className="text-brand-red" /> Format: Gambar statis, GIF, Video ringkas</li>
+                        <li className="flex items-center gap-2"><ChevronRight size={14} className="text-brand-red" /> Penempatan: Area feed homepage</li>
+                      </ul>
+                    </div>
+                    <div className="h-[120px] w-full bg-gray-50 dark:bg-white/5 border border-dashed border-gray-200 dark:border-white/10 rounded-sm flex items-center justify-center">
+                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Mockup Banner: 300 x 250 px</p>
                     </div>
                   </div>
                 </div>

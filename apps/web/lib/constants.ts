@@ -86,6 +86,95 @@ export interface CategoryItem {
   subCategories?: SubCategory[];
 }
 
+export type AdSlotId = 'leaderboard' | 'rectangle' | 'rectangle_secondary' | 'in_feed'
+
+export interface AdSlotDefinition {
+  id: AdSlotId;
+  name: string;
+  size: string;
+  desc: string;
+  publicBadge: string;
+  publicTitle: string;
+  publicDescription: string;
+  publicHighlights: string[];
+  publicMockup: string;
+}
+
+export const AD_SLOT_DEFINITIONS: AdSlotDefinition[] = [
+  {
+    id: 'leaderboard',
+    name: 'Leaderboard Atas',
+    size: '970 x 90 px',
+    desc: 'Muncul di bagian atas homepage sebagai billboard utama.',
+    publicBadge: 'Slot Premium',
+    publicTitle: 'Leaderboard Atas',
+    publicDescription: 'Slot billboard utama yang muncul di bagian atas homepage. Menjadi titik impresi pertama dan cocok untuk kampanye branding dengan visibilitas paling tinggi.',
+    publicHighlights: [
+      'Ukuran: 970 x 90 px / Mobile: 320 x 50 px',
+      'Format: Gambar statis, GIF, Video klip',
+      'Penempatan: Homepage bagian atas',
+    ],
+    publicMockup: '970 x 90 px',
+  },
+  {
+    id: 'rectangle',
+    name: 'Sidebar Rectangle Utama',
+    size: '300 x 250 px',
+    desc: 'Muncul di sidebar homepage dan sidebar artikel sebagai slot promosi utama.',
+    publicBadge: 'Slot Utama',
+    publicTitle: 'Sidebar Rectangle Utama',
+    publicDescription: 'Slot promosi utama berukuran rectangle yang muncul di sidebar homepage dan sidebar artikel. Cocok untuk kampanye yang ingin selalu terlihat di area pendamping konten.',
+    publicHighlights: [
+      'Ukuran: 300 x 250 px (Rectangle)',
+      'Format: Gambar statis, GIF, Video ringkas',
+      'Penempatan: Sidebar homepage dan artikel',
+    ],
+    publicMockup: '300 x 250 px',
+  },
+  {
+    id: 'rectangle_secondary',
+    name: 'Sidebar Rectangle Sekunder',
+    size: '300 x 250 px',
+    desc: 'Muncul sebagai slot iklan tambahan di sidebar halaman detail artikel.',
+    publicBadge: 'Slot Tambahan',
+    publicTitle: 'Sidebar Rectangle Sekunder',
+    publicDescription: 'Slot iklan tambahan di sidebar halaman detail artikel. Ideal untuk kampanye pendamping, retargeting, atau promosi kedua tanpa mengambil posisi utama.',
+    publicHighlights: [
+      'Ukuran: 300 x 250 px (Rectangle)',
+      'Format: Gambar statis, GIF, Video ringkas',
+      'Penempatan: Sidebar artikel posisi kedua',
+    ],
+    publicMockup: '300 x 250 px',
+  },
+  {
+    id: 'in_feed',
+    name: 'In-Feed Homepage',
+    size: '300 x 250 px',
+    desc: 'Disisipkan secara otomatis di area feed homepage.',
+    publicBadge: 'Slot Feed',
+    publicTitle: 'In-Feed Homepage',
+    publicDescription: 'Slot sponsor yang disisipkan di area feed homepage. Cocok untuk promosi native-style karena tampil di sela alur jelajah konten utama pembaca.',
+    publicHighlights: [
+      'Ukuran: 300 x 250 px (Rectangle)',
+      'Format: Gambar statis, GIF, Video ringkas',
+      'Penempatan: Area feed homepage',
+    ],
+    publicMockup: '300 x 250 px',
+  },
+]
+
+export const AD_SLOT_MAP: Record<AdSlotId, AdSlotDefinition> = AD_SLOT_DEFINITIONS.reduce(
+  (acc, slot) => {
+    acc[slot.id] = slot
+    return acc
+  },
+  {} as Record<AdSlotId, AdSlotDefinition>
+)
+
+export function getAdSlotDefinition(slot: string): AdSlotDefinition | null {
+  return AD_SLOT_MAP[slot as AdSlotId] || null
+}
+
 export const CATEGORIES_CONFIG: CategoryItem[] = [
   { name: 'Terbaru', slug: 'terbaru' },
   {

@@ -6,12 +6,14 @@ import { cn } from '../../lib/utils';
 
 interface AdSpaceProps {
   type: 'leaderboard' | 'rectangle' | 'in-feed';
+  slot?: 'leaderboard' | 'rectangle' | 'rectangle_secondary' | 'in_feed';
   label?: string;
   className?: string;
 }
 
 export default function AdSpace({ 
   type, 
+  slot,
   label = "Advertisement", 
   className = ""
 }: AdSpaceProps) {
@@ -22,8 +24,8 @@ export default function AdSpace({
   const containerRef = useRef<HTMLDivElement | HTMLAnchorElement | null>(null);
   const trackedImpressionRef = useRef(false);
 
-  // Map prop 'in-feed' to DB slot 'in_feed'
-  const slotName = type === 'in-feed' ? 'in_feed' : type;
+  // Allow UI to reuse the same visual format while targeting a different backend slot.
+  const slotName = slot || (type === 'in-feed' ? 'in_feed' : type);
 
   useEffect(() => {
     let active = true;
@@ -38,7 +40,7 @@ export default function AdSpace({
         const json = await res.json();
         
         if (json.success && json.data && active) {
-          // Find ad matching the specific slot (leaderboard or in_feed or rectangle)
+          // Find ad matching the specific configured slot.
           const matchedAd = json.data.find((a: any) => a.slot === slotName);
           if (matchedAd) {
             setAd(matchedAd);

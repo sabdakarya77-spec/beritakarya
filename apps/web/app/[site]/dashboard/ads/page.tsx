@@ -75,9 +75,10 @@ interface AdBooking {
 }
 
 const DEFAULT_SLOTS = [
-  { id: 'leaderboard', name: 'Top Billboard / Leaderboard', size: '970x250', desc: 'Muncul di bagian paling atas halaman utama dan setiap post.' },
-  { id: 'rectangle', name: 'Sidebar Rectangle', size: '300x250', desc: 'Muncul di sidebar homepage dan halaman artikel untuk slot promosi utama.' },
-  { id: 'in_feed', name: 'In-Feed Banner', size: '300x250', desc: 'Disisipkan secara otomatis setelah paragraf ke-3 di dalam teks post.' }
+  { id: 'leaderboard', name: 'Leaderboard Atas', size: '970 x 90 px', desc: 'Muncul di bagian atas homepage sebagai billboard utama.' },
+  { id: 'rectangle', name: 'Sidebar Rectangle Utama', size: '300 x 250 px', desc: 'Muncul di sidebar homepage dan sidebar artikel sebagai slot promosi utama.' },
+  { id: 'rectangle_secondary', name: 'Sidebar Rectangle Sekunder', size: '300 x 250 px', desc: 'Muncul sebagai slot iklan tambahan di sidebar halaman detail artikel.' },
+  { id: 'in_feed', name: 'In-Feed Homepage', size: '300 x 250 px', desc: 'Disisipkan secara otomatis di area feed homepage.' }
 ];
 
 export default function AdsDashboard() {
@@ -826,9 +827,10 @@ export default function AdsDashboard() {
                             onChange={(e) => setPkgSlot(e.target.value)}
                             className="w-full px-4 py-3 bg-white dark:bg-slate-950 border border-gray-200 dark:border-white/10 rounded-xl text-xs outline-none focus:border-brand-red transition-all"
                           >
-                            <option value="leaderboard">Top Leaderboard</option>
-                            <option value="rectangle">Sidebar Rectangle</option>
-                            <option value="in_feed">In-Feed Article</option>
+                            <option value="leaderboard">Leaderboard Atas</option>
+                            <option value="rectangle">Sidebar Rectangle Utama</option>
+                            <option value="rectangle_secondary">Sidebar Rectangle Sekunder</option>
+                            <option value="in_feed">In-Feed Homepage</option>
                           </select>
                         </div>
                         <div>

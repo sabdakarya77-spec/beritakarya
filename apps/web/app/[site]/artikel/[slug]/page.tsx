@@ -10,7 +10,7 @@ import AdSpace from '../../../../components/ui/AdSpace'
 import ShareSidebar from '../../../../components/ui/ShareSidebar'
 import EditorialBadge from '../../../../components/ui/EditorialBadge'
 import { resolveArticleBadge } from '../../../../lib/resolveArticleBadge'
-import { BookOpen, Printer } from 'lucide-react'
+import { BookOpen, CalendarDays, Printer, Sparkles, Tags, User2 } from 'lucide-react'
 import { Metadata } from 'next'
 import CommentSection from '../../../../components/ui/CommentSection'
 import FontSizeControl from '../../../../components/ui/FontSizeControl'
@@ -139,6 +139,8 @@ export default async function ArticlePage({ params }: Props) {
   const authorProfileUrl = article.author?.id
     ? `${process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'}/${siteParam}/penulis/${article.author.id}`
     : `${process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'}/${siteParam}`
+  const authorProfilePath = article.author?.id ? `/${siteParam}/penulis/${article.author.id}` : null
+  const sidebarRelatedArticles = relatedArticles.slice(0, 2)
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -315,7 +317,7 @@ export default async function ArticlePage({ params }: Props) {
 
           {/* --- CONTENT SECTION --- */}
           <Container>
-            <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-16 md:gap-32 mb-32">
+            <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_320px] 2xl:grid-cols-[minmax(0,1fr)_360px] gap-12 xl:gap-16 mb-32">
               {/* Main Content */}
               <div className="max-w-[760px] mx-auto lg:mx-0">
                 {/* Lead Paragraph */}
@@ -387,9 +389,146 @@ export default async function ArticlePage({ params }: Props) {
               </div>
 
               {/* Sidebar */}
-              <aside className="hidden lg:block">
-                <div className="sticky top-40">
-                  <AdSpace type="rectangle" />
+              <aside className="hidden xl:block">
+                <div className="sticky top-32 space-y-6">
+                  <div className="rounded-[1.75rem] border border-gray-100 bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.06)] dark:border-white/5 dark:bg-white/[0.02] dark:shadow-[0_20px_60px_rgba(0,0,0,0.28)]">
+                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.18em] text-gray-400">
+                      <Sparkles size={14} className="text-brand-red" />
+                      Ringkasan Artikel
+                    </div>
+
+                    <div className="mt-5 rounded-[1.25rem] border border-gray-100 bg-gray-50/80 p-4 dark:border-white/5 dark:bg-white/[0.03]">
+                      <div className="flex items-start gap-3">
+                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-brand-red text-base font-serif font-black text-white shadow-lg shadow-brand-red/20">
+                          {article.author?.name?.[0] || 'R'}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400">
+                            Penulis
+                          </p>
+                          <p className="mt-2 text-sm font-black text-brand-black dark:text-white leading-snug">
+                            {article.author?.name || 'Redaksi'}
+                          </p>
+                          {authorProfilePath && (
+                            <Link
+                              href={authorProfilePath}
+                              className="mt-2 inline-flex text-[10px] font-black uppercase tracking-[0.18em] text-brand-red transition-colors hover:text-brand-black dark:hover:text-white"
+                            >
+                              Lihat Profil
+                            </Link>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 grid grid-cols-2 gap-3">
+                      <div className="rounded-2xl border border-gray-100 bg-gray-50 px-4 py-3 dark:border-white/5 dark:bg-white/[0.03]">
+                        <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.18em] text-gray-400">
+                          <BookOpen size={12} className="text-brand-red" />
+                          Baca
+                        </div>
+                        <p className="mt-2 text-sm font-black text-brand-black dark:text-white">
+                          {readingTime} menit
+                        </p>
+                      </div>
+                      <div className="rounded-2xl border border-gray-100 bg-gray-50 px-4 py-3 dark:border-white/5 dark:bg-white/[0.03]">
+                        <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.18em] text-gray-400">
+                          <Printer size={12} className="text-brand-red" />
+                          Kata
+                        </div>
+                        <p className="mt-2 text-sm font-black text-brand-black dark:text-white">
+                          {(article.wordCount || 0).toLocaleString('id-ID')}
+                        </p>
+                      </div>
+                      <div className="rounded-2xl border border-gray-100 bg-gray-50 px-4 py-3 dark:border-white/5 dark:bg-white/[0.03]">
+                        <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.18em] text-gray-400">
+                          <CalendarDays size={12} className="text-brand-red" />
+                          Terbit
+                        </div>
+                        <p className="mt-2 text-sm font-black text-brand-black dark:text-white">
+                          {new Date(article.publishedAt).toLocaleDateString('id-ID', {
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric'
+                          })}
+                        </p>
+                      </div>
+                      <div className="rounded-2xl border border-gray-100 bg-gray-50 px-4 py-3 dark:border-white/5 dark:bg-white/[0.03]">
+                        <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.18em] text-gray-400">
+                          <User2 size={12} className="text-brand-red" />
+                          Kanal
+                        </div>
+                        <p className="mt-2 text-sm font-black text-brand-black dark:text-white">
+                          {article.category?.name || 'Umum'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-[1.75rem] border border-gray-100 bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.06)] dark:border-white/5 dark:bg-white/[0.02] dark:shadow-[0_20px_60px_rgba(0,0,0,0.28)]">
+                    <p className="text-[10px] font-black uppercase tracking-[0.18em] text-gray-400">
+                      Bagikan & Simpan
+                    </p>
+                    <div className="mt-4 flex flex-wrap items-center gap-3">
+                      <ArticleShareActions title={article.title} url={articleUrl} />
+                      <ArticleBookmarkButton
+                        article={article}
+                        site={siteParam}
+                        className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white dark:border-white/10 dark:bg-white/[0.03]"
+                        activeClassName="border-brand-red/40 bg-brand-red/5 text-brand-red"
+                        idleClassName="text-brand-text-muted hover:text-brand-red hover:border-brand-red/40"
+                        iconSize={16}
+                      />
+                    </div>
+                  </div>
+
+                  {(article.tags || []).length > 0 && (
+                    <div className="rounded-[1.75rem] border border-gray-100 bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.06)] dark:border-white/5 dark:bg-white/[0.02] dark:shadow-[0_20px_60px_rgba(0,0,0,0.28)]">
+                      <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.18em] text-gray-400">
+                        <Tags size={14} className="text-brand-red" />
+                        Topik Terkait
+                      </div>
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        {(article.tags || []).slice(0, 8).map((tag: string) => (
+                          <Link
+                            key={tag}
+                            href={`/${siteParam}?q=${encodeURIComponent(tag)}`}
+                            className="rounded-full border border-gray-100 bg-gray-50 px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-gray-500 transition-colors hover:border-brand-red/20 hover:bg-brand-red/5 hover:text-brand-red dark:border-white/5 dark:bg-white/[0.03] dark:text-gray-300"
+                          >
+                            #{tag}
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <AdSpace type="rectangle" label="Advertisement" />
+
+                  <AdSpace
+                    type="rectangle"
+                    slot="rectangle_secondary"
+                    label="Promosi Lainnya"
+                    className="!mb-0"
+                  />
+
+                  <div className="rounded-[1.75rem] border border-gray-100 bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.06)] dark:border-white/5 dark:bg-white/[0.02] dark:shadow-[0_20px_60px_rgba(0,0,0,0.28)]">
+                    <p className="text-[10px] font-black uppercase tracking-[0.18em] text-gray-400">
+                      Baca Berikutnya
+                    </p>
+                    <div className="mt-5 space-y-6">
+                      {sidebarRelatedArticles.length > 0 ? (
+                        sidebarRelatedArticles.map((rel: any) => (
+                          <NewsCard key={rel.id} article={rel} variant="minimal" site={siteParam} />
+                        ))
+                      ) : (
+                        <div className="rounded-2xl border border-dashed border-gray-200 px-4 py-8 text-center dark:border-white/10">
+                          <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                            Belum ada artikel terkait.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </aside>
             </div>

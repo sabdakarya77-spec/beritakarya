@@ -77,11 +77,20 @@ export default function OrderAdPage() {
     },
     {
       id: 'fallback-side-7',
-      name: 'Vertical Sidebar Widget',
+      name: 'Vertical Sidebar Widget Utama',
       slot: 'rectangle',
       durationDays: 7,
       price: 250000,
-      description: 'Sangat cocok untuk materi promosi vertikal memanjang di samping layar.',
+      description: 'Sangat cocok untuk materi promosi utama di sidebar homepage dan artikel.',
+      isActive: true
+    },
+    {
+      id: 'fallback-side-2-7',
+      name: 'Vertical Sidebar Widget Sekunder',
+      slot: 'rectangle_secondary',
+      durationDays: 7,
+      price: 200000,
+      description: 'Slot tambahan di sidebar artikel untuk promosi pendamping atau kampanye kedua.',
       isActive: true
     }
   ];
@@ -209,18 +218,20 @@ export default function OrderAdPage() {
 
   const getSlotLabel = (slot: string) => {
     switch (slot) {
-      case 'leaderboard': return 'Leaderboard Atas (Header)';
-      case 'rectangle': return 'Sidebar Rectangle';
-      case 'in_feed': return 'Dalam Artikel (In-Feed)';
+      case 'leaderboard': return 'Leaderboard Atas';
+      case 'rectangle': return 'Sidebar Rectangle Utama';
+      case 'rectangle_secondary': return 'Sidebar Rectangle Sekunder';
+      case 'in_feed': return 'In-Feed Homepage';
       default: return slot.toUpperCase();
     }
   };
 
   const getSlotDimensions = (slot: string) => {
     switch (slot) {
-      case 'leaderboard': return '970x90 px';
-      case 'rectangle': return '300x250 px';
-      case 'in_feed': return '300x250 px';
+      case 'leaderboard': return '970 x 90 px';
+      case 'rectangle': return '300 x 250 px';
+      case 'rectangle_secondary': return '300 x 250 px';
+      case 'in_feed': return '300 x 250 px';
       default: return '100% Responsive';
     }
   };

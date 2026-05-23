@@ -170,7 +170,7 @@ model Category {
 model Advertisement {
   id          String   @id @default(uuid())
   siteId      String
-  slot        String // 'leaderboard', 'in_feed', 'sidebar'
+  slot        String // 'leaderboard' | 'rectangle' | 'rectangle_secondary' | 'in_feed'
   code        String? // HTML/JS snippet like Google AdSense
   imageUrl    String? // If they just want to upload an image banner
   linkUrl     String? // Where the banner clicks to
@@ -475,7 +475,7 @@ model Invitation {
 model AdPackage {
   id            String      @id @default(uuid())
   name          String // Contoh: "Banner Leaderboard Mingguan"
-  slot          String // 'leaderboard' | 'in_feed' | 'sidebar'
+  slot          String // 'leaderboard' | 'rectangle' | 'rectangle_secondary' | 'in_feed'
   durationDays  Int // Durasi tayang dalam hari (misal: 3, 7, 30)
   price         Decimal     @db.Decimal(12, 2) // Biaya dalam Rupiah
   allowedFormat String      @default("ALL") // 'IMAGE' | 'VIDEO' | 'ALL'
