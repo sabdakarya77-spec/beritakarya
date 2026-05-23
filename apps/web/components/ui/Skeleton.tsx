@@ -22,21 +22,21 @@ export default function Skeleton({ variant = 'card', className }: SkeletonProps)
 
   if (variant === 'hero') {
     return (
-      <div className={cn("relative h-[400px] md:h-[600px] w-full bg-gray-100 overflow-hidden rounded-sm", className)}>
+      <div className={cn("relative h-[400px] md:h-[600px] w-full bg-gray-100 dark:bg-slate-800 overflow-hidden rounded-sm", className)}>
         <motion.div
           initial="initial"
           animate="animate"
           variants={shimmer}
           transition={shimmerTransition}
-          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent dark:via-white/10"
         />
         <div className="absolute bottom-0 left-0 p-6 md:p-12 w-full max-w-4xl">
-          <div className="h-6 w-24 bg-gray-200 mb-6" />
-          <div className="h-12 w-full bg-gray-200 mb-4" />
-          <div className="h-12 w-2/3 bg-gray-200 mb-8" />
+          <div className="h-6 w-24 bg-gray-200 dark:bg-slate-700 mb-6" />
+          <div className="h-12 w-full bg-gray-200 dark:bg-slate-700 mb-4" />
+          <div className="h-12 w-2/3 bg-gray-200 dark:bg-slate-700 mb-8" />
           <div className="flex gap-4">
-            <div className="h-4 w-32 bg-gray-200" />
-            <div className="h-4 w-32 bg-gray-200" />
+            <div className="h-4 w-32 bg-gray-200 dark:bg-slate-700" />
+            <div className="h-4 w-32 bg-gray-200 dark:bg-slate-700" />
           </div>
         </div>
       </div>
@@ -45,50 +45,50 @@ export default function Skeleton({ variant = 'card', className }: SkeletonProps)
 
   if (variant === 'minimal') {
     return (
-      <div className={cn("py-4 border-b border-gray-100 last:border-0 relative overflow-hidden", className)}>
+      <div className={cn("py-4 border-b border-gray-100 dark:border-white/10 last:border-0 relative overflow-hidden", className)}>
         <motion.div
           initial="initial"
           animate="animate"
           variants={shimmer}
           transition={shimmerTransition}
-          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
+          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent dark:via-white/5"
         />
-        <div className="h-3 w-16 bg-gray-100 mb-2 rounded" />
-        <div className="h-5 w-full bg-gray-100 mb-2 rounded" />
-        <div className="h-5 w-3/4 bg-gray-100 rounded" />
+        <div className="h-3 w-16 bg-gray-100 dark:bg-slate-700 mb-2 rounded" />
+        <div className="h-5 w-full bg-gray-100 dark:bg-slate-700 mb-2 rounded" />
+        <div className="h-5 w-3/4 bg-gray-100 dark:bg-slate-700 rounded" />
       </div>
     );
   }
 
   if (variant === 'text') {
     return (
-      <div className={cn("relative overflow-hidden bg-gray-100 rounded-sm", className)}>
+      <div className={cn("relative overflow-hidden bg-gray-100 dark:bg-slate-800 rounded-sm", className)}>
         <motion.div
           initial="initial"
           animate="animate"
           variants={shimmer}
           transition={shimmerTransition}
-          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent dark:via-white/10"
         />
       </div>
     );
   }
 
   return (
-    <div className={cn("flex flex-col gap-4 relative overflow-hidden", className)}>
-      <div className="aspect-video bg-gray-100 rounded-sm" />
-      <motion.div
-        initial="initial"
-        animate="animate"
-        variants={shimmer}
-        transition={shimmerTransition}
-        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none"
-      />
-      <div className="flex flex-col gap-2 p-1">
-        <div className="h-3 w-20 bg-gray-100 rounded" />
-        <div className="h-6 w-full bg-gray-100 rounded" />
-        <div className="h-6 w-3/4 bg-gray-100 rounded" />
+      <div className={cn("flex flex-col gap-4 relative overflow-hidden", className)}>
+        <div className="aspect-video bg-gray-100 dark:bg-slate-800 rounded-sm" />
+        <motion.div
+          initial="initial"
+          animate="animate"
+          variants={shimmer}
+          transition={shimmerTransition}
+          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none dark:via-white/10"
+        />
+        <div className="flex flex-col gap-2 p-1">
+          <div className="h-3 w-20 bg-gray-100 dark:bg-slate-700 rounded" />
+          <div className="h-6 w-full bg-gray-100 dark:bg-slate-700 rounded" />
+          <div className="h-6 w-3/4 bg-gray-100 dark:bg-slate-700 rounded" />
+        </div>
       </div>
-    </div>
   );
 }
