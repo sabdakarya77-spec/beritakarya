@@ -158,7 +158,7 @@ export function PremiumHero({ article, site }: PremiumHeroProps) {
               initial={{ opacity: 0, scale: 1.1 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 1.2, ease: "easeOut" }}
-              className="relative aspect-[4/5] lg:aspect-[1.1/1] overflow-hidden rounded-3xl shadow-3xl"
+              className="relative aspect-[4/5] lg:aspect-[1.1/1] overflow-hidden rounded-3xl shadow-2xl"
             >
               <SmartImage
                 src={imageUrl}
