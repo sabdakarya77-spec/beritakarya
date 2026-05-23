@@ -217,7 +217,7 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex items-center gap-2 shrink-0 bg-brand-black dark:bg-white text-white dark:text-brand-black px-4 py-2 rounded-sm shadow-lg">
                     <TrendingUp size={14} />
-                    <span className={sectionEyebrowClass}>Trending</span>
+                    <span className={`${sectionEyebrowClass} text-white dark:text-brand-black`}>Trending</span>
                   </div>
                   <p className="hidden md:block text-[10px] text-gray-500 dark:text-gray-400 font-semibold">
                     Topik yang ramai dibaca dan paling cepat mengarahkan pembaca ke isu utama hari ini.
@@ -228,7 +228,7 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
                     <Link
                       key={tag}
                       href={`/${siteParam}?q=${encodeURIComponent(tag)}`}
-                      className="shrink-0 px-4 py-1.5 text-[11px] font-black uppercase tracking-[0.14em] text-gray-400 dark:text-gray-300 hover:text-brand-red dark:hover:text-brand-red transition-colors"
+                      className="shrink-0 px-4 py-1.5 text-[11px] font-black uppercase tracking-[0.14em] text-gray-600 dark:text-gray-300 hover:text-brand-red dark:hover:text-brand-red transition-colors"
                     >
                       #{tag}
                     </Link>
