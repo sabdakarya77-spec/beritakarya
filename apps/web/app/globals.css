@@ -52,7 +52,7 @@
     --container-padding-desktop: 2.5rem; /* lg:px-10 = 40px */
     
     /* Container Max Widths */
-    --container-max-width: 80rem;       /* max-w-7xl = 1280px */
+    --container-max-width: 72.5rem;     /* max-w-container = 1160px */
     --content-max-width: 47.5rem;       /* max-w-[760px] for optimal reading */
     
     /* Bleeding Edge System */
@@ -124,7 +124,7 @@
 
 @layer components {
   .news-container {
-    @apply max-w-7xl mx-auto px-4;
+    @apply max-w-container mx-auto px-4;
   }
 
   /* Premium Article Typography (Magazine Feel) */
@@ -260,7 +260,7 @@
     line-height: 1.6 !important;
   }
   
-  .max-w-4xl, .max-w-7xl {
+  .max-w-4xl, .max-w-7xl, .max-w-container {
     max-width: 100% !important;
     margin: 0 !important;
     padding: 0 !important;
@@ -270,4 +270,3 @@
     max-width: 100% !important;
   }
 }
-

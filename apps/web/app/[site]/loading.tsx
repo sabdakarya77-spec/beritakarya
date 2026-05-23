@@ -1,14 +1,15 @@
+import { Container } from '../../components/layout/Container';
 import Skeleton from '../../components/ui/Skeleton';
 
 export default function Loading() {
   return (
-    <main className="max-w-7xl mx-auto px-4 py-8">
+    <Container className="py-8">
       {/* Hero Skeleton */}
       <section className="mb-16 animate-pulse">
         <Skeleton variant="hero" />
       </section>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16">
+      <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-10">
         {/* Main Feed Skeletons */}
         <div className="lg:col-span-8 flex flex-col gap-12">
           <Skeleton variant="text" className="h-10 w-48 mb-4" />
@@ -40,6 +41,6 @@ export default function Loading() {
           </div>
         </aside>
       </div>
-    </main>
+    </Container>
   );
 }

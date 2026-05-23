@@ -43,10 +43,12 @@ function buildWhatsAppUrl(phone?: string | null, siteName?: string) {
   return `https://wa.me/${normalizedNumber}?text=${intro}`
 }
 
-const sectionEyebrowClass = 'text-[11px] font-black uppercase tracking-[0.16em]'
+const sectionEyebrowClass = 'text-[11px] font-black uppercase tracking-[0.18em]'
 const sectionEyebrowMutedClass = `${sectionEyebrowClass} text-gray-500 dark:text-gray-400`
 const sidebarEyebrowClass = `${sectionEyebrowClass} text-white`
 const sectionMetaClass = 'text-[10px] font-semibold text-gray-500 dark:text-gray-400'
+const sectionTitleClass = 'text-[1.9rem] md:text-[2.2rem] font-serif font-black tracking-[-0.04em] text-brand-black dark:text-white'
+const sectionDeckClass = 'max-w-2xl text-sm md:text-[15px] leading-relaxed text-brand-text-muted dark:text-gray-400'
 
 type SearchParams = {
   cat?: string
@@ -176,9 +178,8 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
   ].filter((item) => Boolean(item.href))
   const showHomepageHero = !searchQuery && categoryFilter === 'terbaru' && topBentoStories.length > 0
   const showSavedFeed = categoryFilter === 'tersimpan'
-  // Fokus Redaksi dan Trending dihapus untuk P1-06 (reduce cognitive load)
-  const showEditorFocus = false // Disabled for cleaner homepage
-  const showTrending = false // Disabled - tab switcher sudah cukup untuk discovery
+  const showEditorFocus = !searchQuery && categoryFilter === 'terbaru' && minimalStories.length > 0
+  const showTrending = !searchQuery && categoryFilter === 'terbaru' && tags.length > 0
   const showInlineSponsor = mainFeed.length > 3
   const feedTab = resolvedSearchParams?.tab || 'terbaru';
   const showPopularSidebar = popular.length > 0
@@ -187,82 +188,121 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
   const showPhotoSection = photojournalism.length >= 3
   const showVideoSection = videoStories.length >= 3
   const showEditorialExtras = !searchQuery && categoryFilter === 'terbaru' && (showEditorChoice || showOpinionSection || showPhotoSection || showVideoSection)
+  const displayFeed = feedTab === 'populer' && !isCategoryFilter ? popular.slice(0, 8) : mainFeed
+  const featuredFeed = displayFeed.slice(0, 2)
+  const streamFeed = displayFeed.slice(2, 8)
+  const heroSupportStories = minimalStories.slice(0, 4)
 
   return (
     <PublicSiteLayout siteConfig={siteConfig} initialCategory={categoryFilter}>
-      <main id="main-content" className="py-4 md:py-8 pb-28 md:pb-8">
-        <Container>
-          <div className="flex justify-center mt-4 md:mt-8 mb-6 md:mb-12">
-            <AdSpace type="leaderboard" />
-          </div>
-        </Container>
-
-        {showHomepageHero && (
-          <Container>
-            <Container bleed className="mb-8 md:mb-24 border-b border-gray-100 dark:border-white/5 pb-8 md:pb-16 bg-gray-50/30 dark:bg-white/[0.01] pt-4 md:pt-8">
-              <MagazineBentoHero articles={topBentoStories} site={siteParam} />
-
-              {showEditorFocus && (
-                <div className="border-t border-gray-100 dark:border-white/5 pt-4 md:pt-8">
-                  <div className="flex items-center gap-2 mb-4 md:mb-8">
-                    <Zap size={16} className="text-brand-red" />
-                    <h3 className={`${sectionEyebrowClass} text-brand-black dark:text-white`}>Fokus Redaksi</h3>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {minimalStories.map((article: any) => (
-                      <NewsCard key={article.id} article={article} variant="minimal" site={siteParam} />
-                    ))}
+      <main id="main-content" className="pb-28 md:pb-8">
+        {showHomepageHero ? (
+          <section className="border-b border-black/5 bg-[linear-gradient(180deg,rgba(248,250,252,0.96)_0%,rgba(255,255,255,1)_72%)] dark:border-white/5 dark:bg-[linear-gradient(180deg,rgba(2,6,23,0.98)_0%,rgba(2,6,23,1)_72%)]">
+            <Container className="py-8 md:py-10">
+              <div className="mb-8 flex flex-col gap-4 md:mb-9 md:flex-row md:items-end md:justify-between">
+                <div className="space-y-3">
+                  <span className={`${sectionEyebrowClass} text-brand-red`}>Edisi Utama</span>
+                  <div className="space-y-2">
+                    <h2 className={sectionTitleClass}>Front Page {siteConfig.name}</h2>
+                    <p className={sectionDeckClass}>
+                      Susunan headline utama, laporan paling relevan, dan agenda liputan yang kami prioritaskan untuk pembaca hari ini.
+                    </p>
                   </div>
                 </div>
-              )}
+                <Link
+                  href={`/${siteParam}?tab=terbaru`}
+                  className="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.14em] text-brand-black transition-colors hover:text-brand-red dark:text-white"
+                >
+                  Buka Arus Terbaru
+                  <ArrowRight size={14} />
+                </Link>
+              </div>
+
+              <MagazineBentoHero articles={topBentoStories} site={siteParam} />
+
+              <div className="mt-9 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_296px] lg:gap-8">
+                {showEditorFocus && (
+                  <div className="rounded-3xl border border-black/5 bg-white/90 p-5 shadow-[0_20px_40px_rgba(15,23,42,0.04)] dark:border-white/5 dark:bg-white/[0.02] md:p-6">
+                    <div className="mb-4 flex items-center gap-2">
+                      <Zap size={16} className="text-brand-red" />
+                      <h3 className={`${sectionEyebrowClass} text-brand-black dark:text-white`}>Radar Redaksi</h3>
+                    </div>
+                    <div className="grid grid-cols-1 gap-1 md:grid-cols-2 md:gap-x-6">
+                      {heroSupportStories.map((article: any) => (
+                        <NewsCard key={article.id} article={article} variant="minimal" site={siteParam} />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="rounded-3xl border border-black/5 bg-brand-black p-5 text-white shadow-[0_24px_48px_rgba(2,6,23,0.24)] dark:border-white/10 md:p-6">
+                  <div className="mb-4 flex items-center justify-between">
+                    <span className={sidebarEyebrowClass}>Partner Placement</span>
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/50">Ad</span>
+                  </div>
+                  <AdSpace type="rectangle" className="mx-auto" />
+                </div>
+              </div>
             </Container>
+          </section>
+        ) : (
+          <Container className="py-8 md:py-10">
+            <div className="flex justify-center rounded-3xl border border-black/5 bg-white p-6 shadow-[0_18px_40px_rgba(15,23,42,0.04)] dark:border-white/5 dark:bg-white/[0.02]">
+              <AdSpace type="leaderboard" />
+            </div>
           </Container>
         )}
 
-        <Container>
+        <Container className="py-10 md:py-12">
           {showTrending && (
-            <section className="mb-16 py-8 border-y border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-white/[0.01]">
-              <div className="flex flex-col gap-4">
-                <div className="flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-2 shrink-0 bg-brand-black dark:bg-white text-white dark:text-slate-950 px-4 py-2 rounded-sm shadow-lg">
-                    <TrendingUp size={14} />
-                    <span className={`${sectionEyebrowClass} text-white dark:text-slate-950`}>Trending</span>
-                  </div>
-                  <p className="hidden md:block text-[10px] text-gray-500 dark:text-gray-400 font-semibold">
-                    Topik yang ramai dibaca dan paling cepat mengarahkan pembaca ke isu utama hari ini.
-                  </p>
+            <section className="mb-12 rounded-3xl border border-black/5 bg-brand-surface/80 p-6 md:p-7 dark:border-white/5 dark:bg-white/[0.02]">
+              <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                <div className="flex items-center gap-2">
+                  <TrendingUp size={16} className="text-brand-red" />
+                  <span className={`${sectionEyebrowClass} text-brand-black dark:text-white`}>Radar Topik</span>
                 </div>
-                <div className="flex items-center gap-6 overflow-x-auto no-scrollbar -mx-4 md:-mx-8 lg:-mx-10 px-4 md:px-8 lg:px-10">
-                  {tags.map(tag => (
-                    <Link
-                      key={tag}
-                      href={`/${siteParam}?q=${encodeURIComponent(tag)}`}
-                      className="shrink-0 px-4 py-1.5 text-[11px] font-black uppercase tracking-[0.14em] text-gray-600 dark:text-gray-300 hover:text-brand-red dark:hover:text-brand-red transition-colors"
-                    >
-                      #{tag}
-                    </Link>
-                  ))}
-                </div>
+                <p className="text-sm leading-relaxed text-brand-text-muted dark:text-gray-400">
+                  Topik yang sedang ramai dibaca dan paling cepat mengarahkan pembaca ke isu utama hari ini.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-3">
+                {tags.map(tag => (
+                  <Link
+                    key={tag}
+                    href={`/${siteParam}?q=${encodeURIComponent(tag)}`}
+                    className="inline-flex items-center rounded-full border border-black/10 bg-white px-4 py-2 text-[11px] font-black uppercase tracking-[0.14em] text-gray-600 transition-colors hover:border-brand-red/40 hover:text-brand-red dark:border-white/10 dark:bg-white/[0.03] dark:text-gray-300"
+                  >
+                    #{tag}
+                  </Link>
+                ))}
               </div>
             </section>
           )}
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16">
+          <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-10">
             <div className="lg:col-span-8">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 border-b-4 border-brand-black dark:border-white pb-6">
-                <h3 className="text-2xl md:text-3xl font-serif font-black uppercase tracking-tighter text-brand-black dark:text-white flex items-center gap-3">
-                  <span className="w-4 h-4 md:w-6 md:h-6 bg-brand-red shadow-lg shadow-brand-red/20"></span>
-                  {searchQuery ? `Hasil Pencarian: ${searchQuery}` : `Berita ${resolveCategoryName(categoryFilter, categoriesTree)}`}
-                </h3>
-                
-                {/* Tab Switcher: Terbaru / Populer */}
+              <div className="mb-8 flex flex-col gap-5 border-b border-black/10 pb-6 dark:border-white/5 md:flex-row md:items-end md:justify-between">
+                <div className="space-y-3">
+                  <span className={`${sectionEyebrowClass} text-brand-red`}>
+                    {searchQuery ? 'Pencarian' : `Desk ${resolveCategoryName(categoryFilter, categoriesTree)}`}
+                  </span>
+                  <div className="space-y-2">
+                    <h3 className={sectionTitleClass}>
+                      {searchQuery ? `Hasil untuk "${searchQuery}"` : `Arus Berita ${resolveCategoryName(categoryFilter, categoriesTree)}`}
+                    </h3>
+                    <p className={sectionDeckClass}>
+                      Feed utama disusun untuk memberi headline paling penting terlebih dahulu, lalu beralih ke stream berita yang cepat dipindai.
+                    </p>
+                  </div>
+                </div>
+
                 {!searchQuery && categoryFilter === 'terbaru' && (
-                  <div className="flex items-center gap-1 bg-gray-100 dark:bg-white/5 p-1 rounded-xl">
+                  <div className="flex items-center gap-1 rounded-2xl border border-black/5 bg-brand-surface p-1 dark:border-white/5 dark:bg-white/[0.04]">
                     <Link
                       href={`/${siteParam}?tab=terbaru`}
-                      className={`px-4 py-2 text-[11px] font-black uppercase tracking-wider rounded-lg transition-all ${
-                        feedTab === 'terbaru' 
-                          ? 'bg-white dark:bg-slate-800 text-brand-red shadow-sm' 
+                      className={`rounded-xl px-4 py-2 text-[11px] font-black uppercase tracking-[0.14em] transition-all ${
+                        feedTab === 'terbaru'
+                          ? 'bg-white text-brand-red shadow-sm dark:bg-slate-800'
                           : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
                       }`}
                     >
@@ -270,9 +310,9 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
                     </Link>
                     <Link
                       href={`/${siteParam}?tab=populer`}
-                      className={`px-4 py-2 text-[11px] font-black uppercase tracking-wider rounded-lg transition-all flex items-center gap-1.5 ${
-                        feedTab === 'populer' 
-                          ? 'bg-white dark:bg-slate-800 text-brand-red shadow-sm' 
+                      className={`flex items-center gap-1.5 rounded-xl px-4 py-2 text-[11px] font-black uppercase tracking-[0.14em] transition-all ${
+                        feedTab === 'populer'
+                          ? 'bg-white text-brand-red shadow-sm dark:bg-slate-800'
                           : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
                       }`}
                     >
@@ -285,72 +325,84 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
 
               {showSavedFeed ? (
                 <SavedArticlesFeed site={siteParam} />
-              ) : (
-                // Determine which feed to show based on tab
-                (() => {
-                  const displayFeed = feedTab === 'populer' && !isCategoryFilter 
-                    ? popular.slice(0, 8)  // Show popular articles when tab is "populer"
-                    : mainFeed;
-                  
-                  return displayFeed.length > 0 ? (
-                    <>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-16 mb-16">
-                        {displayFeed.slice(0, 4).map((article: any) => (
-                          <NewsCard key={article.id} article={article} site={siteParam} priority={true} />
-                        ))}
+              ) : displayFeed.length > 0 ? (
+                <div className="space-y-10 md:space-y-12">
+                  {featuredFeed.length > 0 && (
+                    <div className="grid grid-cols-1 gap-8 md:grid-cols-2 md:gap-8">
+                      {featuredFeed.map((article: any) => (
+                        <NewsCard key={article.id} article={article} site={siteParam} priority={true} />
+                      ))}
+                    </div>
+                  )}
+
+                  {showInlineSponsor && (
+                    <div className="rounded-3xl border border-black/5 bg-brand-surface/80 p-7 dark:border-white/5 dark:bg-white/[0.03]">
+                      <div className="mb-6 flex items-center justify-between">
+                        <span className={sectionEyebrowMutedClass}>Sponsorship</span>
+                        <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-gray-400">Advertisement</span>
                       </div>
+                      <AdSpace type="in-feed" className="mx-auto" />
+                    </div>
+                  )}
 
-                      {showInlineSponsor && (
-                        <div className="mb-16 p-8 bg-brand-grey dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/5">
-                          <div className="flex justify-between items-center mb-6">
-                            <span className={sectionEyebrowMutedClass}>Sponsorship</span>
-                            <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-gray-400">Advertisement</span>
-                          </div>
-                          <AdSpace type="in-feed" className="mx-auto" />
+                  {streamFeed.length > 0 && (
+                    <div className="rounded-3xl border border-black/5 bg-white p-6 shadow-[0_18px_42px_rgba(15,23,42,0.05)] dark:border-white/5 dark:bg-white/[0.02] md:p-7">
+                      <div className="mb-6 flex items-center justify-between gap-4">
+                        <div>
+                          <span className={`${sectionEyebrowClass} text-brand-red`}>News Stream</span>
+                          <p className="mt-2 text-sm leading-relaxed text-brand-text-muted dark:text-gray-400">
+                            Ringkasan berita lanjutan yang bergerak cepat, dirancang untuk pembacaan scan-friendly.
+                          </p>
                         </div>
-                      )}
-
-                      {displayFeed.length > 4 && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-16 mb-16">
-                          {displayFeed.slice(4).map((article: any) => (
-                            <NewsCard key={article.id} article={article} site={siteParam} />
-                          ))}
-                        </div>
-                      )}
-                    </>
-                  ) : (
-                    <div className="mb-16 rounded-2xl border border-dashed border-gray-200 dark:border-white/10 bg-gray-50/70 dark:bg-white/[0.02] p-10 text-center">
-                      <p className="text-lg font-serif font-black text-brand-black dark:text-white">Belum ada berita untuk konteks ini.</p>
-                      <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">
-                        Coba kembali ke topik terbaru atau gunakan kata kunci yang lebih umum.
-                      </p>
-                      <div className="mt-6">
                         <Link
-                          href={`/${siteParam}`}
-                          className="inline-flex items-center justify-center rounded-full bg-brand-red px-5 py-2.5 text-[11px] font-black uppercase tracking-[0.12em] text-white hover:opacity-90 transition-opacity"
+                          href={`/${siteParam}?tab=${feedTab}`}
+                          className="hidden items-center gap-2 text-[11px] font-black uppercase tracking-[0.14em] text-brand-black transition-colors hover:text-brand-red dark:text-white md:inline-flex"
                         >
-                          Kembali Ke Berita Terbaru
+                          Lihat Arsip
+                          <ArrowRight size={14} />
                         </Link>
                       </div>
+                      <div className="space-y-6">
+                        {streamFeed.map((article: any) => (
+                          <NewsCard key={article.id} article={article} variant="horizontal" site={siteParam} />
+                        ))}
+                      </div>
                     </div>
-                  );
-                })()
+                  )}
+                </div>
+              ) : (
+                <div className="mb-16 rounded-3xl border border-dashed border-gray-200 bg-gray-50/70 p-10 text-center dark:border-white/10 dark:bg-white/[0.02]">
+                  <p className="text-lg font-serif font-black text-brand-black dark:text-white">Belum ada berita untuk konteks ini.</p>
+                  <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">
+                    Coba kembali ke topik terbaru atau gunakan kata kunci yang lebih umum.
+                  </p>
+                  <div className="mt-6">
+                    <Link
+                      href={`/${siteParam}`}
+                      className="inline-flex items-center justify-center rounded-full bg-brand-red px-5 py-2.5 text-[11px] font-black uppercase tracking-[0.12em] text-white transition-opacity hover:opacity-90"
+                    >
+                      Kembali Ke Berita Terbaru
+                    </Link>
+                  </div>
+                </div>
               )}
 
               {!showSavedFeed && (
-                <div className="pt-12 border-t border-gray-100 dark:border-white/5">
+                <div className="mt-12 border-t border-black/5 pt-12 dark:border-white/5">
                   <LoadMoreArticles siteId={siteConfig.id} category={categoryFilter} search={searchQuery} initialPage={1} />
                 </div>
               )}
             </div>
 
-            <aside className="lg:col-span-4 space-y-10">
-              {/* Ikuti Kami - Social Media */}
+            <aside className="space-y-7 lg:col-span-4">
               {socialChannels.length > 0 && (
-                <div className="p-6 bg-slate-900 rounded-2xl text-white shadow-xl border border-white/5">
-                  <div className="pb-3">
+                <div className="rounded-3xl border border-white/5 bg-slate-950 p-5 text-white shadow-[0_28px_56px_rgba(2,6,23,0.26)] md:p-6">
+                  <div className="pb-4">
                     <span className={`${sectionEyebrowClass} text-brand-red`}>Ikuti Kami</span>
-                    <h4 className="text-lg font-serif font-black leading-tight mt-2 text-white">{siteConfig.name}</h4>
+                    <h4 className="mt-2 text-2xl font-serif font-black leading-tight text-white">{siteConfig.name}</h4>
+                    <p className="mt-3 text-sm leading-relaxed text-white/65">
+                      Terhubung langsung dengan distribusi headline, video, dan pembaruan redaksi dari semua kanal utama kami.
+                    </p>
                   </div>
                   <div className="grid grid-cols-4 gap-3">
                     {socialChannels.map((channel) => {
@@ -363,7 +415,7 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
                           rel="noopener noreferrer"
                           aria-label={channel.label}
                           title={channel.label}
-                          className="flex flex-col items-center gap-2 p-3 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20 transition-all"
+                          className="flex flex-col items-center gap-2 rounded-2xl border border-white/10 bg-white/5 p-3 transition-all hover:border-white/20 hover:bg-white/10"
                         >
                           <Icon size={20} className="text-white" />
                         </a>
@@ -374,15 +426,15 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
               )}
 
               {showPopularSidebar && (
-                <div>
-                  <div className="flex items-center gap-3 mb-8">
-                    <Star size={18} className="text-brand-red fill-brand-red" />
+                <div className="rounded-3xl border border-black/5 bg-white p-5 shadow-[0_18px_42px_rgba(15,23,42,0.05)] dark:border-white/5 dark:bg-white/[0.02] md:p-6">
+                  <div className="mb-6 flex items-center gap-3">
+                    <Star size={18} className="fill-brand-red text-brand-red" />
                     <h4 className={`${sectionEyebrowClass} text-brand-black dark:text-white`}>Paling Populer</h4>
                   </div>
-                  <div className="flex flex-col gap-8">
+                  <div className="flex flex-col gap-6">
                     {popular.map((article: any, index: number) => (
-                      <div key={article.id} className="flex gap-5 group items-start">
-                        <span className="text-4xl font-serif font-black text-gray-100 dark:text-white/5 group-hover:text-brand-red transition-colors tabular-nums">
+                      <div key={article.id} className="group flex items-start gap-5">
+                        <span className="tabular-nums font-serif text-4xl font-black text-gray-100 transition-colors group-hover:text-brand-red dark:text-white/5">
                           {(index + 1).toString().padStart(2, '0')}
                         </span>
                         <div className="flex-1">
@@ -394,34 +446,76 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
                 </div>
               )}
 
-              {siteSettings?.featuredVideo && (
-                <div>
+              {(whatsappUrl || reportUrl) && (
+                <div className="rounded-3xl border border-black/5 bg-brand-surface/80 p-5 dark:border-white/5 dark:bg-white/[0.02] md:p-6">
+                  <span className={`${sectionEyebrowClass} text-brand-red`}>Akses Cepat</span>
+                  <h4 className="mt-3 text-2xl font-serif font-black leading-tight text-brand-black dark:text-white">
+                    Terhubung dengan redaksi.
+                  </h4>
+                  <p className="mt-3 text-sm leading-relaxed text-brand-text-muted dark:text-gray-400">
+                    Kirim laporan warga, tips, atau jangkau tim kami lewat kanal yang paling cepat ditindaklanjuti.
+                  </p>
+                  <div className="mt-5 grid gap-3">
+                    {whatsappUrl && (
+                      <a
+                        href={whatsappUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center justify-between rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm font-semibold text-brand-black transition-colors hover:border-brand-red/30 hover:text-brand-red dark:border-white/10 dark:bg-white/[0.03] dark:text-white"
+                      >
+                        <span className="inline-flex items-center gap-3">
+                          <MessageCircle size={16} />
+                          WhatsApp Channel
+                        </span>
+                        <ArrowRight size={15} />
+                      </a>
+                    )}
+                    <a
+                      href={reportUrl}
+                      className="inline-flex items-center justify-between rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm font-semibold text-brand-black transition-colors hover:border-brand-red/30 hover:text-brand-red dark:border-white/10 dark:bg-white/[0.03] dark:text-white"
+                    >
+                      <span className="inline-flex items-center gap-3">
+                        <FileText size={16} />
+                        Kirim Laporan Warga
+                      </span>
+                      <ArrowRight size={15} />
+                    </a>
+                  </div>
+                </div>
+              )}
+
+              <div className="rounded-3xl border border-black/5 bg-white p-5 shadow-[0_18px_42px_rgba(15,23,42,0.05)] dark:border-white/5 dark:bg-white/[0.02] md:p-6">
+                {siteSettings?.featuredVideo ? (
                   <VideoWidget
                     title={siteSettings.featuredVideo.title}
                     thumbnail={siteSettings.featuredVideo.thumbnail}
                     duration={siteSettings.featuredVideo.duration}
                   />
-                </div>
-              )}
-              {!siteSettings?.featuredVideo && (
-                <div>
+                ) : (
                   <AdSpace type="rectangle" />
-                </div>
-              )}
+                )}
+              </div>
             </aside>
           </div>
 
           {showEditorialExtras && (
-            <div className="mt-20 md:mt-24 space-y-14 md:space-y-20 border-t border-gray-100 dark:border-white/5 pt-14 md:pt-16">
+            <div className="mt-16 space-y-16 border-t border-black/5 pt-16 dark:border-white/5 md:mt-24 md:space-y-20">
               {showEditorChoice && (
                 <ScrollAnimate>
-                  <div className="flex items-center gap-2 mb-4 md:mb-8">
-                    <Star size={16} className="text-amber-500 fill-amber-500" />
-                    <h3 className={`${sectionEyebrowClass} text-brand-black dark:text-white`}>Pilihan Editor</h3>
+                  <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Star size={16} className="fill-amber-500 text-amber-500" />
+                        <h3 className={`${sectionEyebrowClass} text-brand-black dark:text-white`}>Pilihan Editor</h3>
+                      </div>
+                      <p className={sectionDeckClass}>
+                        Paket berita yang kami anggap paling bernilai untuk memberi konteks, kedalaman, dan sudut pandang paling kuat.
+                      </p>
+                    </div>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                  <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
                     {editorChoice.map((article: any) => (
-                      <div key={article.id} className="border border-amber-100 dark:border-amber-950/30 p-5 rounded-2xl bg-amber-50/10 dark:bg-amber-950/5 hover:shadow-xl transition-all duration-300">
+                      <div key={article.id} className="rounded-3xl border border-amber-100 bg-amber-50/50 p-5 transition-all duration-300 hover:shadow-xl dark:border-amber-950/30 dark:bg-amber-950/5">
                         <NewsCard article={article} variant="medium" site={siteParam} />
                       </div>
                     ))}
@@ -431,29 +525,36 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
 
               {showOpinionSection && (
                 <ScrollAnimate>
-                  <div className="flex items-center gap-2 mb-4 md:mb-8">
-                    <span className="w-2 h-2 rounded-full bg-brand-red"></span>
-                    <h3 className={`${sectionEyebrowClass} text-brand-black dark:text-white`}>Opini & Analisis</h3>
+                  <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <span className="h-2 w-2 rounded-full bg-brand-red"></span>
+                        <h3 className={`${sectionEyebrowClass} text-brand-black dark:text-white`}>Opini & Analisis</h3>
+                      </div>
+                      <p className={sectionDeckClass}>
+                        Kolom dan analisis untuk pembaca yang membutuhkan perspektif, bukan hanya pembaruan cepat.
+                      </p>
+                    </div>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8 divide-y md:divide-y-0 md:divide-x divide-gray-100 dark:divide-white/5">
+                  <div className="grid grid-cols-1 gap-8 divide-y divide-black/5 rounded-3xl border border-black/5 bg-white p-6 shadow-[0_18px_42px_rgba(15,23,42,0.05)] dark:divide-white/5 dark:border-white/5 dark:bg-white/[0.02] md:grid-cols-3 md:divide-x md:divide-y-0 md:p-8">
                     {opinionAnalisis.map((article: any, idx: number) => (
-                      <div key={article.id} className={`pt-6 md:pt-0 ${idx > 0 ? 'md:pl-8' : ''} flex flex-col justify-between h-full gap-4`}>
+                      <div key={article.id} className={`flex h-full flex-col justify-between gap-4 pt-6 md:pt-0 ${idx > 0 ? 'md:pl-8' : ''}`}>
                         <div>
-                          <span className={`${sectionMetaClass} uppercase tracking-[0.12em] block mb-2`}>Kolom Analisis</span>
+                          <span className={`${sectionMetaClass} mb-2 block uppercase tracking-[0.12em]`}>Kolom Analisis</span>
                           <Link href={`/${siteParam}/artikel/${article.slug}`}>
-                            <h4 className="text-xl font-serif font-black text-brand-black dark:text-white hover:text-brand-red transition-colors leading-tight line-clamp-3 mb-2">
+                            <h4 className="mb-2 line-clamp-3 text-xl font-serif font-black leading-tight text-brand-black transition-colors hover:text-brand-red dark:text-white">
                               &ldquo;{article.title}&rdquo;
                             </h4>
                           </Link>
-                          <p className="text-sm text-gray-500 dark:text-gray-400 font-light line-clamp-3 leading-relaxed">
+                          <p className="line-clamp-3 text-sm font-light leading-relaxed text-gray-500 dark:text-gray-400">
                             {article.excerpt || article.blocks?.find((b: any) => b.type === 'paragraph')?.content || ''}
                           </p>
                         </div>
-                        <div className="flex items-center gap-2 mt-4 pt-4 border-t border-gray-50 dark:border-white/5">
-                          <div className="w-6 h-6 rounded-full bg-brand-red/10 flex items-center justify-center text-[10px] font-black text-brand-red">
+                        <div className="mt-4 flex items-center gap-2 border-t border-black/5 pt-4 dark:border-white/5">
+                          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-brand-red/10 text-[10px] font-black text-brand-red">
                             {article.author?.name?.charAt(0) || 'S'}
                           </div>
-                          <span className="text-[11px] font-semibold text-brand-black dark:text-white uppercase tracking-[0.12em]">
+                          <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-brand-black dark:text-white">
                             {article.author?.name || 'Redaksi'}
                           </span>
                         </div>
@@ -465,20 +566,27 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
 
               {showPhotoSection && (
                 <ScrollAnimate>
-                  <div className="flex items-center gap-2 mb-4 md:mb-8">
-                    <span className="w-2 h-2 bg-brand-red"></span>
-                    <h3 className={`${sectionEyebrowClass} text-brand-black dark:text-white`}>Foto Jurnalistik</h3>
+                  <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <span className="h-2 w-2 bg-brand-red"></span>
+                        <h3 className={`${sectionEyebrowClass} text-brand-black dark:text-white`}>Foto Jurnalistik</h3>
+                      </div>
+                      <p className={sectionDeckClass}>
+                        Visual pilihan yang menambah emosi dan rasa kehadiran pada peristiwa yang sedang dibicarakan.
+                      </p>
+                    </div>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                     {photojournalism.map((article: any) => (
-                      <div key={article.id} className="relative aspect-[4/5] rounded-3xl overflow-hidden group shadow-lg">
+                      <div key={article.id} className="group relative aspect-[4/5] overflow-hidden rounded-3xl shadow-lg">
                         {article.featuredImage && (
-                          <img src={article.featuredImage} alt={article.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-[5s]" />
+                          <img src={article.featuredImage} alt={article.title} className="h-full w-full object-cover transition-transform duration-[5s] group-hover:scale-110" />
                         )}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent" />
-                        <div className="absolute bottom-0 left-0 p-6 z-10 w-full">
-                          <span className="text-[10px] font-semibold text-brand-red uppercase tracking-[0.12em] block mb-2">Jurnal Foto</span>
-                          <h4 className="text-base font-serif font-black text-white leading-snug line-clamp-3">{article.title}</h4>
+                        <div className="absolute bottom-0 left-0 z-10 w-full p-6">
+                          <span className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.12em] text-brand-red">Jurnal Foto</span>
+                          <h4 className="line-clamp-3 text-base font-serif font-black leading-snug text-white">{article.title}</h4>
                         </div>
                       </div>
                     ))}
@@ -487,25 +595,32 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
               )}
 
               {showVideoSection && (
-                <ScrollAnimate className="bg-slate-950 -mx-4 md:-mx-8 lg:-mx-10 px-4 md:px-8 lg:px-10 py-8 md:py-12 rounded-none md:rounded-3xl text-white">
-                  <div className="flex items-center gap-2 mb-4 md:mb-8">
-                    <Zap size={16} className="text-red-500 fill-red-500" />
-                    <h3 className={`${sidebarEyebrowClass} tracking-[0.14em]`}>Laporan Video Eksklusif</h3>
+                <ScrollAnimate className="rounded-3xl bg-slate-950 px-6 py-8 text-white md:px-8 md:py-12">
+                  <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Zap size={16} className="fill-red-500 text-red-500" />
+                        <h3 className={`${sidebarEyebrowClass} tracking-[0.14em]`}>Laporan Video Eksklusif</h3>
+                      </div>
+                      <p className="max-w-2xl text-sm leading-relaxed text-white/65">
+                        Klip dan laporan visual dengan treatment yang lebih sinematik untuk memperluas pengalaman homepage.
+                      </p>
+                    </div>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                  <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
                     {videoStories.map((article: any) => (
-                      <div key={article.id} className="group relative rounded-2xl overflow-hidden aspect-video bg-black shadow-lg">
-                        <div className="absolute inset-0 bg-black/40 group-hover:bg-black/60 transition-colors z-10 flex items-center justify-center">
-                          <div className="w-14 h-14 bg-white/20 backdrop-blur-md border border-white/40 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform group-hover:bg-brand-red group-hover:border-transparent">
-                            <span className="text-white text-lg ml-1">▶</span>
+                      <div key={article.id} className="group relative aspect-video overflow-hidden rounded-2xl bg-black shadow-lg">
+                        <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/40 transition-colors group-hover:bg-black/60">
+                          <div className="flex h-14 w-14 items-center justify-center rounded-full border border-white/40 bg-white/20 backdrop-blur-md transition-transform group-hover:scale-110 group-hover:border-transparent group-hover:bg-brand-red">
+                            <span className="ml-1 text-lg text-white">▶</span>
                           </div>
                         </div>
                         {article.featuredImage && (
-                          <img src={article.featuredImage} alt={article.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[4s]" />
+                          <img src={article.featuredImage} alt={article.title} className="h-full w-full object-cover transition-transform duration-[4s] group-hover:scale-105" />
                         )}
-                        <div className="absolute bottom-0 left-0 p-5 w-full bg-gradient-to-t from-black via-black/80 to-transparent z-20">
-                          <span className="text-[10px] font-semibold text-brand-red uppercase tracking-[0.12em] block mb-1">Video Report</span>
-                          <h4 className="text-sm font-bold text-white line-clamp-2">{article.title}</h4>
+                        <div className="absolute bottom-0 left-0 z-20 w-full bg-gradient-to-t from-black via-black/80 to-transparent p-5">
+                          <span className="mb-1 block text-[10px] font-semibold uppercase tracking-[0.12em] text-brand-red">Video Report</span>
+                          <h4 className="line-clamp-2 text-sm font-bold text-white">{article.title}</h4>
                         </div>
                       </div>
                     ))}

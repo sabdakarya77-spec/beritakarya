@@ -16,13 +16,13 @@ export function MagazineBentoHero({ articles, site }: { articles: any[], site: s
     article.featuredImage || article.blocks?.find((b: any) => b.type === 'image')?.url || '/placeholder.jpg';
 
   return (
-    <section className="w-full mb-16 relative">
+    <section className="relative mb-14 w-full md:mb-16">
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85%] h-[85%] bg-brand-red/5 dark:bg-brand-red/10 blur-[80px] -z-10 rounded-full" />
       
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 h-auto lg:h-[520px]">
+      <div className="grid h-auto grid-cols-1 gap-4 lg:h-[490px] lg:grid-cols-12 lg:gap-5 xl:h-[510px]">
         
         {lead && (
-          <Link href={`/${site}/artikel/${lead.slug}`} className="lg:col-span-8 relative rounded-2xl overflow-hidden group/lead block h-[320px] lg:h-full">
+          <Link href={`/${site}/artikel/${lead.slug}`} className="group/lead relative block h-[320px] overflow-hidden rounded-2xl lg:col-span-8 lg:h-full">
             <SmartImage 
               src={getImageUrl(lead)} 
               blur={lead.featuredImageBlur}
@@ -35,7 +35,7 @@ export function MagazineBentoHero({ articles, site }: { articles: any[], site: s
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/55 to-transparent" />
             
-            <div className="absolute bottom-0 left-0 p-6 lg:p-10 w-full md:w-4/5">
+            <div className="absolute bottom-0 left-0 w-full p-6 md:w-[82%] lg:p-8 xl:w-4/5 xl:p-10">
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
                 <div className="mb-4">
                   <span className={cn("px-3 py-1 text-[10px] font-black uppercase tracking-[0.14em] rounded-sm shadow-sm", getCategoryColor(lead.category?.name))}>
@@ -43,7 +43,7 @@ export function MagazineBentoHero({ articles, site }: { articles: any[], site: s
                   </span>
                 </div>
                 
-                <h1 className="text-3xl lg:text-5xl font-serif font-black text-white leading-tight tracking-tight">
+                <h1 className="text-3xl font-serif font-black leading-tight tracking-tight text-white lg:text-[2.65rem] xl:text-5xl">
                   {lead.title}
                 </h1>
               </motion.div>
@@ -51,12 +51,12 @@ export function MagazineBentoHero({ articles, site }: { articles: any[], site: s
           </Link>
         )}
 
-        <div className="lg:col-span-4 flex flex-col gap-4 lg:gap-6 h-full">
+        <div className="flex h-full flex-col gap-4 lg:col-span-4 lg:gap-5">
           {sideArticles.map((article: any, index: number) => (
             <Link 
               key={article.id} 
               href={`/${site}/artikel/${article.slug}`}
-              className="relative flex-1 rounded-2xl overflow-hidden group/side block min-h-[150px] border border-black/5 dark:border-white/5"
+              className="group/side relative block min-h-[142px] flex-1 overflow-hidden rounded-2xl border border-black/5 dark:border-white/5"
             >
               <SmartImage 
                 src={getImageUrl(article)} 
@@ -69,13 +69,13 @@ export function MagazineBentoHero({ articles, site }: { articles: any[], site: s
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/65 to-black/20 transition-colors" />
               
-              <div className="absolute bottom-0 left-0 p-5 w-full">
+              <div className="absolute bottom-0 left-0 w-full p-4 lg:p-5">
                 <div className="mb-2">
                   <span className={cn("text-[10px] font-black uppercase tracking-[0.14em] px-2 py-0.5 rounded-sm", getCategoryColor(article.category?.name))}>
                     {article.category?.name || 'Terkini'}
                   </span>
                 </div>
-                <h3 className="text-base lg:text-lg font-serif font-black text-white leading-snug line-clamp-3 tracking-tight">
+                <h3 className="line-clamp-3 font-serif text-base font-black leading-snug tracking-tight text-white lg:text-[1.05rem]">
                   {article.title}
                 </h3>
               </div>

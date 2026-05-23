@@ -9,6 +9,7 @@ import { SmartImage } from '../ui/SmartImage';
 import DateTimeWeather from '../ui/DateTimeWeather';
 import { cn } from '../../lib/utils';
 import { useRouter, usePathname } from 'next/navigation';
+import { Container } from './Container';
 
 import { CategoryItem } from '../../lib/constants';
 import { useSavedArticles } from '../../hooks/useSavedArticles';
@@ -83,69 +84,57 @@ export default function Navbar({
     <header className={cn(
       "sticky top-0 z-50 border-b transition-all duration-500",
       isArticlePage
-        ? "bg-[color:rgb(var(--brand-surface-rgb)/0.86)] dark:bg-[rgba(2,6,23,0.82)] backdrop-blur-xl border-gray-100/80 dark:border-white/5 shadow-[0_10px_40px_rgba(15,23,42,0.06)]"
-        : "bg-[var(--bg-main)] border-gray-100 dark:border-white/5 shadow-sm"
+        ? "border-black/5 bg-[color:rgb(var(--brand-surface-rgb)/0.88)] backdrop-blur-xl shadow-[0_12px_36px_rgba(15,23,42,0.08)] dark:border-white/5 dark:bg-[rgba(2,6,23,0.84)]"
+        : "border-black/5 bg-[var(--bg-main)] shadow-sm dark:border-white/5"
     )}>
-      {/* Top Bar */}
-      <div className={cn(
-        "max-w-7xl mx-auto px-4 flex items-center justify-between uppercase text-[11px] font-bold text-brand-text-muted",
-        isArticlePage
-          ? "h-9 border-b border-gray-100/70 dark:border-white/5 tracking-wide"
-          : "h-10 border-b border-gray-50 tracking-wide"
-      )}>
-        <div className="flex items-center gap-5">
-          {isArticlePage ? (
-            <>
-              <Link href="/pusat" className="hidden sm:flex items-center gap-1.5 hover:text-brand-red transition-colors">
-                <Globe size={11} /> BeritaKarya Edition
-              </Link>
-              <div className="hidden sm:block w-px h-3 bg-gray-200 dark:bg-white/10" />
-              <span className="text-[10px] font-semibold text-brand-text-muted">
-                {articleTopDate}
-              </span>
-            </>
-          ) : (
-            <>
-              <Link href="/pusat" className="hidden sm:flex items-center gap-1.5 hover:text-brand-red transition-colors">
-                <Globe size={12} /> Global Edition
-              </Link>
-              <div className="hidden sm:block w-px h-3 bg-gray-200" />
-              <DateTimeWeather />
-            </>
-          )}
-        </div>
-        <div className={cn("hidden lg:flex items-center gap-5", isArticlePage && "gap-4")}>
-          <Link href={`/${activeSite}/p/about`} className="hover:text-brand-red transition-colors">Tentang</Link>
-          {!isArticlePage && (
-            <Link href={`/${activeSite}/kebijakan-privasi`} className="hover:text-brand-red transition-colors">Privasi</Link>
-          )}
-        </div>
+      <div className="border-b border-black/5 dark:border-white/5">
+        <Container className="flex h-11 items-center justify-between gap-6 text-[12px] font-semibold uppercase tracking-[0.08em] text-brand-text-muted">
+          <div className="flex min-w-0 items-center gap-4">
+            <Link href="/pusat" className="hidden sm:flex items-center gap-1.5 whitespace-nowrap hover:text-brand-red transition-colors">
+              <Globe size={12} />
+              {isArticlePage ? 'BeritaKarya Edition' : 'Global Edition'}
+            </Link>
+            <div className="hidden h-3.5 w-px bg-black/10 dark:bg-white/10 sm:block" />
+            <div className="min-w-0 truncate">
+              {isArticlePage ? (
+                <span className="truncate text-[12px] normal-case tracking-[0.04em] text-brand-text-muted">
+                  {articleTopDate}
+                </span>
+              ) : (
+                <DateTimeWeather />
+              )}
+            </div>
+          </div>
+          <div className={cn("hidden items-center gap-6 lg:flex", isArticlePage && "gap-5")}>
+            <Link href={`/${activeSite}/p/about`} className="hover:text-brand-red transition-colors">Tentang</Link>
+            {!isArticlePage && (
+              <Link href={`/${activeSite}/kebijakan-privasi`} className="hover:text-brand-red transition-colors">Privasi</Link>
+            )}
+          </div>
+        </Container>
       </div>
 
-      {/* Main Bar */}
-      <div className={cn(
-        "max-w-7xl mx-auto px-4 grid grid-cols-[1fr_auto_1fr] items-center gap-4",
-        isArticlePage ? "min-h-[5rem] sm:h-20" : "min-h-[5.5rem] sm:h-24"
+      <Container className={cn(
+        "grid grid-cols-[1fr_auto_1fr] items-center gap-3 md:gap-4",
+        isArticlePage ? "min-h-[5.25rem] md:min-h-[5.5rem]" : "min-h-[6rem] md:min-h-[6.35rem]"
       )}>
-        {/* Left: Search & Menu (Mobile) */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 md:gap-4">
           <button 
             onClick={onMenuClick}
-            className="md:hidden p-2 -ml-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-full transition-colors text-brand-black dark:text-white"
+            className="md:hidden -ml-2 rounded-full p-2.5 text-brand-black transition-colors hover:bg-black/5 dark:text-white dark:hover:bg-white/5"
             aria-label="Menu"
           >
             <Menu size={24} strokeWidth={1.5} />
           </button>
           <button 
             onClick={onSearchClick}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-full transition-colors text-brand-black dark:text-white"
+            className="rounded-full p-2.5 text-brand-black transition-colors hover:bg-black/5 dark:text-white dark:hover:bg-white/5"
             aria-label="Cari berita"
           >
-            <Search size={22} strokeWidth={1.5} />
+            <Search size={20} strokeWidth={1.5} />
           </button>
         </div>
 
-        {/* Center: Logo */}
         <motion.div 
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -153,7 +142,7 @@ export default function Navbar({
         >
           <Link href={`/${activeSite}`} className="flex flex-col items-center group">
             {siteConfig?.logoUrl ? (
-              <div className="relative h-12 w-48 mb-1">
+              <div className="relative mb-1 h-12 w-[11.5rem] md:h-[3.25rem] md:w-[13rem]">
                 <SmartImage 
                   src={siteConfig.logoUrl} 
                   alt={siteConfig.name} 
@@ -164,20 +153,18 @@ export default function Navbar({
                 />
               </div>
             ) : (
-              <h1 className="font-serif text-2xl sm:text-4xl md:text-5xl font-black tracking-[-0.04em] leading-none text-center">
+              <h1 className="text-center font-serif text-[2rem] font-black leading-none tracking-[-0.05em] sm:text-[2.45rem] md:text-[3rem]">
                 <span className="text-brand-red group-hover:text-brand-red/90 transition-colors">BERITA</span>
                 <span className="text-brand-black group-hover:opacity-90 transition-opacity">KARYA</span>
               </h1>
             )}
-            <span className="text-[10px] tracking-wider sm:tracking-wide font-medium text-brand-text-muted mt-1.5 uppercase transition-all text-center max-w-[280px]">
+            <span className="mt-1.5 max-w-[280px] text-center text-[11px] font-medium uppercase tracking-[0.18em] text-brand-text-muted transition-all">
               Jernih Melihat Nusantara
             </span>
           </Link>
         </motion.div>
 
-        {/* Right: Actions */}
-        <div className={cn("flex items-center justify-end gap-3 md:gap-5", isArticlePage && "md:gap-4")}>
-          {/* Social Links (Desktop Only) */}
+        <div className={cn("flex items-center justify-end gap-2 md:gap-4", isArticlePage && "md:gap-3")}>
           <div className={cn("hidden lg:flex items-center gap-1.5", isArticlePage && "hidden xl:flex")}>
             {socialLinks.map(({ href, Icon, hoverClassName }, index) => (
               <a
@@ -186,7 +173,7 @@ export default function Navbar({
                 target="_blank"
                 rel="noopener noreferrer"
                 className={cn(
-                  "p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-full transition-colors text-brand-text-muted",
+                  "rounded-full p-2 text-brand-text-muted transition-colors hover:bg-black/5 dark:hover:bg-white/5",
                   hoverClassName
                 )}
               >
@@ -198,9 +185,9 @@ export default function Navbar({
           {!isArticlePage && (
             <button 
               aria-label="Notifikasi"
-              className="hidden xl:flex p-2 text-brand-text-muted hover:text-brand-black transition-colors"
+              className="hidden xl:flex rounded-full p-2 text-brand-text-muted transition-colors hover:bg-black/5 hover:text-brand-black"
             >
-              <Bell size={20} strokeWidth={1.2} />
+              <Bell size={18} strokeWidth={1.2} />
             </button>
           )}
             
@@ -208,12 +195,12 @@ export default function Navbar({
             <div className="relative">
               <button 
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
-                className="flex items-center gap-2 p-2 text-brand-text-muted hover:text-brand-black transition-colors"
+                className="flex items-center gap-2 rounded-full p-2 text-brand-text-muted transition-colors hover:bg-black/5 hover:text-brand-black"
               >
-                <div className="w-6 h-6 rounded-full bg-brand-red text-white flex items-center justify-center text-[11px] font-bold">
+                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-red text-[11px] font-bold text-white">
                   {user.name.charAt(0).toUpperCase()}
                 </div>
-                <span className="text-[11px] font-semibold hidden sm:inline truncate max-w-[80px]">
+                <span className="hidden max-w-[96px] truncate text-[12px] font-semibold sm:inline">
                   {user.name.split(' ')[0]}
                 </span>
               </button>
@@ -224,9 +211,9 @@ export default function Navbar({
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
-                    className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-900 border border-gray-100 dark:border-white/5 rounded-lg shadow-xl overflow-hidden z-50"
+                    className="absolute right-0 z-50 mt-2 w-52 overflow-hidden rounded-2xl border border-black/5 bg-white shadow-xl dark:border-white/5 dark:bg-slate-900"
                   >
-                    <div className="p-4 border-b border-gray-50 dark:border-white/5">
+                    <div className="border-b border-black/5 p-4 dark:border-white/5">
                       <p className="text-xs font-bold text-brand-black dark:text-white truncate">{user.name}</p>
                       <p className="text-[11px] text-gray-500 truncate">{user.email}</p>
                     </div>
@@ -234,7 +221,7 @@ export default function Navbar({
                       {['superadmin', 'wapimred', 'reporter', 'kontributor'].includes(user.role) && (
                         <Link 
                           href={`/${activeSite}/dashboard`}
-                          className="block px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-gray-600 hover:text-brand-red hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-white/5 rounded-md transition-colors"
+                          className="block rounded-xl px-3 py-2 text-[11px] font-bold uppercase tracking-[0.12em] text-gray-600 transition-colors hover:bg-gray-50 hover:text-brand-red dark:text-gray-300 dark:hover:bg-white/5"
                           onClick={() => setIsProfileOpen(false)}
                         >
                           Dashboard
@@ -245,7 +232,7 @@ export default function Navbar({
                           setIsProfileOpen(false);
                           logout();
                         }}
-                        className="w-full text-left px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-brand-red hover:bg-red-50 dark:hover:bg-red-500/10 rounded-md transition-colors mt-1"
+                        className="mt-1 w-full rounded-xl px-3 py-2 text-left text-[11px] font-bold uppercase tracking-[0.12em] text-brand-red transition-colors hover:bg-red-50 dark:hover:bg-red-500/10"
                       >
                         Keluar
                       </button>
@@ -257,32 +244,30 @@ export default function Navbar({
           ) : (
             <Link 
               href="/login"
-              className="flex items-center gap-2 p-2 text-brand-text-muted hover:text-brand-black transition-colors"
+              className="flex items-center gap-2 rounded-full p-2 text-brand-text-muted transition-colors hover:bg-black/5 hover:text-brand-black"
             >
-              <UserIcon size={20} strokeWidth={1.2} />
-              <span className="text-[11px] font-semibold hidden sm:inline">Masuk</span>
+              <UserIcon size={18} strokeWidth={1.2} />
+              <span className="hidden text-[12px] font-semibold sm:inline">Masuk</span>
             </Link>
           )}
           
-          <div className="w-px h-6 bg-gray-200 hidden md:block" />
+          <div className="hidden h-6 w-px bg-black/10 dark:bg-white/10 md:block" />
 
           <button 
-            className="p-2 text-brand-text-muted hover:text-brand-black transition-colors" 
+            className="rounded-full p-2 text-brand-text-muted transition-colors hover:bg-black/5 hover:text-brand-black" 
             onClick={toggleTheme}
           >
-            {theme === 'light' ? <Moon size={20} strokeWidth={1.5} /> : <Sun size={20} strokeWidth={1.5} />}
+            {theme === 'light' ? <Moon size={18} strokeWidth={1.5} /> : <Sun size={18} strokeWidth={1.5} />}
           </button>
         </div>
-      </div>
+      </Container>
 
-      {/* Desktop Navigation */}
-      <nav className={cn(
-        "max-w-7xl mx-auto px-4 hidden md:flex items-center justify-center border-t text-[11px] font-bold uppercase tracking-[0.12em] text-brand-text-muted relative z-40",
-        isArticlePage
-          ? "h-12 border-gray-100/70 dark:border-white/5 gap-8"
-          : "h-14 border-gray-50 dark:border-white/5 gap-10"
-      )}>
-        {categories.map((cat, index) => {
+      <div className="hidden border-t border-black/5 dark:border-white/5 md:block">
+        <Container className={cn(
+          "relative z-40 hidden items-center justify-center text-[12px] font-bold uppercase tracking-[0.13em] text-brand-text-muted md:flex",
+          isArticlePage ? "h-12 gap-6" : "h-14 gap-7"
+        )}>
+          {categories.map((cat, index) => {
           const isActive = selectedCategory === cat.slug || cat.subCategories?.some(sub => sub.slug === selectedCategory);
           const hasSub = cat.subCategories && cat.subCategories.length > 0;
           return (
@@ -298,8 +283,8 @@ export default function Navbar({
                 transition={{ delay: index * 0.05 }}
                 onClick={() => handleCategoryClick(cat.slug)}
                 className={cn(
-                  "hover:text-brand-red dark:hover:text-white transition-all relative group flex items-center gap-1",
-                  isActive ? "text-brand-black dark:text-white font-extrabold" : "text-gray-400 dark:text-gray-500"
+                  "relative flex items-center gap-1 transition-all group hover:text-brand-red dark:hover:text-white",
+                  isActive ? "font-extrabold text-brand-black dark:text-white" : "text-gray-500 dark:text-gray-500"
                 )}
               >
                 {cat.slug === 'tersimpan' && (
@@ -313,19 +298,19 @@ export default function Navbar({
                 )}
                 <span>{cat.name}</span>
                 {cat.slug === 'tersimpan' && savedArticlesCount > 0 && (
-                  <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-brand-red px-1.5 py-0.5 text-[8px] font-black tracking-normal text-white">
+                  <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-brand-red px-1.5 py-0.5 text-[9px] font-black tracking-normal text-white">
                     {savedArticlesCount}
                   </span>
                 )}
                 {isActive && (
                   <motion.span 
                     layoutId="activeCategoryLine"
-                    className="absolute -bottom-1 left-0 h-[3px] bg-brand-red w-full"
+                    className="absolute -bottom-[1.05rem] left-0 h-[3px] w-full bg-brand-red"
                     transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                   />
                 )}
                 {!isActive && (
-                  <span className="absolute -bottom-1 left-0 h-[3px] bg-brand-red w-0 transition-all duration-300 group-hover:w-full" />
+                  <span className="absolute -bottom-[1.05rem] left-0 h-[3px] w-0 bg-brand-red transition-all duration-300 group-hover:w-full" />
                 )}
               </motion.button>
 
@@ -336,7 +321,7 @@ export default function Navbar({
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
                     transition={{ duration: 0.15, ease: "easeOut" }}
-                    className="absolute top-full left-1/2 -translate-x-1/2 mt-1 z-50 min-w-[200px] bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-gray-150 dark:border-white/10 shadow-[0_12px_40px_rgba(0,0,0,0.12)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.4)] rounded-xl p-2 flex flex-col gap-0.5"
+                    className="absolute left-1/2 top-full z-50 mt-1 flex min-w-[220px] -translate-x-1/2 flex-col gap-0.5 rounded-2xl border border-black/5 bg-white/95 p-2 shadow-[0_12px_40px_rgba(0,0,0,0.12)] backdrop-blur-md dark:border-white/10 dark:bg-slate-900/95 dark:shadow-[0_12px_40px_rgba(0,0,0,0.4)]"
                   >
                     {cat.subCategories?.map((sub) => {
                       const isSubActive = selectedCategory === sub.slug;
@@ -349,7 +334,7 @@ export default function Navbar({
                             setHoveredCategory(null);
                           }}
                           className={cn(
-                            "px-4 py-2 text-left rounded-lg text-[11px] font-medium hover:bg-gray-50 dark:hover:bg-white/5 transition-colors flex items-center justify-between group/sub",
+                            "group/sub flex items-center justify-between rounded-xl px-4 py-2 text-left text-[11px] font-medium transition-colors hover:bg-gray-50 dark:hover:bg-white/5",
                             isSubActive ? "text-brand-red bg-brand-red/5" : "text-gray-600 dark:text-gray-400 hover:text-brand-red dark:hover:text-white"
                           )}
                         >
@@ -366,22 +351,24 @@ export default function Navbar({
               </AnimatePresence>
             </div>
           );
-        })}
-      </nav>
+          })}
+        </Container>
+      </div>
 
-      {/* Mobile Navigation (Horizontal Scroll - Main Categories) */}
-      <nav className="md:hidden max-w-7xl mx-auto border-t border-gray-50 dark:border-white/5 flex gap-2 overflow-x-auto pb-3 pt-2 px-3 no-scrollbar">
-        {categories.map((cat) => {
+      <div className="border-t border-black/5 dark:border-white/5 md:hidden">
+        <Container className="md:hidden">
+          <nav className="flex gap-2 overflow-x-auto pb-3 pt-3 no-scrollbar">
+            {categories.map((cat) => {
           const isActive = selectedCategory === cat.slug || cat.subCategories?.some(sub => sub.slug === selectedCategory);
           return (
             <button
               key={cat.slug}
               onClick={() => handleCategoryClick(cat.slug)}
               className={cn(
-                "shrink-0 px-3 py-2 rounded-full text-[11px] font-semibold whitespace-nowrap border transition-all flex items-center gap-1",
+                "flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full border px-3 py-2 text-[12px] font-semibold transition-all",
                 isActive
                   ? "border-brand-red bg-brand-red/10 text-brand-red dark:text-white"
-                  : "border-gray-200 dark:border-white/10 text-brand-text-muted dark:text-gray-400"
+                  : "border-black/10 text-brand-text-muted dark:border-white/10 dark:text-gray-400"
               )}
             >
               {cat.slug === 'tersimpan' && (
@@ -392,41 +379,46 @@ export default function Navbar({
               )}
               <span>{cat.name}</span>
               {cat.slug === 'tersimpan' && savedArticlesCount > 0 && (
-                <span className="inline-flex min-w-4 items-center justify-center rounded-full bg-brand-red px-1 py-0.5 text-[8px] font-black tracking-normal text-white">
+                <span className="inline-flex min-w-4 items-center justify-center rounded-full bg-brand-red px-1 py-0.5 text-[9px] font-black tracking-normal text-white">
                   {savedArticlesCount}
                 </span>
               )}
             </button>
           );
-        })}
-      </nav>
+            })}
+          </nav>
+        </Container>
+      </div>
 
-      {/* Mobile Sub-Navigation (Horizontal Scroll) */}
       {(() => {
         const activeParent = categories.find(cat => 
           cat.slug === selectedCategory || cat.subCategories?.some(sub => sub.slug === selectedCategory)
         );
         if (activeParent && activeParent.subCategories && activeParent.subCategories.length > 0) {
           return (
-            <nav className="md:hidden max-w-7xl mx-auto flex gap-2 overflow-x-auto pb-3 pt-1.5 px-3 no-scrollbar border-t border-gray-50 dark:border-white/5 bg-gray-50/30 dark:bg-white/5">
-              {activeParent.subCategories.map((sub) => {
-                const isSubActive = selectedCategory === sub.slug;
-                return (
-                  <button
-                    key={sub.slug}
-                    onClick={() => handleCategoryClick(sub.slug)}
-                    className={cn(
-                      "shrink-0 px-2.5 py-1.5 rounded-lg text-[10px] font-semibold whitespace-nowrap transition-all",
-                      isSubActive
-                        ? "bg-brand-red text-white"
-                        : "bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400"
-                    )}
-                  >
-                    {sub.name}
-                  </button>
-                );
-              })}
-            </nav>
+            <div className="border-t border-black/5 bg-black/[0.02] md:hidden dark:border-white/5 dark:bg-white/[0.03]">
+              <Container className="md:hidden">
+                <nav className="flex gap-2 overflow-x-auto pb-3 pt-2 no-scrollbar">
+                  {activeParent.subCategories.map((sub) => {
+                    const isSubActive = selectedCategory === sub.slug;
+                    return (
+                      <button
+                        key={sub.slug}
+                        onClick={() => handleCategoryClick(sub.slug)}
+                        className={cn(
+                          "shrink-0 whitespace-nowrap rounded-xl px-3 py-1.5 text-[11px] font-semibold transition-all",
+                          isSubActive
+                            ? "bg-brand-red text-white"
+                            : "bg-black/[0.04] text-gray-600 dark:bg-white/5 dark:text-gray-400"
+                        )}
+                      >
+                        {sub.name}
+                      </button>
+                    );
+                  })}
+                </nav>
+              </Container>
+            </div>
           );
         }
         return null;

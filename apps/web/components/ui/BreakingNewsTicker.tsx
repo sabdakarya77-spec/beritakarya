@@ -16,17 +16,14 @@ export default function BreakingNewsTicker({
   ] 
 }: BreakingNewsTickerProps) {
   return (
-    <div className="bg-brand-black dark:bg-[#0c121e]/80 text-white dark:text-zinc-200 h-10 flex items-center overflow-hidden border-y border-gray-100 dark:border-white/5">
-      <div className="bg-brand-red h-full px-4 flex items-center gap-2 z-20 shrink-0 shadow-[4px_0_12px_rgba(0,0,0,0.15)]">
+    <div className="flex h-10 items-center overflow-hidden text-white">
+      <div className="flex h-full shrink-0 items-center gap-2 bg-brand-red px-4 shadow-[4px_0_12px_rgba(0,0,0,0.15)]">
         <Zap size={14} className="fill-white animate-pulse" />
-        <span className="text-[10px] font-black uppercase tracking-widest whitespace-nowrap">Breaking News</span>
+        <span className="whitespace-nowrap text-[10px] font-black uppercase tracking-[0.18em]">Breaking News</span>
       </div>
-      <div className="flex-1 h-full flex items-center overflow-hidden relative group">
-        {/* Left Gradient Fade */}
-        <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-brand-black dark:from-[#0c121e] to-transparent z-10 pointer-events-none" />
-        
-        {/* Right Gradient Fade */}
-        <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-brand-black dark:from-[#0c121e] to-transparent z-10 pointer-events-none" />
+      <div className="relative flex h-full flex-1 items-center overflow-hidden group">
+        <div className="pointer-events-none absolute bottom-0 left-0 top-0 z-10 w-16 bg-gradient-to-r from-brand-black to-transparent dark:from-black" />
+        <div className="pointer-events-none absolute bottom-0 right-0 top-0 z-10 w-16 bg-gradient-to-l from-brand-black to-transparent dark:from-black" />
 
         <motion.div 
           animate={{ x: ["0%", "-50%"] }}
@@ -35,20 +32,19 @@ export default function BreakingNewsTicker({
             repeat: Infinity, 
             ease: "linear" 
           }}
-          className="flex items-center h-full gap-12 whitespace-nowrap pl-16 pr-6 w-max"
+          className="flex h-full w-max items-center gap-12 whitespace-nowrap pl-16 pr-6"
         >
           {news.map((item, i) => (
             <div key={i} className="flex items-center gap-12">
-              <span className="text-xs font-bold tracking-tight hover:text-brand-red cursor-pointer transition-colors">
+              <span className="cursor-pointer text-[13px] font-semibold tracking-tight text-white/90 transition-colors hover:text-brand-red">
                 {item}
               </span>
               <span className="w-1.5 h-1.5 bg-brand-red rounded-full" />
             </div>
           ))}
-          {/* Duplicate for seamless loop */}
           {news.map((item, i) => (
             <div key={`dup-${i}`} className="flex items-center gap-12">
-              <span className="text-xs font-bold tracking-tight hover:text-brand-red cursor-pointer transition-colors">
+              <span className="cursor-pointer text-[13px] font-semibold tracking-tight text-white/90 transition-colors hover:text-brand-red">
                 {item}
               </span>
               <span className="w-1.5 h-1.5 bg-brand-red rounded-full" />

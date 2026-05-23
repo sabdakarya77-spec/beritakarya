@@ -10,6 +10,7 @@ import MobileMenu from './MobileMenu';
 import FullScreenSearch from '../ui/FullScreenSearch';
 import { CATEGORIES_CONFIG, CategoryItem } from '../../lib/constants';
 import { api } from '../../lib/api';
+import { Container } from './Container';
 
 interface PublicSiteLayoutProps {
   children: React.ReactNode;
@@ -58,14 +59,13 @@ export default function PublicSiteLayout({ children, siteConfig, initialCategory
 
   return (
     <div 
-      className="min-h-screen bg-gray-50 dark:bg-black transition-colors duration-500"
+      className="min-h-screen bg-[var(--bg-main)] transition-colors duration-500"
       style={{ '--brand-red': siteConfig.appearance?.primaryColor || '#e11d48' } as React.CSSProperties}
     >
-      {/* Container for Breaking News to keep it aligned at the very top */}
-      <div className="border-b border-gray-100 dark:border-white/5 bg-white dark:bg-black/20">
-        <div className="max-w-[1160px] mx-auto px-4 md:px-8 lg:px-10">
+      <div className="border-b border-black/5 bg-brand-black text-white shadow-[0_16px_32px_rgba(2,6,23,0.18)] dark:border-white/5 dark:bg-black">
+        <Container>
           <BreakingNewsTicker />
-        </div>
+        </Container>
       </div>
 
       <Navbar 

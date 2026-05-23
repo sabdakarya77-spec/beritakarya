@@ -16,7 +16,7 @@ The BeritaKarya Layout System provides a standardized, responsive container fram
 ## Core Principles
 
 1. **Mobile-First Responsive Design** - All layouts start at mobile (16px padding) and scale up
-2. **Consistent Container Widths** - Maximum content width of 1280px on ultra-wide screens
+2. **Consistent Container Widths** - Maximum content width of 1160px on ultra-wide screens
 3. **Optimal Reading Experience** - Dedicated content width (760px) for text-heavy pages
 4. **Bleed Capability** - Edge-to-edge sections for hero content and featured modules
 5. **Design Token System** - CSS custom properties for maintainable, themeable spacing
@@ -55,7 +55,7 @@ interface ContainerProps {
 
 | Size | Max Width | Use Case |
 |------|-----------|----------|
-| `default` | `80rem` (1280px) | Standard page layout, dashboards, multi-column content |
+| `default` | `72.5rem` (1160px) | Standard page layout, dashboards, multi-column content |
 | `content` | `47.5rem` (760px) | Article body, blog posts, reading-optimized content |
 | `full` | `100%` | Full-bleed images/videos that span edge-to-edge |
 
@@ -88,7 +88,7 @@ export default function Page() {
   return (
     <Container>
       <h1>Page Title</h1>
-      <p>Page content with consistent 1280px max-width and responsive padding.</p>
+      <p>Page content with consistent 1160px max-width and responsive padding.</p>
     </Container>
   )
 }
@@ -163,7 +163,7 @@ All spacing tokens are defined in `apps/web/app/globals.css`:
   --container-padding-desktop: 2.5rem; /* 40px */
 
   /* Container Max Widths */
-  --container-max-width: 80rem;       /* 1280px */
+  --container-max-width: 72.5rem;     /* 1160px */
   --content-max-width: 47.5rem;       /* 760px */
 
   /* Bleeding Edge System */
@@ -244,8 +244,8 @@ Test all pages at these viewport widths:
 | Mobile S | 375px | 16px | 100% (no overflow) | ❌ No |
 | Mobile L | 425px | 16px | 100% | ❌ No |
 | Tablet | 768px | 32px | 100% | ❌ No |
-| Laptop | 1280px | 40px | 1280px max | ❌ No |
-| Ultra-wide | 1920px | 40px | 1280px centered | ❌ No |
+| Laptop | 1280px | 40px | 1160px max | ❌ No |
+| Ultra-wide | 1920px | 40px | 1160px centered | ❌ No |
 
 **How to check:**
 1. Open Chrome DevTools → Device Toolbar
