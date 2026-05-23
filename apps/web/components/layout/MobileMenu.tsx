@@ -66,7 +66,7 @@ export default function MobileMenu({
                 <h2 className="font-serif text-xl font-black tracking-tight text-brand-black dark:text-white">
                   <span className="text-brand-red">BERITA</span>KARYA
                 </h2>
-                <span className="text-[9px] font-bold text-brand-text-muted uppercase tracking-widest mt-0.5">
+                <span className="text-[10px] font-semibold text-brand-text-muted uppercase tracking-wide mt-0.5">
                   Menu Navigasi
                 </span>
               </Link>
@@ -82,7 +82,7 @@ export default function MobileMenu({
             <div className="flex-1 overflow-y-auto p-6 space-y-8 no-scrollbar">
               {/* Profile / Auth Section */}
               <section>
-                <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4">Akun Saya</h3>
+                <h3 className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-4">Akun Saya</h3>
                 {user ? (
                   <div className="bg-gray-50 dark:bg-white/5 rounded-2xl p-4">
                     <div className="flex items-center gap-3 mb-4">
@@ -99,14 +99,14 @@ export default function MobileMenu({
                         <Link 
                           href={`/${activeSite}/dashboard`} 
                           onClick={onClose}
-                          className="flex items-center justify-center gap-2 py-2 bg-white dark:bg-slate-900 border border-gray-100 dark:border-white/10 rounded-xl text-[10px] font-bold uppercase tracking-wider text-gray-600 dark:text-gray-300"
+                          className="flex items-center justify-center gap-2 py-2 bg-white dark:bg-slate-900 border border-gray-100 dark:border-white/10 rounded-xl text-[11px] font-semibold text-gray-600 dark:text-gray-300"
                         >
                           <User size={14} /> Dashboard
                         </Link>
                       )}
                       <button 
                         onClick={() => { logout(); onClose(); }}
-                        className="flex items-center justify-center gap-2 py-2 bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/20 rounded-xl text-[10px] font-bold uppercase tracking-wider text-brand-red"
+                        className="flex items-center justify-center gap-2 py-2 bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/20 rounded-xl text-[11px] font-semibold text-brand-red"
                       >
                         <LogOut size={14} /> Keluar
                       </button>
@@ -129,7 +129,7 @@ export default function MobileMenu({
 
               {/* Categories Section */}
               <section>
-                <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4">Kategori Berita</h3>
+                <h3 className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-4">Kategori Berita</h3>
                 <div className="grid grid-cols-1 gap-1">
                   {categories.map((cat) => {
                     const isActive = selectedCategory === cat.slug;
@@ -162,7 +162,7 @@ export default function MobileMenu({
 
               {/* Extras Section */}
               <section>
-                <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4">Lainnya</h3>
+                <h3 className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-4">Lainnya</h3>
                 <div className="space-y-4">
                   <Link
                     href="/pusat"

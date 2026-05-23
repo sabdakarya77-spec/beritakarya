@@ -30,10 +30,10 @@ export default function NewsCard({ article, variant = 'medium', site = 'pusat', 
   const readTime = article.readingTimeMin ? `${article.readingTimeMin} min baca` : "3 min baca";
   const badgeVariant = resolveArticleBadge(article);
   const categoryLabelClass = cn(
-    "text-[10px] font-black uppercase tracking-[0.14em] px-2 py-0.5 rounded-sm",
+    "text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-sm",
     getCategoryColor(article.category?.name)
   );
-  const calmMetaClass = "flex items-center gap-3 text-[10px] font-semibold text-brand-text-muted dark:text-gray-400";
+  const calmMetaClass = "flex items-center gap-3 text-[11px] text-brand-text-muted dark:text-gray-400";
 
   if (variant === 'large') {
     return (
@@ -66,7 +66,7 @@ export default function NewsCard({ article, variant = 'medium', site = 'pusat', 
             <div className="absolute bottom-0 left-0 p-8 pb-32 md:pb-16 md:p-16 w-full max-w-5xl">
               <div className="flex items-center gap-3 mb-6">
                 {badgeVariant && <EditorialBadge variant={badgeVariant} size="md" />}
-                <span className="inline-block px-3 py-1 text-[10px] uppercase font-black tracking-[0.14em] rounded-sm shadow-sm bg-brand-red text-white">
+                <span className="inline-block px-3 py-1 text-[10px] font-semibold uppercase tracking-wide rounded-sm shadow-sm bg-brand-red text-white">
                   {article.category?.name || 'UMUM'}
                 </span>
               </div>
@@ -166,7 +166,7 @@ export default function NewsCard({ article, variant = 'medium', site = 'pusat', 
               <h3 className="font-serif text-xl font-black leading-tight text-brand-black dark:text-white group-hover:text-brand-red transition-colors tracking-tight">
                 {article.title}
               </h3>
-              <div className="hidden md:flex items-center gap-4 mt-1 text-[10px] font-semibold text-brand-text-muted dark:text-gray-400">
+              <div className="hidden md:flex items-center gap-4 mt-1 text-[11px] text-brand-text-muted dark:text-gray-400">
                  <span className="flex items-center gap-1"><User size={10}/> {article.author?.name || 'Redaksi'}</span>
                  <span>{date}</span>
               </div>
@@ -219,11 +219,11 @@ export default function NewsCard({ article, variant = 'medium', site = 'pusat', 
             <p className="text-brand-text-muted dark:text-gray-400 text-sm line-clamp-2 leading-relaxed font-normal opacity-80">
               {excerpt}
             </p>
-            <div className="flex items-center gap-3 mt-2 text-[10px] font-semibold text-brand-text-muted dark:text-gray-400">
+            <div className="flex items-center gap-3 mt-2 text-[11px] text-brand-text-muted dark:text-gray-400">
                <div className="flex items-center gap-1.5">
-                 <div className="w-5 h-5 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center text-[10px] font-black">
-                   {article.author?.name?.[0] || 'R'}
-                 </div>
+                  <div className="w-5 h-5 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center text-[10px] font-semibold">
+                    {article.author?.name?.[0] || 'R'}
+                  </div>
                  <span>{article.author?.name || 'Redaksi'}</span>
                </div>
                <span className="opacity-30">•</span>

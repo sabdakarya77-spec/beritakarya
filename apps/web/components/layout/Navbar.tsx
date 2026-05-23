@@ -88,10 +88,10 @@ export default function Navbar({
     )}>
       {/* Top Bar */}
       <div className={cn(
-        "max-w-7xl mx-auto px-4 flex items-center justify-between uppercase text-[10px] font-bold text-brand-text-muted",
+        "max-w-7xl mx-auto px-4 flex items-center justify-between uppercase text-[11px] font-bold text-brand-text-muted",
         isArticlePage
-          ? "h-9 border-b border-gray-100/70 dark:border-white/5 tracking-[0.18em]"
-          : "h-10 border-b border-gray-50 tracking-[0.15em]"
+          ? "h-9 border-b border-gray-100/70 dark:border-white/5 tracking-wide"
+          : "h-10 border-b border-gray-50 tracking-wide"
       )}>
         <div className="flex items-center gap-5">
           {isArticlePage ? (
@@ -100,7 +100,7 @@ export default function Navbar({
                 <Globe size={11} /> BeritaKarya Edition
               </Link>
               <div className="hidden sm:block w-px h-3 bg-gray-200 dark:bg-white/10" />
-              <span className="text-[9px] font-black tracking-[0.2em] text-brand-text-muted">
+              <span className="text-[10px] font-semibold text-brand-text-muted">
                 {articleTopDate}
               </span>
             </>
@@ -169,7 +169,7 @@ export default function Navbar({
                 <span className="text-brand-black group-hover:opacity-90 transition-opacity">KARYA</span>
               </h1>
             )}
-            <span className="text-[10px] tracking-[0.35em] sm:tracking-[0.5em] font-bold text-brand-text-muted mt-1.5 uppercase transition-all group-hover:tracking-[0.6em] text-center max-w-[280px]">
+            <span className="text-[10px] tracking-wider sm:tracking-wide font-medium text-brand-text-muted mt-1.5 uppercase transition-all text-center max-w-[280px]">
               Jernih Melihat Nusantara
             </span>
           </Link>
@@ -210,10 +210,10 @@ export default function Navbar({
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
                 className="flex items-center gap-2 p-2 text-brand-text-muted hover:text-brand-black transition-colors"
               >
-                <div className="w-6 h-6 rounded-full bg-brand-red text-white flex items-center justify-center text-[10px] font-bold">
+                <div className="w-6 h-6 rounded-full bg-brand-red text-white flex items-center justify-center text-[11px] font-bold">
                   {user.name.charAt(0).toUpperCase()}
                 </div>
-                <span className="text-[10px] font-bold uppercase tracking-wider hidden sm:inline truncate max-w-[80px]">
+                <span className="text-[11px] font-semibold hidden sm:inline truncate max-w-[80px]">
                   {user.name.split(' ')[0]}
                 </span>
               </button>
@@ -228,7 +228,7 @@ export default function Navbar({
                   >
                     <div className="p-4 border-b border-gray-50 dark:border-white/5">
                       <p className="text-xs font-bold text-brand-black dark:text-white truncate">{user.name}</p>
-                      <p className="text-[10px] text-gray-500 truncate">{user.email}</p>
+                      <p className="text-[11px] text-gray-500 truncate">{user.email}</p>
                     </div>
                     <div className="p-2">
                       {['superadmin', 'wapimred', 'reporter', 'kontributor'].includes(user.role) && (
@@ -260,7 +260,7 @@ export default function Navbar({
               className="flex items-center gap-2 p-2 text-brand-text-muted hover:text-brand-black transition-colors"
             >
               <UserIcon size={20} strokeWidth={1.2} />
-              <span className="text-[10px] font-bold uppercase tracking-wider hidden sm:inline">Masuk</span>
+              <span className="text-[11px] font-semibold hidden sm:inline">Masuk</span>
             </Link>
           )}
           
@@ -349,7 +349,7 @@ export default function Navbar({
                             setHoveredCategory(null);
                           }}
                           className={cn(
-                            "px-4 py-2 text-left rounded-lg text-[10px] font-bold tracking-wider hover:bg-gray-50 dark:hover:bg-white/5 transition-colors flex items-center justify-between group/sub",
+                            "px-4 py-2 text-left rounded-lg text-[11px] font-medium hover:bg-gray-50 dark:hover:bg-white/5 transition-colors flex items-center justify-between group/sub",
                             isSubActive ? "text-brand-red bg-brand-red/5" : "text-gray-600 dark:text-gray-400 hover:text-brand-red dark:hover:text-white"
                           )}
                         >
@@ -378,7 +378,7 @@ export default function Navbar({
               key={cat.slug}
               onClick={() => handleCategoryClick(cat.slug)}
               className={cn(
-                "shrink-0 px-3 py-2 rounded-full text-[10px] font-bold uppercase tracking-wider whitespace-nowrap border transition-all flex items-center gap-1",
+                "shrink-0 px-3 py-2 rounded-full text-[11px] font-semibold whitespace-nowrap border transition-all flex items-center gap-1",
                 isActive
                   ? "border-brand-red bg-brand-red/10 text-brand-red dark:text-white"
                   : "border-gray-200 dark:border-white/10 text-brand-text-muted dark:text-gray-400"
@@ -416,7 +416,7 @@ export default function Navbar({
                     key={sub.slug}
                     onClick={() => handleCategoryClick(sub.slug)}
                     className={cn(
-                      "shrink-0 px-2.5 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-wider whitespace-nowrap transition-all",
+                      "shrink-0 px-2.5 py-1.5 rounded-lg text-[10px] font-semibold whitespace-nowrap transition-all",
                       isSubActive
                         ? "bg-brand-red text-white"
                         : "bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400"

@@ -76,7 +76,7 @@ export default function FullScreenSearch({
         >
           {/* Header Controls */}
           <div className="flex justify-between items-center w-full max-w-5xl mx-auto mb-16">
-            <span className="text-[11px] font-black uppercase tracking-[0.3em] text-brand-red animate-pulse flex items-center gap-2">
+            <span className="text-[11px] font-semibold uppercase tracking-wide text-brand-red flex items-center gap-2">
               <Zap size={14} className="fill-brand-red" /> Portal Search Center
             </span>
             <button
@@ -114,8 +114,8 @@ export default function FullScreenSearch({
               <div className="md:col-span-7 space-y-6">
                 {query.trim() ? (
                   <>
-                    <h4 className="text-[11px] font-black uppercase tracking-widest text-gray-400 border-b border-white/10 pb-2">
-                      Hasil Pencarian Instan ({results.length})
+                    <h4 className="text-[11px] font-semibold uppercase tracking-wide text-gray-400 border-b border-white/10 pb-2">
+                      Hasil Pencarian ({results.length})
                     </h4>
                     {results.length > 0 ? (
                       <div className="flex flex-col gap-4">
@@ -134,9 +134,9 @@ export default function FullScreenSearch({
                               />
                             )}
                             <div className="flex-1 min-w-0">
-                              <span className="text-[9px] font-black text-brand-red uppercase tracking-wider block mb-1">
-                                {art.category?.name || 'Umum'}
-                              </span>
+                  <span className="text-[10px] font-semibold text-brand-red uppercase tracking-wide block mb-1">
+                    {art.category?.name || 'Umum'}
+                  </span>
                               <h5 className="text-white font-bold text-sm leading-snug group-hover:text-brand-red transition-colors line-clamp-2">
                                 {art.title}
                               </h5>
@@ -161,7 +161,7 @@ export default function FullScreenSearch({
 
               {/* Right Column: Trending Topics */}
               <div className="md:col-span-5 space-y-6">
-                <h4 className="text-[11px] font-black uppercase tracking-widest text-gray-400 border-b border-white/10 pb-2 flex items-center gap-2">
+                <h4 className="text-[11px] font-semibold uppercase tracking-wide text-gray-400 border-b border-white/10 pb-2 flex items-center gap-2">
                   <TrendingUp size={14} className="text-brand-red" /> Topik Populer Hari Ini
                 </h4>
                 <div className="flex flex-wrap gap-3">

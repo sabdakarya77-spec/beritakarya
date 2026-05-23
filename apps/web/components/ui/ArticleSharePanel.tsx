@@ -46,7 +46,7 @@ export default function ArticleSharePanel({ title, url }: ArticleSharePanelProps
     <div className="bg-slate-900 rounded-2xl p-8 text-white shadow-xl relative overflow-hidden">
       <div className="absolute -top-10 -right-10 w-32 h-32 bg-brand-red/15 blur-3xl rounded-full" />
       <div className="relative">
-        <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-brand-red mb-8 border-b border-white/5 pb-3">
+        <h4 className="text-[11px] font-semibold uppercase tracking-wide text-brand-red mb-8 border-b border-white/5 pb-3">
           Bagikan Post
         </h4>
 
@@ -60,7 +60,7 @@ export default function ArticleSharePanel({ title, url }: ArticleSharePanelProps
               className={`group flex flex-col items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-5 transition-all ${item.hoverClassName}`}
             >
               <item.Icon className={`${item.iconClassName} text-base transition-transform group-hover:scale-110`} />
-              <span className="text-[9px] font-black uppercase tracking-[0.16em] text-white/90">{item.label}</span>
+              <span className="text-[10px] font-semibold uppercase tracking-wide text-white/90">{item.label}</span>
             </a>
           ))}
 
@@ -74,7 +74,7 @@ export default function ArticleSharePanel({ title, url }: ArticleSharePanelProps
             ) : (
               <Copy size={18} className="text-white transition-transform group-hover:scale-110" />
             )}
-            <span className="text-[9px] font-black uppercase tracking-[0.16em] text-white/90">
+            <span className="text-[10px] font-semibold uppercase tracking-wide text-white/90">
               {isCopied ? 'Tersalin' : 'Copy Link'}
             </span>
           </button>
@@ -84,7 +84,7 @@ export default function ArticleSharePanel({ title, url }: ArticleSharePanelProps
           href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-5 inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.16em] text-white/55 hover:text-white transition-colors"
+          className="mt-5 inline-flex items-center gap-2 text-[11px] font-medium tracking-wide text-white/55 hover:text-white transition-colors"
         >
           Bagikan cepat
           <ArrowUpRight size={14} />

@@ -110,8 +110,8 @@ export default function MobileBottomNav({ site = 'pusat', onSearchClick, onMenuC
                 className={isActive ? 'text-brand-red stroke-[2.5]' : 'text-gray-400 dark:text-gray-500 hover:text-brand-red transition-colors'}
               />
               <span
-                className={`text-[10px] font-black uppercase tracking-wider ${
-                  isActive ? 'text-brand-red font-black' : 'text-gray-400 dark:text-gray-500'
+                className={`text-[11px] font-semibold ${
+                  isActive ? 'text-brand-red' : 'text-gray-400 dark:text-gray-500'
                 }`}
               >
                 {item.label}

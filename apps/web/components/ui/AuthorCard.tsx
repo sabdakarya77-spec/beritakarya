@@ -32,12 +32,12 @@ export default function AuthorCard({ author, site, variant = 'card', className }
   if (variant === 'inline') {
     return (
       <div className={cn('flex items-center gap-3', className)}>
-        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-red to-red-800 flex items-center justify-center text-white text-[10px] font-black">
+        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-red to-red-800 flex items-center justify-center text-white text-[11px] font-semibold">
           {initials}
         </div>
         <div className="flex flex-col min-w-0">
           <span className="text-xs font-bold text-brand-black dark:text-white truncate">{author.name}</span>
-          <span className="text-[10px] text-gray-400 uppercase tracking-widest font-bold">
+          <span className="text-[10px] text-gray-400 font-medium">
             {ROLE_LABELS[author.role || 'reporter'] || author.role}
           </span>
         </div>
@@ -53,16 +53,16 @@ export default function AuthorCard({ author, site, variant = 'card', className }
         </div>
         <div className="flex-1 min-w-0">
           <h4 className="text-sm font-black text-brand-black dark:text-white uppercase tracking-tight">{author.name}</h4>
-          <p className="text-[10px] font-bold text-brand-red uppercase tracking-widest mt-0.5">
+          <p className="text-[10px] font-semibold text-brand-red tracking-wide mt-0.5">
             {ROLE_LABELS[author.role || 'reporter'] || author.role}
           </p>
           {author.email && (
-            <p className="text-[10px] text-gray-400 mt-2 flex items-center gap-1 font-medium">
+            <p className="text-[11px] text-gray-400 mt-2 flex items-center gap-1">
               <Mail size={10} /> {author.email}
             </p>
           )}
           {typeof author.articleCount === 'number' && (
-            <p className="text-[10px] text-gray-400 mt-1 flex items-center gap-1 font-medium">
+            <p className="text-[11px] text-gray-400 mt-1 flex items-center gap-1">
               <FileText size={10} /> {author.articleCount} post ditulis
             </p>
           )}
@@ -71,7 +71,7 @@ export default function AuthorCard({ author, site, variant = 'card', className }
       <div className="mt-4 pt-4 border-t border-gray-50 dark:border-white/5">
         <Link
           href={`/${site}/dashboard/users`}
-          className="text-[10px] font-black uppercase tracking-widest text-brand-red hover:underline"
+          className="text-[10px] font-semibold tracking-wide text-brand-red hover:underline"
         >
           Lihat Profil →
         </Link>

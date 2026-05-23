@@ -53,7 +53,7 @@ export function AISidebar() {
         className="fixed right-6 bottom-6 text-[10px] font-black uppercase tracking-[0.2em] px-6 py-3.5 rounded-xl shadow-2xl shadow-black/40 flex items-center gap-3 transition-all duration-300 z-40 border border-white/10 hover:bg-brand-red hover:scale-105 active:scale-95 group"
         style={{ backgroundColor: '#0f172a', color: '#ffffff' }}
       >
-        <Sparkles size={14} className="text-amber-400 group-hover:text-white animate-pulse" />
+        <Sparkles size={14} className="text-amber-400 group-hover:text-white" />
         <span className="text-white">Asisten AI</span>
       </button>
     )
@@ -65,7 +65,7 @@ export function AISidebar() {
       <div className="flex items-center justify-between px-6 py-4 border-b border-gray-50 dark:border-white/5 bg-brand-surface dark:bg-[#0d1525]">
         <div className="flex items-center gap-2">
           <Sparkles size={18} className="text-brand-red" />
-          <span className="text-xs font-black uppercase tracking-[0.2em] text-brand-black dark:text-white">Asisten AI Redaksi</span>
+          <span className="text-[11px] font-semibold uppercase tracking-wide text-brand-black dark:text-white">Asisten AI Redaksi</span>
         </div>
         <button
           onClick={() => setOpen(false)}
@@ -143,9 +143,9 @@ export function AISidebar() {
 
       {/* Footer */}
       <div className="px-6 py-4 border-t border-gray-50 dark:border-white/5 bg-brand-surface dark:bg-[#0d1525]">
-        <p className="text-[9px] font-bold text-gray-400 dark:text-gray-500 text-center uppercase tracking-widest leading-relaxed">
-          AI bersifat asistif — Selalu tinjau konten sebelum dipublikasikan demi menjaga integritas jurnalistik.
-        </p>
+          <p className="text-[10px] text-gray-400 dark:text-gray-500 text-center leading-relaxed">
+            AI bersifat asistif — Selalu tinjau konten sebelum dipublikasikan demi menjaga integritas jurnalistik.
+          </p>
       </div>
     </div>
   )

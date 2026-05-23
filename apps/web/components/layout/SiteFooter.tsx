@@ -109,27 +109,27 @@ export default function SiteFooter({ siteConfig, categories }: SiteFooterProps) 
           </div>
 
           <div>
-            <h5 className="text-[10px] font-black uppercase tracking-[0.2em] mb-5 text-brand-red">Kategori</h5>
+            <h5 className="text-[10px] font-black uppercase tracking-wider mb-5 text-brand-red">Kategori</h5>
             <div className="flex flex-wrap gap-1.5">
               {categories.filter(c => c.slug !== 'terbaru' && c.slug !== 'tersimpan').slice(0, 12).map((cat) => (
                 <Link
                   key={cat.slug}
                   href={`/${siteConfig.id}?cat=${encodeURIComponent(cat.slug)}`}
-                  className="px-2.5 py-1 bg-gray-100 dark:bg-white/5 hover:bg-brand-red/10 hover:text-brand-red text-[9px] font-black uppercase tracking-wider rounded-full transition-all"
+                  className="px-2.5 py-1 bg-gray-100 dark:bg-white/5 hover:bg-brand-red/10 hover:text-brand-red text-[10px] font-semibold uppercase tracking-wide rounded-full transition-all"
                 >
                   {cat.name}
                 </Link>
               ))}
             </div>
             {categories.filter(c => c.slug !== 'terbaru' && c.slug !== 'tersimpan').length > 12 && (
-              <p className="text-[9px] text-brand-text-muted mt-3 opacity-60">
+              <p className="text-[10px] text-brand-text-muted mt-3 opacity-60">
                 +{categories.filter(c => c.slug !== 'terbaru' && c.slug !== 'tersimpan').length - 12} kategori lainnya
               </p>
             )}
           </div>
 
           <div>
-            <h5 className="text-[10px] font-black uppercase tracking-[0.2em] mb-5 text-brand-red">Informasi</h5>
+            <h5 className="text-[10px] font-black uppercase tracking-wider mb-5 text-brand-red">Informasi</h5>
             <ul className="text-brand-text-muted text-xs space-y-3">
               {infoLinks.map((item) => (
                 <li key={item.href}>
@@ -142,14 +142,14 @@ export default function SiteFooter({ siteConfig, categories }: SiteFooterProps) 
           </div>
 
           <div>
-            <h5 className="text-[10px] font-black uppercase tracking-[0.2em] mb-5 text-brand-red">Dukungan</h5>
+            <h5 className="text-[10px] font-black uppercase tracking-wider mb-5 text-brand-red">Dukungan</h5>
             <div className="flex flex-col gap-3">
               <p className="text-brand-text-muted text-xs leading-relaxed">
                 Bantu kami menjaga independensi jurnalisme dengan menjadi anggota.
               </p>
               <a
                 href={`mailto:${supportEmail}?subject=${encodeURIComponent(`Dukungan untuk ${siteConfig?.name || 'BeritaKarya'}`)}`}
-                className="inline-flex items-center justify-center bg-brand-red text-white py-2.5 px-5 text-[10px] font-black uppercase tracking-widest hover:bg-brand-black dark:hover:bg-white dark:hover:text-brand-black transition-all rounded-xl"
+                className="inline-flex items-center justify-center bg-brand-red text-white py-2.5 px-5 text-[11px] font-semibold uppercase tracking-wide hover:bg-brand-black dark:hover:bg-white dark:hover:text-brand-black transition-all rounded-xl"
               >
                 Dukung Kami
               </a>
@@ -158,10 +158,10 @@ export default function SiteFooter({ siteConfig, categories }: SiteFooterProps) 
         </div>
 
         <div className="border-t border-gray-100 dark:border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-          <span suppressHydrationWarning className="text-[9px] uppercase font-black tracking-[0.3em] text-brand-text-muted opacity-60">
+          <span suppressHydrationWarning className="text-[10px] uppercase font-black tracking-widest text-brand-text-muted opacity-60">
             {siteConfig?.footerText || `© ${new Date().getFullYear()} BERITA KARYA. ALL RIGHTS RESERVED.`}
           </span>
-          <div className="flex gap-6 text-[9px] uppercase font-black tracking-widest text-brand-text-muted opacity-60">
+          <div className="flex gap-6 text-[10px] uppercase font-black tracking-widest text-brand-text-muted opacity-60">
             {legalLinks.map((item) => (
               <Link key={item.href} href={item.href} className="hover:text-brand-red">
                 {item.label}

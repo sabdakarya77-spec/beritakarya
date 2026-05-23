@@ -33,8 +33,8 @@ export default function AISummary({ title, content, isVisible = false }: AISumma
         </button>
 
         <div className="flex items-center gap-2 mb-4">
-          <Sparkles size={18} className="text-brand-red animate-pulse" />
-          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white">AI Assistant Summary</span>
+          <Sparkles size={18} className="text-brand-red" />
+          <span className="text-[11px] font-semibold uppercase tracking-wide text-white">AI Assistant Summary</span>
         </div>
 
         <h4 className="text-white font-serif text-lg font-bold mb-3 leading-tight">
@@ -45,7 +45,7 @@ export default function AISummary({ title, content, isVisible = false }: AISumma
           {content}
         </p>
 
-        <button className="text-[10px] font-bold uppercase tracking-widest text-brand-red hover:underline">
+        <button className="text-[11px] font-semibold text-brand-red hover:underline">
           Baca Selengkapnya
         </button>
       </motion.div>

@@ -178,11 +178,8 @@ export function AIDashboard() {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-32 space-y-4">
-        <div className="relative">
-          <div className="w-12 h-12 border-4 border-brand-red border-t-transparent rounded-full animate-spin" />
-          <Sparkles className="absolute inset-0 m-auto text-amber-400 animate-pulse" size={16} />
-        </div>
-        <p className="text-xs font-black text-gray-400 uppercase tracking-[0.2em] animate-pulse">Menghubungkan ke AI Command Center...</p>
+        <div className="w-12 h-12 border-4 border-brand-red border-t-transparent rounded-full animate-spin" />
+        <p className="text-[11px] font-medium text-gray-400">Menghubungkan ke AI Command Center...</p>
       </div>
     )
   }
@@ -208,7 +205,7 @@ export function AIDashboard() {
           <div>
             <h1 className="text-2xl font-black text-white tracking-tight flex items-center gap-2">
               AI Command Center
-              <span className="text-[9px] px-2 py-0.5 bg-brand-red/10 text-brand-red rounded-md font-bold uppercase tracking-widest border border-brand-red/20">Active</span>
+              <span className="text-[10px] px-2 py-0.5 bg-brand-red/10 text-brand-red rounded-md font-bold uppercase tracking-wider border border-brand-red/20">Active</span>
             </h1>
             <p className="text-[11px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">
               Pemantauan kuota, biaya, dan performa kecerdasan buatan <strong className="text-brand-red">GPT-4o</strong>
@@ -218,9 +215,9 @@ export function AIDashboard() {
         
         <button 
           onClick={fetchData} 
-          className="flex items-center gap-2.5 px-5 py-2.5 bg-[#0f172a] hover:bg-brand-red border border-white/5 hover:border-red-400/30 text-white text-[10px] font-black uppercase tracking-wider rounded-xl transition-all duration-300 shadow-lg shadow-black/40 group active:scale-95"
+          className="flex items-center gap-2.5 px-5 py-2.5 bg-[#0f172a] hover:bg-brand-red border border-white/5 hover:border-red-400/30 text-white text-[11px] font-semibold rounded-xl transition-all duration-300 shadow-lg shadow-black/40 group active:scale-95"
         >
-          <Activity size={14} className="text-brand-red group-hover:text-white animate-pulse" />
+          <Activity size={14} className="text-brand-red group-hover:text-white" />
           Refresh Stats
         </button>
       </div>
@@ -232,7 +229,7 @@ export function AIDashboard() {
             key={tab}
             onClick={() => setActiveTab(tab)}
             className={cn(
-              "flex-1 py-3 text-[10px] font-black uppercase tracking-[0.2em] rounded-xl transition-all duration-300",
+              "flex-1 py-3 text-[11px] font-semibold rounded-xl transition-all duration-300",
               activeTab === tab
                 ? "bg-brand-red text-white shadow-lg shadow-brand-red/20"
                 : "text-gray-400 hover:text-white hover:bg-white/[0.02]"
@@ -257,11 +254,11 @@ export function AIDashboard() {
             <div className="bg-[#0c121e]/40 backdrop-blur-md border border-white/5 rounded-2xl p-6 shadow-xl relative overflow-hidden group hover:border-emerald-500/20 transition-all duration-300">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Total Pengeluaran</p>
+                  <p className="text-[11px] font-semibold text-gray-500">Total Pengeluaran</p>
                   <p className="text-3xl font-black text-emerald-400 mt-2 tracking-tight">
                     {formatCurrency(usageData?.overall.totalCost || 0)}
                   </p>
-                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-1.5 flex items-center gap-1.5">
+                  <p className="text-[11px] text-gray-400 mt-1.5 flex items-center gap-1.5">
                     <Activity size={10} className="text-emerald-500" />
                     {formatNumber(usageData?.overall.totalRequests || 0)} Permintaan
                   </p>
@@ -276,11 +273,11 @@ export function AIDashboard() {
             <div className="bg-[#0c121e]/40 backdrop-blur-md border border-white/5 rounded-2xl p-6 shadow-xl relative overflow-hidden group hover:border-blue-500/20 transition-all duration-300">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Pengguna Aktif</p>
+                  <p className="text-[11px] font-semibold text-gray-500">Pengguna Aktif</p>
                   <p className="text-3xl font-black text-blue-400 mt-2 tracking-tight">
                     {usageData?.dailyTrend.reduce((sum, d) => sum + d.activeUsers, 0) || 0}
                   </p>
-                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-1.5 flex items-center gap-1.5">
+                  <p className="text-[11px] text-gray-400 mt-1.5 flex items-center gap-1.5">
                     <Users size={10} className="text-blue-500" />
                     30 Hari Terakhir
                   </p>
@@ -295,12 +292,12 @@ export function AIDashboard() {
             <div className="bg-[#0c121e]/40 backdrop-blur-md border border-white/5 rounded-2xl p-6 shadow-xl relative overflow-hidden group hover:border-amber-500/20 transition-all duration-300">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Waktu Respons Rata-rata</p>
+                  <p className="text-[11px] font-semibold text-gray-500">Waktu Respons Rata-rata</p>
                   <p className="text-3xl font-black text-amber-400 mt-2 tracking-tight">
                     {Math.round(usageData?.overall.avgLatency || 0)}ms
                   </p>
-                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-1.5 flex items-center gap-1.5">
-                    <Clock size={10} className="text-amber-500 animate-pulse" />
+                  <p className="text-[11px] text-gray-400 mt-1.5 flex items-center gap-1.5">
+                    <Clock size={10} className="text-amber-500" />
                     Respon Sangat Cepat
                   </p>
                 </div>
@@ -314,11 +311,11 @@ export function AIDashboard() {
             <div className="bg-[#0c121e]/40 backdrop-blur-md border border-white/5 rounded-2xl p-6 shadow-xl relative overflow-hidden group hover:border-purple-500/20 transition-all duration-300">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Token Diproses</p>
+                  <p className="text-[11px] font-semibold text-gray-500">Token Diproses</p>
                   <p className="text-3xl font-black text-purple-400 mt-2 tracking-tight">
                     {formatNumber(usageData?.overall.totalTokens || 0)}
                   </p>
-                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-1.5 flex items-center gap-1.5">
+                  <p className="text-[11px] text-gray-400 mt-1.5 flex items-center gap-1.5">
                     <Zap size={10} className="text-purple-500" />
                     Input + Output
                   </p>
@@ -338,7 +335,7 @@ export function AIDashboard() {
             <div className="bg-[#0c121e]/40 backdrop-blur-md border border-white/5 rounded-2xl p-6 shadow-2xl space-y-6">
               <div>
                 <h3 className="text-xs font-black uppercase tracking-wider text-white">Distribusi Biaya per Fitur</h3>
-                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-0.5">Analisis Alokasi Anggaran AI</p>
+                <p className="text-[11px] text-gray-500 mt-0.5">Analisis Alokasi Anggaran AI</p>
               </div>
               
               <div className="space-y-4">
@@ -355,7 +352,7 @@ export function AIDashboard() {
                           style={{ width: `${(feature.cost / Math.max(...(usageData?.byFeature || []).map(f => f.cost || 1))) * 100}%` }}
                         />
                       </div>
-                      <span className="text-[9px] text-gray-500 font-bold tracking-widest uppercase">
+                      <span className="text-[10px] text-gray-500">
                         {feature.requests} Req
                       </span>
                     </div>
@@ -368,7 +365,7 @@ export function AIDashboard() {
             <div className="bg-[#0c121e]/40 backdrop-blur-md border border-white/5 rounded-2xl p-6 shadow-2xl space-y-6">
               <div>
                 <h3 className="text-xs font-black uppercase tracking-wider text-white">Status Anggaran per Peran</h3>
-                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-0.5">Kontrol Pengeluaran Jurnalistik</p>
+                <p className="text-[11px] text-gray-500 mt-0.5">Kontrol Pengeluaran Jurnalistik</p>
               </div>
               
               <div className="space-y-5">
@@ -381,7 +378,7 @@ export function AIDashboard() {
                     <div className="flex justify-between items-center text-xs font-extrabold">
                       <span className="capitalize text-gray-300">{budget.role}</span>
                       <span className={cn(
-                        "px-2.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider border",
+                        "px-2.5 py-0.5 rounded text-[10px] font-semibold border",
                         pct > 90 
                           ? "bg-rose-500/10 text-rose-400 border-rose-500/20" 
                           : pct > 70 
@@ -421,14 +418,14 @@ export function AIDashboard() {
           {/* Top Users Table */}
           <div className="bg-[#0c121e]/40 backdrop-blur-md border border-white/5 rounded-2xl p-6 shadow-2xl space-y-6">
             <div>
-              <h3 className="text-xs font-black uppercase tracking-wider text-white">Reporter/Kontributor & Pengguna AI Teraktif</h3>
-              <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-0.5">Analisis Penggunaan Individu</p>
+              <h3 className="text-xs font-bold uppercase tracking-wide text-white">Reporter & Kontributor AI</h3>
+              <p className="text-[11px] text-gray-500 mt-0.5">Analisis Penggunaan Individu</p>
             </div>
             
             <div className="overflow-x-auto">
               <table className="w-full text-xs text-left border-collapse">
                 <thead>
-                  <tr className="border-b border-white/5 text-gray-500 font-black uppercase tracking-widest text-[9px]">
+                  <tr className="border-b border-white/5 text-gray-500 font-semibold uppercase tracking-wide text-[10px]">
                     <th className="py-3 px-4">Reporter / Pengguna</th>
                     <th className="py-3 px-4">Role</th>
                     <th className="py-3 px-4 text-right">Total Permintaan</th>
@@ -445,7 +442,7 @@ export function AIDashboard() {
                           </div>
                           <div>
                             <p className="font-extrabold text-gray-200">{user.name}</p>
-                            <p className="text-[9px] text-gray-500 font-semibold">{user.email}</p>
+                              <p className="text-[10px] text-gray-500">{user.email}</p>
                           </div>
                         </div>
                       </td>
