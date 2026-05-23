@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { MapPin, Mail, MessageCircle } from 'lucide-react';
-import { SiFacebook, SiX, SiInstagram, SiYoutube } from 'react-icons/si';
+import { SiFacebook, SiInstagram, SiTelegram, SiTiktok, SiWhatsapp, SiX, SiYoutube } from 'react-icons/si';
 
 import { CategoryItem } from '../../lib/constants';
 
@@ -25,6 +25,15 @@ export default function SiteFooter({ siteConfig, categories }: SiteFooterProps) 
     { href: `/${activeSite}/p/ethics`, label: 'Kode Etik' },
     { href: `/${activeSite}/p/editorial`, label: 'Redaksi' },
   ];
+  const socialLinks = [
+    { href: siteConfig?.socialLinks?.whatsapp, Icon: SiWhatsapp },
+    { href: siteConfig?.socialLinks?.facebook, Icon: SiFacebook },
+    { href: siteConfig?.socialLinks?.tiktok, Icon: SiTiktok },
+    { href: siteConfig?.socialLinks?.telegram, Icon: SiTelegram },
+    { href: siteConfig?.socialLinks?.youtube, Icon: SiYoutube },
+    { href: siteConfig?.socialLinks?.twitter, Icon: SiX },
+    { href: siteConfig?.socialLinks?.instagram, Icon: SiInstagram },
+  ].filter((item) => Boolean(item.href));
 
   return (
     <footer className="bg-white dark:bg-black/90 text-brand-text mt-32 pt-16 pb-12 border-t border-gray-100 dark:border-white/5 transition-colors duration-500">
@@ -57,26 +66,17 @@ export default function SiteFooter({ siteConfig, categories }: SiteFooterProps) 
               )}
             </div>
             <div className="flex gap-2">
-              {siteConfig?.socialLinks?.facebook && (
-                <a href={siteConfig.socialLinks.facebook} target="_blank" rel="noopener noreferrer" className="w-9 h-9 flex items-center justify-center bg-gray-100 dark:bg-white/5 hover:bg-brand-red transition-colors rounded-xl group">
-                  <SiFacebook size={14} className="text-brand-text-muted group-hover:text-white" />
+              {socialLinks.map(({ href, Icon }, index) => (
+                <a
+                  key={`${href}-${index}`}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-9 h-9 flex items-center justify-center bg-gray-100 dark:bg-white/5 hover:bg-brand-red transition-colors rounded-xl group"
+                >
+                  <Icon size={14} className="text-brand-text-muted group-hover:text-white" />
                 </a>
-              )}
-              {siteConfig?.socialLinks?.twitter && (
-                <a href={siteConfig.socialLinks.twitter} target="_blank" rel="noopener noreferrer" className="w-9 h-9 flex items-center justify-center bg-gray-100 dark:bg-white/5 hover:bg-brand-red transition-colors rounded-xl group">
-                  <SiX size={14} className="text-brand-text-muted group-hover:text-white" />
-                </a>
-              )}
-              {siteConfig?.socialLinks?.instagram && (
-                <a href={siteConfig.socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="w-9 h-9 flex items-center justify-center bg-gray-100 dark:bg-white/5 hover:bg-brand-red transition-colors rounded-xl group">
-                  <SiInstagram size={14} className="text-brand-text-muted group-hover:text-white" />
-                </a>
-              )}
-              {siteConfig?.socialLinks?.youtube && (
-                <a href={siteConfig.socialLinks.youtube} target="_blank" rel="noopener noreferrer" className="w-9 h-9 flex items-center justify-center bg-gray-100 dark:bg-white/5 hover:bg-brand-red transition-colors rounded-xl group">
-                  <SiYoutube size={14} className="text-brand-text-muted group-hover:text-white" />
-                </a>
-              )}
+              ))}
             </div>
           </div>
 

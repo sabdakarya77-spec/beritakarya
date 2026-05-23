@@ -1,10 +1,11 @@
 'use client';
 
 import { Link as LinkIcon } from 'lucide-react';
-import { SiFacebook, SiWhatsapp, SiX } from 'react-icons/si';
 import { useState, useEffect } from 'react';
 import { cn } from '../../lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
+import { SiFacebook, SiTelegram, SiWhatsapp, SiX } from 'react-icons/si';
+import { getArticleShareItems } from '../../lib/articleShare';
 
 interface ShareSidebarProps {
   title: string;
@@ -25,33 +26,25 @@ export default function ShareSidebar({ title, url }: ShareSidebarProps) {
   }, []);
 
   const shareUrl = url || (typeof window !== 'undefined' ? window.location.href : '');
+  const shareItems = getArticleShareItems(title, shareUrl);
+  const iconMap = {
+    Facebook: SiFacebook,
+    X: SiX,
+    Telegram: SiTelegram,
+    WhatsApp: SiWhatsapp,
+  } as const;
+  const hoverMap = {
+    Facebook: 'hover:text-[#1877F2]',
+    X: 'hover:text-white',
+    Telegram: 'hover:text-[#229ED9]',
+    WhatsApp: 'hover:text-[#25D366]',
+  } as const;
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(shareUrl);
     setIsCopied(true);
     setTimeout(() => setIsCopied(false), 2000);
   };
-
-  const shareLinks = [
-    { 
-      name: 'Facebook', 
-      icon: SiFacebook, 
-      color: 'hover:text-[#1877F2]',
-      href: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`
-    },
-    { 
-      name: 'X', 
-      icon: SiX, 
-      color: 'hover:text-white',
-      href: `https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(shareUrl)}`
-    },
-    { 
-      name: 'WhatsApp', 
-      icon: SiWhatsapp, 
-      color: 'hover:text-[#25D366]',
-      href: `https://wa.me/?text=${encodeURIComponent(title + ' ' + shareUrl)}`
-    }
-  ];
 
   return (
     <AnimatePresence>
@@ -63,18 +56,22 @@ export default function ShareSidebar({ title, url }: ShareSidebarProps) {
           className="fixed left-8 top-1/2 -translate-y-1/2 hidden xl:flex flex-col items-center gap-4 z-40 bg-white p-3 border border-gray-100 shadow-sm rounded-full"
         >
           <span className="text-[8px] font-black uppercase tracking-[0.2em] text-gray-400 -rotate-90 mb-4 h-12 flex items-center">Share</span>
-          {shareLinks.map((link) => (
+          {shareItems.map((item) => {
+            const Icon = iconMap[item.label];
+
+            return (
             <a 
-              key={link.name}
-              href={link.href}
+              key={item.label}
+              href={item.href}
               target="_blank"
               rel="noopener noreferrer"
-              className={cn("p-3 text-gray-400 transition-colors rounded-full hover:bg-gray-50", link.color)}
-              title={link.name}
+              className={cn("p-3 text-gray-400 transition-colors rounded-full hover:bg-gray-50", hoverMap[item.label])}
+              title={`Bagikan ke ${item.label}`}
             >
-              <link.icon size={18} />
+              <Icon size={18} />
             </a>
-          ))}
+            );
+          })}
           <button 
             onClick={copyToClipboard}
             className={cn(

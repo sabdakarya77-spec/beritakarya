@@ -8,10 +8,13 @@ export interface SiteConfig {
   ogImageUrl?: string
   footerText?: string
   socialLinks?: {
+    whatsapp?: string
     facebook?: string
     twitter?: string
     instagram?: string
     youtube?: string
+    telegram?: string
+    tiktok?: string
   }
   address?: string
   contactEmail?: string

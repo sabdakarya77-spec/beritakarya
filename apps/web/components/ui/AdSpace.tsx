@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'next/navigation';
-import { ExternalLink } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
 interface AdSpaceProps {
@@ -20,6 +19,8 @@ export default function AdSpace({
   const site = params?.site as string | undefined;
   const [ad, setAd] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const containerRef = useRef<HTMLDivElement | HTMLAnchorElement | null>(null);
+  const trackedImpressionRef = useRef(false);
 
   // Map prop 'in-feed' to DB slot 'in_feed'
   const slotName = type === 'in-feed' ? 'in_feed' : type;
@@ -41,11 +42,6 @@ export default function AdSpace({
           const matchedAd = json.data.find((a: any) => a.slot === slotName);
           if (matchedAd) {
             setAd(matchedAd);
-            
-            // AUTO-TRACK: Record Impression when ad is rendered
-            fetch(`${apiUrl}/api/v1/ads/track/${matchedAd.id}?action=impression`, {
-              method: 'POST'
-            }).catch(() => {});
           }
         }
       } catch (error) {
@@ -60,6 +56,33 @@ export default function AdSpace({
       active = false;
     };
   }, [site, slotName]);
+
+  useEffect(() => {
+    trackedImpressionRef.current = false;
+  }, [ad?.id]);
+
+  useEffect(() => {
+    if (!ad?.id || trackedImpressionRef.current || !containerRef.current) return;
+
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        if (!entry?.isIntersecting || trackedImpressionRef.current) return;
+
+        trackedImpressionRef.current = true;
+        fetch(`${apiUrl}/api/v1/ads/track/${ad.id}?action=impression`, {
+          method: 'POST'
+        }).catch(() => {});
+        observer.disconnect();
+      },
+      { threshold: 0.5 }
+    );
+
+    observer.observe(containerRef.current);
+
+    return () => observer.disconnect();
+  }, [ad?.id]);
 
   const handleAdClick = () => {
     if (!ad) return;
@@ -100,6 +123,7 @@ export default function AdSpace({
     if (ad.code) {
       return (
         <div 
+          ref={containerRef as React.RefObject<HTMLDivElement>}
           className={cn("relative overflow-hidden flex items-center justify-center bg-transparent", styles[type], className)}
           dangerouslySetInnerHTML={{ __html: ad.code }}
         />
@@ -112,6 +136,7 @@ export default function AdSpace({
 
       return (
         <a 
+          ref={containerRef as React.RefObject<HTMLAnchorElement>}
           href={ad.linkUrl || '#'} 
           onClick={handleAdClick}
           target="_blank" 
@@ -148,40 +173,32 @@ export default function AdSpace({
     }
   }
 
-  // 3. Fallback: Mock Data Gemini AI Advertisement
+  // 3. Fallback: neutral placeholder for self-serve inventory
   return (
-    <a 
-      href="https://gemini.google.com"
-      target="_blank"
-      rel="noopener noreferrer"
+    <div
       className={cn(
-        "border border-white/10 flex flex-col items-center justify-center relative overflow-hidden group bg-gradient-to-br from-indigo-950 via-purple-900 to-slate-900",
+        "border border-dashed border-gray-200 dark:border-white/10 flex flex-col items-center justify-center relative overflow-hidden bg-gray-50 dark:bg-white/[0.02] text-center px-6",
         styles[type],
         className
       )}
     >
-      <span className="absolute top-2 left-3 z-10 text-[8px] font-black uppercase tracking-[0.2em] text-white bg-blue-600 px-2.5 py-0.5 shadow-lg">
+      <span className="absolute top-2 left-3 z-10 text-[8px] font-black uppercase tracking-[0.2em] text-white bg-brand-red px-2.5 py-0.5 shadow-lg">
         {label}
       </span>
-      
-      {/* Abstract AI background elements */}
-      <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1620712943543-bcc4688e7485?q=80&w=800&auto=format&fit=crop')] bg-cover bg-center opacity-30 mix-blend-overlay group-hover:scale-105 transition-transform duration-700" />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
-      {/* Content */}
-      <div className="relative z-10 flex flex-col items-center text-center px-4">
-        <h4 className="text-xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-300 to-pink-300 tracking-tight mb-2 font-sans leading-none">
-          Google Gemini Advanced
-        </h4>
-        {type !== 'leaderboard' && (
-          <p className="text-white/80 text-[10px] md:text-xs max-w-sm mb-4 font-light">
-            Experience the next generation of AI. Write, plan, learn, and create.
+      <div className="flex flex-col items-center justify-center gap-3">
+        <p className="text-[10px] font-black uppercase tracking-[0.24em] text-gray-400">
+          Slot Iklan Mandiri
+        </p>
+        <div className="space-y-1">
+          <h4 className="text-sm md:text-lg font-black text-brand-black dark:text-white tracking-tight">
+            Ruang promosi tersedia
+          </h4>
+          <p className="text-[10px] md:text-xs text-gray-500 dark:text-gray-400 max-w-sm">
+            Slot ini disiapkan untuk banner atau script iklan mandiri dari dashboard ads.
           </p>
-        )}
-        <span className={cn("rounded-full bg-white text-black font-bold uppercase tracking-widest hover:bg-gray-200 transition-colors", type === 'leaderboard' ? "px-3 py-1 text-[9px] mt-2" : "px-4 py-1.5 text-[10px]")}>
-          Try Now
-        </span>
+        </div>
       </div>
-    </a>
+    </div>
   );
 }

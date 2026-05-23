@@ -1,7 +1,7 @@
 'use client';
 
 import { Search, Menu, User as UserIcon, Bell, Globe, Moon, Sun, Bookmark } from 'lucide-react';
-import { SiFacebook, SiX, SiInstagram, SiYoutube } from 'react-icons/si';
+import { SiFacebook, SiInstagram, SiTelegram, SiTiktok, SiWhatsapp, SiX, SiYoutube } from 'react-icons/si';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -11,6 +11,7 @@ import { cn } from '../../lib/utils';
 import { useRouter, usePathname } from 'next/navigation';
 
 import { CategoryItem } from '../../lib/constants';
+import { useSavedArticles } from '../../hooks/useSavedArticles';
 
 interface NavbarProps {
   siteConfig: any;
@@ -40,6 +41,7 @@ export default function Navbar({
   const { user, logout } = useAuthStore();
   const activeSite = siteConfig?.id || pathname.split('/')[1] || 'pusat';
   const isArticlePage = pathname.includes('/artikel/');
+  const { count: savedArticlesCount } = useSavedArticles(activeSite);
   const articleTopDate = new Date().toLocaleDateString('id-ID', {
     weekday: 'long',
     day: 'numeric',
@@ -66,6 +68,16 @@ export default function Navbar({
     // Navigate to homepage with category param
     router.push(`/${activeSite}?cat=${encodeURIComponent(cat)}`);
   };
+
+  const socialLinks = [
+    { href: siteConfig?.socialLinks?.whatsapp, Icon: SiWhatsapp, hoverClassName: 'hover:text-emerald-500' },
+    { href: siteConfig?.socialLinks?.facebook, Icon: SiFacebook, hoverClassName: 'hover:text-[#1877F2]' },
+    { href: siteConfig?.socialLinks?.tiktok, Icon: SiTiktok, hoverClassName: 'hover:text-brand-black dark:hover:text-white' },
+    { href: siteConfig?.socialLinks?.telegram, Icon: SiTelegram, hoverClassName: 'hover:text-[#229ED9]' },
+    { href: siteConfig?.socialLinks?.youtube, Icon: SiYoutube, hoverClassName: 'hover:text-red-600' },
+    { href: siteConfig?.socialLinks?.twitter, Icon: SiX, hoverClassName: 'hover:text-brand-black dark:hover:text-white' },
+    { href: siteConfig?.socialLinks?.instagram, Icon: SiInstagram, hoverClassName: 'hover:text-pink-600' },
+  ].filter((item) => Boolean(item.href));
 
   return (
     <header className={cn(
@@ -167,26 +179,20 @@ export default function Navbar({
         <div className={cn("flex items-center justify-end gap-3 md:gap-5", isArticlePage && "md:gap-4")}>
           {/* Social Links (Desktop Only) */}
           <div className={cn("hidden lg:flex items-center gap-1.5", isArticlePage && "hidden xl:flex")}>
-            {siteConfig?.socialLinks?.facebook && (
-              <a href={siteConfig.socialLinks.facebook} target="_blank" rel="noopener noreferrer" className="p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-full transition-colors text-brand-text-muted hover:text-blue-600">
-                <SiFacebook size={16} />
+            {socialLinks.map(({ href, Icon, hoverClassName }, index) => (
+              <a
+                key={`${href}-${index}`}
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={cn(
+                  "p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-full transition-colors text-brand-text-muted",
+                  hoverClassName
+                )}
+              >
+                <Icon size={16} />
               </a>
-            )}
-            {siteConfig?.socialLinks?.twitter && (
-              <a href={siteConfig.socialLinks.twitter} target="_blank" rel="noopener noreferrer" className="p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-full transition-colors text-brand-text-muted hover:text-brand-black">
-                <SiX size={16} />
-              </a>
-            )}
-            {siteConfig?.socialLinks?.instagram && (
-              <a href={siteConfig.socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-full transition-colors text-brand-text-muted hover:text-pink-600">
-                <SiInstagram size={16} />
-              </a>
-            )}
-            {siteConfig?.socialLinks?.youtube && (
-              <a href={siteConfig.socialLinks.youtube} target="_blank" rel="noopener noreferrer" className="p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-full transition-colors text-brand-text-muted hover:text-red-600">
-                <SiYoutube size={16} />
-              </a>
-            )}
+            ))}
           </div>
 
           {!isArticlePage && (
@@ -306,6 +312,11 @@ export default function Navbar({
                   />
                 )}
                 <span>{cat.name}</span>
+                {cat.slug === 'tersimpan' && savedArticlesCount > 0 && (
+                  <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-brand-red px-1.5 py-0.5 text-[8px] font-black tracking-normal text-white">
+                    {savedArticlesCount}
+                  </span>
+                )}
                 {isActive && (
                   <motion.span 
                     layoutId="activeCategoryLine"
@@ -380,6 +391,11 @@ export default function Navbar({
                 />
               )}
               <span>{cat.name}</span>
+              {cat.slug === 'tersimpan' && savedArticlesCount > 0 && (
+                <span className="inline-flex min-w-4 items-center justify-center rounded-full bg-brand-red px-1 py-0.5 text-[8px] font-black tracking-normal text-white">
+                  {savedArticlesCount}
+                </span>
+              )}
             </button>
           );
         })}

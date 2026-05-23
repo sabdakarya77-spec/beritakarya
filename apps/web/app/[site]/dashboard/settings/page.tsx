@@ -61,10 +61,13 @@ export default function SettingsPage() {
     termsOfService: '',
     cookiePolicy: '',
     socialLinks: {
+      whatsapp: '',
       facebook: '',
       twitter: '',
       instagram: '',
-      youtube: ''
+      youtube: '',
+      telegram: '',
+      tiktok: ''
     },
     appearance: {
       primaryColor: '#e11d48',
@@ -217,10 +220,13 @@ export default function SettingsPage() {
           termsOfService: data.data.termsOfService || '',
           cookiePolicy: data.data.cookiePolicy || '',
           socialLinks: {
+            whatsapp: data.data.socialLinks?.whatsapp || '',
             facebook: data.data.socialLinks?.facebook || '',
             twitter: data.data.socialLinks?.twitter || '',
             instagram: data.data.socialLinks?.instagram || '',
-            youtube: data.data.socialLinks?.youtube || ''
+            youtube: data.data.socialLinks?.youtube || '',
+            telegram: data.data.socialLinks?.telegram || '',
+            tiktok: data.data.socialLinks?.tiktok || ''
           },
           appearance: {
             primaryColor: data.data.appearance?.primaryColor || '#e11d48',

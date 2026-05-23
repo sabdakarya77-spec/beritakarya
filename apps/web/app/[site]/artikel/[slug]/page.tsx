@@ -9,11 +9,9 @@ import ReadingProgress from '../../../../components/ui/ReadingProgress'
 import AdSpace from '../../../../components/ui/AdSpace'
 import ShareSidebar from '../../../../components/ui/ShareSidebar'
 import AuthorCard from '../../../../components/ui/AuthorCard'
-import ArticleSharePanel from '../../../../components/ui/ArticleSharePanel'
 import EditorialBadge from '../../../../components/ui/EditorialBadge'
 import { resolveArticleBadge } from '../../../../lib/resolveArticleBadge'
 import { BookOpen, Printer } from 'lucide-react'
-import { SiWhatsapp, SiX } from 'react-icons/si'
 import { Metadata } from 'next'
 import { cn } from '../../../../lib/utils'
 import CommentSection from '../../../../components/ui/CommentSection'
@@ -21,6 +19,8 @@ import FontSizeControl from '../../../../components/ui/FontSizeControl'
 import ArticleActions from '../../../../components/ui/ArticleActions'
 import ImageLightboxWrapper from '../../../../components/ui/ImageLightboxWrapper'
 import { Container } from '../../../../components/layout/Container'
+import ArticleShareActions from '../../../../components/ui/ArticleShareActions'
+import ArticleBookmarkButton from '../../../../components/ui/ArticleBookmarkButton'
 
 interface Props {
   params: { site: string; slug: string }
@@ -116,6 +116,14 @@ export default async function ArticlePage({ params }: Props) {
     id: siteParam,
     name: siteSettings?.name || SITE_MAP[siteParam]?.name || (siteParam.charAt(0).toUpperCase() + siteParam.slice(1)),
     domain: siteSettings?.domain || SITE_MAP[siteParam]?.domain || `${siteParam}.beritakarya.co`,
+    description: siteSettings?.description || SITE_MAP[siteParam]?.description || `Portal berita resmi ${siteParam}. Menyajikan informasi terbaru, investigasi, dan analisis tajam dari seluruh Nusantara.`,
+    footerText: siteSettings?.footerText || SITE_MAP[siteParam]?.footerText || `© ${new Date().getFullYear()} BERITA KARYA. ALL RIGHTS RESERVED.`,
+    address: siteSettings?.address || SITE_MAP[siteParam]?.address || "Jl. Merdeka No. 123, Jakarta Pusat, Indonesia",
+    contactEmail: siteSettings?.contactEmail || SITE_MAP[siteParam]?.contactEmail || "support.beritakarya@gmail.com",
+    phone: siteSettings?.phone || SITE_MAP[siteParam]?.phone || null,
+    socialLinks: siteSettings?.socialLinks || SITE_MAP[siteParam]?.socialLinks || {},
+    appearance: siteSettings?.appearance || SITE_MAP[siteParam]?.appearance || { primaryColor: '#e11d48' },
+    trendingTopics: siteSettings?.trendingTopics || [],
     devDomain: SITE_MAP[siteParam]?.devDomain || `${siteParam}.localhost:3000`
   }
 
@@ -201,27 +209,6 @@ export default async function ArticlePage({ params }: Props) {
                 {article.title}
               </h1>
 
-              <div className="flex items-center gap-3 mb-10 md:mb-12">
-                <a 
-                  href={`https://wa.me/?text=${encodeURIComponent(article.title + ' ' + articleUrl)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex h-11 items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 text-[10px] font-black uppercase tracking-[0.18em] text-emerald-700 hover:border-emerald-500 hover:bg-emerald-500 hover:text-white transition-all shadow-sm"
-                >
-                  <SiWhatsapp className="text-sm" />
-                  WhatsApp
-                </a>
-                <a 
-                  href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(article.title)}&url=${encodeURIComponent(articleUrl)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex h-11 items-center gap-2 rounded-full border border-slate-200 bg-white px-4 text-[10px] font-black uppercase tracking-[0.18em] text-slate-800 hover:border-slate-900 hover:bg-slate-900 hover:text-white transition-all shadow-sm dark:border-white/10 dark:bg-white/[0.03] dark:text-white dark:hover:border-white dark:hover:bg-white dark:hover:text-slate-950"
-                >
-                  <SiX className="text-sm" />
-                  X
-                </a>
-              </div>
-
               <div className="flex flex-wrap items-center justify-center md:justify-start gap-y-8 gap-x-8 border-t border-gray-100 dark:border-white/10 pt-10 md:pt-12">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-xl bg-brand-red flex items-center justify-center text-white text-lg font-serif italic shadow-lg shadow-brand-red/20">
@@ -244,6 +231,29 @@ export default async function ArticlePage({ params }: Props) {
                     <Printer size={14} className="text-brand-red" />
                     {article.wordCount || 0} KATA
                   </div>
+                </div>
+
+                <div className="hidden sm:block h-8 w-px bg-gray-200 dark:bg-white/10" />
+                <div className="flex flex-wrap items-center gap-3">
+                  <span className="text-[9px] font-black uppercase tracking-[0.22em] text-gray-400">
+                    Bagikan
+                  </span>
+                  <ArticleShareActions title={article.title} url={articleUrl} />
+                </div>
+
+                <div className="hidden sm:block h-8 w-px bg-gray-200 dark:bg-white/10" />
+                <div className="flex flex-wrap items-center gap-3">
+                  <span className="text-[9px] font-black uppercase tracking-[0.22em] text-gray-400">
+                    Simpan
+                  </span>
+                  <ArticleBookmarkButton
+                    article={article}
+                    site={siteParam}
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white dark:border-white/10 dark:bg-white/[0.03]"
+                    activeClassName="border-brand-red/40 bg-brand-red/5 text-brand-red"
+                    idleClassName="text-brand-text-muted hover:text-brand-red hover:border-brand-red/40"
+                    iconSize={16}
+                  />
                 </div>
 
                 <div className="ml-auto hidden lg:flex items-center gap-3 rounded-full border border-gray-100 bg-gray-50/80 px-3 py-2 dark:border-white/10 dark:bg-white/[0.025]">
@@ -345,8 +355,7 @@ export default async function ArticlePage({ params }: Props) {
               {/* Sidebar */}
               <aside className="hidden lg:block">
                 <div className="sticky top-40 space-y-20">
-                  {/* Share Box */}
-                  <ArticleSharePanel title={article.title} url={articleUrl} />
+                  <AdSpace type="rectangle" />
 
                   {/* Recommended Widget */}
                   <div>
@@ -363,11 +372,6 @@ export default async function ArticlePage({ params }: Props) {
                         <p className="text-xs text-gray-400">Memuat post terkait...</p>
                       )}
                     </div>
-                  </div>
-
-                  {/* Sidebar Ad */}
-                  <div className="pt-10">
-                    <AdSpace type="rectangle" />
                   </div>
                 </div>
               </aside>

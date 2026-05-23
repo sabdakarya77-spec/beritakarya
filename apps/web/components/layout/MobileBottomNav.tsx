@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '../../store/authStore';
+import { useSavedArticles } from '../../hooks/useSavedArticles';
 
 interface MobileBottomNavProps {
   site?: string;
@@ -35,6 +36,7 @@ type NavItem = LinkNavItem | ActionNavItem;
 export default function MobileBottomNav({ site = 'pusat', onSearchClick, onMenuClick, selectedCategory }: MobileBottomNavProps) {
   const pathname = usePathname();
   const { user } = useAuthStore();
+  const { count: savedArticlesCount } = useSavedArticles(site);
   const hasDashboardAccess = !!user && user.role !== 'reader';
   const accountItem: LinkNavItem = hasDashboardAccess
     ? {
@@ -114,6 +116,11 @@ export default function MobileBottomNav({ site = 'pusat', onSearchClick, onMenuC
               >
                 {item.label}
               </span>
+              {item.kind === 'link' && item.label === 'Tersimpan' && savedArticlesCount > 0 && (
+                <span className="absolute top-0 right-1 inline-flex min-w-4 items-center justify-center rounded-full bg-brand-red px-1 py-0.5 text-[8px] font-black tracking-normal text-white">
+                  {savedArticlesCount}
+                </span>
+              )}
             </motion.div>
           );
 

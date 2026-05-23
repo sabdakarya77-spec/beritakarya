@@ -4,8 +4,9 @@ import PublicSiteLayout from '../layout/PublicSiteLayout'
 import AdSpace from '../ui/AdSpace'
 import Link from 'next/link'
 import { TrendingUp, Zap, Star, MessageCircle, FileText, ArrowRight } from 'lucide-react'
-import { SiFacebook, SiInstagram, SiX, SiYoutube } from 'react-icons/si'
+import { SiFacebook, SiInstagram, SiTelegram, SiTiktok, SiWhatsapp, SiX, SiYoutube } from 'react-icons/si'
 import LoadMoreArticles from '../ui/LoadMoreArticles'
+import SavedArticlesFeed from '../ui/SavedArticlesFeed'
 import VideoWidget from '../ui/VideoWidget'
 import { MagazineBentoHero } from '../berita/MagazineBentoHero'
 import { notFound } from 'next/navigation'
@@ -164,12 +165,16 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
   const whatsappUrl = buildWhatsAppUrl(siteConfig.phone, siteConfig.name)
   const reportUrl = `mailto:${siteConfig.contactEmail}?subject=${encodeURIComponent(`Laporan Warga untuk ${siteConfig.name}`)}`
   const socialChannels = [
+    { label: 'WhatsApp', href: siteConfig.socialLinks?.whatsapp, Icon: SiWhatsapp },
     { label: 'Facebook', href: siteConfig.socialLinks?.facebook, Icon: SiFacebook },
+    { label: 'TikTok', href: siteConfig.socialLinks?.tiktok, Icon: SiTiktok },
+    { label: 'Telegram', href: siteConfig.socialLinks?.telegram, Icon: SiTelegram },
     { label: 'X', href: siteConfig.socialLinks?.twitter, Icon: SiX },
     { label: 'Instagram', href: siteConfig.socialLinks?.instagram, Icon: SiInstagram },
     { label: 'YouTube', href: siteConfig.socialLinks?.youtube, Icon: SiYoutube },
   ].filter((item) => Boolean(item.href))
   const showHomepageHero = !searchQuery && categoryFilter === 'terbaru' && topBentoStories.length > 0
+  const showSavedFeed = categoryFilter === 'tersimpan'
   const showEditorFocus = showHomepageHero && minimalStories.length > 0
   const showTrending = tags.length > 0
   const showInlineSponsor = mainFeed.length > 3
@@ -254,7 +259,9 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
                 </div>
               </div>
 
-              {mainFeed.length > 0 ? (
+              {showSavedFeed ? (
+                <SavedArticlesFeed site={siteParam} />
+              ) : mainFeed.length > 0 ? (
                 <>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-16 mb-16">
                     {mainFeed.slice(0, 4).map((article: any) => (
@@ -297,9 +304,11 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
                 </div>
               )}
 
-              <div className="pt-12 border-t border-gray-100 dark:border-white/5">
-                <LoadMoreArticles siteId={siteConfig.id} category={categoryFilter} search={searchQuery} initialPage={1} />
-              </div>
+              {!showSavedFeed && (
+                <div className="pt-12 border-t border-gray-100 dark:border-white/5">
+                  <LoadMoreArticles siteId={siteConfig.id} category={categoryFilter} search={searchQuery} initialPage={1} />
+                </div>
+              )}
             </div>
 
             <aside className="lg:col-span-4 space-y-10">

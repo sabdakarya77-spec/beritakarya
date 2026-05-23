@@ -8,6 +8,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { CategoryItem } from '../../lib/constants';
 import { useAuthStore } from '../../store/authStore';
 import { cn } from '../../lib/utils';
+import { useSavedArticles } from '../../hooks/useSavedArticles';
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -30,6 +31,7 @@ export default function MobileMenu({
   const router = useRouter();
   const pathname = usePathname();
   const activeSite = siteConfig?.id || pathname.split('/')[1] || 'pusat';
+  const { count: savedArticlesCount } = useSavedArticles(activeSite);
 
   const handleCategoryClick = (slug: string) => {
     onCategoryClick(slug);
@@ -145,6 +147,11 @@ export default function MobileMenu({
                         <div className="flex items-center gap-3">
                           {cat.slug === 'tersimpan' ? <Bookmark size={18} /> : <div className={cn("w-1.5 h-1.5 rounded-full", isActive ? "bg-brand-red" : "bg-gray-300")} />}
                           <span className="text-sm font-bold uppercase tracking-wider">{cat.name}</span>
+                          {cat.slug === 'tersimpan' && savedArticlesCount > 0 && (
+                            <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-brand-red px-1.5 py-0.5 text-[9px] font-black tracking-normal text-white">
+                              {savedArticlesCount}
+                            </span>
+                          )}
                         </div>
                         <ChevronRight size={16} className={cn("transition-transform", isActive ? "rotate-90" : "group-hover:translate-x-1")} />
                       </button>
