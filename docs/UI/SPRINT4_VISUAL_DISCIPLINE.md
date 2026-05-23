@@ -378,10 +378,10 @@ Animation: Minimal, performance-focused
 
 #### Day 10: Article Pages
 ```
-14. artikel/[slug]/page.tsx
-    - [ ] Ringkas header metadata
-    - [ ] Review font sizes
-    - [ ] Ringkas article cards
+14. artikel/[slug]/page.tsx ✅
+    - [x] Ringkas header metadata
+    - [x] Fix font sizes (10px→11px)
+    - [x] Ringkas article cards
 ```
 
 ---
@@ -404,8 +404,8 @@ Animation: Minimal, performance-focused
 
 #### Day 13: Documentation
 ```
-17. Buat docs/UI_BASELINE_GUIDELINES.md
-    - [ ] Typography scale
+17. Buat docs/UI_BASELINE_GUIDELINES.md ✅
+    - [x] Typography scale
     - [ ] Spacing system
     - [ ] Color usage
     - [ ] Animation guidelines
