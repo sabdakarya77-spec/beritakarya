@@ -234,9 +234,10 @@ export default async function ArticlePage({ params }: Props) {
           </header>
 
           {/* --- HERO IMAGE --- */}
-          <div className="-mt-10 md:-mt-20 mb-20">
-            <Container size="full">
-              <div className="aspect-video md:aspect-[21/9] w-full relative overflow-hidden shadow-2xl rounded-xl">
+          <div className="mb-16 md:mb-20">
+            <Container>
+              <div className="max-w-6xl mx-auto">
+                <div className="aspect-[16/10] md:aspect-[16/9] w-full relative overflow-hidden shadow-2xl rounded-2xl border border-gray-100 dark:border-white/5 bg-slate-100 dark:bg-slate-900">
                 <SmartImage 
                   src={coverImage} 
                   blur={article.featuredImageBlur}
@@ -248,8 +249,9 @@ export default async function ArticlePage({ params }: Props) {
                   priority
                 />
                 {/* Image Credit Overlay */}
-                <div className="absolute bottom-6 right-6 px-4 py-2 bg-black/40 backdrop-blur-md border border-white/10 text-[9px] text-white font-black uppercase tracking-[0.2em] rounded-sm">
-                   Foto / Dokumentasi Redaksi
+                  <div className="absolute bottom-4 right-4 md:bottom-6 md:right-6 px-3 py-1.5 bg-black/50 backdrop-blur-md border border-white/10 text-[10px] text-white font-semibold uppercase tracking-[0.12em] rounded-sm z-10">
+                     Foto / Dokumentasi Redaksi
+                  </div>
                 </div>
               </div>
             </Container>
@@ -396,6 +398,103 @@ function PublicBlock({ block }: { block: Block }) {
             </figcaption>
           )}
         </figure>
+      )
+    case 'imageGrid':
+      return (
+        <div className={cn(
+          "grid gap-4 my-16",
+          block.columns === 3 ? "grid-cols-1 md:grid-cols-3" : "grid-cols-1 md:grid-cols-2"
+        )}>
+          {block.images.map((img, i) => (
+            <figure key={i} className="m-0">
+              <div className="relative aspect-video rounded-xl overflow-hidden shadow-lg border border-gray-100 dark:border-white/5">
+                <SmartImage 
+                  src={img.url} 
+                  context="article_block"
+                  alt={img.alt || `Grid image ${i+1}`}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+              {img.caption && (
+                <figcaption className="mt-3 text-xs text-brand-text-muted dark:text-gray-400 italic text-center">
+                  {img.caption}
+                </figcaption>
+              )}
+            </figure>
+          ))}
+        </div>
+      )
+    case 'gallery':
+      return (
+        <div className="my-16 space-y-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+            {block.images.map((img, i) => (
+              <div key={i} className="relative aspect-square rounded-lg overflow-hidden border border-gray-100 dark:border-white/5">
+                <SmartImage 
+                  src={img.url} 
+                  context="gallery_thumb"
+                  alt={img.alt || `Gallery image ${i+1}`}
+                  fill
+                  className="object-cover cursor-pointer hover:scale-110 transition-transform"
+                />
+              </div>
+            ))}
+          </div>
+          <p className="text-[10px] font-black uppercase tracking-widest text-brand-text-muted text-center italic">
+            Klik gambar untuk memperbesar galeri
+          </p>
+        </div>
+      )
+    case 'list':
+      const ListTag = block.ordered ? 'ol' : 'ul'
+      return (
+        <ListTag className={cn(
+          "my-12 space-y-4 pl-8",
+          block.ordered ? "list-decimal" : "list-disc"
+        )}>
+          {block.items.map((item, i) => (
+            <li key={i} className="font-serif text-xl md:text-2xl antialiased leading-relaxed">
+              {item}
+            </li>
+          ))}
+        </ListTag>
+      )
+    case 'callout':
+      const variants = {
+        info: 'bg-blue-50 border-blue-100 text-blue-800 dark:bg-blue-900/20 dark:border-blue-800/30 dark:text-blue-300',
+        warning: 'bg-amber-50 border-amber-100 text-amber-800 dark:bg-amber-900/20 dark:border-amber-800/30 dark:text-amber-300',
+        error: 'bg-red-50 border-red-100 text-red-800 dark:bg-red-900/20 dark:border-red-800/30 dark:text-red-300',
+        success: 'bg-emerald-50 border-emerald-100 text-emerald-800 dark:bg-emerald-900/20 dark:border-emerald-800/30 dark:text-emerald-300',
+        editorial: 'bg-brand-surface border-gray-100 text-brand-black dark:bg-white/[0.03] dark:border-white/10 dark:text-white'
+      }
+      return (
+        <div className={cn(
+          "my-16 p-8 md:p-12 rounded-2xl border-l-4 font-serif text-xl md:text-2xl antialiased leading-relaxed shadow-sm",
+          variants[block.variant as keyof typeof variants] || variants.editorial
+        )}>
+          {block.content}
+        </div>
+      )
+    case 'embed':
+      return (
+        <div className="my-16">
+          <div className="relative aspect-video rounded-xl overflow-hidden shadow-lg border border-gray-100 dark:border-white/5 bg-gray-50 dark:bg-white/5 flex items-center justify-center">
+            {block.embedType === 'youtube' ? (
+              <iframe
+                src={block.url.replace('watch?v=', 'embed/')}
+                className="absolute inset-0 w-full h-full"
+                allowFullScreen
+                title={block.title || 'YouTube video'}
+              />
+            ) : (
+              <a href={block.url} target="_blank" rel="noopener noreferrer" className="text-brand-red font-bold underline">
+                Buka konten eksternal: {block.title || block.url}
+              </a>
+            )}
+          </div>
+          {block.title && <p className="mt-4 text-center text-xs text-brand-text-muted uppercase tracking-widest font-black">{block.title}</p>}
+        </div>
       )
     case 'mediaText':
       return (
