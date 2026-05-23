@@ -437,9 +437,9 @@ export default function SettingsPage() {
                   <p className="text-sm text-gray-500 mt-1">
                     Tentukan jati diri digital utama untuk portal berita regional Anda.
                   </p>
-                  <p className="text-xs text-brand-red mt-1">
-                      Brand utama "BERITA KARYA" adalah tetap.
-                  </p>
+                    <p className="text-xs text-brand-red mt-1">
+                      Brand utama &quot;BERITA KARYA&quot; adalah tetap.
+                    </p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -867,7 +867,7 @@ export default function SettingsPage() {
                       <div className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-8 text-center text-gray-500 font-mono">
                         <LockIcon size={20} className="mx-auto mb-2 text-gray-400" />
                         <p className="text-sm font-medium">Kunci Privat Disensor untuk Keamanan</p>
-                        <p className="text-xs text-gray-500 mt-1">Klik 'Tampilkan Kunci' di atas untuk melihat atau mengedit</p>
+                        <p className="text-xs text-gray-500 mt-1">Klik &apos;Tampilkan Kunci&apos; di atas untuk melihat atau mengedit</p>
                       </div>
                     )}
                   </div>
