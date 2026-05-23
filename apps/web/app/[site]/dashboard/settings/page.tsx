@@ -18,9 +18,7 @@ import {
   Eye, 
   EyeOff, 
   ExternalLink, 
-  Palette, 
   Sparkles, 
-  Lock,
   Phone,
   MapPin,
   Share2,
@@ -29,7 +27,8 @@ import {
   Download,
   FileText,
   Shield,
-  Cookie
+  Cookie,
+  Lock as LockIcon
 } from 'lucide-react'
 import { api } from '../../../../lib/api'
 
@@ -87,14 +86,12 @@ export default function SettingsPage() {
   const [showPrivateKey, setShowPrivateKey] = useState(false)
   const [newTag, setNewTag] = useState('')
   const [uploadingLogo, setUploadingLogo] = useState(false)
-  const [uploadingPdf, setUploadingPdf] = useState(false)
 
   const aboutUsRef = useRef<HTMLTextAreaElement>(null)
   const codeOfEthicsRef = useRef<HTMLTextAreaElement>(null)
   const editorialRef = useRef<HTMLTextAreaElement>(null)
   const advertisingRef = useRef<HTMLTextAreaElement>(null)
   const logoInputRef = useRef<HTMLInputElement>(null)
-  const pdfInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     const adjust = (ref: React.RefObject<HTMLTextAreaElement | null>) => {
@@ -868,9 +865,9 @@ export default function SettingsPage() {
                       />
                     ) : (
                       <div className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-8 text-center text-gray-500 font-mono">
-                        <Lock size={20} className="mx-auto mb-2 text-gray-400" />
+                        <LockIcon size={20} className="mx-auto mb-2 text-gray-400" />
                         <p className="text-sm font-medium">Kunci Privat Disensor untuk Keamanan</p>
-                        <p className="text-xs text-gray-500 mt-1">Klik "Tampilkan Kunci" di atas untuk melihat atau mengedit</p>
+                        <p className="text-xs text-gray-500 mt-1">Klik 'Tampilkan Kunci' di atas untuk melihat atau mengedit</p>
                       </div>
                     )}
                   </div>
@@ -941,7 +938,43 @@ export default function SettingsPage() {
                           if (confirm('Apakah Anda yakin ingin memuat format Dewan Pers standar? Teks saat ini akan ditimpa.')) {
                             setSettings({
                               ...settings,
-                              editorial: `PT SABDA KARYA MEDIA (BERITAKARYA.CO)\nSK MENKUMHAM: AHU-0012345.AH.01.01.TAHUN 2026\n\nSUSUNAN REDAKSI & TATA KELOLA PERUSAHAAN\n\nPenerbit / Badan Hukum:\nPT Sabda Karya Media\n\nDewan Pembina / Penasihat:\n- [Nama Dewan Pembina]\n\nPemimpin Umum / Direktur Utama:\n- [Nama Pemimpin Umum]\n\nPemimpin Redaksi / Penanggung Jawab:\n- [Nama Pemimpin Redaksi]\n\nRedaktur Pelaksana (Redpel):\n- [Nama Redaktur Pelaksana]\n\nRedaktur Senior & Editor:\n- [Nama Editor 1]\n- [Nama Editor 2]\n\nReporter Lapangan:\n- [Nama Reporter 1]\n- [Nama Reporter 2]\n\nDesain Grafis, IT & Multimedia:\n- [Nama Tim IT/Desain]\n\nAlamat Kantor Redaksi Pusat:\nGedung BeritaKarya, Lt. 3, Jl. Asia Afrika No. 45, Bandung\nEmail: redaksi@beritakarya.co | Telp: +62 812-3456-7890\n\nPenasihat Hukum:\n- [Nama Advokat], S.H., M.H.`
+                              editorial: `PT SABDA KARYA MEDIA (BERITAKARYA.CO)
+SK MENKUMHAM: AHU-0012345.AH.01.01.TAHUN 2026
+
+SUSUNAN REDAKSI & TATA KELOLA PERUSAHAAN
+
+Penerbit / Badan Hukum:
+PT Sabda Karya Media
+
+Dewan Pembina / Penasihat:
+- [Nama Dewan Pembina]
+
+Pemimpin Umum / Direktur Utama:
+- [Nama Pemimpin Umum]
+
+Pemimpin Redaksi / Penanggung Jawab:
+- [Nama Pemimpin Redaksi]
+
+Redaktur Pelaksana (Redpel):
+- [Nama Redaktur Pelaksana]
+
+Redaktur Senior & Editor:
+- [Nama Editor 1]
+- [Nama Editor 2]
+
+Reporter Lapangan:
+- [Nama Reporter 1]
+- [Nama Reporter 2]
+
+Desain Grafis, IT & Multimedia:
+- [Nama Tim IT/Desain]
+
+Alamat Kantor Redaksi Pusat:
+Gedung BeritaKarya, Lt. 3, Jl. Asia Afrika No. 45, Bandung
+Email: redaksi@beritakarya.co | Telp: +62 812-3456-7890
+
+Penasihat Hukum:
+- [Nama Advokat], S.H., M.H.`
                             })
                           }
                         }}
@@ -983,7 +1016,7 @@ export default function SettingsPage() {
                         onChange={(e) => setSettings({...settings, termsOfService: e.target.value})}
                         placeholder="Tuliskan syarat dan ketentuan penggunaan layanan..."
                         rows={4}
-                        className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-3 text-base text-gray-900 dark:text-white outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 transition-all resize-none"
+                        className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-4 text-base text-gray-900 dark:text-white outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 transition-all resize-none"
                       />
                     </div>
 
@@ -996,7 +1029,7 @@ export default function SettingsPage() {
                         onChange={(e) => setSettings({...settings, cookiePolicy: e.target.value})}
                         placeholder="Tuliskan kebijakan penggunaan cookie..."
                         rows={4}
-                        className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-3 text-base text-gray-900 dark:text-white outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 transition-all resize-none"
+                        className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-4 text-base text-gray-900 dark:text-white outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 transition-all resize-none"
                       />
                     </div>
                   </div>

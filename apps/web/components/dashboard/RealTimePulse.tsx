@@ -17,7 +17,7 @@ export function RealTimePulse() {
       try {
         const { data } = await api.get('/analytics/active-readers');
         setCount(data.data.count || 0);
-      } catch (e) {
+      } catch {
         // Silently ignore - user mungkin sudah logout
       }
     };
