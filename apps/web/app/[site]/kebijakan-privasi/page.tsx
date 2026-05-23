@@ -42,7 +42,7 @@ export default function PrivacyPolicyPage() {
           className="mb-8"
         >
           <Link 
-            href={`/${siteId}/dashboard`}
+            href="/"
             className="inline-flex items-center text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 transition-colors"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
