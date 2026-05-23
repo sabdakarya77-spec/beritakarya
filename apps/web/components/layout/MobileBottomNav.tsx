@@ -1,10 +1,11 @@
 'use client';
 
 import React from 'react';
-import { Home, Search, Menu, Bookmark, User } from 'lucide-react';
+import { Home, Search, Menu, Bookmark, User, type LucideIcon } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
+import { useAuthStore } from '../../store/authStore';
 
 interface MobileBottomNavProps {
   site?: string;
@@ -13,40 +14,74 @@ interface MobileBottomNavProps {
   selectedCategory?: string;
 }
 
+type LinkNavItem = {
+  kind: 'link';
+  label: string;
+  icon: LucideIcon;
+  href: string;
+  active: boolean;
+};
+
+type ActionNavItem = {
+  kind: 'action';
+  label: string;
+  icon: LucideIcon;
+  onClick?: () => void;
+  active: boolean;
+};
+
+type NavItem = LinkNavItem | ActionNavItem;
+
 export default function MobileBottomNav({ site = 'pusat', onSearchClick, onMenuClick, selectedCategory }: MobileBottomNavProps) {
   const pathname = usePathname();
+  const { user } = useAuthStore();
+  const hasDashboardAccess = !!user && user.role !== 'reader';
+  const accountItem: LinkNavItem = hasDashboardAccess
+    ? {
+        kind: 'link',
+        label: 'Dashboard',
+        icon: User,
+        href: `/${site}/dashboard`,
+        active: pathname.includes('/dashboard'),
+      }
+    : {
+        kind: 'link',
+        label: 'Masuk',
+        icon: User,
+        href: '/login',
+        active: pathname === '/login',
+      };
 
-  const navItems = [
+  const navItems: NavItem[] = [
     {
+      kind: 'link',
       label: 'Home',
       icon: Home,
       href: `/${site}`,
       active: (pathname === `/${site}` || pathname === `/${site}/`) && selectedCategory !== 'tersimpan',
     },
     {
+      kind: 'action',
       label: 'Search',
       icon: Search,
       onClick: onSearchClick,
       active: false,
     },
     {
+      kind: 'action',
       label: 'Kategori',
       icon: Menu,
       onClick: onMenuClick,
       active: false,
     },
     {
+      kind: 'link',
       label: 'Tersimpan',
       icon: Bookmark,
       href: `/${site}?cat=tersimpan`,
       active: selectedCategory === 'tersimpan',
     },
-    {
-      label: 'Dashboard',
-      icon: User,
-      href: `/${site}/dashboard`,
-      active: pathname.includes('/dashboard'),
-    },
+    accountItem,
   ];
 
   return (
@@ -73,7 +108,7 @@ export default function MobileBottomNav({ site = 'pusat', onSearchClick, onMenuC
                 className={isActive ? 'text-brand-red stroke-[2.5]' : 'text-gray-400 dark:text-gray-500 hover:text-brand-red transition-colors'}
               />
               <span
-                className={`text-[9px] font-black uppercase tracking-wider ${
+                className={`text-[10px] font-black uppercase tracking-wider ${
                   isActive ? 'text-brand-red font-black' : 'text-gray-400 dark:text-gray-500'
                 }`}
               >
@@ -82,7 +117,7 @@ export default function MobileBottomNav({ site = 'pusat', onSearchClick, onMenuC
             </motion.div>
           );
 
-          if (item.href) {
+          if (item.kind === 'link') {
             return (
               <Link key={index} href={item.href} className="flex-1 flex justify-center">
                 {content}

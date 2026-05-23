@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { ArrowUpRight, Clock, BookOpen, Bookmark, User, Share2 } from 'lucide-react';
+import { Clock, BookOpen, User } from 'lucide-react';
 import Link from 'next/link';
 import { SmartImage, prefetchImage } from './SmartImage';
 import { cn } from '../../lib/utils';
@@ -25,14 +25,19 @@ export default function NewsCard({ article, variant = 'medium', site = 'pusat', 
     year: 'numeric'
   });
 
-  const readTime = article.readingTimeMin ? `${article.readingTimeMin} min read` : "3 min read";
+  const readTime = article.readingTimeMin ? `${article.readingTimeMin} min baca` : "3 min baca";
   const badgeVariant = resolveArticleBadge(article);
+  const categoryLabelClass = cn(
+    "text-[10px] font-black uppercase tracking-[0.14em] px-2 py-0.5 rounded-sm",
+    getCategoryColor(article.category?.name)
+  );
+  const calmMetaClass = "flex items-center gap-3 text-[10px] font-semibold text-brand-text-muted dark:text-gray-400";
 
   if (variant === 'large') {
     return (
       <Link href={`/${site}/artikel/${article.slug}`} onMouseEnter={() => prefetchImage(imageUrl)}>
         <motion.article 
-          whileHover={{ y: -4 }}
+          whileHover={{ y: -2 }}
           className="relative min-h-[450px] h-[550px] lg:h-[700px] group overflow-hidden rounded-3xl cursor-pointer w-full bg-slate-900 shadow-2xl"
         >
           <SmartImage 
@@ -42,39 +47,33 @@ export default function NewsCard({ article, variant = 'medium', site = 'pusat', 
             context="hero_lead"
             alt={article.title} 
             fill
-            className="object-cover object-center opacity-70 group-hover:opacity-60 group-hover:scale-105 transition-all duration-[1.5s] ease-out"
+            className="object-cover object-center opacity-75 group-hover:scale-[1.03] transition-all duration-700 ease-out"
             priority
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/55 to-transparent" />
           
           <div className="absolute bottom-0 left-0 p-8 pb-32 md:pb-16 md:p-16 w-full max-w-5xl">
             <div className="flex items-center gap-3 mb-6">
               {badgeVariant && <EditorialBadge variant={badgeVariant} size="md" />}
-              <span className="inline-block px-3 py-1 text-[11px] uppercase font-black tracking-[0.2em] rounded-sm shadow-sm bg-brand-red text-white">
+              <span className="inline-block px-3 py-1 text-[10px] uppercase font-black tracking-[0.14em] rounded-sm shadow-sm bg-brand-red text-white">
                 {article.category?.name || 'UMUM'}
               </span>
             </div>
-            <h2 className="text-4xl md:text-6xl lg:text-7xl text-white font-serif font-black leading-[1.05] mb-8 tracking-tighter text-balance group-hover:text-brand-red transition-colors duration-500">
+            <h2 className="text-4xl md:text-6xl lg:text-7xl text-white font-serif font-black leading-[1.05] mb-6 tracking-tighter text-balance">
               {article.title}
             </h2>
-            <p className="text-gray-300 text-lg md:text-2xl font-light mb-10 line-clamp-2 max-w-3xl leading-relaxed opacity-90">
+            <p className="text-gray-300 text-lg md:text-xl font-light mb-8 line-clamp-2 max-w-3xl leading-relaxed opacity-90">
               {excerpt}
             </p>
-            <div className="flex flex-wrap items-center gap-y-4 gap-x-6 text-white/50 text-[11px] font-bold uppercase tracking-[0.15em] border-t border-white/10 pt-8">
+            <div className="flex flex-wrap items-center gap-y-3 gap-x-4 text-white/70 text-[11px] font-semibold border-t border-white/10 pt-6">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-full bg-brand-red flex items-center justify-center text-white text-[11px] font-black">
                   {article.author?.name?.[0] || 'R'}
                 </div>
-                <span>By <strong className="text-white">{article.author?.name || 'Redaksi'}</strong></span>
+                <span>{article.author?.name || 'Redaksi'}</span>
               </div>
-              <span className="hidden sm:inline opacity-30">|</span>
               <span className="flex items-center gap-1.5"><Clock size={14}/> {date}</span>
-              <span className="hidden sm:inline opacity-30">|</span>
               <span className="flex items-center gap-1.5"><BookOpen size={14}/> {readTime}</span>
-              <div className="ml-auto flex items-center gap-4">
-                <button className="hover:text-white transition-colors"><Share2 size={16} /></button>
-                <button className="hover:text-white transition-colors"><Bookmark size={16} /></button>
-              </div>
             </div>
           </div>
         </motion.article>
@@ -89,14 +88,14 @@ export default function NewsCard({ article, variant = 'medium', site = 'pusat', 
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2.5">
               {badgeVariant && <EditorialBadge variant={badgeVariant} size="sm" />}
-              <span className={cn("text-[11px] font-black uppercase tracking-[0.2em] px-2 py-0.5 rounded-sm", getCategoryColor(article.category?.name))}>
+              <span className={categoryLabelClass}>
                 {article.category?.name || 'UMUM'}
               </span>
             </div>
             <h3 className="font-serif text-xl font-black leading-tight text-brand-black dark:text-white group-hover:text-brand-red transition-colors tracking-tight">
               {article.title}
             </h3>
-            <div className="flex items-center gap-3 mt-3 text-[11px] text-brand-text-muted font-bold uppercase tracking-widest">
+            <div className={cn(calmMetaClass, "mt-3")}>
               <span>{date}</span>
               <span className="opacity-30">•</span>
               <span>{readTime}</span>
@@ -111,7 +110,7 @@ export default function NewsCard({ article, variant = 'medium', site = 'pusat', 
     return (
       <Link href={`/${site}/artikel/${article.slug}`} onMouseEnter={() => prefetchImage(imageUrl)}>
         <motion.article 
-          whileHover={{ x: 4 }}
+          whileHover={{ x: 2 }}
           className="flex gap-6 group cursor-pointer border-b border-gray-100 dark:border-white/5 pb-6 last:border-0"
         >
           <div className="relative w-32 md:w-48 aspect-[4/3] overflow-hidden bg-gray-100 dark:bg-white/5 rounded-lg flex-shrink-0">
@@ -122,21 +121,21 @@ export default function NewsCard({ article, variant = 'medium', site = 'pusat', 
               context="card_horizontal"
               alt={article.title} 
               fill
-              className="object-cover object-center group-hover:scale-110 transition-transform duration-700 ease-out"
+              className="object-cover object-center group-hover:scale-[1.04] transition-transform duration-500 ease-out"
               priority={priority}
             />
           </div>
           <div className="flex-1 flex flex-col justify-center gap-2">
             <div className="flex items-center gap-2">
               {badgeVariant && <EditorialBadge variant={badgeVariant} />}
-              <span className={cn("text-[11px] font-black uppercase tracking-[0.2em] px-2 py-0.5 rounded-sm", getCategoryColor(article.category?.name))}>
+              <span className={categoryLabelClass}>
                 {article.category?.name || 'UMUM'}
               </span>
             </div>
             <h3 className="font-serif text-xl font-black leading-tight text-brand-black dark:text-white group-hover:text-brand-red transition-colors tracking-tight">
               {article.title}
             </h3>
-            <div className="hidden md:flex items-center gap-4 mt-1 text-[11px] font-bold uppercase tracking-widest text-brand-text-muted">
+            <div className="hidden md:flex items-center gap-4 mt-1 text-[10px] font-semibold text-brand-text-muted dark:text-gray-400">
                <span className="flex items-center gap-1"><User size={10}/> {article.author?.name || 'Redaksi'}</span>
                <span>{date}</span>
             </div>
@@ -149,7 +148,7 @@ export default function NewsCard({ article, variant = 'medium', site = 'pusat', 
   return (
     <Link href={`/${site}/artikel/${article.slug}`} onMouseEnter={() => prefetchImage(imageUrl)}>
       <motion.article 
-        whileHover={{ y: -8 }}
+        whileHover={{ y: -4 }}
         className="flex flex-col gap-5 group cursor-pointer relative"
       >
         <div className="relative aspect-video overflow-hidden bg-gray-100 dark:bg-white/5 rounded-xl shadow-sm">
@@ -160,7 +159,7 @@ export default function NewsCard({ article, variant = 'medium', site = 'pusat', 
             context="card"
             alt={article.title} 
             fill
-            className="object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out"
+            className="object-cover object-center group-hover:scale-[1.03] transition-transform duration-500 ease-out"
             priority={priority}
           />
           <div className="absolute top-4 left-4 flex flex-col gap-2">
@@ -168,14 +167,10 @@ export default function NewsCard({ article, variant = 'medium', site = 'pusat', 
           </div>
         </div>
         <div className="flex flex-col gap-3">
-          <div className="flex items-center justify-between">
-            <span className={cn("text-[11px] font-black uppercase tracking-[0.2em] px-2 py-0.5 rounded-sm", getCategoryColor(article.category?.name))}>
+          <div className="flex items-center">
+            <span className={categoryLabelClass}>
               {article.category?.name || 'UMUM'}
             </span>
-            <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button className="text-gray-400 hover:text-brand-red"><Share2 size={14}/></button>
-              <button className="text-gray-400 hover:text-brand-red"><Bookmark size={14}/></button>
-            </div>
           </div>
           <h3 className="font-serif text-2xl font-black leading-[1.1] text-brand-black dark:text-white group-hover:text-brand-red transition-colors tracking-tight">
             {article.title}
@@ -183,7 +178,7 @@ export default function NewsCard({ article, variant = 'medium', site = 'pusat', 
           <p className="text-brand-text-muted dark:text-gray-400 text-sm line-clamp-2 leading-relaxed font-normal opacity-80">
             {excerpt}
           </p>
-          <div className="flex items-center gap-3 mt-2 text-[11px] font-bold uppercase tracking-widest text-brand-text-muted">
+          <div className="flex items-center gap-3 mt-2 text-[10px] font-semibold text-brand-text-muted dark:text-gray-400">
              <div className="flex items-center gap-1.5">
                <div className="w-5 h-5 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center text-[10px] font-black">
                  {article.author?.name?.[0] || 'R'}
@@ -200,4 +195,3 @@ export default function NewsCard({ article, variant = 'medium', site = 'pusat', 
     </Link>
   );
 }
-

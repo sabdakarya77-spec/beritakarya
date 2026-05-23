@@ -136,6 +136,8 @@ export default function DashboardOverview() {
     reporter: 'Reporter',
     kontributor: 'Kontributor',
   };
+  const supportEmail = 'support.beritakarya@gmail.com';
+  const supportSubject = encodeURIComponent(`Bantuan Dashboard ${site}`);
 
   if (user?.role === 'advertiser') {
     return (
@@ -242,9 +244,12 @@ export default function DashboardOverview() {
             <p className="text-[10px] text-gray-400 leading-relaxed mb-4">
               Kendala teknis atau pertanyaan editorial? Tim kami siap membantu.
             </p>
-            <button className="w-full py-2.5 bg-brand-red text-white text-[10px] font-black uppercase tracking-widest rounded-lg hover:bg-red-700 transition-all">
+            <a
+              href={`mailto:${supportEmail}?subject=${supportSubject}`}
+              className="w-full py-2.5 bg-brand-red text-white text-[10px] font-black uppercase tracking-widest rounded-lg hover:bg-red-700 transition-all inline-flex items-center justify-center"
+            >
               Hubungi Support
-            </button>
+            </a>
           </div>
         </div>
       </div>
@@ -358,15 +363,6 @@ function AdvertiserDashboardOverview({ greeting, userName, site, currentDate }: 
             </a>
           </div>
 
-          <div className="dash-card p-6 text-center bg-gradient-to-br from-brand-red/5 to-violet-500/5 border-brand-red/10">
-            <p className="text-xs font-black text-brand-black dark:text-white uppercase tracking-tight mb-1">Unduh Rate Card</p>
-            <p className="text-[10px] text-gray-400 leading-relaxed mb-4">
-              Dapatkan draf panduan lengkap ukuran banner, spesifikasi video, dan rincian jangkauan demografis pembaca BeritaKarya.
-            </p>
-            <button className="w-full py-2.5 bg-brand-black dark:bg-white text-white dark:text-brand-black text-[10px] font-black uppercase tracking-widest rounded-lg hover:opacity-90 transition-all">
-              Download Media Kit PDF
-            </button>
-          </div>
         </div>
       </div>
     </div>

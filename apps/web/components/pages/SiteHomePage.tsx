@@ -3,11 +3,9 @@ import NewsCard from '../ui/NewsCard'
 import PublicSiteLayout from '../layout/PublicSiteLayout'
 import AdSpace from '../ui/AdSpace'
 import Link from 'next/link'
-import { TrendingUp, Zap, Star, Send } from 'lucide-react'
+import { TrendingUp, Zap, Star, MessageCircle, FileText, Share2, ArrowRight } from 'lucide-react'
 import LoadMoreArticles from '../ui/LoadMoreArticles'
 import VideoWidget from '../ui/VideoWidget'
-import NewsletterForm from '../ui/NewsletterForm'
-import { PremiumHero } from '../berita/PremiumHero'
 import { MagazineBentoHero } from '../berita/MagazineBentoHero'
 import { notFound } from 'next/navigation'
 import ScrollAnimate from '../ui/ScrollAnimate'
@@ -26,6 +24,27 @@ function resolveCategoryName(slug: string, categoriesTree: any[] = []): string {
   }
   return slug
 }
+
+function buildWhatsAppUrl(phone?: string | null, siteName?: string) {
+  if (!phone) return null
+
+  const digits = phone.replace(/\D/g, '')
+  if (!digits) return null
+
+  const normalizedNumber = digits.startsWith('0')
+    ? `62${digits.slice(1)}`
+    : digits.startsWith('8')
+      ? `62${digits}`
+      : digits
+
+  const intro = encodeURIComponent(`Halo ${siteName || 'BeritaKarya'}, saya ingin bergabung dengan channel WhatsApp.`)
+  return `https://wa.me/${normalizedNumber}?text=${intro}`
+}
+
+const sectionEyebrowClass = 'text-[11px] font-black uppercase tracking-[0.16em]'
+const sectionEyebrowMutedClass = `${sectionEyebrowClass} text-gray-500 dark:text-gray-400`
+const sidebarEyebrowClass = `${sectionEyebrowClass} text-white`
+const sectionMetaClass = 'text-[10px] font-semibold text-gray-500 dark:text-gray-400'
 
 type SearchParams = {
   cat?: string
@@ -123,18 +142,42 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
   const categoriesTree = await getCategories(siteConfig.id)
   const topBentoStories = articlesList.slice(0, 4)
   const minimalStories = articlesList.slice(4, 8)
-  const editorChoice = articlesList.filter((a: any) => a.isFeatured || a.isExclusive)
-  const videoStories = articlesList.slice(0, 3)
-  const photojournalism = articlesList.slice(3, 6)
-  const opinionAnalisis = articlesList.slice(4, 7)
+  const editorChoice = articlesList
+    .filter((a: any) => a.isFeatured || a.isExclusive)
+    .filter((a: any) => !topBentoStories.some((story: any) => story.id === a.id) && !minimalStories.some((story: any) => story.id === a.id))
+    .slice(0, 3)
   const isCategoryFilter = categoryFilter && categoryFilter !== 'terbaru' && categoryFilter !== 'tersimpan'
-  const mainFeed = isCategoryFilter ? articlesList : articlesList.slice(4, 12)
-  const popular = articlesList.slice(0, 5)
+  const homepageFeed = articlesList.slice(8, 16)
+  const mainFeed = isCategoryFilter ? articlesList : (homepageFeed.length > 0 ? homepageFeed : articlesList)
+  const supplementalStories = !isCategoryFilter ? articlesList.slice(16) : []
+  const videoStories = supplementalStories.slice(0, 3)
+  const photojournalism = supplementalStories.slice(3, 6)
+  const opinionAnalisis = supplementalStories.slice(6, 9)
+  const popularPool = !isCategoryFilter ? articlesList.slice(8, 13) : articlesList.slice(0, 5)
+  const popular = popularPool.length > 0 ? popularPool : articlesList.slice(0, 5)
 
   const defaultTags = ['Politik', 'Ekonomi', 'Investigasi', 'Teknologi', 'Gaya Hidup', 'Hiburan']
   const tags = (siteSettings?.trendingTopics as string[])?.length > 0
     ? (siteSettings.trendingTopics as string[])
     : defaultTags
+  const whatsappUrl = buildWhatsAppUrl(siteConfig.phone, siteConfig.name)
+  const reportUrl = `mailto:${siteConfig.contactEmail}?subject=${encodeURIComponent(`Laporan Warga untuk ${siteConfig.name}`)}`
+  const socialChannels = [
+    { label: 'Facebook', href: siteConfig.socialLinks?.facebook },
+    { label: 'X', href: siteConfig.socialLinks?.twitter },
+    { label: 'Instagram', href: siteConfig.socialLinks?.instagram },
+    { label: 'YouTube', href: siteConfig.socialLinks?.youtube },
+  ].filter((item) => Boolean(item.href))
+  const showHomepageHero = !searchQuery && categoryFilter === 'terbaru' && topBentoStories.length > 0
+  const showEditorFocus = showHomepageHero && minimalStories.length > 0
+  const showTrending = tags.length > 0
+  const showInlineSponsor = mainFeed.length > 3
+  const showPopularSidebar = popular.length > 0
+  const showEditorChoice = editorChoice.length >= 3
+  const showOpinionSection = opinionAnalisis.length >= 3
+  const showPhotoSection = photojournalism.length >= 3
+  const showVideoSection = videoStories.length >= 3
+  const showEditorialExtras = !searchQuery && categoryFilter === 'terbaru' && (showEditorChoice || showOpinionSection || showPhotoSection || showVideoSection)
 
   return (
     <PublicSiteLayout siteConfig={siteConfig} initialCategory={categoryFilter}>
@@ -145,142 +188,55 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
           </div>
         </Container>
 
-        {!searchQuery && categoryFilter === 'terbaru' && (
+        {showHomepageHero && (
           <Container>
             <Container bleed className="mb-8 md:mb-24 border-b border-gray-100 dark:border-white/5 pb-8 md:pb-16 bg-gray-50/30 dark:bg-white/[0.01] pt-4 md:pt-8">
               <MagazineBentoHero articles={topBentoStories} site={siteParam} />
 
-              {/* 4 Minimal Stories Row */}
-              <div className="border-t border-gray-100 dark:border-white/5 pt-4 md:pt-8">
-                <div className="flex items-center gap-2 mb-4 md:mb-8">
-                  <Zap size={16} className="text-brand-red animate-pulse" />
-                  <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-brand-black dark:text-white">Fokus Redaksi</h3>
+              {showEditorFocus && (
+                <div className="border-t border-gray-100 dark:border-white/5 pt-4 md:pt-8">
+                  <div className="flex items-center gap-2 mb-4 md:mb-8">
+                    <Zap size={16} className="text-brand-red" />
+                    <h3 className={`${sectionEyebrowClass} text-brand-black dark:text-white`}>Fokus Redaksi</h3>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {minimalStories.map((article: any) => (
+                      <NewsCard key={article.id} article={article} variant="minimal" site={siteParam} />
+                    ))}
+                  </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  {minimalStories.map((article: any) => (
-                    <NewsCard key={article.id} article={article} variant="minimal" site={siteParam} />
-                  ))}
-                </div>
-              </div>
-
-              {/* 1. PILIHAN EDITOR */}
-              <ScrollAnimate className="border-t border-gray-100 dark:border-white/5 pt-6 md:pt-12 mt-6 md:mt-12">
-                <div className="flex items-center gap-2 mb-4 md:mb-8">
-                  <Star size={16} className="text-amber-500 fill-amber-500" />
-                  <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-brand-black dark:text-white">Pilihan Editor</h3>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                  {editorChoice.slice(0, 3).map((article: any) => (
-                    <div key={article.id} className="border border-amber-100 dark:border-amber-950/30 p-5 rounded-2xl bg-amber-50/10 dark:bg-amber-950/5 hover:shadow-xl transition-all duration-300">
-                      <NewsCard article={article} variant="medium" site={siteParam} />
-                    </div>
-                  ))}
-                </div>
-              </ScrollAnimate>
-
-              {/* 2. BERITA VIDEO (DARK THEMING PREMIUM) */}
-              <ScrollAnimate className="border-t border-gray-100 dark:border-white/5 pt-6 md:pt-12 mt-6 md:mt-12 bg-slate-950 -mx-4 md:-mx-8 lg:-mx-10 px-4 md:px-8 lg:px-10 py-8 md:py-12 rounded-none md:rounded-3xl text-white">
-                <div className="flex items-center gap-2 mb-4 md:mb-8">
-                  <Zap size={16} className="text-red-500 fill-red-500" />
-                  <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-white">Laporan Video Eksklusif</h3>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                  {videoStories.map((article: any) => (
-                    <div key={article.id} className="group relative rounded-2xl overflow-hidden aspect-video bg-black shadow-lg">
-                      {/* Simulated video play button overlay */}
-                      <div className="absolute inset-0 bg-black/40 group-hover:bg-black/60 transition-colors z-10 flex items-center justify-center">
-                        <div className="w-14 h-14 bg-white/20 backdrop-blur-md border border-white/40 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform group-hover:bg-brand-red group-hover:border-transparent">
-                          <span className="text-white text-lg ml-1">▶</span>
-                        </div>
-                      </div>
-                      {article.featuredImage && (
-                        <img src={article.featuredImage} alt={article.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[4s]" />
-                      )}
-                      <div className="absolute bottom-0 left-0 p-5 w-full bg-gradient-to-t from-black via-black/80 to-transparent z-20">
-                        <span className="text-[9px] font-black text-brand-red uppercase tracking-widest block mb-1">Video Report</span>
-                        <h4 className="text-sm font-bold text-white line-clamp-2">{article.title}</h4>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </ScrollAnimate>
-
-              {/* 3. FOTO JURNALISTIK */}
-              <ScrollAnimate className="border-t border-gray-100 dark:border-white/5 pt-6 md:pt-12 mt-6 md:mt-12">
-                <div className="flex items-center gap-2 mb-4 md:mb-8">
-                  <span className="text-brand-red">📷</span>
-                  <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-brand-black dark:text-white">Foto Jurnalistik</h3>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {photojournalism.map((article: any) => (
-                    <div key={article.id} className="relative aspect-[4/5] rounded-3xl overflow-hidden group shadow-lg">
-                      {article.featuredImage && (
-                        <img src={article.featuredImage} alt={article.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-[5s]" />
-                      )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent" />
-                      <div className="absolute bottom-0 left-0 p-6 z-10 w-full">
-                        <span className="text-[9px] font-black text-brand-red uppercase tracking-widest block mb-2">Jurnal Foto</span>
-                        <h4 className="text-base font-serif font-black text-white leading-snug line-clamp-3">{article.title}</h4>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </ScrollAnimate>
-
-              {/* 4. OPINI & ANALISIS (CLASSICAL NEWSPAPER SERIF STYLE) */}
-              <ScrollAnimate className="border-t border-gray-100 dark:border-white/5 pt-6 md:pt-12 mt-6 md:mt-12">
-                <div className="flex items-center gap-2 mb-4 md:mb-8">
-                  <span className="text-brand-red">✍️</span>
-                  <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-brand-black dark:text-white">Opini & Analisis</h3>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 divide-y md:divide-y-0 md:divide-x divide-gray-100 dark:divide-white/5">
-                  {opinionAnalisis.map((article: any, idx: number) => (
-                    <div key={article.id} className={`pt-6 md:pt-0 ${idx > 0 ? 'md:pl-8' : ''} flex flex-col justify-between h-full gap-4`}>
-                      <div>
-                        <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-2">Kolom Analisis</span>
-                        <Link href={`/${siteParam}/artikel/${article.slug}`}>
-                          <h4 className="text-xl font-serif font-black text-brand-black dark:text-white hover:text-brand-red transition-colors leading-tight line-clamp-3 mb-2">
-                            &ldquo;{article.title}&rdquo;
-                          </h4>
-                        </Link>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 font-light line-clamp-3 leading-relaxed">
-                          {article.excerpt || article.blocks?.find((b: any) => b.type === 'paragraph')?.content || ''}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2 mt-4 pt-4 border-t border-gray-50 dark:border-white/5">
-                        <div className="w-6 h-6 rounded-full bg-brand-red/10 flex items-center justify-center text-[10px] font-black text-brand-red">
-                          {article.author?.name?.charAt(0) || 'S'}
-                        </div>
-                        <span className="text-[10px] font-black text-brand-black dark:text-white uppercase tracking-wider">
-                          {article.author?.name || 'Redaksi'}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </ScrollAnimate>
+              )}
             </Container>
           </Container>
         )}
 
         <Container>
-          <section className="mb-16 py-8 border-y border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-white/[0.01]">
-            <div className="flex items-center gap-6 overflow-x-auto no-scrollbar -mx-4 md:-mx-8 lg:-mx-10 px-4 md:px-8 lg:px-10">
-              <div className="flex items-center gap-2 shrink-0 bg-brand-black dark:bg-white text-white dark:text-brand-black px-4 py-2 rounded-sm shadow-lg">
-                <TrendingUp size={14} />
-                <span className="text-[11px] font-black uppercase tracking-[0.2em]">Trending</span>
+          {showTrending && (
+            <section className="mb-16 py-8 border-y border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-white/[0.01]">
+              <div className="flex flex-col gap-4">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-2 shrink-0 bg-brand-black dark:bg-white text-white dark:text-brand-black px-4 py-2 rounded-sm shadow-lg">
+                    <TrendingUp size={14} />
+                    <span className={sectionEyebrowClass}>Trending</span>
+                  </div>
+                  <p className="hidden md:block text-[10px] text-gray-500 dark:text-gray-400 font-semibold">
+                    Topik yang ramai dibaca dan paling cepat mengarahkan pembaca ke isu utama hari ini.
+                  </p>
+                </div>
+                <div className="flex items-center gap-6 overflow-x-auto no-scrollbar -mx-4 md:-mx-8 lg:-mx-10 px-4 md:px-8 lg:px-10">
+                  {tags.map(tag => (
+                    <Link
+                      key={tag}
+                      href={`/${siteParam}?q=${encodeURIComponent(tag)}`}
+                      className="shrink-0 px-4 py-1.5 text-[11px] font-black uppercase tracking-[0.14em] text-gray-400 dark:text-gray-300 hover:text-brand-red dark:hover:text-brand-red transition-colors"
+                    >
+                      #{tag}
+                    </Link>
+                  ))}
+                </div>
               </div>
-              {tags.map(tag => (
-                <Link
-                  key={tag}
-                  href={`/${siteParam}?q=${encodeURIComponent(tag)}`}
-                  className="shrink-0 px-4 py-1.5 text-[11px] font-black uppercase tracking-[0.2em] text-gray-400 dark:text-gray-300 hover:text-brand-red dark:hover:text-brand-red transition-all hover:scale-105"
-                >
-                  #{tag}
-                </Link>
-              ))}
-            </div>
-          </section>
+            </section>
+          )}
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16">
             <div className="lg:col-span-8">
@@ -289,85 +245,277 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
                   <span className="w-6 h-6 bg-brand-red shadow-lg shadow-brand-red/20"></span>
                   {searchQuery ? `Hasil Pencarian: ${searchQuery}` : `Berita ${resolveCategoryName(categoryFilter, categoriesTree)}`}
                 </h3>
-                <div className="hidden md:flex items-center gap-6 text-[11px] font-black uppercase tracking-[0.3em] text-gray-400">
-                  <span className="text-brand-red cursor-pointer border-b-2 border-brand-red pb-1">Terbaru</span>
-                  <span className="cursor-pointer hover:text-brand-black dark:hover:text-white transition-colors">Populer</span>
+                <div className="hidden md:flex items-center gap-3 text-[11px] font-black uppercase tracking-[0.25em] text-gray-400">
+                  <span className="inline-flex items-center gap-2 text-brand-red">
+                    <span className="w-2 h-2 rounded-full bg-brand-red"></span>
+                    Update Langsung
+                  </span>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-16 mb-16">
-                {mainFeed.slice(0, 4).map((article: any) => (
-                  <NewsCard key={article.id} article={article} site={siteParam} priority={true} />
-                ))}
-              </div>
+              {mainFeed.length > 0 ? (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-16 mb-16">
+                    {mainFeed.slice(0, 4).map((article: any) => (
+                      <NewsCard key={article.id} article={article} site={siteParam} priority={true} />
+                    ))}
+                  </div>
 
-              <div className="mb-16 p-8 bg-brand-grey dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/5">
-                <div className="flex justify-between items-center mb-6">
-                  <span className="text-[11px] font-black uppercase tracking-[0.3em] text-gray-400">Sponsorship</span>
-                  <span className="text-[11px] font-bold text-gray-300">ADVERTISEMENT</span>
+                  {showInlineSponsor && (
+                    <div className="mb-16 p-8 bg-brand-grey dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/5">
+                      <div className="flex justify-between items-center mb-6">
+                        <span className={sectionEyebrowMutedClass}>Sponsorship</span>
+                        <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-gray-400">Advertisement</span>
+                      </div>
+                      <AdSpace type="in-feed" className="mx-auto" />
+                    </div>
+                  )}
+
+                  {mainFeed.length > 4 && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-16 mb-16">
+                      {mainFeed.slice(4).map((article: any) => (
+                        <NewsCard key={article.id} article={article} site={siteParam} />
+                      ))}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="mb-16 rounded-2xl border border-dashed border-gray-200 dark:border-white/10 bg-gray-50/70 dark:bg-white/[0.02] p-10 text-center">
+                  <p className="text-lg font-serif font-black text-brand-black dark:text-white">Belum ada berita untuk konteks ini.</p>
+                  <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">
+                    Coba kembali ke topik terbaru atau gunakan kata kunci yang lebih umum.
+                  </p>
+                  <div className="mt-6">
+                    <Link
+                      href={`/${siteParam}`}
+                      className="inline-flex items-center justify-center rounded-full bg-brand-red px-5 py-2.5 text-[11px] font-black uppercase tracking-[0.12em] text-white hover:opacity-90 transition-opacity"
+                    >
+                      Kembali Ke Berita Terbaru
+                    </Link>
+                  </div>
                 </div>
-                <AdSpace type="in-feed" className="mx-auto" />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-16 mb-16">
-                {mainFeed.slice(4).map((article: any) => (
-                  <NewsCard key={article.id} article={article} site={siteParam} />
-                ))}
-              </div>
+              )}
 
               <div className="pt-12 border-t border-gray-100 dark:border-white/5">
                 <LoadMoreArticles siteId={siteConfig.id} category={categoryFilter} search={searchQuery} initialPage={1} />
               </div>
             </div>
 
-            <aside className="lg:col-span-4 space-y-16">
-              <div className="p-8 bg-slate-900 rounded-2xl text-white shadow-xl relative overflow-hidden group">
-                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
-                  <Send size={80} />
+            <aside className="lg:col-span-4 space-y-10">
+              <div className="p-6 bg-slate-900 rounded-2xl text-white shadow-xl border border-white/5 space-y-4">
+                <div>
+                  <span className={`${sectionEyebrowClass} text-brand-red`}>Terhubung Dengan Redaksi</span>
+                  <h4 className="text-2xl font-serif font-black leading-tight mt-3">Pilih saluran yang paling cepat untuk pembaca Indonesia.</h4>
+                  <p className="text-sm text-gray-400 mt-3 font-light leading-relaxed">
+                    Kami arahkan slot ini untuk distribusi berita, laporan warga, dan kanal sosial yang lebih relevan daripada newsletter email.
+                  </p>
                 </div>
-                <h4 className="text-2xl font-serif font-black leading-tight mb-4 relative z-10">Dapatkan Berita Eksklusif di Inbox Anda</h4>
-                <p className="text-sm text-gray-400 mb-8 font-light relative z-10">Bergabunglah dengan 50,000+ pembaca setia BeritaKarya.</p>
-                <NewsletterForm />
+
+                {whatsappUrl && (
+                  <a
+                    href={whatsappUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-5 hover:bg-emerald-500/15 transition-colors"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <div className="flex items-center gap-2 mb-2">
+                          <MessageCircle size={16} className="text-emerald-400" />
+                          <span className={`${sidebarEyebrowClass} tracking-[0.14em] text-emerald-300`}>Gabung WhatsApp Channel</span>
+                        </div>
+                        <p className="text-sm text-white font-semibold">Terima update berita penting dan breaking news lebih cepat.</p>
+                      </div>
+                      <ArrowRight size={16} className="text-emerald-300 shrink-0 mt-1" />
+                    </div>
+                  </a>
+                )}
+
+                <a
+                  href={reportUrl}
+                  className="block rounded-2xl border border-white/10 bg-white/5 p-5 hover:bg-white/10 transition-colors"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <FileText size={16} className="text-brand-red" />
+                        <span className={`${sidebarEyebrowClass} tracking-[0.14em]`}>Kirim Informasi / Laporan Warga</span>
+                      </div>
+                      <p className="text-sm text-gray-300 font-light leading-relaxed">Kirim informasi, aduan, atau temuan lapangan langsung ke redaksi melalui email resmi.</p>
+                    </div>
+                    <ArrowRight size={16} className="text-white shrink-0 mt-1" />
+                  </div>
+                </a>
+
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Share2 size={16} className="text-brand-red" />
+                    <span className={`${sidebarEyebrowClass} tracking-[0.14em]`}>Ikuti Sosial Media</span>
+                  </div>
+                  <p className="text-sm text-gray-300 font-light leading-relaxed mb-4">
+                    Ikuti kanal resmi {siteConfig.name} untuk update harian, video singkat, dan distribusi konten terbaru.
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {socialChannels.length > 0 ? (
+                      socialChannels.map((channel) => (
+                        <a
+                          key={channel.label}
+                          href={channel.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 rounded-full border border-white/10 px-4 py-2 text-[11px] font-black uppercase tracking-[0.12em] text-white hover:border-brand-red hover:text-brand-red transition-colors"
+                        >
+                          {channel.label}
+                        </a>
+                      ))
+                    ) : (
+                      <p className="text-xs text-gray-400">Akun sosial resmi sedang diperbarui oleh redaksi.</p>
+                    )}
+                  </div>
+                </div>
               </div>
 
-              <div>
-                <div className="flex items-center gap-3 mb-8">
-                  <Star size={18} className="text-brand-red fill-brand-red" />
-                  <h4 className="text-xs font-black uppercase tracking-[0.3em] text-brand-black dark:text-white">Paling Populer</h4>
-                </div>
-                <div className="flex flex-col gap-8">
-                  {popular.map((article: any, index: number) => (
-                    <div key={article.id} className="flex gap-5 group items-start">
-                      <span className="text-4xl font-serif font-black text-gray-100 dark:text-white/5 group-hover:text-brand-red transition-colors tabular-nums">
-                        {(index + 1).toString().padStart(2, '0')}
-                      </span>
-                      <div className="flex-1">
-                        <NewsCard article={article} variant="minimal" site={siteParam} />
+              {showPopularSidebar && (
+                <div>
+                  <div className="flex items-center gap-3 mb-8">
+                    <Star size={18} className="text-brand-red fill-brand-red" />
+                    <h4 className={`${sectionEyebrowClass} text-brand-black dark:text-white`}>Paling Populer</h4>
+                  </div>
+                  <div className="flex flex-col gap-8">
+                    {popular.map((article: any, index: number) => (
+                      <div key={article.id} className="flex gap-5 group items-start">
+                        <span className="text-4xl font-serif font-black text-gray-100 dark:text-white/5 group-hover:text-brand-red transition-colors tabular-nums">
+                          {(index + 1).toString().padStart(2, '0')}
+                        </span>
+                        <div className="flex-1">
+                          <NewsCard article={article} variant="minimal" site={siteParam} />
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {siteSettings?.featuredVideo && (
-                <div className="sticky top-28">
+                <div>
                   <VideoWidget
                     title={siteSettings.featuredVideo.title}
                     thumbnail={siteSettings.featuredVideo.thumbnail}
                     duration={siteSettings.featuredVideo.duration}
                   />
-                  <div className="mt-8">
-                    <AdSpace type="rectangle" />
-                  </div>
                 </div>
               )}
               {!siteSettings?.featuredVideo && (
-                <div className="sticky top-28">
+                <div>
                   <AdSpace type="rectangle" />
                 </div>
               )}
             </aside>
           </div>
+
+          {showEditorialExtras && (
+            <div className="mt-20 md:mt-24 space-y-14 md:space-y-20 border-t border-gray-100 dark:border-white/5 pt-14 md:pt-16">
+              {showEditorChoice && (
+                <ScrollAnimate>
+                  <div className="flex items-center gap-2 mb-4 md:mb-8">
+                    <Star size={16} className="text-amber-500 fill-amber-500" />
+                    <h3 className={`${sectionEyebrowClass} text-brand-black dark:text-white`}>Pilihan Editor</h3>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    {editorChoice.map((article: any) => (
+                      <div key={article.id} className="border border-amber-100 dark:border-amber-950/30 p-5 rounded-2xl bg-amber-50/10 dark:bg-amber-950/5 hover:shadow-xl transition-all duration-300">
+                        <NewsCard article={article} variant="medium" site={siteParam} />
+                      </div>
+                    ))}
+                  </div>
+                </ScrollAnimate>
+              )}
+
+              {showOpinionSection && (
+                <ScrollAnimate>
+                  <div className="flex items-center gap-2 mb-4 md:mb-8">
+                    <span className="w-2 h-2 rounded-full bg-brand-red"></span>
+                    <h3 className={`${sectionEyebrowClass} text-brand-black dark:text-white`}>Opini & Analisis</h3>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8 divide-y md:divide-y-0 md:divide-x divide-gray-100 dark:divide-white/5">
+                    {opinionAnalisis.map((article: any, idx: number) => (
+                      <div key={article.id} className={`pt-6 md:pt-0 ${idx > 0 ? 'md:pl-8' : ''} flex flex-col justify-between h-full gap-4`}>
+                        <div>
+                          <span className={`${sectionMetaClass} uppercase tracking-[0.12em] block mb-2`}>Kolom Analisis</span>
+                          <Link href={`/${siteParam}/artikel/${article.slug}`}>
+                            <h4 className="text-xl font-serif font-black text-brand-black dark:text-white hover:text-brand-red transition-colors leading-tight line-clamp-3 mb-2">
+                              &ldquo;{article.title}&rdquo;
+                            </h4>
+                          </Link>
+                          <p className="text-sm text-gray-500 dark:text-gray-400 font-light line-clamp-3 leading-relaxed">
+                            {article.excerpt || article.blocks?.find((b: any) => b.type === 'paragraph')?.content || ''}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2 mt-4 pt-4 border-t border-gray-50 dark:border-white/5">
+                          <div className="w-6 h-6 rounded-full bg-brand-red/10 flex items-center justify-center text-[10px] font-black text-brand-red">
+                            {article.author?.name?.charAt(0) || 'S'}
+                          </div>
+                          <span className="text-[11px] font-semibold text-brand-black dark:text-white uppercase tracking-[0.12em]">
+                            {article.author?.name || 'Redaksi'}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollAnimate>
+              )}
+
+              {showPhotoSection && (
+                <ScrollAnimate>
+                  <div className="flex items-center gap-2 mb-4 md:mb-8">
+                    <span className="w-2 h-2 bg-brand-red"></span>
+                    <h3 className={`${sectionEyebrowClass} text-brand-black dark:text-white`}>Foto Jurnalistik</h3>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {photojournalism.map((article: any) => (
+                      <div key={article.id} className="relative aspect-[4/5] rounded-3xl overflow-hidden group shadow-lg">
+                        {article.featuredImage && (
+                          <img src={article.featuredImage} alt={article.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-[5s]" />
+                        )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent" />
+                        <div className="absolute bottom-0 left-0 p-6 z-10 w-full">
+                          <span className="text-[10px] font-semibold text-brand-red uppercase tracking-[0.12em] block mb-2">Jurnal Foto</span>
+                          <h4 className="text-base font-serif font-black text-white leading-snug line-clamp-3">{article.title}</h4>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollAnimate>
+              )}
+
+              {showVideoSection && (
+                <ScrollAnimate className="bg-slate-950 -mx-4 md:-mx-8 lg:-mx-10 px-4 md:px-8 lg:px-10 py-8 md:py-12 rounded-none md:rounded-3xl text-white">
+                  <div className="flex items-center gap-2 mb-4 md:mb-8">
+                    <Zap size={16} className="text-red-500 fill-red-500" />
+                    <h3 className={`${sidebarEyebrowClass} tracking-[0.14em]`}>Laporan Video Eksklusif</h3>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    {videoStories.map((article: any) => (
+                      <div key={article.id} className="group relative rounded-2xl overflow-hidden aspect-video bg-black shadow-lg">
+                        <div className="absolute inset-0 bg-black/40 group-hover:bg-black/60 transition-colors z-10 flex items-center justify-center">
+                          <div className="w-14 h-14 bg-white/20 backdrop-blur-md border border-white/40 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform group-hover:bg-brand-red group-hover:border-transparent">
+                            <span className="text-white text-lg ml-1">▶</span>
+                          </div>
+                        </div>
+                        {article.featuredImage && (
+                          <img src={article.featuredImage} alt={article.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[4s]" />
+                        )}
+                        <div className="absolute bottom-0 left-0 p-5 w-full bg-gradient-to-t from-black via-black/80 to-transparent z-20">
+                          <span className="text-[10px] font-semibold text-brand-red uppercase tracking-[0.12em] block mb-1">Video Report</span>
+                          <h4 className="text-sm font-bold text-white line-clamp-2">{article.title}</h4>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollAnimate>
+              )}
+            </div>
+          )}
         </Container>
       </main>
     </PublicSiteLayout>

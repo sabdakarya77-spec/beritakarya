@@ -12,12 +12,26 @@ interface SiteFooterProps {
 }
 
 export default function SiteFooter({ siteConfig, categories }: SiteFooterProps) {
+  const activeSite = siteConfig?.id || 'pusat';
+  const supportEmail = siteConfig?.contactEmail || 'support.beritakarya@gmail.com';
+  const infoLinks = [
+    { href: `/${activeSite}/p/about`, label: 'Tentang Kami' },
+    { href: `/${activeSite}/p/ethics`, label: 'Kode Etik' },
+    { href: `/${activeSite}/p/editorial`, label: 'Redaksi' },
+    { href: `/${activeSite}/p/ads`, label: 'Iklan' },
+  ];
+  const legalLinks = [
+    { href: `/${activeSite}/kebijakan-privasi`, label: 'Kebijakan Privasi' },
+    { href: `/${activeSite}/p/ethics`, label: 'Kode Etik' },
+    { href: `/${activeSite}/p/editorial`, label: 'Redaksi' },
+  ];
+
   return (
     <footer className="bg-white dark:bg-black/90 text-brand-text mt-32 pt-16 pb-12 border-t border-gray-100 dark:border-white/5 transition-colors duration-500">
       <div className="max-w-7xl mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
           <div className="col-span-1">
-            <Link href="/" className="flex flex-col mb-5">
+            <Link href={`/${activeSite}`} className="flex flex-col mb-5">
               <span className="font-serif text-3xl font-black tracking-tighter uppercase">
                 <span className="text-brand-red">BERITA</span>
                 <span className="text-brand-black dark:text-white">KARYA</span>
@@ -89,11 +103,13 @@ export default function SiteFooter({ siteConfig, categories }: SiteFooterProps) 
           <div>
             <h5 className="text-[10px] font-black uppercase tracking-[0.2em] mb-5 text-brand-red">Informasi</h5>
             <ul className="text-brand-text-muted text-xs space-y-3">
-              <li><Link href={`/${siteConfig.id}/p/about`} className="hover:text-brand-red transition-colors font-semibold">Tentang Kami</Link></li>
-              <li><Link href={`/${siteConfig.id}/p/ethics`} className="hover:text-brand-red transition-colors font-semibold">Kode Etik</Link></li>
-              <li><Link href={`/${siteConfig.id}/p/editorial`} className="hover:text-brand-red transition-colors font-semibold">Redaksi</Link></li>
-              <li><Link href={`/${siteConfig.id}/p/partnership`} className="hover:text-brand-red transition-colors font-semibold">Kemitraan & Kerja Sama</Link></li>
-              <li><Link href={`/${siteConfig.id}/p/ads`} className="hover:text-brand-red transition-colors font-semibold">Iklan</Link></li>
+              {infoLinks.map((item) => (
+                <li key={item.href}>
+                  <Link href={item.href} className="hover:text-brand-red transition-colors font-semibold">
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
@@ -103,9 +119,12 @@ export default function SiteFooter({ siteConfig, categories }: SiteFooterProps) 
               <p className="text-brand-text-muted text-xs leading-relaxed">
                 Bantu kami menjaga independensi jurnalisme dengan menjadi anggota.
               </p>
-              <button className="bg-brand-red text-white py-2.5 px-5 text-[10px] font-black uppercase tracking-widest hover:bg-brand-black dark:hover:bg-white dark:hover:text-brand-black transition-all rounded-xl">
+              <a
+                href={`mailto:${supportEmail}?subject=${encodeURIComponent(`Dukungan untuk ${siteConfig?.name || 'BeritaKarya'}`)}`}
+                className="inline-flex items-center justify-center bg-brand-red text-white py-2.5 px-5 text-[10px] font-black uppercase tracking-widest hover:bg-brand-black dark:hover:bg-white dark:hover:text-brand-black transition-all rounded-xl"
+              >
                 Dukung Kami
-              </button>
+              </a>
             </div>
           </div>
         </div>
@@ -115,9 +134,11 @@ export default function SiteFooter({ siteConfig, categories }: SiteFooterProps) 
             {siteConfig?.footerText || `© ${new Date().getFullYear()} BERITA KARYA. ALL RIGHTS RESERVED.`}
           </span>
           <div className="flex gap-6 text-[9px] uppercase font-black tracking-widest text-brand-text-muted opacity-60">
-            <Link href="/privacy" className="hover:text-brand-red">Privacy Policy</Link>
-            <Link href="/terms" className="hover:text-brand-red">Terms of Use</Link>
-            <Link href="/cookies" className="hover:text-brand-red">Cookie Policy</Link>
+            {legalLinks.map((item) => (
+              <Link key={item.href} href={item.href} className="hover:text-brand-red">
+                {item.label}
+              </Link>
+            ))}
           </div>
         </div>
       </div>

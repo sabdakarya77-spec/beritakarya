@@ -1,6 +1,6 @@
 'use client';
 
-import { Search, Menu, User as UserIcon, Bell, Globe, Moon, Sun, FileText, Bookmark } from 'lucide-react';
+import { Search, Menu, User as UserIcon, Bell, Globe, Moon, Sun, Bookmark } from 'lucide-react';
 import { SiFacebook, SiX, SiInstagram, SiYoutube } from 'react-icons/si';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
@@ -34,11 +34,18 @@ export default function Navbar({
   const router = useRouter();
   const pathname = usePathname();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
   
   const { user, logout } = useAuthStore();
+  const activeSite = siteConfig?.id || pathname.split('/')[1] || 'pusat';
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
+    if (!savedTheme) return;
+    setTheme(savedTheme);
+    document.documentElement.classList.toggle('dark', savedTheme === 'dark');
+  }, []);
 
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
@@ -50,8 +57,7 @@ export default function Navbar({
   const handleCategoryClick = (cat: string) => {
     setSelectedCategory(cat);
     // Navigate to homepage with category param
-    const site = pathname.split('/')[1] || 'pusat';
-    router.push(`/${site}?cat=${encodeURIComponent(cat)}`);
+    router.push(`/${activeSite}?cat=${encodeURIComponent(cat)}`);
   };
 
   return (
@@ -59,15 +65,15 @@ export default function Navbar({
       {/* Top Bar */}
       <div className="max-w-7xl mx-auto px-4 h-10 flex items-center justify-between border-b border-gray-50 uppercase tracking-[0.15em] text-[10px] font-bold text-brand-text-muted">
         <div className="flex items-center gap-5">
-          <span className="hidden sm:flex items-center gap-1.5 hover:text-brand-red transition-colors cursor-pointer">
+          <Link href="/pusat" className="hidden sm:flex items-center gap-1.5 hover:text-brand-red transition-colors">
             <Globe size={12} /> Global Edition
-          </span>
+          </Link>
           <div className="hidden sm:block w-px h-3 bg-gray-200" />
           <DateTimeWeather />
         </div>
         <div className="hidden lg:flex items-center gap-5">
-          <Link href="/arsip" className="hover:text-brand-red transition-colors">Arsip</Link>
-          <Link href="/bantuan" className="hover:text-brand-red transition-colors">Bantuan</Link>
+          <Link href={`/${activeSite}/p/about`} className="hover:text-brand-red transition-colors">Tentang</Link>
+          <Link href={`/${activeSite}/kebijakan-privasi`} className="hover:text-brand-red transition-colors">Privasi</Link>
         </div>
       </div>
 
@@ -97,7 +103,7 @@ export default function Navbar({
           animate={{ opacity: 1, y: 0 }}
           className="flex-shrink-0"
         >
-          <Link href="/" className="flex flex-col items-center group">
+          <Link href={`/${activeSite}`} className="flex flex-col items-center group">
             {siteConfig?.logoUrl ? (
               <div className="relative h-12 w-48 mb-1">
                 <SmartImage 
@@ -183,7 +189,7 @@ export default function Navbar({
                     <div className="p-2">
                       {['superadmin', 'wapimred', 'reporter', 'kontributor'].includes(user.role) && (
                         <Link 
-                          href={`/${pathname.split('/')[1] || 'pusat'}/dashboard`}
+                          href={`/${activeSite}/dashboard`}
                           className="block px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-gray-600 hover:text-brand-red hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-white/5 rounded-md transition-colors"
                           onClick={() => setIsProfileOpen(false)}
                         >

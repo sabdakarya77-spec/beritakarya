@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ChevronRight, Globe, Bookmark, Clock, User, LogOut } from 'lucide-react';
+import { X, ChevronRight, Globe, Bookmark, FileText, User, LogOut, Shield } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { CategoryItem } from '../../lib/constants';
@@ -29,11 +29,11 @@ export default function MobileMenu({
   const { user, logout } = useAuthStore();
   const router = useRouter();
   const pathname = usePathname();
+  const activeSite = siteConfig?.id || pathname.split('/')[1] || 'pusat';
 
   const handleCategoryClick = (slug: string) => {
     onCategoryClick(slug);
-    const site = pathname.split('/')[1] || 'pusat';
-    router.push(`/${site}?cat=${encodeURIComponent(slug)}`);
+    router.push(`/${activeSite}?cat=${encodeURIComponent(slug)}`);
     onClose();
   };
 
@@ -60,14 +60,14 @@ export default function MobileMenu({
           >
             {/* Header */}
             <div className="p-6 border-b border-gray-100 dark:border-white/5 flex items-center justify-between">
-              <div className="flex flex-col">
+              <Link href={`/${activeSite}`} onClick={onClose} className="flex flex-col">
                 <h2 className="font-serif text-xl font-black tracking-tight text-brand-black dark:text-white">
                   <span className="text-brand-red">BERITA</span>KARYA
                 </h2>
                 <span className="text-[9px] font-bold text-brand-text-muted uppercase tracking-widest mt-0.5">
                   Menu Navigasi
                 </span>
-              </div>
+              </Link>
               <button 
                 onClick={onClose}
                 className="p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-full transition-colors"
@@ -95,7 +95,7 @@ export default function MobileMenu({
                     <div className="grid grid-cols-2 gap-2">
                       {['superadmin', 'wapimred', 'reporter', 'kontributor'].includes(user.role) && (
                         <Link 
-                          href="/pusat/dashboard" 
+                          href={`/${activeSite}/dashboard`} 
                           onClick={onClose}
                           className="flex items-center justify-center gap-2 py-2 bg-white dark:bg-slate-900 border border-gray-100 dark:border-white/10 rounded-xl text-[10px] font-bold uppercase tracking-wider text-gray-600 dark:text-gray-300"
                         >
@@ -157,14 +157,30 @@ export default function MobileMenu({
               <section>
                 <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4">Lainnya</h3>
                 <div className="space-y-4">
-                  <div className="flex items-center gap-3 text-gray-600 dark:text-gray-400">
+                  <Link
+                    href="/pusat"
+                    onClick={onClose}
+                    className="flex items-center gap-3 text-gray-600 dark:text-gray-400 hover:text-brand-red transition-colors"
+                  >
                     <Globe size={18} />
                     <span className="text-sm font-bold uppercase tracking-wider">Global Edition</span>
-                  </div>
-                  <div className="flex items-center gap-3 text-gray-600 dark:text-gray-400">
-                    <Clock size={18} />
-                    <Link href="/arsip" onClick={onClose} className="text-sm font-bold uppercase tracking-wider">Arsip Berita</Link>
-                  </div>
+                  </Link>
+                  <Link
+                    href={`/${activeSite}/p/about`}
+                    onClick={onClose}
+                    className="flex items-center gap-3 text-gray-600 dark:text-gray-400 hover:text-brand-red transition-colors"
+                  >
+                    <FileText size={18} />
+                    <span className="text-sm font-bold uppercase tracking-wider">Tentang Kami</span>
+                  </Link>
+                  <Link
+                    href={`/${activeSite}/kebijakan-privasi`}
+                    onClick={onClose}
+                    className="flex items-center gap-3 text-gray-600 dark:text-gray-400 hover:text-brand-red transition-colors"
+                  >
+                    <Shield size={18} />
+                    <span className="text-sm font-bold uppercase tracking-wider">Kebijakan Privasi</span>
+                  </Link>
                 </div>
               </section>
             </div>
