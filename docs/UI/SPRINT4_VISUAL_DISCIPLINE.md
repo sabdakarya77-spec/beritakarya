@@ -396,8 +396,8 @@ Animation: Minimal, performance-focused
     - [x] Review semua loading states
     - [x] Ensure consistent loading patterns
 
-16. Global Shadow Review
-    - [ ] Review shadow-3xl usage → replace
+16. Global Shadow Review ✅
+    - [x] Review shadow-3xl usage → replace (PremiumHero.tsx)
     - [ ] Review shadow-2xl → conditional
     - [ ] Ensure consistent elevation
 ```
