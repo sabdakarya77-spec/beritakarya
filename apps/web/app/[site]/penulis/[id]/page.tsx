@@ -3,10 +3,10 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { ArrowLeft, CalendarDays, Eye, FileText, Sparkles, User2 } from 'lucide-react'
 import { SITE_MAP } from '@beritakarya/config'
-import PublicSiteLayout from '../../../../../components/layout/PublicSiteLayout'
-import { Container } from '../../../../../components/layout/Container'
-import NewsCard from '../../../../../components/ui/NewsCard'
-import { ROLE_LABELS } from '../../../../../lib/constants'
+import PublicSiteLayout from '../../../../components/layout/PublicSiteLayout'
+import { Container } from '../../../../components/layout/Container'
+import NewsCard from '../../../../components/ui/NewsCard'
+import { ROLE_LABELS } from '../../../../lib/constants'
 
 interface Props {
   params: { site: string; id: string }

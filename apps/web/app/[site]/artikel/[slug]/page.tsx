@@ -25,6 +25,7 @@ interface Props {
 }
 
 import { constructMetadata } from '../../../../lib/metadata'
+import { cn } from '../../../../lib/utils'
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const resolvedParams = await params;
