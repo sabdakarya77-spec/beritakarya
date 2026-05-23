@@ -9,6 +9,114 @@ import { logger } from '../../lib/logger'
 
 export const userRouter = Router() as any
 
+userRouter.get('/public/:id',
+  siteMiddleware,
+  asyncHandler(async (req: any, res: any) => {
+    const siteId = req.site
+    const { id } = req.params
+
+    const profile = await prisma.user.findFirst({
+      where: {
+        id,
+        deletedAt: null,
+        OR: [
+          { siteId },
+          { siteId: null }
+        ],
+        articles: {
+          some: {
+            siteId,
+            status: 'published',
+            deletedAt: null
+          }
+        }
+      },
+      select: {
+        id: true,
+        name: true,
+        role: true,
+        bio: true,
+        createdAt: true
+      }
+    })
+
+    if (!profile) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'NOT_FOUND', message: 'Profil penulis tidak ditemukan' }
+      })
+    }
+
+    const [publishedCount, totalViews, recentArticles] = await Promise.all([
+      prisma.article.count({
+        where: {
+          authorId: id,
+          siteId,
+          status: 'published',
+          deletedAt: null
+        }
+      }),
+      prisma.article.aggregate({
+        where: {
+          authorId: id,
+          siteId,
+          status: 'published',
+          deletedAt: null
+        },
+        _sum: { viewCount: true }
+      }),
+      prisma.article.findMany({
+        where: {
+          authorId: id,
+          siteId,
+          status: 'published',
+          deletedAt: null
+        },
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          status: true,
+          siteId: true,
+          authorId: true,
+          publishedAt: true,
+          createdAt: true,
+          updatedAt: true,
+          isBreaking: true,
+          isExclusive: true,
+          isFeatured: true,
+          featuredImage: true,
+          featuredImageBlur: true,
+          featuredImageColor: true,
+          viewCount: true,
+          wordCount: true,
+          readingTimeMin: true,
+          blocks: true,
+          tags: true,
+          metaTitle: true,
+          metaDescription: true,
+          category: { select: { id: true, name: true, slug: true } },
+          author: { select: { id: true, name: true, role: true } }
+        },
+        orderBy: { publishedAt: 'desc' },
+        take: 6
+      })
+    ])
+
+    res.json({
+      success: true,
+      data: {
+        profile,
+        stats: {
+          publishedCount,
+          totalViews: totalViews._sum.viewCount || 0
+        },
+        recentArticles
+      }
+    })
+  })
+)
+
 userRouter.get('/',
   requireAuth,
   siteMiddleware,

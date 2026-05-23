@@ -20,6 +20,9 @@ import { api } from '../../../../lib/api'
 import { useAuthStore } from '../../../../store/authStore'
 import { cn } from '../../../../lib/utils'
 
+const BIO_MIN_LENGTH = 80
+const BIO_MAX_LENGTH = 180
+
 export default function KYCPage() {
   const params = useParams()
   const siteId = params.site as string
@@ -41,6 +44,10 @@ export default function KYCPage() {
   // Previews
   const [idPreview, setIdPreview] = useState<string | null>(null)
   const [familyPreview, setFamilyPreview] = useState<string | null>(null)
+
+  const bioLength = bio.trim().length
+  const isBioTooShort = bioLength > 0 && bioLength < BIO_MIN_LENGTH
+  const isBioTooLong = bio.length > BIO_MAX_LENGTH
 
   useEffect(() => {
     if (user?.kycStatus === 'APPROVED') {
@@ -75,6 +82,16 @@ export default function KYCPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    const trimmedBio = bio.trim()
+
+    if (trimmedBio.length < BIO_MIN_LENGTH) {
+      setError(`Tentang penulis minimal ${BIO_MIN_LENGTH} karakter agar profil publik tetap informatif dan seragam`)
+      return
+    }
+    if (trimmedBio.length > BIO_MAX_LENGTH) {
+      setError(`Tentang penulis maksimal ${BIO_MAX_LENGTH} karakter agar tetap singkat dan profesional`)
+      return
+    }
     if (!idCard) {
       setError('Foto KTP wajib diunggah')
       return
@@ -88,7 +105,7 @@ export default function KYCPage() {
     setError(null)
 
     const formData = new FormData()
-    formData.append('bio', bio)
+    formData.append('bio', trimmedBio)
     formData.append('idCard', idCard)
     if (familyCard) formData.append('familyCard', familyCard)
     formData.append('consent', 'true')
@@ -205,14 +222,50 @@ export default function KYCPage() {
             {/* Bio Section */}
             <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm">
               <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-3 uppercase tracking-wider">
-                Biografi Singkat
+                Tentang Penulis (Akan Tampil di Profil Publik)
               </label>
+              <p className="mb-3 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                Tulis deskripsi singkat tentang diri Anda dalam 1-2 kalimat formal. Isi ini akan tampil saat pembaca membuka profil penulis.
+              </p>
               <textarea 
                 value={bio}
-                onChange={(e) => setBio(e.target.value)}
-                placeholder="Ceritakan sedikit tentang latar belakang atau pengalaman Anda..."
-                className="w-full h-32 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-4 outline-none focus:border-brand-red/30 transition-all text-sm resize-none"
+                onChange={(e) => {
+                  setBio(e.target.value)
+                  if (error) setError(null)
+                }}
+                maxLength={BIO_MAX_LENGTH}
+                placeholder="Contoh: Penulis BeritaKarya yang berfokus pada isu publik, sosial, dan perkembangan daerah serta menyajikan informasi secara akurat dan berimbang."
+                className={cn(
+                  "w-full h-32 bg-slate-50 dark:bg-slate-950 border rounded-xl p-4 outline-none transition-all text-sm resize-none",
+                  isBioTooShort || isBioTooLong
+                    ? "border-amber-300 dark:border-amber-700 focus:border-amber-400"
+                    : "border-slate-200 dark:border-slate-800 focus:border-brand-red/30"
+                )}
               />
+              <div className="mt-3 flex items-center justify-between gap-3 text-[11px]">
+                <p className={cn(
+                  "leading-relaxed",
+                  isBioTooShort || isBioTooLong ? "text-amber-600 dark:text-amber-400" : "text-slate-500 dark:text-slate-400"
+                )}>
+                  Minimal {BIO_MIN_LENGTH} karakter, maksimal {BIO_MAX_LENGTH} karakter.
+                </p>
+                <span className={cn(
+                  "font-bold tabular-nums",
+                  isBioTooShort || isBioTooLong ? "text-amber-600 dark:text-amber-400" : "text-slate-400"
+                )}>
+                  {bio.length}/{BIO_MAX_LENGTH}
+                </span>
+              </div>
+              <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-950/60">
+                <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">
+                  Contoh Format
+                </p>
+                <div className="mt-3 space-y-2 text-[11px] leading-relaxed text-slate-600 dark:text-slate-300">
+                  <p>Penulis BeritaKarya yang berfokus pada isu publik, sosial, dan perkembangan daerah serta menyajikan informasi secara akurat dan berimbang.</p>
+                  <p>Jurnalis BeritaKarya yang aktif menulis liputan seputar pemerintahan, masyarakat, dan dinamika regional dengan pendekatan yang faktual.</p>
+                  <p>Anggota redaksi BeritaKarya yang menaruh perhatian pada perkembangan kebijakan, kehidupan sosial, dan informasi daerah yang relevan bagi publik.</p>
+                </div>
+              </div>
             </div>
 
             {/* Document Uploads */}

@@ -168,8 +168,8 @@ export default function UsersDashboard() {
       </div>
 
       {/* Users Table */}
-      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
-        <table className="w-full">
+      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-x-auto">
+        <table className="w-full min-w-[800px]">
           <thead>
             <tr className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
               <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-500">

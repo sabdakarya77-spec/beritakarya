@@ -8,12 +8,10 @@ import NewsCard from '../../../../components/ui/NewsCard'
 import ReadingProgress from '../../../../components/ui/ReadingProgress'
 import AdSpace from '../../../../components/ui/AdSpace'
 import ShareSidebar from '../../../../components/ui/ShareSidebar'
-import AuthorCard from '../../../../components/ui/AuthorCard'
 import EditorialBadge from '../../../../components/ui/EditorialBadge'
 import { resolveArticleBadge } from '../../../../lib/resolveArticleBadge'
 import { BookOpen, Printer } from 'lucide-react'
 import { Metadata } from 'next'
-import { cn } from '../../../../lib/utils'
 import CommentSection from '../../../../components/ui/CommentSection'
 import FontSizeControl from '../../../../components/ui/FontSizeControl'
 import ArticleActions from '../../../../components/ui/ArticleActions'
@@ -137,6 +135,9 @@ export default async function ArticlePage({ params }: Props) {
   const coverImageCaption = coverImageBlock?.caption || null
   const excerpt = article.blocks.find((b: any) => b.type === 'paragraph')?.content || ''
   const articleUrl = `${process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'}/${siteParam}/artikel/${slugParam}`
+  const authorProfileUrl = article.author?.id
+    ? `${process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'}/${siteParam}/penulis/${article.author.id}`
+    : `${process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'}/${siteParam}`
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -148,7 +149,7 @@ export default async function ArticlePage({ params }: Props) {
     "author": [{
       "@type": "Person",
       "name": article.author?.name || 'Redaksi',
-      "url": `${process.env.NEXT_PUBLIC_URL}/${siteParam}`
+      "url": authorProfileUrl
     }],
     "publisher": {
       "@type": "Organization",
@@ -217,6 +218,14 @@ export default async function ArticlePage({ params }: Props) {
                   <div className="text-left">
                     <div className="text-[11px] font-black text-brand-black dark:text-white uppercase tracking-widest">{article.author?.name || 'Redaksi'}</div>
                     <div className="text-[9px] text-brand-text-muted font-bold uppercase tracking-widest mt-0.5">Staf Redaksi BeritaKarya</div>
+                    {article.author?.id && (
+                      <Link
+                        href={`/${siteParam}/penulis/${article.author.id}`}
+                        className="mt-2 inline-flex text-[10px] font-black uppercase tracking-[0.18em] text-brand-red transition-colors hover:text-brand-black dark:hover:text-white"
+                      >
+                        Lihat Profil
+                      </Link>
+                    )}
                   </div>
                 </div>
                 
@@ -341,38 +350,45 @@ export default async function ArticlePage({ params }: Props) {
                   ))}
                 </div>
 
-                {/* Author Bio */}
-                <div className="mt-20">
-                  <AuthorCard author={article.author} site={siteParam} />
-                </div>
-
                 {/* Comment Section */}
                 <div id="comments">
                   <CommentSection articleId={article.id} />
                 </div>
+
+                {/* Recommended Articles */}
+                <section className="mt-20 border-t border-gray-100 pt-16 dark:border-white/5">
+                  <div className="mb-10 flex items-center gap-3">
+                    <div className="h-8 w-1 bg-brand-red" />
+                    <div>
+                      <h3 className="text-xl font-black uppercase tracking-tight text-brand-black dark:text-white">
+                        Rekomendasi Artikel
+                      </h3>
+                      <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.18em] text-gray-400">
+                        Lanjutkan bacaan terkait topik ini
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-8">
+                    {relatedArticles.length > 0 ? (
+                      relatedArticles.map((rel: any) => (
+                        <NewsCard key={rel.id} article={rel} variant="minimal" site={siteParam} />
+                      ))
+                    ) : (
+                      <div className="rounded-3xl border border-dashed border-gray-200 px-6 py-12 text-center dark:border-white/10">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                          Belum ada rekomendasi artikel terkait.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </section>
               </div>
 
               {/* Sidebar */}
               <aside className="hidden lg:block">
-                <div className="sticky top-40 space-y-20">
+                <div className="sticky top-40">
                   <AdSpace type="rectangle" />
-
-                  {/* Recommended Widget */}
-                  <div>
-                    <div className="flex items-center gap-3 mb-10">
-                       <div className="w-1 h-8 bg-brand-red" />
-                       <h4 className="text-xs font-black uppercase tracking-[0.3em] text-brand-black dark:text-white">Rekomendasi</h4>
-                    </div>
-                    <div className="space-y-10">
-                      {relatedArticles.length > 0 ? (
-                        relatedArticles.map((rel: any) => (
-                          <NewsCard key={rel.id} article={rel} variant="minimal" site={params.site} />
-                        ))
-                      ) : (
-                        <p className="text-xs text-gray-400">Memuat post terkait...</p>
-                      )}
-                    </div>
-                  </div>
                 </div>
               </aside>
             </div>

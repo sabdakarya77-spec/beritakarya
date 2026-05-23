@@ -11,9 +11,35 @@ interface SiteFooterProps {
   categories: CategoryItem[];
 }
 
+function buildWhatsAppLink(phone?: string | null) {
+  if (!phone) return '';
+
+  const normalized = phone.replace(/[^\d+]/g, '');
+  if (!normalized) return '';
+
+  if (normalized.startsWith('+')) {
+    return `https://wa.me/${normalized.slice(1)}`;
+  }
+
+  if (normalized.startsWith('0')) {
+    return `https://wa.me/62${normalized.slice(1)}`;
+  }
+
+  return `https://wa.me/${normalized}`;
+}
+
 export default function SiteFooter({ siteConfig, categories }: SiteFooterProps) {
   const activeSite = siteConfig?.id || 'pusat';
   const supportEmail = siteConfig?.contactEmail || 'support.beritakarya@gmail.com';
+  const resolvedSocialLinks = {
+    whatsapp: siteConfig?.socialLinks?.whatsapp?.trim() || buildWhatsAppLink(siteConfig?.phone),
+    facebook: siteConfig?.socialLinks?.facebook?.trim() || '',
+    tiktok: siteConfig?.socialLinks?.tiktok?.trim() || '',
+    telegram: siteConfig?.socialLinks?.telegram?.trim() || '',
+    youtube: siteConfig?.socialLinks?.youtube?.trim() || '',
+    twitter: siteConfig?.socialLinks?.twitter?.trim() || '',
+    instagram: siteConfig?.socialLinks?.instagram?.trim() || '',
+  };
   const infoLinks = [
     { href: `/${activeSite}/p/about`, label: 'Tentang Kami' },
     { href: `/${activeSite}/p/ethics`, label: 'Kode Etik' },
@@ -26,13 +52,13 @@ export default function SiteFooter({ siteConfig, categories }: SiteFooterProps) 
     { href: `/${activeSite}/p/editorial`, label: 'Redaksi' },
   ];
   const socialLinks = [
-    { href: siteConfig?.socialLinks?.whatsapp, Icon: SiWhatsapp },
-    { href: siteConfig?.socialLinks?.facebook, Icon: SiFacebook },
-    { href: siteConfig?.socialLinks?.tiktok, Icon: SiTiktok },
-    { href: siteConfig?.socialLinks?.telegram, Icon: SiTelegram },
-    { href: siteConfig?.socialLinks?.youtube, Icon: SiYoutube },
-    { href: siteConfig?.socialLinks?.twitter, Icon: SiX },
-    { href: siteConfig?.socialLinks?.instagram, Icon: SiInstagram },
+    { href: resolvedSocialLinks.whatsapp, label: 'WhatsApp', Icon: SiWhatsapp },
+    { href: resolvedSocialLinks.facebook, label: 'Facebook', Icon: SiFacebook },
+    { href: resolvedSocialLinks.tiktok, label: 'TikTok', Icon: SiTiktok },
+    { href: resolvedSocialLinks.telegram, label: 'Telegram', Icon: SiTelegram },
+    { href: resolvedSocialLinks.youtube, label: 'YouTube', Icon: SiYoutube },
+    { href: resolvedSocialLinks.twitter, label: 'X', Icon: SiX },
+    { href: resolvedSocialLinks.instagram, label: 'Instagram', Icon: SiInstagram },
   ].filter((item) => Boolean(item.href));
 
   return (
@@ -66,12 +92,14 @@ export default function SiteFooter({ siteConfig, categories }: SiteFooterProps) 
               )}
             </div>
             <div className="flex gap-2">
-              {socialLinks.map(({ href, Icon }, index) => (
+              {socialLinks.map(({ href, label, Icon }, index) => (
                 <a
                   key={`${href}-${index}`}
                   href={href}
                   target="_blank"
                   rel="noopener noreferrer"
+                  aria-label={label}
+                  title={label}
                   className="w-9 h-9 flex items-center justify-center bg-gray-100 dark:bg-white/5 hover:bg-brand-red transition-colors rounded-xl group"
                 >
                   <Icon size={14} className="text-brand-text-muted group-hover:text-white" />

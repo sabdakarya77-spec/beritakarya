@@ -4,16 +4,14 @@ import { JWTPayload } from '@beritakarya/types'
 export async function addComment(
   articleId: string, 
   siteId: string, 
-  input: { content: string; authorName?: string; authorEmail?: string; parentId?: string },
-  user?: JWTPayload
+  input: { content: string; parentId?: string },
+  user: JWTPayload
 ) {
   return repo.createComment({
     ...input,
     articleId,
     siteId,
-    authorId: user?.userId,
-    // If user is logged in, use their name, otherwise use provided guest name
-    authorName: user ? undefined : input.authorName
+    authorId: user.userId
   })
 }
 

@@ -16,14 +16,16 @@ commentRouter.get('/article/:articleId',
 )
 
 commentRouter.post('/article/:articleId',
+  requireAuth,
   siteMiddleware,
+  requireSiteAccess,
   asyncHandler(async (req: any, res: any) => {
-    const { content, authorName, authorEmail, parentId } = req.body
+    const { content, parentId } = req.body
     const comment = await service.addComment(
       req.params.articleId,
       req.site!,
-      { content, authorName, authorEmail, parentId },
-      req.user
+      { content, parentId },
+      req.user!
     )
     res.status(201).json({ success: true, data: comment })
   })
