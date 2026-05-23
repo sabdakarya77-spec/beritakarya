@@ -29,10 +29,14 @@ export default function PublicSiteLayout({ children, siteConfig, initialCategory
         const { data } = await api.get('/categories/tree', {
           params: { site: siteConfig.id }
         });
-        if (data.success && data.data && data.data.length > 0) {
+          if (data.success && data.data && data.data.length > 0) {
+          // Filter out sistem categories (terbaru & tersimpan) from API response to avoid duplicates
+          const filteredCategories = data.data.filter(
+            (cat: any) => cat.slug !== 'terbaru' && cat.slug !== 'tersimpan'
+          )
           const mapped = [
             { name: 'Terbaru', slug: 'terbaru' },
-            ...data.data.map((cat: any) => ({
+            ...filteredCategories.map((cat: any) => ({
               name: cat.name,
               slug: cat.slug,
               subCategories: cat.subCategories?.map((sub: any) => ({
