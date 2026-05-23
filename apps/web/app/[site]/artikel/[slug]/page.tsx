@@ -9,9 +9,11 @@ import ReadingProgress from '../../../../components/ui/ReadingProgress'
 import AdSpace from '../../../../components/ui/AdSpace'
 import ShareSidebar from '../../../../components/ui/ShareSidebar'
 import AuthorCard from '../../../../components/ui/AuthorCard'
+import ArticleSharePanel from '../../../../components/ui/ArticleSharePanel'
 import EditorialBadge from '../../../../components/ui/EditorialBadge'
 import { resolveArticleBadge } from '../../../../lib/resolveArticleBadge'
-import { Share2, Link as LinkIcon, BookOpen, Printer, MessageCircle, MessageSquare, X as XIcon } from 'lucide-react'
+import { BookOpen, Printer } from 'lucide-react'
+import { SiWhatsapp, SiX } from 'react-icons/si'
 import { Metadata } from 'next'
 import { cn } from '../../../../lib/utils'
 import CommentSection from '../../../../components/ui/CommentSection'
@@ -122,6 +124,9 @@ export default async function ArticlePage({ params }: Props) {
 
   const relatedArticles = await getRelatedArticles(siteParam, slugParam, article.category?.name)
   const coverImage = article.featuredImage || article.blocks.find((b: any) => b.type === 'image')?.url || '/placeholder.jpg'
+  const coverImageBlock = article.blocks.find((b: any) => b.type === 'image' && b.url === coverImage)
+    || article.blocks.find((b: any) => b.type === 'image')
+  const coverImageCaption = coverImageBlock?.caption || null
   const excerpt = article.blocks.find((b: any) => b.type === 'paragraph')?.content || ''
   const articleUrl = `${process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'}/${siteParam}/artikel/${slugParam}`
 
@@ -158,49 +163,66 @@ export default async function ArticlePage({ params }: Props) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <ReadingProgress />
-      <ShareSidebar title={article.title} />
+      <ShareSidebar title={article.title} url={articleUrl} />
       
       <ImageLightboxWrapper>
         <article className="min-h-screen bg-white dark:bg-slate-950">
           {/* --- HEADER SECTION --- */}
-          <header className="w-full bg-brand-surface dark:bg-white/[0.02] py-16 md:py-32 border-b border-gray-100 dark:border-white/5">
+          <header className="w-full bg-brand-surface dark:bg-white/[0.02] pt-20 pb-16 md:pt-36 md:pb-28 border-b border-gray-100 dark:border-white/5">
             <Container size="content">
-              <div className="flex flex-col md:flex-row items-center gap-4 mb-8">
-                {badgeVariant && <EditorialBadge variant={badgeVariant} size="md" />}
-                <div className="flex items-center gap-3">
-                  <span className="px-3 py-1 bg-brand-red text-white text-[10px] font-black uppercase tracking-[0.25em] rounded-sm">
-                    {article.category?.name || 'NASIONAL'}
-                  </span>
-                  <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand-text-muted">
+              <div className="flex flex-col items-start gap-4 mb-12 md:mb-14">
+                <div className="flex flex-wrap items-center gap-3 md:gap-4">
+                  {badgeVariant && (
+                    <EditorialBadge
+                      variant={badgeVariant}
+                      size="sm"
+                      className="rounded-full px-3 py-1 shadow-sm shadow-black/5"
+                    />
+                  )}
+                  <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.24em]">
+                    <span className="text-brand-red">
+                      {article.category?.name || 'NASIONAL'}
+                    </span>
+                    <span className="h-1 w-1 rounded-full bg-gray-300 dark:bg-white/20" />
+                    <span className="text-brand-text-muted">
+                      Edisi Hari Ini
+                    </span>
+                    <span className="h-1 w-1 rounded-full bg-gray-300 dark:bg-white/20" />
+                    <span className="text-brand-text-muted">
                     {new Date(article.publishedAt).toLocaleDateString('id-ID', {
                       day: 'numeric', month: 'long', year: 'numeric'
                     })}
-                  </span>
+                    </span>
+                  </div>
                 </div>
               </div>
 
-              <h1 className="text-4xl md:text-7xl font-serif font-black text-brand-black dark:text-white leading-[1.05] tracking-tighter mb-12 text-balance">
+              <h1 className="max-w-4xl text-4xl md:text-7xl font-serif font-black text-brand-black dark:text-white leading-[1.02] tracking-tighter mb-14 md:mb-16 text-balance">
                 {article.title}
               </h1>
 
-              <a 
-                href={`https://wa.me/?text=${encodeURIComponent(article.title + ' ' + articleUrl)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex w-10 h-10 rounded-full bg-emerald-50 text-emerald-600 items-center justify-center hover:bg-emerald-600 hover:text-white transition-all shadow-sm mr-2"
-              >
-                <MessageSquare size={18} />
-              </a>
-              <a 
-                href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(article.title)}&url=${encodeURIComponent(articleUrl)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex w-10 h-10 rounded-full bg-sky-50 text-sky-600 items-center justify-center hover:bg-sky-600 hover:text-white transition-all shadow-sm"
-              >
-                <XIcon size={18} />
-              </a>
+              <div className="flex items-center gap-3 mb-10 md:mb-12">
+                <a 
+                  href={`https://wa.me/?text=${encodeURIComponent(article.title + ' ' + articleUrl)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex h-11 items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 text-[10px] font-black uppercase tracking-[0.18em] text-emerald-700 hover:border-emerald-500 hover:bg-emerald-500 hover:text-white transition-all shadow-sm"
+                >
+                  <SiWhatsapp className="text-sm" />
+                  WhatsApp
+                </a>
+                <a 
+                  href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(article.title)}&url=${encodeURIComponent(articleUrl)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex h-11 items-center gap-2 rounded-full border border-slate-200 bg-white px-4 text-[10px] font-black uppercase tracking-[0.18em] text-slate-800 hover:border-slate-900 hover:bg-slate-900 hover:text-white transition-all shadow-sm dark:border-white/10 dark:bg-white/[0.03] dark:text-white dark:hover:border-white dark:hover:bg-white dark:hover:text-slate-950"
+                >
+                  <SiX className="text-sm" />
+                  X
+                </a>
+              </div>
 
-              <div className="flex flex-wrap items-center justify-center md:justify-start gap-y-6 gap-x-8 border-t border-gray-100 dark:border-white/10 pt-10">
+              <div className="flex flex-wrap items-center justify-center md:justify-start gap-y-8 gap-x-8 border-t border-gray-100 dark:border-white/10 pt-10 md:pt-12">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-xl bg-brand-red flex items-center justify-center text-white text-lg font-serif italic shadow-lg shadow-brand-red/20">
                     {article.author?.name?.[0] || 'R'}
@@ -224,9 +246,12 @@ export default async function ArticlePage({ params }: Props) {
                   </div>
                 </div>
 
-                <div className="ml-auto hidden lg:flex items-center gap-4">
+                <div className="ml-auto hidden lg:flex items-center gap-3 rounded-full border border-gray-100 bg-gray-50/80 px-3 py-2 dark:border-white/10 dark:bg-white/[0.025]">
+                  <span className="pl-1 text-[9px] font-black uppercase tracking-[0.22em] text-gray-400">
+                    Reader Tools
+                  </span>
                   <FontSizeControl />
-                  <div className="w-px h-6 bg-gray-100 dark:bg-white/10 mx-2" />
+                  <div className="w-px h-6 bg-gray-200 dark:bg-white/10" />
                   <ArticleActions />
                 </div>
               </div>
@@ -234,26 +259,37 @@ export default async function ArticlePage({ params }: Props) {
           </header>
 
           {/* --- HERO IMAGE --- */}
-          <div className="mb-16 md:mb-20">
+          <div className="mb-20 md:mb-24">
             <Container>
-              <div className="max-w-6xl mx-auto">
-                <div className="aspect-[16/10] md:aspect-[16/9] w-full relative overflow-hidden shadow-2xl rounded-2xl border border-gray-100 dark:border-white/5 bg-slate-100 dark:bg-slate-900">
-                <SmartImage 
-                  src={coverImage} 
-                  blur={article.featuredImageBlur}
-                  dominantColor={article.featuredImageColor}
-                  context="article_cover"
-                  alt={article.title}
-                  fill
-                  className="object-cover"
-                  priority
-                />
-                {/* Image Credit Overlay */}
-                  <div className="absolute bottom-4 right-4 md:bottom-6 md:right-6 px-3 py-1.5 bg-black/50 backdrop-blur-md border border-white/10 text-[10px] text-white font-semibold uppercase tracking-[0.12em] rounded-sm z-10">
-                     Foto / Dokumentasi Redaksi
+              <figure className="max-w-6xl mx-auto">
+                <div className="rounded-[1.75rem] border border-gray-100/90 bg-white p-3 shadow-[0_24px_80px_rgba(15,23,42,0.08)] dark:border-white/5 dark:bg-white/[0.02] dark:shadow-[0_24px_80px_rgba(0,0,0,0.45)]">
+                  <div className="aspect-[16/10] md:aspect-[16/9] w-full relative overflow-hidden rounded-[1.15rem] bg-slate-100 dark:bg-slate-900">
+                    <SmartImage 
+                      src={coverImage} 
+                      blur={article.featuredImageBlur}
+                      dominantColor={article.featuredImageColor}
+                      context="article_cover"
+                      alt={article.title}
+                      fill
+                      className="object-cover"
+                      priority
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none" />
                   </div>
                 </div>
-              </div>
+                <figcaption className="mt-5 flex flex-col gap-3 border-b border-gray-100 pb-6 text-brand-text-muted dark:border-white/5 dark:text-gray-400 md:flex-row md:items-start md:justify-between">
+                  {coverImageCaption ? (
+                    <p className="max-w-2xl text-sm italic leading-relaxed">
+                      {coverImageCaption}
+                    </p>
+                  ) : (
+                    <span />
+                  )}
+                  <span className="text-[9px] font-black uppercase tracking-[0.24em] text-gray-400 dark:text-gray-500">
+                    Foto / Dokumentasi Redaksi
+                  </span>
+                </figcaption>
+              </figure>
             </Container>
           </div>
 
@@ -263,11 +299,15 @@ export default async function ArticlePage({ params }: Props) {
               {/* Main Content */}
               <div className="max-w-[760px] mx-auto lg:mx-0">
                 {/* Lead Paragraph */}
-                <div className="mb-20">
-                  <p className="text-2xl md:text-3xl font-serif italic text-gray-500 dark:text-gray-400 leading-relaxed relative pl-16">
-                    <span className="absolute left-0 top-0 text-8xl text-brand-red/20 font-serif leading-none select-none">“</span>
-                    {excerpt}
-                  </p>
+                <div className="mb-20 md:mb-24">
+                  <div className="max-w-3xl border-l border-brand-red/20 pl-6 md:pl-8">
+                    <span className="inline-flex text-[10px] font-black uppercase tracking-[0.26em] text-brand-red">
+                      Pembuka
+                    </span>
+                    <p className="mt-5 text-[1.8rem] md:text-[2.35rem] font-serif text-brand-black dark:text-white leading-[1.45] tracking-tight">
+                      {excerpt}
+                    </p>
+                  </div>
                 </div>
 
                 <div className="space-y-12">
@@ -306,23 +346,7 @@ export default async function ArticlePage({ params }: Props) {
               <aside className="hidden lg:block">
                 <div className="sticky top-40 space-y-20">
                   {/* Share Box */}
-                  <div className="bg-slate-900 rounded-2xl p-8 text-white shadow-xl relative overflow-hidden">
-                    <div className="absolute -top-10 -right-10 w-32 h-32 bg-brand-red/20 blur-3xl rounded-full" />
-                    <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-brand-red mb-8 border-b border-white/5 pb-2">Bagikan Post</h4>
-                    <div className="grid grid-cols-2 gap-3">
-                      {[
-                        { label: 'Facebook', icon: Share2, color: 'bg-white/5 hover:bg-[#1877F2]' },
-                        { label: 'Twitter', icon: Share2, color: 'bg-white/5 hover:bg-[#1DA1F2]' },
-                        { label: 'WhatsApp', icon: MessageCircle, color: 'bg-white/5 hover:bg-[#25D366]' },
-                        { label: 'Copy', icon: LinkIcon, color: 'bg-white/5 hover:bg-brand-red' }
-                      ].map(btn => (
-                        <button key={btn.label} className={cn("flex flex-col items-center gap-2 p-4 rounded-xl transition-all group", btn.color)}>
-                          <btn.icon size={18} className="group-hover:scale-110 transition-transform" />
-                          <span className="text-[9px] font-black uppercase tracking-widest">{btn.label}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                  <ArticleSharePanel title={article.title} url={articleUrl} />
 
                   {/* Recommended Widget */}
                   <div>

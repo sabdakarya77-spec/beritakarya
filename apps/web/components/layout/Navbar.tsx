@@ -39,6 +39,13 @@ export default function Navbar({
   
   const { user, logout } = useAuthStore();
   const activeSite = siteConfig?.id || pathname.split('/')[1] || 'pusat';
+  const isArticlePage = pathname.includes('/artikel/');
+  const articleTopDate = new Date().toLocaleDateString('id-ID', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
@@ -61,24 +68,53 @@ export default function Navbar({
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-[var(--bg-main)] border-b border-gray-100 dark:border-white/5 shadow-sm transition-all duration-500">
+    <header className={cn(
+      "sticky top-0 z-50 border-b transition-all duration-500",
+      isArticlePage
+        ? "bg-[color:rgb(var(--brand-surface-rgb)/0.86)] dark:bg-[rgba(2,6,23,0.82)] backdrop-blur-xl border-gray-100/80 dark:border-white/5 shadow-[0_10px_40px_rgba(15,23,42,0.06)]"
+        : "bg-[var(--bg-main)] border-gray-100 dark:border-white/5 shadow-sm"
+    )}>
       {/* Top Bar */}
-      <div className="max-w-7xl mx-auto px-4 h-10 flex items-center justify-between border-b border-gray-50 uppercase tracking-[0.15em] text-[10px] font-bold text-brand-text-muted">
+      <div className={cn(
+        "max-w-7xl mx-auto px-4 flex items-center justify-between uppercase text-[10px] font-bold text-brand-text-muted",
+        isArticlePage
+          ? "h-9 border-b border-gray-100/70 dark:border-white/5 tracking-[0.18em]"
+          : "h-10 border-b border-gray-50 tracking-[0.15em]"
+      )}>
         <div className="flex items-center gap-5">
-          <Link href="/pusat" className="hidden sm:flex items-center gap-1.5 hover:text-brand-red transition-colors">
-            <Globe size={12} /> Global Edition
-          </Link>
-          <div className="hidden sm:block w-px h-3 bg-gray-200" />
-          <DateTimeWeather />
+          {isArticlePage ? (
+            <>
+              <Link href="/pusat" className="hidden sm:flex items-center gap-1.5 hover:text-brand-red transition-colors">
+                <Globe size={11} /> BeritaKarya Edition
+              </Link>
+              <div className="hidden sm:block w-px h-3 bg-gray-200 dark:bg-white/10" />
+              <span className="text-[9px] font-black tracking-[0.2em] text-brand-text-muted">
+                {articleTopDate}
+              </span>
+            </>
+          ) : (
+            <>
+              <Link href="/pusat" className="hidden sm:flex items-center gap-1.5 hover:text-brand-red transition-colors">
+                <Globe size={12} /> Global Edition
+              </Link>
+              <div className="hidden sm:block w-px h-3 bg-gray-200" />
+              <DateTimeWeather />
+            </>
+          )}
         </div>
-        <div className="hidden lg:flex items-center gap-5">
+        <div className={cn("hidden lg:flex items-center gap-5", isArticlePage && "gap-4")}>
           <Link href={`/${activeSite}/p/about`} className="hover:text-brand-red transition-colors">Tentang</Link>
-          <Link href={`/${activeSite}/kebijakan-privasi`} className="hover:text-brand-red transition-colors">Privasi</Link>
+          {!isArticlePage && (
+            <Link href={`/${activeSite}/kebijakan-privasi`} className="hover:text-brand-red transition-colors">Privasi</Link>
+          )}
         </div>
       </div>
 
       {/* Main Bar */}
-      <div className="max-w-7xl mx-auto px-4 min-h-[5.5rem] sm:h-24 grid grid-cols-[1fr_auto_1fr] items-center gap-4">
+      <div className={cn(
+        "max-w-7xl mx-auto px-4 grid grid-cols-[1fr_auto_1fr] items-center gap-4",
+        isArticlePage ? "min-h-[5rem] sm:h-20" : "min-h-[5.5rem] sm:h-24"
+      )}>
         {/* Left: Search & Menu (Mobile) */}
         <div className="flex items-center gap-4">
           <button 
@@ -128,9 +164,9 @@ export default function Navbar({
         </motion.div>
 
         {/* Right: Actions */}
-        <div className="flex items-center justify-end gap-3 md:gap-5">
+        <div className={cn("flex items-center justify-end gap-3 md:gap-5", isArticlePage && "md:gap-4")}>
           {/* Social Links (Desktop Only) */}
-          <div className="hidden lg:flex items-center gap-1.5">
+          <div className={cn("hidden lg:flex items-center gap-1.5", isArticlePage && "hidden xl:flex")}>
             {siteConfig?.socialLinks?.facebook && (
               <a href={siteConfig.socialLinks.facebook} target="_blank" rel="noopener noreferrer" className="p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-full transition-colors text-brand-text-muted hover:text-blue-600">
                 <SiFacebook size={16} />
@@ -153,12 +189,14 @@ export default function Navbar({
             )}
           </div>
 
-          <button 
-            aria-label="Notifikasi"
-            className="hidden xl:flex p-2 text-brand-text-muted hover:text-brand-black transition-colors"
-          >
-            <Bell size={20} strokeWidth={1.2} />
-          </button>
+          {!isArticlePage && (
+            <button 
+              aria-label="Notifikasi"
+              className="hidden xl:flex p-2 text-brand-text-muted hover:text-brand-black transition-colors"
+            >
+              <Bell size={20} strokeWidth={1.2} />
+            </button>
+          )}
             
           {user ? (
             <div className="relative">
@@ -232,7 +270,12 @@ export default function Navbar({
       </div>
 
       {/* Desktop Navigation */}
-      <nav className="max-w-7xl mx-auto px-4 hidden md:flex items-center justify-center h-14 border-t border-gray-50 dark:border-white/5 gap-10 text-[11px] font-bold uppercase tracking-[0.12em] text-brand-text-muted relative z-40">
+      <nav className={cn(
+        "max-w-7xl mx-auto px-4 hidden md:flex items-center justify-center border-t text-[11px] font-bold uppercase tracking-[0.12em] text-brand-text-muted relative z-40",
+        isArticlePage
+          ? "h-12 border-gray-100/70 dark:border-white/5 gap-8"
+          : "h-14 border-gray-50 dark:border-white/5 gap-10"
+      )}>
         {categories.map((cat, index) => {
           const isActive = selectedCategory === cat.slug || cat.subCategories?.some(sub => sub.slug === selectedCategory);
           const hasSub = cat.subCategories && cat.subCategories.length > 0;

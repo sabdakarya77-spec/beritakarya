@@ -3,7 +3,8 @@ import NewsCard from '../ui/NewsCard'
 import PublicSiteLayout from '../layout/PublicSiteLayout'
 import AdSpace from '../ui/AdSpace'
 import Link from 'next/link'
-import { TrendingUp, Zap, Star, MessageCircle, FileText, Share2, ArrowRight } from 'lucide-react'
+import { TrendingUp, Zap, Star, MessageCircle, FileText, ArrowRight } from 'lucide-react'
+import { SiFacebook, SiInstagram, SiX, SiYoutube } from 'react-icons/si'
 import LoadMoreArticles from '../ui/LoadMoreArticles'
 import VideoWidget from '../ui/VideoWidget'
 import { MagazineBentoHero } from '../berita/MagazineBentoHero'
@@ -163,10 +164,10 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
   const whatsappUrl = buildWhatsAppUrl(siteConfig.phone, siteConfig.name)
   const reportUrl = `mailto:${siteConfig.contactEmail}?subject=${encodeURIComponent(`Laporan Warga untuk ${siteConfig.name}`)}`
   const socialChannels = [
-    { label: 'Facebook', href: siteConfig.socialLinks?.facebook },
-    { label: 'X', href: siteConfig.socialLinks?.twitter },
-    { label: 'Instagram', href: siteConfig.socialLinks?.instagram },
-    { label: 'YouTube', href: siteConfig.socialLinks?.youtube },
+    { label: 'Facebook', href: siteConfig.socialLinks?.facebook, Icon: SiFacebook },
+    { label: 'X', href: siteConfig.socialLinks?.twitter, Icon: SiX },
+    { label: 'Instagram', href: siteConfig.socialLinks?.instagram, Icon: SiInstagram },
+    { label: 'YouTube', href: siteConfig.socialLinks?.youtube, Icon: SiYoutube },
   ].filter((item) => Boolean(item.href))
   const showHomepageHero = !searchQuery && categoryFilter === 'terbaru' && topBentoStories.length > 0
   const showEditorFocus = showHomepageHero && minimalStories.length > 0
@@ -215,9 +216,9 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
             <section className="mb-16 py-8 border-y border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-white/[0.01]">
               <div className="flex flex-col gap-4">
                 <div className="flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-2 shrink-0 bg-brand-black dark:bg-white text-white dark:text-brand-black px-4 py-2 rounded-sm shadow-lg">
+                  <div className="flex items-center gap-2 shrink-0 bg-brand-black dark:bg-white text-white dark:text-slate-950 px-4 py-2 rounded-sm shadow-lg">
                     <TrendingUp size={14} />
-                    <span className={`${sectionEyebrowClass} text-white dark:text-brand-black`}>Trending</span>
+                    <span className={`${sectionEyebrowClass} text-white dark:text-slate-950`}>Trending</span>
                   </div>
                   <p className="hidden md:block text-[10px] text-gray-500 dark:text-gray-400 font-semibold">
                     Topik yang ramai dibaca dan paling cepat mengarahkan pembaca ke isu utama hari ini.
@@ -302,13 +303,10 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
             </div>
 
             <aside className="lg:col-span-4 space-y-10">
-              <div className="p-6 bg-slate-900 rounded-2xl text-white shadow-xl border border-white/5 space-y-4">
-                <div>
-                  <span className={`${sectionEyebrowClass} text-brand-red`}>Terhubung Dengan Redaksi</span>
-                  <h4 className="text-2xl font-serif font-black leading-tight mt-3">Pilih saluran yang paling cepat untuk pembaca Indonesia.</h4>
-                  <p className="text-sm text-gray-400 mt-3 font-light leading-relaxed">
-                    Kami arahkan slot ini untuk distribusi berita, laporan warga, dan kanal sosial yang lebih relevan daripada newsletter email.
-                  </p>
+              <div className="p-6 bg-slate-900 rounded-2xl text-white shadow-xl border border-white/5 space-y-3">
+                <div className="pb-2">
+                  <span className={`${sectionEyebrowClass} text-brand-red`}>Akses Redaksi</span>
+                  <h4 className="text-2xl font-serif font-black leading-tight mt-3 text-white">Pilih jalur tercepat ke redaksi.</h4>
                 </div>
 
                 {whatsappUrl && (
@@ -316,62 +314,68 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
                     href={whatsappUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-5 hover:bg-emerald-500/15 transition-colors"
+                    className="group block rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-5 hover:bg-emerald-500/15 transition-colors"
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div>
                         <div className="flex items-center gap-2 mb-2">
                           <MessageCircle size={16} className="text-emerald-400" />
-                          <span className={`${sidebarEyebrowClass} tracking-[0.14em] text-emerald-300`}>Gabung WhatsApp Channel</span>
+                          <span className="text-[10px] font-black uppercase tracking-[0.18em] text-emerald-300/90">Kanal Utama</span>
                         </div>
-                        <p className="text-sm text-white font-semibold">Terima update berita penting dan breaking news lebih cepat.</p>
+                        <h5 className="text-base font-serif font-black text-white">WhatsApp Channel</h5>
+                        <p className="mt-3 text-sm text-white font-semibold">Update penting dan breaking news lebih cepat.</p>
                       </div>
-                      <ArrowRight size={16} className="text-emerald-300 shrink-0 mt-1" />
+                      <ArrowRight size={16} className="text-emerald-300 shrink-0 mt-1 transition-transform group-hover:translate-x-0.5" />
                     </div>
                   </a>
                 )}
 
-                <a
-                  href={reportUrl}
-                  className="block rounded-2xl border border-white/10 bg-white/5 p-5 hover:bg-white/10 transition-colors"
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <div className="flex items-center gap-2 mb-2">
-                        <FileText size={16} className="text-brand-red" />
-                        <span className={`${sidebarEyebrowClass} tracking-[0.14em]`}>Kirim Informasi / Laporan Warga</span>
+                <div className="grid gap-3">
+                  <a
+                    href={reportUrl}
+                    className="group block rounded-2xl border border-white/10 bg-white/5 p-5 hover:bg-white/10 transition-colors"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <div className="flex items-center gap-2 mb-2">
+                          <FileText size={16} className="text-brand-red" />
+                          <span className="text-[10px] font-black uppercase tracking-[0.18em] text-white/75">Laporan</span>
+                        </div>
+                        <h5 className="text-base font-serif font-black text-white">Kirim Informasi</h5>
+                        <p className="mt-3 text-sm text-gray-300 font-light leading-relaxed">Kirim laporan atau temuan langsung ke redaksi.</p>
                       </div>
-                      <p className="text-sm text-gray-300 font-light leading-relaxed">Kirim informasi, aduan, atau temuan lapangan langsung ke redaksi melalui email resmi.</p>
+                      <ArrowRight size={16} className="text-white shrink-0 mt-1 transition-transform group-hover:translate-x-0.5" />
                     </div>
-                    <ArrowRight size={16} className="text-white shrink-0 mt-1" />
-                  </div>
-                </a>
+                  </a>
 
-                <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Share2 size={16} className="text-brand-red" />
-                    <span className={`${sidebarEyebrowClass} tracking-[0.14em]`}>Ikuti Sosial Media</span>
-                  </div>
-                  <p className="text-sm text-gray-300 font-light leading-relaxed mb-4">
-                    Ikuti kanal resmi {siteConfig.name} untuk update harian, video singkat, dan distribusi konten terbaru.
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {socialChannels.length > 0 ? (
-                      socialChannels.map((channel) => (
-                        <a
-                          key={channel.label}
-                          href={channel.href}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 rounded-full border border-white/10 px-4 py-2 text-[11px] font-black uppercase tracking-[0.12em] text-white hover:border-brand-red hover:text-brand-red transition-colors"
-                        >
-                          {channel.label}
-                        </a>
-                      ))
-                    ) : (
-                      <p className="text-xs text-gray-400">Akun sosial resmi sedang diperbarui oleh redaksi.</p>
-                    )}
-                  </div>
+                  {socialChannels.length > 0 && (
+                    <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-[10px] font-black uppercase tracking-[0.18em] text-white/75">Distribusi</span>
+                      </div>
+                      <h5 className="text-base font-serif font-black text-white">Kanal Sosial</h5>
+                      <p className="mt-3 text-sm text-gray-300 font-light leading-relaxed">Ikuti distribusi konten dari akun resmi {siteConfig.name}.</p>
+                      <div className="mt-4 flex flex-wrap gap-2.5">
+                        {socialChannels.map((channel) => {
+                          const Icon = channel.Icon
+
+                          return (
+                            <a
+                              key={channel.label}
+                              href={channel.href}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              aria-label={channel.label}
+                              className="inline-flex items-center gap-2.5 rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-[11px] font-black uppercase tracking-[0.12em] text-white hover:border-white/20 hover:bg-white/[0.06] transition-colors"
+                            >
+                              <Icon size={14} />
+                              <span>{channel.label}</span>
+                            </a>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 

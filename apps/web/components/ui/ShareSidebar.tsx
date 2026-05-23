@@ -1,6 +1,7 @@
 'use client';
 
-import { Share2, Link as LinkIcon, MessageCircle } from 'lucide-react';
+import { Link as LinkIcon } from 'lucide-react';
+import { SiFacebook, SiWhatsapp, SiX } from 'react-icons/si';
 import { useState, useEffect } from 'react';
 import { cn } from '../../lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -34,19 +35,19 @@ export default function ShareSidebar({ title, url }: ShareSidebarProps) {
   const shareLinks = [
     { 
       name: 'Facebook', 
-      icon: Share2, 
+      icon: SiFacebook, 
       color: 'hover:text-[#1877F2]',
       href: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`
     },
     { 
-      name: 'Twitter', 
-      icon: Share2, 
-      color: 'hover:text-[#1DA1F2]',
+      name: 'X', 
+      icon: SiX, 
+      color: 'hover:text-white',
       href: `https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(shareUrl)}`
     },
     { 
       name: 'WhatsApp', 
-      icon: MessageCircle, 
+      icon: SiWhatsapp, 
       color: 'hover:text-[#25D366]',
       href: `https://wa.me/?text=${encodeURIComponent(title + ' ' + shareUrl)}`
     }
@@ -71,7 +72,7 @@ export default function ShareSidebar({ title, url }: ShareSidebarProps) {
               className={cn("p-3 text-gray-400 transition-colors rounded-full hover:bg-gray-50", link.color)}
               title={link.name}
             >
-              <link.icon size={20} strokeWidth={1.5} />
+              <link.icon size={18} />
             </a>
           ))}
           <button 

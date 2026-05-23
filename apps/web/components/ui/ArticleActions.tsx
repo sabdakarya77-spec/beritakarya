@@ -16,20 +16,22 @@ export default function ArticleActions() {
   };
 
   return (
-    <div className="ml-auto hidden lg:flex items-center gap-4">
+    <div className="flex items-center gap-2">
       <button
         onClick={handlePrint}
-        className="p-2 text-gray-400 hover:text-brand-red transition-all"
-        aria-label="Print article"
+        className="inline-flex items-center gap-2 rounded-full border border-gray-200/80 bg-white/90 px-3.5 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-gray-500 shadow-sm transition-all hover:border-brand-red/30 hover:text-brand-red dark:border-white/10 dark:bg-white/[0.03] dark:text-gray-300 dark:hover:border-brand-red/30 dark:hover:text-brand-red"
+        aria-label="Cetak artikel"
       >
-        <Printer size={18} />
+        <Printer size={14} />
+        Cetak
       </button>
       <button
         onClick={handleScrollToComments}
-        className="p-2 text-gray-400 hover:text-brand-red transition-all"
-        aria-label="Scroll to comments"
+        className="inline-flex items-center gap-2 rounded-full border border-gray-200/80 bg-white/90 px-3.5 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-gray-500 shadow-sm transition-all hover:border-brand-red/30 hover:text-brand-red dark:border-white/10 dark:bg-white/[0.03] dark:text-gray-300 dark:hover:border-brand-red/30 dark:hover:text-brand-red"
+        aria-label="Lihat komentar"
       >
-        <MessageCircle size={18} />
+        <MessageCircle size={14} />
+        Komentar
       </button>
     </div>
   );

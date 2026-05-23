@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Type } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
 export default function FontSizeControl() {
@@ -23,19 +22,19 @@ export default function FontSizeControl() {
   }, [fontSize]);
 
   return (
-    <div className="flex items-center gap-1.5 p-1 bg-gray-100/50 dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/5">
-      <div className="w-8 h-8 flex items-center justify-center text-gray-400">
-        <Type size={14} />
+    <div className="flex items-center gap-3 rounded-full border border-gray-200/80 bg-white/90 px-2 py-1.5 shadow-sm dark:border-white/10 dark:bg-white/[0.03]">
+      <div className="pl-2 text-[9px] font-black uppercase tracking-[0.2em] text-gray-400">
+        Teks
       </div>
-      <div className="flex gap-1">
+      <div className="flex items-center gap-1 rounded-full bg-gray-100/80 p-1 dark:bg-white/[0.04]">
         {sizes.map((s) => (
           <button
             key={s.value}
             onClick={() => setFontSize(s.value)}
             className={cn(
-              "px-3 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-lg transition-all",
+              "px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.16em] rounded-full transition-all",
               fontSize === s.value 
-                ? "bg-white dark:bg-slate-800 text-brand-red shadow-sm" 
+                ? "bg-white text-brand-red shadow-sm dark:bg-slate-900 dark:text-white" 
                 : "text-gray-400 hover:text-brand-black dark:hover:text-white"
             )}
           >
