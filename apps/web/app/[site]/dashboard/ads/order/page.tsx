@@ -78,7 +78,7 @@ export default function OrderAdPage() {
     {
       id: 'fallback-side-7',
       name: 'Vertical Sidebar Widget',
-      slot: 'sidebar',
+      slot: 'rectangle',
       durationDays: 7,
       price: 250000,
       description: 'Sangat cocok untuk materi promosi vertikal memanjang di samping layar.',
@@ -210,8 +210,8 @@ export default function OrderAdPage() {
   const getSlotLabel = (slot: string) => {
     switch (slot) {
       case 'leaderboard': return 'Leaderboard Atas (Header)';
+      case 'rectangle': return 'Sidebar Rectangle';
       case 'in_feed': return 'Dalam Artikel (In-Feed)';
-      case 'sidebar': return 'Widget Samping (Sidebar)';
       default: return slot.toUpperCase();
     }
   };
@@ -219,8 +219,8 @@ export default function OrderAdPage() {
   const getSlotDimensions = (slot: string) => {
     switch (slot) {
       case 'leaderboard': return '970x90 px';
+      case 'rectangle': return '300x250 px';
       case 'in_feed': return '300x250 px';
-      case 'sidebar': return '300x600 px';
       default: return '100% Responsive';
     }
   };

@@ -76,6 +76,7 @@ interface AdBooking {
 
 const DEFAULT_SLOTS = [
   { id: 'leaderboard', name: 'Top Billboard / Leaderboard', size: '970x250', desc: 'Muncul di bagian paling atas halaman utama dan setiap post.' },
+  { id: 'rectangle', name: 'Sidebar Rectangle', size: '300x250', desc: 'Muncul di sidebar homepage dan halaman artikel untuk slot promosi utama.' },
   { id: 'in_feed', name: 'In-Feed Banner', size: '300x250', desc: 'Disisipkan secara otomatis setelah paragraf ke-3 di dalam teks post.' }
 ];
 
@@ -826,6 +827,7 @@ export default function AdsDashboard() {
                             className="w-full px-4 py-3 bg-white dark:bg-slate-950 border border-gray-200 dark:border-white/10 rounded-xl text-xs outline-none focus:border-brand-red transition-all"
                           >
                             <option value="leaderboard">Top Leaderboard</option>
+                            <option value="rectangle">Sidebar Rectangle</option>
                             <option value="in_feed">In-Feed Article</option>
                           </select>
                         </div>

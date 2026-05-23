@@ -1,12 +1,13 @@
 'use client';
 
+import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Clock, BookOpen, Share2, Bookmark } from 'lucide-react';
+import { ArrowRight, Clock, Share2, Check } from 'lucide-react';
 import Link from 'next/link';
 import { SmartImage } from '../ui/SmartImage';
-import { cn } from '../../lib/utils';
 import EditorialBadge from '../ui/EditorialBadge';
 import { resolveArticleBadge } from '../../lib/resolveArticleBadge';
+import ArticleBookmarkButton from '../ui/ArticleBookmarkButton';
 
 interface PremiumHeroProps {
   article: any;
@@ -25,6 +26,34 @@ export function PremiumHero({ article, site }: PremiumHeroProps) {
   });
   
   const badgeVariant = resolveArticleBadge(article);
+  const [shareState, setShareState] = useState<'idle' | 'copied' | 'shared'>('idle');
+  const articleUrl = useMemo(() => {
+    if (typeof window === 'undefined') return `/${site}/artikel/${article.slug}`;
+    return `${window.location.origin}/${site}/artikel/${article.slug}`;
+  }, [article.slug, site]);
+
+  const handleShare = async () => {
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: article.title,
+          text: excerpt || article.title,
+          url: articleUrl,
+        });
+        setShareState('shared');
+      } else {
+        await navigator.clipboard.writeText(articleUrl);
+        setShareState('copied');
+      }
+    } catch (error: any) {
+      if (error?.name !== 'AbortError') {
+        await navigator.clipboard.writeText(articleUrl);
+        setShareState('copied');
+      }
+    } finally {
+      window.setTimeout(() => setShareState('idle'), 2000);
+    }
+  };
 
   return (
     <section className="relative w-full mb-24 overflow-hidden">
@@ -87,12 +116,22 @@ export function PremiumHero({ article, site }: PremiumHeroProps) {
                   </Link>
                   
                   <div className="flex items-center gap-1">
-                    <button className="p-4 text-gray-400 hover:text-brand-red transition-colors">
-                      <Share2 size={18} />
+                    <button
+                      type="button"
+                      onClick={handleShare}
+                      aria-label={shareState === 'idle' ? 'Bagikan artikel utama' : shareState === 'shared' ? 'Artikel dibagikan' : 'Tautan artikel tersalin'}
+                      title={shareState === 'idle' ? 'Bagikan artikel utama' : shareState === 'shared' ? 'Artikel dibagikan' : 'Tautan artikel tersalin'}
+                      className={`p-4 transition-colors ${
+                        shareState === 'idle' ? 'text-gray-400 hover:text-brand-red' : 'text-brand-red'
+                      }`}
+                    >
+                      {shareState === 'idle' ? <Share2 size={18} /> : <Check size={18} />}
                     </button>
-                    <button className="p-4 text-gray-400 hover:text-brand-red transition-colors">
-                      <Bookmark size={18} />
-                    </button>
+                    <ArticleBookmarkButton
+                      article={article}
+                      site={site}
+                      className="p-4"
+                    />
                   </div>
                 </div>
               </div>
