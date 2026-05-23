@@ -191,7 +191,7 @@ export default async function ArticlePage({ params }: Props) {
                       className="rounded-full px-3 py-1 shadow-sm shadow-black/5"
                     />
                   )}
-                  <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.24em]">
+                  <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-wide">
                     <span className="text-brand-red">
                       {article.category?.name || 'NASIONAL'}
                     </span>
@@ -219,8 +219,8 @@ export default async function ArticlePage({ params }: Props) {
                     {article.author?.name?.[0] || 'R'}
                   </div>
                   <div className="text-left">
-                    <div className="text-[11px] font-black text-brand-black dark:text-white uppercase tracking-widest">{article.author?.name || 'Redaksi'}</div>
-                    <div className="text-[9px] text-brand-text-muted font-bold uppercase tracking-widest mt-0.5">Staf Redaksi BeritaKarya</div>
+                    <div className="text-[11px] font-bold text-brand-black dark:text-white">{article.author?.name || 'Redaksi'}</div>
+                    <div className="text-[10px] text-brand-text-muted font-medium mt-0.5">Staf Redaksi BeritaKarya</div>
                     {article.author?.id && (
                       <Link
                         href={`/${siteParam}/penulis/${article.author.id}`}
@@ -412,7 +412,7 @@ export default async function ArticlePage({ params }: Props) {
                           {authorProfilePath && (
                             <Link
                               href={authorProfilePath}
-                              className="mt-2 inline-flex text-[10px] font-black uppercase tracking-[0.18em] text-brand-red transition-colors hover:text-brand-black dark:hover:text-white"
+                              className="mt-2 inline-flex text-[11px] font-semibold text-brand-red transition-colors hover:text-brand-black dark:hover:text-white"
                             >
                               Lihat Profil
                             </Link>
