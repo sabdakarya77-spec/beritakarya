@@ -81,7 +81,6 @@ export default function SettingsPage() {
     }
   })
   
-  // State manajemen lanjutan
   const [originalSettings, setOriginalSettings] = useState<typeof settings | null>(null)
   const [isDirty, setIsDirty] = useState(false)
   const [activeTab, setActiveTab] = useState<SettingsTab>('basic')
@@ -90,17 +89,13 @@ export default function SettingsPage() {
   const [uploadingLogo, setUploadingLogo] = useState(false)
   const [uploadingPdf, setUploadingPdf] = useState(false)
 
-  // Refs untuk Auto-Expanding Textarea
   const aboutUsRef = useRef<HTMLTextAreaElement>(null)
   const codeOfEthicsRef = useRef<HTMLTextAreaElement>(null)
   const editorialRef = useRef<HTMLTextAreaElement>(null)
   const advertisingRef = useRef<HTMLTextAreaElement>(null)
-
-  // Refs untuk Uploader File
   const logoInputRef = useRef<HTMLInputElement>(null)
   const pdfInputRef = useRef<HTMLInputElement>(null)
 
-  // Efek Auto-Expanding Textarea
   useEffect(() => {
     const adjust = (ref: React.RefObject<HTMLTextAreaElement | null>) => {
       if (ref.current) {
@@ -108,7 +103,6 @@ export default function SettingsPage() {
         ref.current.style.height = `${ref.current.scrollHeight}px`
       }
     }
-    // Diberi sedikit delay agar rendering font/DOM selesai sempurna
     const timer = setTimeout(() => {
       adjust(aboutUsRef)
       adjust(codeOfEthicsRef)
@@ -118,14 +112,12 @@ export default function SettingsPage() {
     return () => clearTimeout(timer)
   }, [settings.aboutUs, settings.codeOfEthics, settings.editorial, settings.advertising, activeTab])
 
-  // Deteksi perubahan form (Dirty State Checker)
   useEffect(() => {
     if (!originalSettings) return
     const changed = JSON.stringify(settings) !== JSON.stringify(originalSettings)
     setIsDirty(changed)
   }, [settings, originalSettings])
 
-  // Peringatan sebelum keluar halaman jika ada perubahan belum disimpan (Unsaved Changes Warning)
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (isDirty) {
@@ -138,7 +130,6 @@ export default function SettingsPage() {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload)
   }, [isDirty])
 
-  // Validasi domain & bersihkan otomatis
   const cleanDomain = (val: string) => {
     let clean = val.trim().toLowerCase()
     clean = clean.replace(/^(https?:\/\/)?(www\.)?/, '')
@@ -146,13 +137,11 @@ export default function SettingsPage() {
     return clean
   }
 
-  // Validasi email
   const isValidEmail = (email: string) => {
     if (!email) return true
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
   }
 
-  // Analisis kontras warna (WCAG AA Helper)
   const getContrastAdvice = (hexColor: string) => {
     const hex = hexColor.replace('#', '')
     if (hex.length !== 6) return null
@@ -164,17 +153,15 @@ export default function SettingsPage() {
       return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)
     })
     const luminance = 0.2126 * a[0] + 0.7152 * a[1] + 0.0722 * a[2]
-    
-    // Hitung kontras rasio dengan teks putih (#FFFFFF)
     const ratio = 1.05 / (luminance + 0.05)
-    const isSafe = ratio >= 3.0 // 3:1 WCAG AA standar untuk teks tebal/judul
+    const isSafe = ratio >= 3.0
     
     return {
       isSafe,
       ratio: ratio.toFixed(1),
       textAdvice: isSafe 
         ? 'Aman untuk Teks Putih (Kontras Optimal)' 
-        : 'Terlahu Terang! Teks putih di portal depan akan sulit dibaca.'
+        : 'Terlalu Terang! Teks putih di portal depan akan sulit dibaca.'
     }
   }
 
@@ -250,7 +237,6 @@ export default function SettingsPage() {
   }, [site])
 
   const handleSave = async () => {
-    // Jalankan validasi domain sebelum kirim
     const cleanedDomain = cleanDomain(settings.domain)
     const finalSettings = {
       ...settings,
@@ -307,11 +293,8 @@ export default function SettingsPage() {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[500px] gap-4">
-        <div className="relative w-16 h-16 flex items-center justify-center">
-          <div className="absolute inset-0 border-4 border-brand-red/10 rounded-full"></div>
-          <div className="absolute inset-0 border-4 border-t-brand-red rounded-full animate-spin"></div>
-        </div>
-        <p className="text-xs font-black uppercase tracking-[0.2em] text-gray-400">Menyinkronkan Konfigurasi...</p>
+        <div className="w-16 h-16 border-4 border-brand-red/10 rounded-full animate-spin border-t-brand-red" />
+        <p className="text-sm text-gray-500">Menyinkronkan Konfigurasi...</p>
       </div>
     )
   }
@@ -327,27 +310,26 @@ export default function SettingsPage() {
   const contrastAdvice = getContrastAdvice(settings.appearance.primaryColor)
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500 max-w-[1400px] mx-auto pb-24">
-      
-      {/* HEADER UTAMA */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-gray-100 dark:border-white/5 pb-8">
+    <div className="max-w-7xl mx-auto space-y-8 pb-24">
+      {/* HEADER */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-gray-200 dark:border-gray-800 pb-8">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-brand-red/10 rounded-xl">
-              <SettingsIcon size={20} className="text-brand-red animate-pulse" />
+            <div className="p-2 bg-brand-red/10 rounded-lg">
+              <SettingsIcon size={20} className="text-brand-red" />
             </div>
-            <h1 className="text-2xl font-serif font-black tracking-tight text-brand-black dark:text-white uppercase">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white uppercase">
               Konfigurasi Sistem Portal
             </h1>
           </div>
-          <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest flex items-center gap-1.5">
-            Manajemen Identitas Cabang Regional <span className="text-brand-red font-black">#{site}</span>
+          <p className="text-sm text-gray-500">
+            Manajemen Identitas Cabang Regional <span className="text-brand-red font-bold">#{site}</span>
           </p>
         </div>
         
         <div className="flex items-center gap-3">
           {isDirty && (
-            <span className="text-[9px] font-black uppercase tracking-widest text-amber-500 bg-amber-500/10 px-3 py-1.5 rounded-full border border-amber-500/20">
+            <span className="text-xs font-bold uppercase bg-amber-500/10 text-amber-600 px-3 py-1.5 rounded-full border border-amber-500/20">
               Ada Perubahan Belum Disimpan
             </span>
           )}
@@ -355,7 +337,7 @@ export default function SettingsPage() {
             href={`/${site}`}
             target="_blank"
             rel="noreferrer"
-            className="flex items-center gap-2 bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 px-4 py-3 text-[10px] font-black uppercase tracking-widest transition-all rounded-xl"
+            className="flex items-center gap-2 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 px-4 py-3 text-sm font-medium transition-all rounded-lg"
           >
             <EyeIcon size={12} />
             Lihat Portal
@@ -371,7 +353,7 @@ export default function SettingsPage() {
               a.click()
               URL.revokeObjectURL(url)
             }}
-            className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-400 px-4 py-3 text-[10px] font-black uppercase tracking-widest transition-all rounded-xl"
+            className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 px-4 py-3 text-sm font-medium transition-all rounded-lg"
           >
             <Download size={12} />
             Export
@@ -379,7 +361,7 @@ export default function SettingsPage() {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="flex items-center gap-2 bg-brand-red hover:bg-brand-black dark:hover:bg-white dark:hover:text-black text-white px-6 py-3 text-[10px] font-black uppercase tracking-widest transition-all rounded-xl shadow-lg shadow-brand-red/20 disabled:opacity-50"
+            className="flex items-center gap-2 bg-brand-red hover:bg-red-700 text-white px-6 py-3 text-sm font-medium transition-all rounded-lg shadow-lg disabled:opacity-50"
           >
             {saving ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} />}
             {saving ? 'Sedang Menyimpan...' : 'Simpan Konfigurasi'}
@@ -389,23 +371,22 @@ export default function SettingsPage() {
 
       {/* NOTIFIKASI STATUS */}
       {message && (
-        <div className={`p-4 flex items-center gap-3 rounded-2xl border animate-in slide-in-from-top-4 duration-300 ${
+        <div className={`p-4 flex items-center gap-3 rounded-xl border ${
           message.type === 'success' 
-            ? 'bg-emerald-50 border-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-400' 
-            : 'bg-rose-50 border-rose-100 text-rose-700 dark:bg-rose-500/10 dark:border-rose-500/20 dark:text-rose-400'
+            ? 'bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-900/20 dark:border-emerald-800 dark:text-emerald-400' 
+            : 'bg-red-50 border-red-200 text-red-700 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400'
         }`}>
           {message.type === 'success' ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}
-          <span className="text-xs font-bold uppercase tracking-widest">{message.text}</span>
+          <span className="text-sm font-medium">{message.text}</span>
         </div>
       )}
 
-      {/* TATA LETAK MODULAR: TAB SISI KIRI & KONTEN KANAN */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         
         {/* TAB SISI KIRI */}
-        <div className="lg:col-span-1 space-y-3">
-          <div className="bg-white dark:bg-slate-900/40 backdrop-blur-md p-4 rounded-2xl border border-gray-100 dark:border-white/5 space-y-1 shadow-sm">
-            <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 px-3 mb-3">Kategori Pengaturan</p>
+        <div className="lg:col-span-1 space-y-4">
+          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4">
+            <p className="text-xs font-bold uppercase text-gray-500 mb-3">Kategori Pengaturan</p>
             {tabs.map((t) => {
               const Icon = t.icon
               const isActive = activeTab === t.id
@@ -416,16 +397,16 @@ export default function SettingsPage() {
                     setMessage(null)
                     setActiveTab(t.id)
                   }}
-                  className={`w-full text-left flex items-start gap-3 p-3 rounded-xl transition-all ${
+                  className={`w-full text-left flex items-start gap-3 p-3 rounded-lg transition-all ${
                     isActive 
-                      ? 'bg-brand-red text-white shadow-lg shadow-brand-red/10' 
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-slate-50 dark:hover:bg-white/5'
+                      ? 'bg-brand-red text-white' 
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
                   }`}
                 >
-                  <Icon size={16} className={`mt-0.5 ${isActive ? 'text-white' : 'text-brand-red'}`} />
+                  <Icon size={16} className={isActive ? 'text-white' : 'text-brand-red'} />
                   <div>
-                    <p className="text-[10px] font-black uppercase tracking-widest">{t.label}</p>
-                    <p className={`text-[9px] mt-0.5 line-clamp-1 ${isActive ? 'text-white/70' : 'text-gray-400 dark:text-gray-500'}`}>
+                    <p className="text-sm font-bold uppercase">{t.label}</p>
+                    <p className={`text-xs mt-0.5 ${isActive ? 'text-white/70' : 'text-gray-500 dark:text-gray-400'}`}>
                       {t.desc}
                     </p>
                   </div>
@@ -434,47 +415,53 @@ export default function SettingsPage() {
             })}
           </div>
 
-          <div className="hidden lg:block bg-brand-black dark:bg-slate-950 p-6 text-white rounded-2xl border border-white/5 relative overflow-hidden shadow-lg">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-brand-red/10 rounded-full -mr-16 -mt-16 blur-3xl"></div>
+          <div className="bg-gray-50 dark:bg-gray-900/50 p-6 rounded-xl border border-gray-200 dark:border-gray-800">
             <div className="flex items-center gap-2 mb-3">
-              <Sparkles size={14} className="text-brand-red animate-pulse" />
-              <h4 className="text-[10px] font-black uppercase tracking-wider">Tips Search Engine</h4>
+              <Sparkles size={14} className="text-brand-red" />
+              <h4 className="text-sm font-bold text-gray-700 dark:text-gray-300">Tips Search Engine</h4>
             </div>
-            <p className="text-[9.5px] leading-relaxed text-gray-400 font-medium">
-              Mesin pencari seperti Google menyukai deskripsi situs yang mengandung kata kunci geografis daerah Anda. Tulis deskripsi SEO secara singkat dan padat untuk menaikkan rasio klik pembaca lokal.
+            <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+              Mesin pencari seperti Google menyukai deskripsi situs yang mengandung kata kunci geografis daerah Anda. Tulis deskripsi SEO secara singkat dan padat.
             </p>
           </div>
         </div>
 
-        {/* AREA PANEL KONTEN KANAN */}
+        {/* KONTEN KANAN */}
         <div className="lg:col-span-3 space-y-6">
-          <div className="bg-white dark:bg-slate-900/20 backdrop-blur-md p-8 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm min-h-[500px]">
+          <div className="bg-white dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 rounded-xl p-8 min-h-[500px]">
             
-            {/* ==================== TAB 1: IDENTITAS & VISUAL ==================== */}
+            {/* TAB 1: IDENTITAS & VISUAL */}
             {activeTab === 'basic' && (
-              <div className="space-y-8 animate-in fade-in duration-300">
+              <div className="space-y-8">
                 <div>
-                  <h3 className="text-sm font-bold uppercase tracking-widest text-brand-black dark:text-white flex items-center gap-2">
-                    <Globe size={16} className="text-brand-red" /> Identitas & Branding Utama
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                    <Globe size={18} className="text-brand-red" /> Identitas & Branding Utama
                   </h3>
-                  <p className="text-[10px] text-gray-400 mt-1 uppercase tracking-wider font-semibold">Tentukan jati diri digital utama untuk portal berita regional Anda. <span className="text-brand-red font-bold">Brand utama &quot;BERITA KARYA&quot; adalah tetap.</span></p>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Tentukan jati diri digital utama untuk portal berita regional Anda.
+                  </p>
+                  <p className="text-xs text-brand-red mt-1">
+                      Brand utama "BERITA KARYA" adalah tetap.
+                  </p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Nama Publikasi Regional <span className="text-brand-red font-bold">*</span></label>
+                  <div className="space-y-3">
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Nama Publikasi Regional <span className="text-red-500">*</span>
+                    </label>
                     <input
                       type="text"
                       value={settings.name}
                       onChange={(e) => setSettings({...settings, name: e.target.value})}
                       placeholder="Contoh: BeritaKarya Bandung"
-                      className="w-full bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-xl px-4 py-3 text-xs text-brand-black dark:text-white outline-none focus:border-brand-red/50 focus:ring-1 focus:ring-brand-red/20 transition-all font-semibold"
+                      className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-3 text-base text-gray-900 dark:text-white outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 transition-all"
                     />
-                    <p className="text-[8px] text-gray-400 mt-1">Nama ini akan muncul di SERP Google. Brand &quot;BERITA KARYA&quot; tetap prefix di depan.</p>
+                    <p className="text-xs text-gray-500">Nama ini akan muncul di SERP Google.</p>
                   </div>
                   
-                  <div className="space-y-2">
-                    <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Domain Publik (URL)</label>
+                  <div className="space-y-3">
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Domain Publik (URL)</label>
                     <div className="relative">
                       <input 
                         type="text" 
@@ -482,72 +469,72 @@ export default function SettingsPage() {
                         onChange={(e) => setSettings({...settings, domain: e.target.value})}
                         onBlur={(e) => setSettings({...settings, domain: cleanDomain(e.target.value)})}
                         placeholder="bandung.beritakarya.co"
-                        className="w-full bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-xl pl-4 pr-12 py-3 text-xs text-brand-black dark:text-white outline-none focus:border-brand-red/50 focus:ring-1 focus:ring-brand-red/20 transition-all font-semibold"
+                        className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg pl-4 pr-12 py-3 text-base text-gray-900 dark:text-white outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 transition-all"
                       />
-                      <span className="absolute right-3 top-3.5 text-[9px] font-black text-brand-red uppercase tracking-widest">LIVE</span>
+                      <span className="absolute right-3 top-3 text-xs font-bold text-brand-red uppercase">LIVE</span>
                     </div>
                   </div>
 
-                  {/* LIVE GOOGLE SERP PREVIEW EMULATOR */}
-                  <div className="md:col-span-2 p-6 bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-2xl space-y-3">
-                    <div className="flex items-center justify-between">
-                      <h4 className="text-[9px] font-black uppercase tracking-widest text-gray-400">Pratinjau Hasil Pencarian Google (Live SERP Preview)</h4>
-                      <span className="text-[9px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/10">SEO OPTIMAL</span>
+                  <div className="md:col-span-2 p-6 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl">
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="text-sm font-bold text-gray-500">Pratinjau Hasil Pencarian Google</h4>
+                      <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded border border-emerald-200">SEO OPTIMAL</span>
                     </div>
-                    <div className="font-sans space-y-1">
-                      <div className="text-[11px] text-gray-500 dark:text-gray-400 flex items-center gap-1.5 truncate">
+                    <div className="space-y-1">
+                      <div className="text-sm text-gray-500 flex items-center gap-1.5 truncate">
                         <span>https://{settings.domain || 'bandung.beritakarya.co'}</span>
-                        <span className="text-[9px] text-gray-400">› pusat</span>
                       </div>
-                      <div className="text-base text-blue-600 dark:text-blue-400 font-medium hover:underline cursor-pointer leading-snug line-clamp-1">
+                      <div className="text-xl text-blue-600 dark:text-blue-400 font-medium hover:underline cursor-pointer">
                         {settings.name || 'BeritaKarya Bandung - Portal Berita Regional Terpercaya'}
                       </div>
-                      <div className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed line-clamp-2">
+                      <div className="text-base text-gray-600 dark:text-gray-400 leading-relaxed line-clamp-2">
                         {settings.description || 'Tulis deskripsi situs di bawah untuk melihat simulasi tampilan ringkasan berita portal Anda di halaman pencarian Google.'}
                       </div>
                     </div>
                   </div>
 
-                  <div className="md:col-span-2 space-y-2">
-                    <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 flex items-center justify-between">
-                      <span>Deskripsi Situs (SEO & Meta Description)</span>
-                      <span className={`${settings.description.length > 160 ? 'text-rose-500' : 'text-gray-400'} text-[9px] font-bold`}>
-                        {settings.description.length} / 160 Karakter rekomendasi
+                  <div className="md:col-span-2 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Deskripsi Situs (SEO & Meta Description)
+                      </label>
+                      <span className={`text-sm ${settings.description.length > 160 ? 'text-red-500' : 'text-gray-400'}`}>
+                        {settings.description.length} / 160 Karakter
                       </span>
-                    </label>
+                    </div>
                     <textarea 
                       value={settings.description}
                       onChange={(e) => setSettings({...settings, description: e.target.value})}
-                      placeholder="Tulis ringkasan tentang jenis berita, fokus daerah, dan komitmen portal berita regional Anda..."
+                      placeholder="Tulis ringkasan tentang jenis berita, fokus daerah, dan komitmen portal..."
                       rows={3}
-                      className="w-full bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-xl px-4 py-3 text-xs text-brand-black dark:text-white outline-none focus:border-brand-red/50 focus:ring-1 focus:ring-brand-red/20 transition-all font-semibold resize-none"
+                      className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-3 text-base text-gray-900 dark:text-white outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 transition-all resize-none"
                     />
                   </div>
                 </div>
 
-                <div className="h-px bg-gray-100 dark:bg-white/5 my-4"></div>
+                <hr className="border-gray-200 dark:border-gray-800" />
 
                 {/* BRANDING LOGO & COLOR */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="space-y-4">
-                    <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Identitas Visual Logo Portal</label>
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Identitas Visual Logo Portal</label>
                     
-                    <div className="flex flex-col gap-4">
+                    <div className="space-y-4">
                       {settings.logoUrl ? (
-                        <div className="w-full h-32 bg-slate-50 dark:bg-slate-950/20 rounded-2xl border border-dashed border-gray-200 dark:border-white/10 flex items-center justify-center p-4 relative group transition-all">
+                        <div className="w-full h-32 bg-gray-50 dark:bg-gray-950 border-2 border-dashed border-gray-200 dark:border-gray-800 rounded-xl flex items-center justify-center p-4 relative">
                           <img src={settings.logoUrl} alt="Logo Preview" className="max-w-full max-h-full object-contain" />
                           <button 
                             type="button"
                             onClick={() => setSettings({...settings, logoUrl: ''})}
-                            className="absolute top-2 right-2 p-1.5 bg-rose-500 hover:bg-rose-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                            className="absolute top-2 right-2 p-1.5 bg-red-500 hover:bg-red-600 text-white rounded-full"
                           >
                             <X size={12} />
                           </button>
                         </div>
                       ) : (
-                        <div className="w-full h-32 bg-slate-50 dark:bg-slate-950/20 rounded-2xl border border-dashed border-gray-200 dark:border-white/10 flex flex-col items-center justify-center p-4 text-center">
-                          <Palette className="w-8 h-8 text-gray-400 mb-2 animate-bounce" />
-                          <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Belum ada logo terunggah</p>
+                        <div className="w-full h-32 bg-gray-50 dark:bg-gray-950 border-2 border-dashed border-gray-200 dark:border-gray-800 rounded-xl flex flex-col items-center justify-center">
+                          <Sparkles className="w-8 h-8 text-gray-400 mb-2" />
+                          <p className="text-sm font-bold text-gray-400 uppercase">Belum ada logo</p>
                         </div>
                       )}
                       
@@ -557,7 +544,7 @@ export default function SettingsPage() {
                           value={settings.logoUrl}
                           onChange={(e) => setSettings({...settings, logoUrl: e.target.value})}
                           placeholder="https://.../logo.png"
-                          className="flex-1 bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-xl px-4 py-3 text-xs text-brand-black dark:text-white outline-none focus:border-brand-red/50 focus:ring-1 focus:ring-brand-red/20 transition-all font-semibold"
+                          className="flex-1 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-3 text-base text-gray-900 dark:text-white outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 transition-all"
                         />
                         <div className="relative">
                           <input 
@@ -571,7 +558,7 @@ export default function SettingsPage() {
                             type="button"
                             onClick={() => logoInputRef.current?.click()}
                             disabled={uploadingLogo}
-                            className="h-full bg-brand-black dark:bg-white/10 hover:bg-brand-red text-white px-6 text-[10px] font-black uppercase tracking-widest transition-all rounded-xl flex items-center gap-2 cursor-pointer"
+                            className="h-full bg-gray-900 dark:bg-gray-100 hover:bg-brand-red text-white px-6 text-sm font-medium transition-all rounded-lg flex items-center gap-2"
                           >
                             {uploadingLogo ? <Loader2 size={12} className="animate-spin" /> : <Plus size={12} />}
                             {uploadingLogo ? 'Unggah...' : 'Upload'}
@@ -582,10 +569,10 @@ export default function SettingsPage() {
                   </div>
 
                   <div className="space-y-4">
-                    <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Warna Aksen Portal (Brand Theme)</label>
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Warna Aksen Portal (Brand Theme)</label>
                     <div className="space-y-3">
                       <div className="flex gap-3">
-                        <div className="w-12 h-11 rounded-xl overflow-hidden border border-gray-200 dark:border-white/10 flex-shrink-0">
+                        <div className="w-12 h-11 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-800">
                           <input 
                             type="color" 
                             value={settings.appearance.primaryColor}
@@ -593,7 +580,7 @@ export default function SettingsPage() {
                               ...settings, 
                               appearance: { ...settings.appearance, primaryColor: e.target.value }
                             })}
-                            className="w-full h-full p-0 border-0 cursor-pointer scale-125"
+                            className="w-full h-full p-0 border-0 cursor-pointer"
                           />
                         </div>
                         <input 
@@ -603,20 +590,22 @@ export default function SettingsPage() {
                             ...settings, 
                             appearance: { ...settings.appearance, primaryColor: e.target.value }
                           })}
-                          className="flex-1 bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-xl px-4 py-3 text-xs text-brand-black dark:text-white outline-none focus:border-brand-red/50 focus:ring-1 focus:ring-brand-red/20 transition-all font-mono font-bold"
+                          className="flex-1 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-3 text-base text-gray-900 dark:text-white outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 transition-all font-mono"
                         />
                       </div>
 
                       {contrastAdvice && (
-                        <div className={`p-4 rounded-xl border flex items-start gap-2.5 ${
+                        <div className={`p-4 rounded-lg border ${
                           contrastAdvice.isSafe
-                            ? 'bg-emerald-500/5 border-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                            : 'bg-amber-500/5 border-amber-500/10 text-amber-600 dark:text-amber-400'
+                            ? 'bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-900/20 dark:border-emerald-800 dark:text-emerald-400'
+                            : 'bg-amber-50 border-amber-200 text-amber-600 dark:bg-amber-900/20 dark:border-amber-800 dark:text-amber-400'
                         }`}>
-                          <AlertCircle size={14} className="mt-0.5 flex-shrink-0" />
-                          <div className="text-[9px] font-black uppercase tracking-wider space-y-0.5">
-                            <p>Rasio Kontras: {contrastAdvice.ratio}:1 (Standard AA)</p>
-                            <p className="opacity-80 leading-normal">{contrastAdvice.textAdvice}</p>
+                          <div className="flex items-start gap-2">
+                            <AlertCircle size={14} className="mt-0.5" />
+                            <div className="text-sm space-y-0.5">
+                              <p>Rasio Kontras: {contrastAdvice.ratio}:1 (Standard AA)</p>
+                              <p className="opacity-80">{contrastAdvice.textAdvice}</p>
+                            </div>
                           </div>
                         </div>
                       )}
@@ -624,30 +613,30 @@ export default function SettingsPage() {
                   </div>
                 </div>
 
-                <div className="h-px bg-gray-100 dark:bg-white/5 my-4"></div>
+                <hr className="border-gray-200 dark:border-gray-800" />
 
-                {/* FAVICON & SOCIAL SHARE IMAGE */}
+                {/* FAVICON & OG IMAGE */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="space-y-4">
                     <div className="flex items-center gap-2">
-                      <Image size={14} className="text-brand-red" />
-                      <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Favicon (Ikon Tab Browser)</label>
+                      <Image size={16} className="text-brand-red" />
+                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Favicon</label>
                     </div>
-                    <div className="flex flex-col gap-3">
+                    <div className="space-y-3">
                       {settings.faviconUrl ? (
-                        <div className="w-16 h-16 bg-slate-50 dark:bg-slate-950/20 rounded-xl border border-dashed border-gray-200 dark:border-white/10 flex items-center justify-center p-2 relative group">
+                        <div className="w-16 h-16 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg flex items-center justify-center p-2 relative">
                           <img src={settings.faviconUrl} alt="Favicon Preview" className="max-w-full max-h-full object-contain" />
                           <button
                             type="button"
                             onClick={() => setSettings({...settings, faviconUrl: ''})}
-                            className="absolute -top-2 -right-2 p-1 bg-rose-500 hover:bg-rose-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                            className="absolute -top-2 -right-2 p-1 bg-red-500 hover:bg-red-600 text-white rounded-full"
                           >
                             <X size={10} />
                           </button>
                         </div>
                       ) : (
-                        <div className="w-16 h-16 bg-slate-50 dark:bg-slate-950/20 rounded-xl border border-dashed border-gray-200 dark:border-white/10 flex items-center justify-center">
-                          <p className="text-[8px] text-gray-400 font-bold uppercase">Belum Ada</p>
+                        <div className="w-16 h-16 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg flex items-center justify-center">
+                          <p className="text-xs font-medium text-gray-400">Belum Ada</p>
                         </div>
                       )}
                       <input
@@ -655,33 +644,33 @@ export default function SettingsPage() {
                         value={settings.faviconUrl}
                         onChange={(e) => setSettings({...settings, faviconUrl: e.target.value})}
                         placeholder="https://.../favicon.ico"
-                        className="w-full bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-xl px-4 py-2.5 text-[10px] text-brand-black dark:text-white outline-none focus:border-brand-red/50 transition-all font-semibold"
+                        className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 transition-all"
                       />
-                      <p className="text-[8px] text-gray-400">Format rekomendasi: ICO, PNG 32x32 atau SVG. Muncul di tab browser.</p>
+                      <p className="text-xs text-gray-500">Format: ICO, PNG 32x32 atau SVG</p>
                     </div>
                   </div>
 
                   <div className="space-y-4">
                     <div className="flex items-center gap-2">
-                      <Share2 size={14} className="text-brand-red" />
-                      <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">OG Image (Share Preview)</label>
+                      <Share2 size={16} className="text-brand-red" />
+                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">OG Image (Share Preview)</label>
                     </div>
-                    <div className="flex flex-col gap-3">
+                    <div className="space-y-3">
                       {settings.ogImageUrl ? (
-                        <div className="w-full h-32 bg-slate-50 dark:bg-slate-950/20 rounded-xl border border-dashed border-gray-200 dark:border-white/10 flex items-center justify-center p-2 relative group overflow-hidden">
+                        <div className="w-full h-32 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg flex items-center justify-center p-2 relative">
                           <img src={settings.ogImageUrl} alt="OG Image Preview" className="max-w-full max-h-full object-contain" />
                           <button
                             type="button"
                             onClick={() => setSettings({...settings, ogImageUrl: ''})}
-                            className="absolute top-2 right-2 p-1.5 bg-rose-500 hover:bg-rose-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                            className="absolute top-2 right-2 p-1.5 bg-red-500 hover:bg-red-600 text-white rounded-full"
                           >
                             <X size={10} />
                           </button>
                         </div>
                       ) : (
-                        <div className="w-full h-32 bg-slate-50 dark:bg-slate-950/20 rounded-xl border border-dashed border-gray-200 dark:border-white/10 flex flex-col items-center justify-center text-center p-4">
+                        <div className="w-full h-32 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg flex flex-col items-center justify-center text-center">
                           <Share2 size={20} className="text-gray-400 mb-2" />
-                          <p className="text-[8px] text-gray-400 font-bold uppercase">Belum Ada OG Image</p>
+                          <p className="text-sm font-bold text-gray-400 uppercase">Belum Ada OG Image</p>
                         </div>
                       )}
                       <input
@@ -689,45 +678,47 @@ export default function SettingsPage() {
                         value={settings.ogImageUrl}
                         onChange={(e) => setSettings({...settings, ogImageUrl: e.target.value})}
                         placeholder="https://.../og-image.jpg"
-                        className="w-full bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-xl px-4 py-2.5 text-[10px] text-brand-black dark:text-white outline-none focus:border-brand-red/50 transition-all font-semibold"
+                        className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 transition-all"
                       />
-                      <p className="text-[8px] text-gray-400">Format rekomendasi: JPG/PNG 1200x630px. Muncul saat link di-share ke WhatsApp, Facebook, Twitter.</p>
+                      <p className="text-xs text-gray-500">Format rekomendasi: JPG/PNG 1200x630px</p>
                     </div>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* ==================== TAB 2: KONTAK & SOSIAL ==================== */}
+            {/* TAB 2: KONTAK & SOSIAL */}
             {activeTab === 'contact' && (
-              <div className="space-y-8 animate-in fade-in duration-300">
+              <div className="space-y-8">
                 <div>
-                  <h3 className="text-sm font-bold uppercase tracking-widest text-brand-black dark:text-white flex items-center gap-2">
-                    <Mail size={16} className="text-brand-red" /> Kontak & Saluran Sosial
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                    <Mail size={18} className="text-brand-red" /> Kontak & Saluran Sosial
                   </h3>
-                  <p className="text-[10px] text-gray-400 mt-1 uppercase tracking-wider font-semibold">Kelola alamat redaksi, email keluhan, hotline bantuan, dan akun media sosial resmi portal.</p>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Kelola alamat redaksi, email keluhan, hotline bantuan, dan akun media sosial resmi portal.
+                  </p>
                 </div>
 
                 <div className="space-y-6">
-                  <div className="space-y-2">
-                    <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                      <MapPin size={12} className="text-brand-red" /> Alamat Fisik Kantor Redaksi
+                  <div className="space-y-3">
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                      <MapPin size={14} className="text-brand-red" /> Alamat Fisik Kantor Redaksi
                     </label>
                     <input 
                       type="text" 
                       value={settings.address}
                       onChange={(e) => setSettings({...settings, address: e.target.value})}
                       placeholder="Contoh: Gedung BeritaKarya Lt. 3, Jl. Asia Afrika No. 45, Bandung"
-                      className="w-full bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-xl px-4 py-3 text-xs text-brand-black dark:text-white outline-none focus:border-brand-red/50 focus:ring-1 focus:ring-brand-red/20 transition-all font-semibold"
+                      className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-3 text-base text-gray-900 dark:text-white outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 transition-all"
                     />
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 flex items-center justify-between">
-                        <span className="flex items-center gap-1"><Mail size={12} className="text-brand-red" /> Email Kontak Resmi</span>
+                    <div className="space-y-3">
+                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center justify-between">
+                        <span className="flex items-center gap-2"><Mail size={14} className="text-brand-red" /> Email Kontak Resmi</span>
                         {!isValidEmail(settings.contactEmail) && (
-                          <span className="text-rose-500 text-[8px] font-black">Format Email Tidak Valid!</span>
+                          <span className="text-red-500 text-xs">Format Email Tidak Valid!</span>
                         )}
                       </label>
                       <input 
@@ -735,39 +726,38 @@ export default function SettingsPage() {
                         value={settings.contactEmail}
                         onChange={(e) => setSettings({...settings, contactEmail: e.target.value})}
                         placeholder="redaksi.bandung@beritakarya.co"
-                        className={`w-full bg-slate-50 dark:bg-slate-950/40 border rounded-xl px-4 py-3 text-xs text-brand-black dark:text-white outline-none transition-all font-semibold ${
+                        className={`w-full bg-gray-50 dark:bg-gray-950 border rounded-lg px-4 py-3 text-base text-gray-900 dark:text-white outline-none transition-all ${
                           isValidEmail(settings.contactEmail) 
-                            ? 'border-gray-100 dark:border-white/5 focus:border-brand-red/50 focus:ring-1 focus:ring-brand-red/20' 
-                            : 'border-rose-500 focus:border-rose-500 focus:ring-1 focus:ring-rose-500/20'
+                            ? 'border-gray-200 dark:border-gray-800 focus:border-brand-red focus:ring-1 focus:ring-brand-red/20' 
+                            : 'border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500/20'
                         }`}
                       />
                     </div>
 
-                    <div className="space-y-2">
-                      <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                        <Phone size={12} className="text-brand-red" /> Nomor Telepon / WhatsApp Redaksi
+                    <div className="space-y-3">
+                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                        <Phone size={14} className="text-brand-red" /> Nomor Telepon / WhatsApp
                       </label>
                       <input 
                         type="text" 
                         value={settings.phone}
                         onChange={(e) => setSettings({...settings, phone: e.target.value})}
                         placeholder="+62 812-3456-7890"
-                        className="w-full bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-xl px-4 py-3 text-xs text-brand-black dark:text-white outline-none focus:border-brand-red/50 focus:ring-1 focus:ring-brand-red/20 transition-all font-semibold"
+                        className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-3 text-base text-gray-900 dark:text-white outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 transition-all"
                       />
                     </div>
                   </div>
 
-                  <div className="h-px bg-gray-100 dark:bg-white/5 my-4"></div>
+                  <hr className="border-gray-200 dark:border-gray-800" />
 
-                  {/* SOCIAL MEDIA CHANNELS */}
                   <div className="space-y-4">
-                    <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                      <Share2 size={12} className="text-brand-red" /> Saluran Media Sosial Resmi
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                      <Share2 size={14} className="text-brand-red" /> Saluran Media Sosial Resmi
                     </label>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {Object.keys(settings.socialLinks).map((key) => (
-                        <div key={key} className="space-y-1.5">
-                          <label className="text-[8px] font-black uppercase tracking-widest text-gray-400 capitalize">{key} URL</label>
+                        <div key={key} className="space-y-2">
+                          <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{key} URL</label>
                           <input 
                             type="text" 
                             value={(settings.socialLinks as any)[key]}
@@ -776,39 +766,39 @@ export default function SettingsPage() {
                               socialLinks: { ...settings.socialLinks, [key]: e.target.value }
                             })}
                             placeholder={`https://${key}.com/profile-anda`}
-                            className="w-full bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-xl px-4 py-2 text-[10px] text-brand-black dark:text-white outline-none focus:border-brand-red/50 focus:ring-1 focus:ring-brand-red/20 transition-all font-semibold"
+                            className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-2 text-sm text-gray-900 dark:text-white outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 transition-all"
                           />
                         </div>
                       ))}
                     </div>
                   </div>
 
-                  <div className="h-px bg-gray-100 dark:bg-white/5 my-4"></div>
+                  <hr className="border-gray-200 dark:border-gray-800" />
 
-                  <div className="space-y-2">
-                    <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Teks Footer Hak Cipta (Copyright Text)</label>
+                  <div className="space-y-3">
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Teks Footer Hak Cipta</label>
                     <input 
                       type="text" 
                       value={settings.footerText}
                       onChange={(e) => setSettings({...settings, footerText: e.target.value})}
                       placeholder="© 2026 BeritaKarya Bandung. Hak cipta dilindungi undang-undang."
-                      className="w-full bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-xl px-4 py-3 text-xs text-brand-black dark:text-white outline-none focus:border-brand-red/50 focus:ring-1 focus:ring-brand-red/20 transition-all font-semibold"
+                      className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-3 text-base text-gray-900 dark:text-white outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 transition-all"
                     />
                   </div>
                 </div>
               </div>
             )}
 
-            {/* ==================== TAB 3: GOOGLE SEARCH INDEXING API ==================== */}
+            {/* TAB 3: GOOGLE SEARCH INDEXING API */}
             {activeTab === 'google' && (
-              <div className="space-y-8 animate-in fade-in duration-300">
+              <div className="space-y-8">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div>
-                    <h3 className="text-sm font-bold uppercase tracking-widest text-brand-black dark:text-white flex items-center gap-2">
-                      <ShieldAlert size={16} className="text-brand-red" /> Google Search Indexing API
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                      <ShieldAlert size={18} className="text-brand-red" /> Google Search Indexing API
                     </h3>
-                    <p className="text-[10px] text-gray-400 mt-1 uppercase tracking-wider font-semibold">
-                      Sinkronisasi instan artikel Anda ke mesin pencari Google begitu tombol publikasi ditekan.
+                    <p className="text-sm text-gray-500 mt-1">
+                      Sinkronisasi instan artikel Anda ke mesin pencari Google.
                     </p>
                   </div>
                   
@@ -821,10 +811,10 @@ export default function SettingsPage() {
                         isActive: !settings.googleIndexingConfig.isActive
                       }
                     })}
-                    className={`px-5 py-2.5 text-[9px] font-black uppercase tracking-widest border rounded-xl transition-all shadow-md ${
+                    className={`px-5 py-2.5 text-sm font-medium border rounded-lg transition-all ${
                       settings.googleIndexingConfig.isActive
-                        ? 'bg-emerald-500 text-white border-emerald-600 shadow-emerald-500/10'
-                        : 'bg-gray-100 border-gray-200 text-gray-400 dark:bg-slate-950/40 dark:border-white/5'
+                        ? 'bg-emerald-500 text-white border-emerald-600'
+                        : 'bg-gray-100 border-gray-200 text-gray-500 dark:bg-gray-800 dark:border-gray-700'
                     }`}
                   >
                     {settings.googleIndexingConfig.isActive ? '🔥 SINKRONISASI AKTIF' : '⏹️ SINKRONISASI NONAKTIF'}
@@ -832,8 +822,8 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="grid grid-cols-1 gap-6">
-                  <div className="space-y-2">
-                    <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Google Service Account Email</label>
+                  <div className="space-y-3">
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Google Service Account Email</label>
                     <input 
                       type="text" 
                       value={settings.googleIndexingConfig.clientEmail}
@@ -845,62 +835,59 @@ export default function SettingsPage() {
                         }
                       })}
                       placeholder="nama-akun@id-project.iam.gserviceaccount.com"
-                      className="w-full bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-xl px-4 py-3 text-xs text-brand-black dark:text-white outline-none focus:border-brand-red/50 focus:ring-1 focus:ring-brand-red/20 transition-all font-semibold"
+                      className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-3 text-base text-gray-900 dark:text-white outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 transition-all"
                     />
                   </div>
 
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Private Key (PEM Format)</label>
+                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Private Key (PEM Format)</label>
                       <button
                         type="button"
                         onClick={() => setShowPrivateKey(!showPrivateKey)}
-                        className="text-[9px] font-black text-brand-red hover:text-brand-black dark:hover:text-white uppercase tracking-widest flex items-center gap-1"
+                        className="text-sm font-medium text-brand-red hover:underline flex items-center gap-1"
                       >
-                        {showPrivateKey ? <EyeOff size={10} /> : <Eye size={10} />}
+                        {showPrivateKey ? <EyeOff size={12} /> : <Eye size={12} />}
                         {showPrivateKey ? 'Sembunyikan Kunci' : 'Tampilkan Kunci'}
                       </button>
                     </div>
                     
-                    <div className="relative">
-                      {showPrivateKey ? (
-                        <textarea 
-                          value={settings.googleIndexingConfig.privateKey}
-                          onChange={(e) => setSettings({
-                            ...settings,
-                            googleIndexingConfig: {
-                              ...settings.googleIndexingConfig,
-                              privateKey: e.target.value
-                            }
-                          })}
-                          placeholder="-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC7...\n-----END PRIVATE KEY-----"
-                          rows={5}
-                          className="w-full bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-xl px-4 py-3 text-[10px] text-brand-black dark:text-white outline-none focus:border-brand-red/50 focus:ring-1 focus:ring-brand-red/20 transition-all font-mono resize-none leading-relaxed"
-                        />
-                      ) : (
-                        <div className="w-full bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-xl px-4 py-8 text-center text-gray-400 font-mono text-[10px] relative overflow-hidden flex flex-col items-center justify-center min-h-[140px]">
-                          <Lock size={20} className="text-gray-400 dark:text-gray-500 mb-2 animate-bounce" />
-                          <p className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400">Kunci Privat Disensor untuk Keamanan</p>
-                          <p className="text-[8px] text-gray-400/70 dark:text-gray-500/70 mt-1 uppercase tracking-widest">Klik &quot;Tampilkan Kunci&quot; di atas untuk melihat atau mengedit kunci privat</p>
-                        </div>
-                      )}
-                    </div>
+                    {showPrivateKey ? (
+                      <textarea 
+                        value={settings.googleIndexingConfig.privateKey}
+                        onChange={(e) => setSettings({
+                          ...settings,
+                          googleIndexingConfig: {
+                            ...settings.googleIndexingConfig,
+                            privateKey: e.target.value
+                          }
+                        })}
+                        placeholder="-----BEGIN PRIVATE KEY-----\n..."
+                        rows={5}
+                        className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-3 text-sm text-gray-900 dark:text-white outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 transition-all font-mono resize-none"
+                      />
+                    ) : (
+                      <div className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-8 text-center text-gray-500 font-mono">
+                        <Lock size={20} className="mx-auto mb-2 text-gray-400" />
+                        <p className="text-sm font-medium">Kunci Privat Disensor untuk Keamanan</p>
+                        <p className="text-xs text-gray-500 mt-1">Klik "Tampilkan Kunci" di atas untuk melihat atau mengedit</p>
+                      </div>
+                    )}
                   </div>
 
-                  {/* PREMIUM INTEGRATION GUIDE */}
-                  <div className="p-6 bg-amber-500/5 dark:bg-amber-950/20 border border-amber-500/10 rounded-2xl">
-                    <h4 className="text-[9px] font-black uppercase tracking-[0.15em] text-amber-800 dark:text-amber-400 flex items-center gap-1.5">
-                      <AlertCircle size={14} className="text-amber-600 animate-pulse" /> Panduan Mutlak Pemasangan Google Search Console:
+                  <div className="p-6 bg-amber-50 border border-amber-200 rounded-xl dark:bg-amber-900/20 dark:border-amber-800">
+                    <h4 className="text-sm font-bold text-amber-800 dark:text-amber-400 flex items-center gap-2 mb-4">
+                      <AlertCircle size={16} className="text-amber-600" /> Panduan Pemasangan Google Search Console
                     </h4>
-                    <ol className="text-[9px] text-amber-800/80 dark:text-amber-400/80 space-y-2 list-decimal pl-4 mt-3 font-bold uppercase tracking-wider leading-relaxed">
+                    <ol className="text-sm text-amber-800/80 dark:text-amber-400/80 space-y-2 list-decimal pl-4">
                       <li>
-                        Buka <a href="https://console.cloud.google.com/" target="_blank" rel="noreferrer" className="text-brand-red underline inline-flex items-center gap-0.5">Google Cloud Console <ExternalLink size={8} /></a>, aktifkan **Indexing API** pada proyek Anda, buat *Service Account*, lalu unduh berkas **JSON Private Key**.
+                        Buka <a href="https://console.cloud.google.com/" target="_blank" rel="noreferrer" className="text-brand-red underline flex items-center gap-1">Google Cloud Console <ExternalLink size={12} /></a>, aktifkan Indexing API, buat Service Account, unduh JSON Private Key.
                       </li>
                       <li>
-                        Salin nilai `client_email` dan `private_key` dari berkas JSON tersebut ke dalam isian di atas.
+                        Salin client_email dan private_key dari berkas JSON ke isian di atas.
                       </li>
                       <li>
-                        <span className="text-brand-red font-black">LANGKAH WAJIB:</span> Tambahkan alamat **Service Account Email** di atas sebagai anggota berstatus **Pemilik (Owner)** di dalam dashboard **Google Search Console** website Anda agar Google memberi izin pengajuan indeks otomatis.
+                        <span className="text-brand-red font-bold">WAJIB:</span> Tambahkan Service Account Email sebagai <strong>Owner</strong> di Google Search Console.
                       </li>
                     </ol>
                   </div>
@@ -908,237 +895,108 @@ export default function SettingsPage() {
               </div>
             )}
 
-            {/* ==================== TAB 4: HALAMAN INFORMASI PORTAL ==================== */}
+            {/* TAB 4: HALAMAN INFORMASI PORTAL */}
             {activeTab === 'info' && (
-              <div className="space-y-8 animate-in fade-in duration-300">
+              <div className="space-y-8">
                 <div>
-                  <h3 className="text-sm font-bold uppercase tracking-widest text-brand-black dark:text-white flex items-center gap-2">
-                    <BookOpen size={16} className="text-brand-red" /> Halaman Informasi & Legalitas Portal
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                    <BookOpen size={18} className="text-brand-red" /> Halaman Informasi & Legalitas
                   </h3>
-                  <p className="text-[10px] text-gray-400 mt-1 uppercase tracking-wider font-semibold">
-                    Sesuaikan halaman legalitas yang muncul di footer portal utama untuk memenuhi regulasi Dewan Pers.
+                  <p className="text-sm text-gray-500 mt-1">
+                    Sesuaikan halaman legalitas untuk memenuhi regulasi Dewan Pers.
                   </p>
                 </div>
 
                 <div className="grid grid-cols-1 gap-6">
-                  <div className="space-y-2">
-                    <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Halaman: Tentang Kami (Visi & Misi)</label>
+                  <div className="space-y-3">
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Tentang Kami (Visi & Misi)</label>
                     <textarea 
                       ref={aboutUsRef}
                       value={settings.aboutUs}
                       onChange={(e) => setSettings({...settings, aboutUs: e.target.value})}
-                      placeholder="Tuliskan sejarah berdirinya, visi, misi, dan komitmen portal regional Anda di sini..."
+                      placeholder="Tuliskan sejarah berdirinya, visi, misi, dan komitmen portal regional..."
                       rows={4}
-                      className="w-full bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-xl px-4 py-3 text-xs text-brand-black dark:text-white outline-none focus:border-brand-red/50 focus:ring-1 focus:ring-brand-red/20 transition-all font-semibold resize-none overflow-hidden"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Halaman: Kode Etik Internal</label>
-                    <textarea 
-                      ref={codeOfEthicsRef}
-                      value={settings.codeOfEthics}
-                      onChange={(e) => setSettings({...settings, codeOfEthics: e.target.value})}
-                      placeholder="Tuliskan aturan jurnalisme independen, etika peliputan, dan komitmen profesionalitas redaksi Anda..."
-                      rows={4}
-                      className="w-full bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-xl px-4 py-3 text-xs text-brand-black dark:text-white outline-none focus:border-brand-red/50 focus:ring-1 focus:ring-brand-red/20 transition-all font-semibold resize-none overflow-hidden"
+                      className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-3 text-base text-gray-900 dark:text-white outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 transition-all resize-none"
                     />
                   </div>
 
                   <div className="space-y-3">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                      <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">
-                        Halaman: Susunan Redaksi
-                      </label>
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Kode Etik Internal</label>
+                    <textarea 
+                      ref={codeOfEthicsRef}
+                      value={settings.codeOfEthics}
+                      onChange={(e) => setSettings({...settings, codeOfEthics: e.target.value})}
+                      placeholder="Tuliskan aturan jurnalisme independen, etika peliputan..."
+                      rows={4}
+                      className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-3 text-base text-gray-900 dark:text-white outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 transition-all resize-none"
+                    />
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Susunan Redaksi</label>
                       <button
                         type="button"
                         onClick={() => {
-                          if (confirm('Apakah Anda yakin ingin memuat format Dewan Pers standar? Teks susunan redaksi saat ini akan ditimpa.')) {
+                          if (confirm('Apakah Anda yakin ingin memuat format Dewan Pers standar? Teks saat ini akan ditimpa.')) {
                             setSettings({
                               ...settings,
-                              editorial: `PT SABDA KARYA MEDIA (BERITAKARYA.CO)\nSK MENKUMHAM: AHU-0012345.AH.01.01.TAHUN 2026\n\nSUSUNAN REDAKSI & TATA KELOLA PERUSAHAAN\n\nPenerbit / Badan Hukum:\nPT Sabda Karya Media\n\nDewan Pembina / Penasihat:\n- [Nama Dewan Pembina]\n\nPemimpin Umum / Direktur Utama:\n- [Nama Pemimpin Umum]\n\nPemimpin Redaksi / Penanggung Jawab:\n- [Nama Pemimpin Redaksi] (Sertifikat Kompetensi Reporter Utama No: [Nomor])\n\nRedaktur Pelaksana (Redpel):\n- [Nama Redaktur Pelaksana]\n\nRedaktur Senior & Editor:\n- [Nama Editor 1]\n- [Nama Editor 2]\n\nReporter Lapangan:\n- [Nama Reporter 1]\n- [Nama Reporter 2]\n- [Nama Reporter 3]\n\nDesain Grafis, IT & Multimedia:\n- [Nama Tim IT/Desain]\n\nAlamat Kantor Redaksi Pusat:\nGedung BeritaKarya, Lt. 3, Jl. Asia Afrika No. 45, Bandung, Jawa Barat\nEmail: redaksi@beritakarya.co | Telp: +62 812-3456-7890\n\nPenasihat Hukum:\n- [Nama Advokat/LBH], S.H., M.H.`
+                              editorial: `PT SABDA KARYA MEDIA (BERITAKARYA.CO)\nSK MENKUMHAM: AHU-0012345.AH.01.01.TAHUN 2026\n\nSUSUNAN REDAKSI & TATA KELOLA PERUSAHAAN\n\nPenerbit / Badan Hukum:\nPT Sabda Karya Media\n\nDewan Pembina / Penasihat:\n- [Nama Dewan Pembina]\n\nPemimpin Umum / Direktur Utama:\n- [Nama Pemimpin Umum]\n\nPemimpin Redaksi / Penanggung Jawab:\n- [Nama Pemimpin Redaksi]\n\nRedaktur Pelaksana (Redpel):\n- [Nama Redaktur Pelaksana]\n\nRedaktur Senior & Editor:\n- [Nama Editor 1]\n- [Nama Editor 2]\n\nReporter Lapangan:\n- [Nama Reporter 1]\n- [Nama Reporter 2]\n\nDesain Grafis, IT & Multimedia:\n- [Nama Tim IT/Desain]\n\nAlamat Kantor Redaksi Pusat:\nGedung BeritaKarya, Lt. 3, Jl. Asia Afrika No. 45, Bandung\nEmail: redaksi@beritakarya.co | Telp: +62 812-3456-7890\n\nPenasihat Hukum:\n- [Nama Advokat], S.H., M.H.`
                             })
                           }
                         }}
-                        className="text-[9px] font-black text-brand-red hover:text-brand-black dark:hover:text-white uppercase tracking-widest flex items-center gap-1 bg-brand-red/5 px-2.5 py-1.5 rounded-lg border border-brand-red/10 transition-all shadow-sm animate-pulse"
+                        className="text-sm font-medium text-brand-red hover:underline flex items-center gap-1"
                       >
-                        <Sparkles size={10} className="text-brand-red" /> Gunakan Template Dewan Pers
+                        <Sparkles size={12} /> Gunakan Template Dewan Pers
                       </button>
                     </div>
-                    
                     <textarea 
                       ref={editorialRef}
                       value={settings.editorial}
                       onChange={(e) => setSettings({...settings, editorial: e.target.value})}
-                      placeholder="Daftar nama Pemimpin Redaksi, Editor, Reporter, Kontributor, Dewan Penasehat, beserta peran masing-masing..."
+                      placeholder="Daftar nama Pemimpin Redaksi, Editor, Reporter, Kontributor..."
                       rows={5}
-                      className="w-full bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-xl px-4 py-3 text-xs text-brand-black dark:text-white outline-none focus:border-brand-red/50 focus:ring-1 focus:ring-brand-red/20 transition-all font-semibold resize-none overflow-hidden"
+                      className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-3 text-base text-gray-900 dark:text-white outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 transition-all resize-none"
                     />
-
-                    {/* PDF Uploader Slot */}
-                    <div className="p-4 bg-slate-50 dark:bg-slate-950/30 border border-gray-100 dark:border-white/5 rounded-xl space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[9px] font-black uppercase tracking-widest text-gray-400">
-                          Lampiran Berkas SK Redaksi Resmi (PDF)
-                        </span>
-                        {settings.appearance.editorialPdfUrl ? (
-                          <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest bg-emerald-500/10 px-2 py-0.5 rounded">
-                            PDF Terunggah
-                          </span>
-                        ) : (
-                          <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">
-                            Belum Ada PDF
-                          </span>
-                        )}
-                      </div>
-                      
-                      <div className="flex gap-3">
-                        <input 
-                          type="text" 
-                          value={settings.appearance.editorialPdfUrl || ''}
-                          onChange={(e) => setSettings({
-                            ...settings,
-                            appearance: {
-                              ...settings.appearance,
-                              editorialPdfUrl: e.target.value
-                            }
-                          })}
-                          placeholder="https://.../sk-redaksi.pdf"
-                          className="flex-1 bg-white dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-lg px-3 py-2 text-[10px] text-brand-black dark:text-white outline-none focus:border-brand-red/50 focus:ring-1 focus:ring-brand-red/20 transition-all font-semibold"
-                        />
-                        
-                        <div className="relative">
-                          <input 
-                            ref={pdfInputRef}
-                            type="file" 
-                            accept="application/pdf"
-                            onChange={async (e) => {
-                              const file = e.target.files?.[0]
-                              if (!file) return
-                              
-                              setUploadingPdf(true)
-                              const formData = new FormData()
-                              formData.append('file', file)
-                              
-                              try {
-                                const { data } = await api.post('/media/upload', formData)
-                                setSettings({
-                                  ...settings,
-                                  appearance: {
-                                    ...settings.appearance,
-                                    editorialPdfUrl: data.data.url
-                                  }
-                                })
-                              } catch (err: any) {
-                                console.error('Failed to upload PDF', err)
-                                alert(err.response?.data?.error?.message || 'Gagal mengunggah file PDF')
-                              } finally {
-                                setUploadingPdf(false)
-                              }
-                            }}
-                            className="hidden"
-                          />
-                          <button 
-                            type="button"
-                            onClick={() => pdfInputRef.current?.click()}
-                            disabled={uploadingPdf}
-                            className="h-full bg-brand-black dark:bg-white/10 hover:bg-brand-red text-white px-4 py-3 text-[9px] font-black uppercase tracking-widest transition-all rounded-lg flex items-center gap-1.5 cursor-pointer"
-                          >
-                            {uploadingPdf ? <Loader2 size={10} className="animate-spin" /> : <Plus size={10} />}
-                            {uploadingPdf ? 'Mengunggah...' : 'Upload PDF'}
-                          </button>
-                        </div>
-                      </div>
-                      
-                      {settings.appearance.editorialPdfUrl && (
-                        <div className="flex items-center gap-2">
-                          <a 
-                            href={settings.appearance.editorialPdfUrl} 
-                            target="_blank" 
-                            rel="noreferrer" 
-                            className="text-[9px] font-black text-brand-red hover:underline flex items-center gap-1 uppercase tracking-widest"
-                          >
-                            <ExternalLink size={10} /> Buka / Uji Berkas PDF SK Redaksi
-                          </a>
-                          <span className="text-gray-300 dark:text-white/10">|</span>
-                          <button
-                            type="button"
-                            onClick={() => setSettings({
-                              ...settings,
-                              appearance: {
-                                ...settings.appearance,
-                                editorialPdfUrl: ''
-                              }
-                            })}
-                            className="text-[9px] font-black text-rose-500 hover:text-rose-600 uppercase tracking-widest"
-                          >
-                            Hapus Lampiran
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Halaman: Panduan & Informasi Periklanan</label>
-                    <textarea
-                      ref={advertisingRef}
-                      value={settings.advertising}
-                      onChange={(e) => setSettings({...settings, advertising: e.target.value})}
-                      placeholder="Tuliskan ketentuan tarif iklan, jenis space iklan yang tersedia (banner/advetorial), beserta nomor kontak iklan khusus..."
-                      rows={4}
-                      className="w-full bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-xl px-4 py-3 text-xs text-brand-black dark:text-white outline-none focus:border-brand-red/50 focus:ring-1 focus:ring-brand-red/20 transition-all font-semibold resize-none overflow-hidden"
-                    />
-                  </div>
-
-                  <div className="h-px bg-gray-100 dark:bg-white/5 my-4"></div>
-
-                  <div>
-                    <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-4 flex items-center gap-2">
-                      <Shield size={14} className="text-brand-red" /> Kebijakan Legal & Regulasi
-                    </h4>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <Shield size={12} className="text-brand-red" />
-                        <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Kebijakan Privasi</label>
-                      </div>
+                    <div className="space-y-3">
+                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                        <Shield size={14} className="text-brand-red" /> Kebijakan Privasi
+                      </label>
                       <textarea
                         value={settings.privacyPolicy}
                         onChange={(e) => setSettings({...settings, privacyPolicy: e.target.value})}
-                        placeholder="Tuliskan kebijakan tentang bagaimana data pengguna dikumpulkan, disimpan, dan dilindungi..."
+                        placeholder="Tuliskan kebijakan tentang bagaimana data pengguna dikumpulkan..."
                         rows={4}
-                        className="w-full bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-xl px-4 py-3 text-[10px] text-brand-black dark:text-white outline-none focus:border-brand-red/50 transition-all font-semibold resize-none"
+                        className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-3 text-base text-gray-900 dark:text-white outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 transition-all resize-none"
                       />
                     </div>
 
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <FileText size={12} className="text-brand-red" />
-                        <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Syarat & Ketentuan</label>
-                      </div>
+                    <div className="space-y-3">
+                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                        <FileText size={14} className="text-brand-red" /> Syarat & Ketentuan
+                      </label>
                       <textarea
                         value={settings.termsOfService}
                         onChange={(e) => setSettings({...settings, termsOfService: e.target.value})}
-                        placeholder="Tuliskan syarat dan ketentuan penggunaan layanan portal berita..."
+                        placeholder="Tuliskan syarat dan ketentuan penggunaan layanan..."
                         rows={4}
-                        className="w-full bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-xl px-4 py-3 text-[10px] text-brand-black dark:text-white outline-none focus:border-brand-red/50 transition-all font-semibold resize-none"
+                        className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-3 text-base text-gray-900 dark:text-white outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 transition-all resize-none"
                       />
                     </div>
 
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <Cookie size={12} className="text-brand-red" />
-                        <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Kebijakan Cookie</label>
-                      </div>
+                    <div className="space-y-3">
+                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                        <Cookie size={14} className="text-brand-red" /> Kebijakan Cookie
+                      </label>
                       <textarea
                         value={settings.cookiePolicy}
                         onChange={(e) => setSettings({...settings, cookiePolicy: e.target.value})}
-                        placeholder="Tuliskan kebijakan penggunaan cookie untuk analitik dan fungsional situs..."
+                        placeholder="Tuliskan kebijakan penggunaan cookie..."
                         rows={4}
-                        className="w-full bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-xl px-4 py-3 text-[10px] text-brand-black dark:text-white outline-none focus:border-brand-red/50 transition-all font-semibold resize-none"
+                        className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-3 text-base text-gray-900 dark:text-white outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 transition-all resize-none"
                       />
                     </div>
                   </div>
@@ -1146,19 +1004,19 @@ export default function SettingsPage() {
               </div>
             )}
 
-            {/* ==================== TAB 5: TOPIK HANGAT ==================== */}
+            {/* TAB 5: TOPIK HANGAT */}
             {activeTab === 'trending' && (
-              <div className="space-y-8 animate-in fade-in duration-300">
+              <div className="space-y-8">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div>
-                    <h3 className="text-sm font-bold uppercase tracking-widest text-brand-black dark:text-white flex items-center gap-2">
-                      <Flame size={16} className="text-brand-red animate-bounce" /> Manajemen Topik Hangat (Trending Tags)
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                      <Flame size={18} className="text-brand-red" /> Manajemen Topik Hangat
                     </h3>
-                    <p className="text-[10px] text-gray-400 mt-1 uppercase tracking-wider font-semibold">
-                      Tentukan tag khusus yang disematkan langsung pada bar navigasi depan untuk kemudahan pencarian artikel viral.
+                    <p className="text-sm text-gray-500 mt-1">
+                      Tentukan tag khusus yang disematkan pada bar navigasi depan.
                     </p>
                   </div>
-                  <span className="text-[9px] font-black text-white bg-brand-red px-3 py-1 rounded-full uppercase tracking-widest">
+                  <span className="text-sm font-bold text-white bg-brand-red px-3 py-1 rounded-full">
                     {settings.trendingTopics.length} Topik Aktif
                   </span>
                 </div>
@@ -1168,15 +1026,15 @@ export default function SettingsPage() {
                     type="text" 
                     value={newTag}
                     onChange={(e) => setNewTag(e.target.value)}
-                    placeholder="Tambah topik baru (contoh: Pilkada 2026, Gempa Jabar, Persib Juara)"
-                    className="flex-1 bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-xl px-4 py-3 text-xs text-brand-black dark:text-white outline-none focus:border-brand-red/50 focus:ring-1 focus:ring-brand-red/20 transition-all font-semibold"
+                    placeholder="Tambah topik baru (contoh: Pilkada 2026)"
+                    className="flex-1 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-3 text-base text-gray-900 dark:text-white outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 transition-all"
                   />
                   <button 
                     type="submit"
-                    className="bg-brand-black dark:bg-white/10 hover:bg-brand-red text-white px-5 py-3 transition-all rounded-xl flex items-center gap-1 shadow-md hover:shadow-lg"
+                    className="bg-gray-900 dark:bg-gray-100 hover:bg-brand-red text-white px-5 py-3 transition-all rounded-lg flex items-center gap-1"
                   >
                     <Plus size={16} />
-                    <span className="text-[9px] font-black uppercase tracking-widest hidden md:inline">Tambah</span>
+                    <span className="text-sm font-medium">Tambah</span>
                   </button>
                 </form>
 
@@ -1185,23 +1043,23 @@ export default function SettingsPage() {
                     settings.trendingTopics.map((tag) => (
                       <div 
                         key={tag}
-                        className="group flex items-center gap-2.5 bg-slate-50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 px-4 py-2.5 rounded-xl transition-all hover:border-brand-red/40 hover:shadow-sm"
+                        className="group flex items-center gap-2.5 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 px-4 py-2.5 rounded-lg transition-all hover:border-brand-red"
                       >
-                        <span className="text-[10px] font-black uppercase tracking-widest text-brand-black dark:text-white">#{tag}</span>
+                        <span className="text-sm font-medium text-gray-900 dark:text-white">#{tag}</span>
                         <button 
                           type="button"
                           onClick={() => removeTag(tag)}
-                          className="text-gray-400 hover:text-brand-red transition-colors duration-200"
+                          className="text-gray-400 hover:text-brand-red transition-colors"
                         >
                           <X size={12} />
                         </button>
                       </div>
                     ))
                   ) : (
-                    <div className="w-full py-12 text-center border-2 border-dashed border-gray-100 dark:border-white/5 rounded-2xl">
+                    <div className="w-full py-12 text-center border-2 border-dashed border-gray-200 dark:border-gray-800 rounded-xl">
                       <Flame size={28} className="text-gray-300 dark:text-gray-600 mx-auto mb-2" />
-                      <p className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em]">Belum ada topik khusus daerah.</p>
-                      <p className="text-[8px] text-gray-400/80 uppercase tracking-widest mt-1">Situs depan akan secara otomatis menggunakan topik default pusat.</p>
+                      <p className="text-sm font-bold text-gray-400 uppercase">Belum ada topik khusus</p>
+                      <p className="text-xs text-gray-400 mt-1">Situs depan akan menggunakan topik default pusat</p>
                     </div>
                   )}
                 </div>
@@ -1212,13 +1070,13 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* FLOATING ACTION BAR: TAMPIL JIKA ADA PERUBAHAN */}
+      {/* FLOATING ACTION BAR */}
       {isDirty && (
-        <div className="fixed bottom-8 right-8 z-40 animate-in slide-in-from-bottom-8 fade-in duration-300">
+        <div className="fixed bottom-8 right-8 z-40">
           <button 
             onClick={handleSave}
             disabled={saving}
-            className="flex items-center gap-3 bg-brand-red hover:bg-brand-black text-white px-8 py-4 text-xs font-black uppercase tracking-[0.2em] transition-all shadow-2xl shadow-brand-red/40 disabled:opacity-50 rounded-2xl border border-white/10"
+            className="flex items-center gap-3 bg-brand-red hover:bg-red-700 text-white px-8 py-4 text-sm font-medium transition-all shadow-xl disabled:opacity-50 rounded-xl"
           >
             {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
             {saving ? 'Sedang Menyimpan...' : 'Simpan Seluruh Perubahan'}
