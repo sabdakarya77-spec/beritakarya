@@ -42,7 +42,7 @@ export function PremiumHero({ article, site }: PremiumHeroProps) {
     if (!article?.slug) return '';
     if (typeof window === 'undefined') return `/${site}/artikel/${article.slug}`;
     return `${window.location.origin}/${site}/artikel/${article.slug}`;
-  }, [article?.slug, site]);
+  }, [article, site]);
 
   const handleShare = async () => {
     try {
