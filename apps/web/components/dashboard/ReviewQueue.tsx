@@ -1,5 +1,8 @@
 'use client';
 
+const INITIAL_TIMESTAMP = Date.now();
+
+import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { AlertCircle, ChevronRight, Clock3, Eye, Zap } from 'lucide-react';
 import Link from 'next/link';
@@ -17,8 +20,10 @@ interface Article {
 }
 
 function ReviewQueueItem({ article, site, index }: { article: Article; site: string; index: number }) {
-  const queueDate = new Date(article.updatedAt || article.createdAt).getTime();
-  const queueHours = Math.max(1, Math.floor((Date.now() - queueDate) / (1000 * 60 * 60)));
+  const queueHours = useMemo(() => {
+    const queueDate = new Date(article.updatedAt || article.createdAt).getTime();
+    return Math.max(1, Math.floor((INITIAL_TIMESTAMP - queueDate) / (1000 * 60 * 60)));
+  }, [article.updatedAt, article.createdAt]);
   const isLongQueue = queueHours >= 24;
   const queueAgeLabel = queueHours >= 48
     ? `${Math.floor(queueHours / 24)} hari antre`
@@ -103,7 +108,7 @@ export function ReviewQueue({ articles, site, count }: ReviewQueueProps) {
   const breakingCount = articles.filter((article) => article.isBreaking).length;
   const longQueueCount = articles.filter((article) => {
     const queueDate = new Date(article.updatedAt || article.createdAt).getTime();
-    const queueHours = Math.max(1, Math.floor((Date.now() - queueDate) / (1000 * 60 * 60)));
+    const queueHours = Math.max(1, Math.floor((INITIAL_TIMESTAMP - queueDate) / (1000 * 60 * 60)));
     return queueHours >= 24;
   }).length;
 

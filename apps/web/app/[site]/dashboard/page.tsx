@@ -1,5 +1,7 @@
 'use client';
 
+const INITIAL_TIMESTAMP = Date.now();
+
 import { BarChart3, TrendingUp, FileText, ShieldCheck, Activity, ArrowRight, Clock3, CheckCircle2, Users, PenSquare, Megaphone, MessageSquareMore, LayoutDashboard, ClipboardList } from 'lucide-react';
 import Link from 'next/link';
 import TrafficChart from '../../../components/dashboard/TrafficChart';
@@ -138,7 +140,7 @@ export default function DashboardOverview() {
 
   const getQueueHours = (article: Article) => {
     const queueDate = new Date(article.updatedAt || article.createdAt).getTime();
-    return Math.max(1, Math.floor((Date.now() - queueDate) / (1000 * 60 * 60)));
+    return Math.max(1, Math.floor((INITIAL_TIMESTAMP - queueDate) / (1000 * 60 * 60)));
   };
 
   const reviewQueue = [...articles]

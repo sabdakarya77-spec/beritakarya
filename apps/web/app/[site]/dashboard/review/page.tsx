@@ -1,5 +1,7 @@
 'use client';
 
+const INITIAL_TIMESTAMP = Date.now();
+
 import { useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
@@ -92,7 +94,7 @@ export default function ReviewQueuePage() {
 
   const getQueueHours = (article: Article) => {
     const queueDate = new Date(article.updatedAt || article.createdAt).getTime();
-    return Math.max(1, Math.floor((Date.now() - queueDate) / (1000 * 60 * 60)));
+    return Math.max(1, Math.floor((INITIAL_TIMESTAMP - queueDate) / (1000 * 60 * 60)));
   };
 
   const getQueueAgeLabel = (article: Article) => {

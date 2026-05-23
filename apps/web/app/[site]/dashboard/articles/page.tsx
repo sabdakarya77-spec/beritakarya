@@ -278,7 +278,7 @@ export default function ArticlesPage() {
             )}
             {searchQuery && (
               <span className="rounded-full bg-white dark:bg-slate-900/70 px-2 py-1 text-[10px] font-black text-brand-black dark:text-white">
-                Cari: "{searchQuery}"
+                Cari: &quot;{searchQuery}&quot;
               </span>
             )}
           </div>
