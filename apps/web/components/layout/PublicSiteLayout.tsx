@@ -63,7 +63,7 @@ export default function PublicSiteLayout({ children, siteConfig, initialCategory
     >
       {/* Container for Breaking News to keep it aligned at the very top */}
       <div className="border-b border-gray-100 dark:border-white/5 bg-white dark:bg-black/20">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-[1160px] mx-auto px-4 md:px-8 lg:px-10">
           <BreakingNewsTicker />
         </div>
       </div>

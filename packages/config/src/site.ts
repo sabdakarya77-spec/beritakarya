@@ -37,19 +37,46 @@ export const SITE_MAP: Record<string, SiteConfig> = {
     id: 'bandung',
     name: 'BeritaKarya Bandung',
     domain: 'bandung.beritakarya.co',
-    devDomain: 'bandung.localhost:3000'
+    devDomain: 'bandung.localhost:3000',
+    socialLinks: {
+      facebook: 'https://facebook.com/beritakarya',
+      twitter: 'https://twitter.com/beritakarya',
+      instagram: 'https://instagram.com/beritakarya',
+      youtube: 'https://youtube.com/beritakarya',
+      whatsapp: 'https://wa.me/6281234567890',
+      telegram: 'https://t.me/beritakarya',
+      tiktok: 'https://tiktok.com/@beritakarya'
+    }
   },
   surabaya: {
     id: 'surabaya',
     name: 'BeritaKarya Surabaya',
     domain: 'surabaya.beritakarya.co',
-    devDomain: 'surabaya.localhost:3000'
+    devDomain: 'surabaya.localhost:3000',
+    socialLinks: {
+      facebook: 'https://facebook.com/beritakarya',
+      twitter: 'https://twitter.com/beritakarya',
+      instagram: 'https://instagram.com/beritakarya',
+      youtube: 'https://youtube.com/beritakarya',
+      whatsapp: 'https://wa.me/6281234567890',
+      telegram: 'https://t.me/beritakarya',
+      tiktok: 'https://tiktok.com/@beritakarya'
+    }
   },
   pusat: {
     id: 'pusat',
-    name: 'BeritaKarya Pusat',
+    name: 'BeritaKarya',
     domain: 'beritakarya.co',
-    devDomain: 'localhost:3000'
+    devDomain: 'localhost:3000',
+    socialLinks: {
+      facebook: 'https://facebook.com/beritakarya',
+      twitter: 'https://twitter.com/beritakarya',
+      instagram: 'https://instagram.com/beritakarya',
+      youtube: 'https://youtube.com/beritakarya',
+      whatsapp: 'https://wa.me/6281234567890',
+      telegram: 'https://t.me/beritakarya',
+      tiktok: 'https://tiktok.com/@beritakarya'
+    }
   }
 }
 
