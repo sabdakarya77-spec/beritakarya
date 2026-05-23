@@ -44,8 +44,6 @@ export function PremiumHero({ article, site }: PremiumHeroProps) {
     return `${window.location.origin}/${site}/artikel/${article.slug}`;
   }, [article?.slug, site]);
 
-  if (!article) return null;
-
   const handleShare = async () => {
     try {
       if (navigator.share) {
@@ -68,6 +66,8 @@ export function PremiumHero({ article, site }: PremiumHeroProps) {
       window.setTimeout(() => setShareState('idle'), 2000);
     }
   };
+
+  if (!article) return null;
 
   return (
     <section className="relative w-full mb-24 overflow-hidden">
