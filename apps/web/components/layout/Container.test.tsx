@@ -4,7 +4,7 @@ import { Container } from './Container';
 
 describe('Container Component', () => {
   describe('Size Variants', () => {
-    it('renders with default size (max-w-7xl)', () => {
+    it('renders with default size (max-w-[1160px])', () => {
       const { container } = render(
         <Container>
           <div>Content</div>
@@ -12,12 +12,12 @@ describe('Container Component', () => {
       );
       
       const wrapper = container.firstChild as HTMLElement;
-      expect(wrapper).toHaveClass('max-w-7xl');
-      expect(wrapper).not.toHaveClass('max-w-[760px]');
+      expect(wrapper).toHaveClass('max-w-[1160px]');
+      expect(wrapper).not.toHaveClass('max-w-[700px]');
       expect(wrapper).not.toHaveClass('max-w-full');
     });
 
-    it('renders with content size (max-w-[760px])', () => {
+    it('renders with content size (max-w-[700px])', () => {
       const { container } = render(
         <Container size="content">
           <div>Content</div>
@@ -25,8 +25,8 @@ describe('Container Component', () => {
       );
       
       const wrapper = container.firstChild as HTMLElement;
-      expect(wrapper).toHaveClass('max-w-[760px]');
-      expect(wrapper).not.toHaveClass('max-w-7xl');
+      expect(wrapper).toHaveClass('max-w-[700px]');
+      expect(wrapper).not.toHaveClass('max-w-[1160px]');
     });
 
     it('renders with full size (max-w-full)', () => {
@@ -38,8 +38,8 @@ describe('Container Component', () => {
       
       const wrapper = container.firstChild as HTMLElement;
       expect(wrapper).toHaveClass('max-w-full');
-      expect(wrapper).not.toHaveClass('max-w-7xl');
-      expect(wrapper).not.toHaveClass('max-w-[760px]');
+      expect(wrapper).not.toHaveClass('max-w-[1160px]');
+      expect(wrapper).not.toHaveClass('max-w-[700px]');
     });
   });
 
@@ -89,10 +89,10 @@ describe('Container Component', () => {
       );
       
       const wrapper = container.firstChild as HTMLElement;
-      expect(wrapper).toHaveClass('max-w-[760px]');
+      expect(wrapper).toHaveClass('max-w-[700px]');
       expect(wrapper).toHaveClass('px-4');
       // Note: -mx-4 may be removed by tailwind-merge due to conflict with px-4
-      expect(wrapper.className).toContain('max-w-[760px]');
+      expect(wrapper.className).toContain('max-w-[700px]');
     });
 
     it('renders full size with bleed', () => {
@@ -133,7 +133,7 @@ describe('Container Component', () => {
       const wrapper = container.firstChild as HTMLElement;
       expect(wrapper).toHaveClass('extra-padding');
       expect(wrapper).toHaveClass('px-4');
-      expect(wrapper).toHaveClass('max-w-7xl');
+      expect(wrapper).toHaveClass('max-w-[1160px]');
       // Negative margins may be removed due to tailwind-merge conflict with px-4
     });
   });
