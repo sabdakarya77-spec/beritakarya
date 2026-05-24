@@ -57,7 +57,10 @@ Homepage BeritaKarya harus terasa seperti front page editorial premium: jelas da
 - Setelah hero, wajib ada section transisi yang lebih ringan (Fokus Redaksi) sebelum masuk ke feed utama
 - Feed utama tidak boleh hanya berupa grid berulang; harus ada perbedaan antara featured stories (Fokus Redaksi) dan stream stories (Berita Lanjutan)
 - Sidebar harus berfungsi sebagai intelligence rail, bukan tumpukan widget acak
-- Editorial sections (Fokus Redaksi, Pilihan Editor, Opini) harus bebas dari card containers for seamless flow
+- **Editorial sections (Fokus Redaksi, Pilihan Editor, Opini, Berita Lanjutan) should be seamless without card containers**:
+  - No border, no background color, no shadow, tampil clean tanpa batasan kotak
+  - Tanpa kotak amber, tetap dengan efek hover shadow untuk interaktifitas
+  - Menghilangkan kotak besar, menjadi grid tanpa batasan dengan styling yang tetap profesional
 - Only ad slots and widgets should use card containers for clear separation
 
 ## Color Rules
@@ -94,6 +97,9 @@ Homepage BeritaKarya harus terasa seperti front page editorial premium: jelas da
 - Sidebar memiliki fungsi editorial yang jelas (market info, popular, ads)
 - Warna brand terasa tegas, bukan berisik
 - Desktop, tablet, dan mobile tetap menjaga ritme yang sama
-- Editorial sections (Fokus Redaksi, Pilihan Editor, Opini) are seamless without card containers
+- **Editorial sections (Fokus Redaksi, Pilihan Editor, Opini, Berita Lanjutan) are seamless without card containers**:
+  - Tanpa border, background, dan shadow, tampil clean tanpa batasan kotak
+  - Tanpa kotak amber, tetap dengan efek hover shadow untuk interaktifitas
+  - Menghilangkan kotak besar, menjadi grid tanpa batasan dengan styling yang tetap profesional
 - Only ads and widgets use card containers for clear visual separation
 - Footer is structured with 3 columns and clean professional styling
