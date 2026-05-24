@@ -1,20 +1,22 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, Suspense } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 
-export default function ScrollReset() {
+function ScrollResetInner() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const searchKey = searchParams.toString();
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-
-    // Always reset to the top on client-side route changes.
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
   }, [pathname, searchKey]);
 
+  return null;
+}
+
+function ScrollResetStatic() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
@@ -22,7 +24,6 @@ export default function ScrollReset() {
       window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
     };
 
-    // Cover browser back/forward cache restores and explicit history navigation.
     window.addEventListener('pageshow', resetScroll);
     window.addEventListener('popstate', resetScroll);
 
@@ -33,4 +34,15 @@ export default function ScrollReset() {
   }, []);
 
   return null;
+}
+
+export default function ScrollReset() {
+  return (
+    <>
+      <ScrollResetStatic />
+      <Suspense fallback={null}>
+        <ScrollResetInner />
+      </Suspense>
+    </>
+  );
 }
