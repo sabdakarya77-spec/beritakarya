@@ -83,8 +83,8 @@ export default function CommentSection({ articleId }: { articleId: string }) {
   };
 
   return (
-    <section className="mt-20 border-t border-gray-100 pt-16 dark:border-white/5">
-      <div className="mb-8 flex items-center justify-between gap-4">
+    <section className="mt-12 pt-10 md:mt-16 md:pt-12">
+      <div className="mb-7 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-brand-red text-white shadow-lg shadow-brand-red/20">
             <MessageSquare size={18} />
@@ -98,7 +98,7 @@ export default function CommentSection({ articleId }: { articleId: string }) {
         </div>
       </div>
 
-      <div className="mb-10 rounded-3xl border border-gray-100 bg-gray-50/80 p-5 dark:border-white/5 dark:bg-white/[0.02]">
+      <div className="mb-8 rounded-[1.75rem] border border-gray-100 bg-gray-50/75 p-4 shadow-[0_18px_50px_rgba(15,23,42,0.05)] dark:border-white/5 dark:bg-white/[0.02] dark:shadow-[0_18px_50px_rgba(0,0,0,0.2)] md:p-5">
         {user ? (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="flex gap-3">
@@ -133,14 +133,14 @@ export default function CommentSection({ articleId }: { articleId: string }) {
           </form>
         ) : (
           <div className="flex gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-gray-400 shadow-sm dark:bg-white/5">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-gray-400 shadow-sm dark:bg-white/5">
               <User size={18} />
             </div>
-            <div className="flex-1 rounded-2xl border border-dashed border-gray-200 bg-white px-4 py-3 shadow-sm dark:border-white/10 dark:bg-slate-900">
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+            <div className="flex-1 rounded-2xl border border-dashed border-gray-200/90 bg-white px-4 py-3.5 shadow-sm dark:border-white/10 dark:bg-slate-900">
+              <p className="text-sm leading-relaxed text-gray-500 dark:text-gray-400">
                 Untuk ikut berdiskusi, silakan masuk atau daftar terlebih dahulu.
               </p>
-              <div className="mt-3 flex flex-wrap items-center gap-3 border-t border-gray-100 pt-3 dark:border-white/5">
+              <div className="mt-2.5 flex flex-wrap items-center gap-2.5 border-t border-gray-100 pt-2.5 dark:border-white/5">
                 <Link
                   href={loginHref}
                   className="inline-flex items-center rounded-full bg-brand-red px-4 py-2 text-[10px] font-black uppercase tracking-[0.15em] text-white transition-all hover:bg-brand-black"
@@ -153,7 +153,7 @@ export default function CommentSection({ articleId }: { articleId: string }) {
                 >
                   Daftar
                 </Link>
-                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                <span className="text-[9px] font-bold uppercase tracking-[0.16em] text-gray-400">
                   Hanya akun terdaftar yang dapat mengirim komentar
                 </span>
               </div>
@@ -183,10 +183,10 @@ export default function CommentSection({ articleId }: { articleId: string }) {
             <p className="mt-4 text-[10px] font-black uppercase tracking-widest text-gray-400">Memuat komentar...</p>
           </div>
         ) : comments.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-gray-200 px-6 py-12 text-center dark:border-white/10">
-            <MessageSquare size={34} className="mx-auto mb-4 text-gray-300 dark:text-gray-600" />
+          <div className="rounded-[1.75rem] border border-dashed border-gray-200 bg-white/[0.02] px-6 py-10 text-center dark:border-white/10 dark:bg-white/[0.015] md:py-11">
+            <MessageSquare size={30} className="mx-auto mb-3 text-gray-300 dark:text-gray-600" />
             <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Belum ada komentar.</p>
-            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+            <p className="mt-2 text-sm leading-relaxed text-gray-500 dark:text-gray-400">
               Jadilah yang pertama berdiskusi setelah masuk ke akun Anda.
             </p>
           </div>
@@ -217,11 +217,6 @@ export default function CommentSection({ articleId }: { articleId: string }) {
         )}
       </div>
 
-      <div className="mt-12 rounded-2xl border border-gray-100 bg-brand-surface/60 px-5 py-4 text-center dark:border-white/5 dark:bg-white/[0.02]">
-        <p className="text-[10px] font-bold uppercase tracking-[0.18em] leading-relaxed text-gray-400">
-          Komentar ditampilkan setelah moderasi redaksi dan menjadi tanggung jawab masing-masing pengirim.
-        </p>
-      </div>
     </section>
   );
 }

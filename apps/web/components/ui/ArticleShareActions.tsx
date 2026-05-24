@@ -11,6 +11,8 @@ type ArticleShareActionsProps = {
   title: string;
   url: string;
   className?: string;
+  variant?: 'inline' | 'panel';
+  tone?: 'default' | 'floating';
 };
 
 const MAIN_ICON_MAP = {
@@ -27,9 +29,9 @@ const MAIN_HOVER_MAP = {
     border: 'hover:border-[#1877F2]/30 dark:hover:border-[#1877F2]/35]',
   },
   X: {
-    bg: 'hover:bg-white/[0.06] dark:hover:bg-white/[0.08]',
-    text: 'hover:text-white dark:hover:text-white',
-    border: 'hover:border-white/20 dark:hover:border-white/25]',
+    bg: 'hover:bg-black/[0.05] dark:hover:bg-white/[0.08]',
+    text: 'hover:text-black dark:hover:text-white',
+    border: 'hover:border-black/10 dark:hover:border-white/25',
   },
   Telegram: {
     bg: 'hover:bg-[#229ED9]/[0.08] dark:hover:bg-[#229ED9]/[0.12]',
@@ -73,7 +75,13 @@ const mainItemClass =
 const dropdownItemClass =
   'flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-[11px] font-semibold text-brand-text transition-all duration-150 hover:bg-black/[0.04] hover:text-brand-black dark:text-gray-200 dark:hover:bg-white/[0.05] dark:hover:text-white cursor-pointer';
 
-export default function ArticleShareActions({ title, url, className }: ArticleShareActionsProps) {
+export default function ArticleShareActions({
+  title,
+  url,
+  className,
+  variant = 'inline',
+  tone = 'default',
+}: ArticleShareActionsProps) {
   const [isCopied, setIsCopied] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [copiedLabel, setCopiedLabel] = useState<string | null>(null);
@@ -126,6 +134,103 @@ export default function ArticleShareActions({ title, url, className }: ArticleSh
       // Ignore cancelled share sheet interactions.
     }
   };
+
+  if (variant === 'panel') {
+    const panelItemClass =
+      tone === 'floating'
+        ? 'flex w-full items-center gap-3 rounded-[1.05rem] border border-white/[0.08] bg-white/[0.035] px-3.5 py-3 text-left text-[11px] font-semibold text-gray-200 transition-all duration-150 hover:border-white/[0.14] hover:bg-white/[0.06] hover:text-white'
+        : 'flex w-full items-center gap-3 rounded-[1.05rem] border border-black/[0.06] bg-black/[0.02] px-3.5 py-3 text-left text-[11px] font-semibold text-brand-text transition-all duration-150 hover:border-black/[0.1] hover:bg-black/[0.04] hover:text-brand-black dark:border-white/[0.08] dark:bg-white/[0.03] dark:text-gray-200 dark:hover:border-white/[0.14] dark:hover:bg-white/[0.06] dark:hover:text-white';
+
+    const sectionDividerClass =
+      tone === 'floating' ? 'border-white/[0.08]' : 'border-black/[0.06] dark:border-white/[0.08]';
+
+    const labelClass =
+      tone === 'floating'
+        ? 'text-[9px] font-black uppercase tracking-[0.18em] text-gray-400'
+        : 'text-[9px] font-black uppercase tracking-[0.18em] text-gray-400';
+
+    const iconShellClass =
+      tone === 'floating'
+        ? 'flex h-8 w-8 items-center justify-center rounded-xl bg-white/[0.05] text-gray-100 transition-all duration-150'
+        : 'flex h-8 w-8 items-center justify-center rounded-xl bg-black/[0.04] text-brand-text transition-all duration-150 dark:bg-white/[0.06] dark:text-gray-100';
+
+    return (
+      <div className={cn('space-y-3', className)}>
+        <div className="grid grid-cols-1 gap-2">
+          {items.map((item) => {
+            const Icon = MAIN_ICON_MAP[item.label];
+            const isX = item.label === 'X';
+            const hover = MAIN_HOVER_MAP[item.label];
+
+            return (
+              <a
+                key={item.label}
+                href={item.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`Bagikan ke ${item.label}`}
+                title={`Bagikan ke ${item.label}`}
+                className={cn(panelItemClass, hover.border)}
+              >
+                <span className={cn(iconShellClass, hover.bg, hover.text)}>
+                  <Icon size={14} className={cn(isX ? 'opacity-90' : '', 'transition-colors duration-150')} />
+                </span>
+                <span className="flex-1">{item.label}</span>
+              </a>
+            );
+          })}
+
+          <button type="button" onClick={handleCopy} className={panelItemClass}>
+            <span className={cn(iconShellClass, tone === 'floating' ? 'bg-brand-red/12 text-brand-red' : 'bg-brand-red/[0.07] text-brand-red dark:bg-brand-red/15')}>
+              {isCopied ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+            </span>
+            <span className="flex-1">{isCopied ? 'Link Tersalin' : 'Salin Link'}</span>
+            {isCopied && (
+              <span className="text-[9px] font-black uppercase tracking-[0.14em] text-emerald-500">Tersalin</span>
+            )}
+          </button>
+
+          {canUseNativeShare && (
+            <button type="button" onClick={handleNativeShare} className={panelItemClass}>
+              <span className={cn(iconShellClass, tone === 'floating' ? 'bg-brand-red/12 text-brand-red' : 'bg-brand-red/[0.07] text-brand-red dark:bg-brand-red/15')}>
+                <Share2 size={14} />
+              </span>
+              <span className="flex-1">Bagikan Lainnya</span>
+            </button>
+          )}
+        </div>
+
+        <div className={cn('border-t pt-3', sectionDividerClass)}>
+          <p className={labelClass}>Untuk Sosial Lain</p>
+          <div className="mt-2 grid grid-cols-1 gap-2">
+            {(['Instagram', 'TikTok', 'YouTube'] as const).map((platform) => {
+              const Icon = PLATFORM_ICON_MAP[platform];
+              const hover = PLATFORM_HOVER_MAP[platform];
+
+              return (
+                <button
+                  key={platform}
+                  type="button"
+                  onClick={() => handleCopyForPlatform(platform)}
+                  className={cn(panelItemClass, hover.border)}
+                  aria-label={`Salin untuk ${platform}`}
+                  title={`Salin untuk ${platform}`}
+                >
+                  <span className={cn(iconShellClass, hover.bg, hover.text)}>
+                    <Icon size={14} />
+                  </span>
+                  <span className="flex-1">{platform}</span>
+                  {copiedLabel === platform && (
+                    <span className="text-[9px] font-black uppercase tracking-[0.14em] text-emerald-500">Tersalin</span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={cn('flex flex-wrap items-center gap-2', className)}>

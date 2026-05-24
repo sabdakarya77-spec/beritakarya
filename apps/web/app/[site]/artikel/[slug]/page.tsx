@@ -7,18 +7,16 @@ import { SITE_MAP } from '@beritakarya/config'
 import NewsCard from '../../../../components/ui/NewsCard'
 import ReadingProgress from '../../../../components/ui/ReadingProgress'
 import AdSpace from '../../../../components/ui/AdSpace'
-import ShareSidebar from '../../../../components/ui/ShareSidebar'
 import EditorialBadge from '../../../../components/ui/EditorialBadge'
 import { resolveArticleBadge } from '../../../../lib/resolveArticleBadge'
 import { BookOpen, CalendarDays, Printer, Sparkles, Tags, User2 } from 'lucide-react'
 import { Metadata } from 'next'
 import CommentSection from '../../../../components/ui/CommentSection'
-import FontSizeControl from '../../../../components/ui/FontSizeControl'
-import ArticleActions from '../../../../components/ui/ArticleActions'
 import ImageLightboxWrapper from '../../../../components/ui/ImageLightboxWrapper'
 import { Container } from '../../../../components/layout/Container'
 import ArticleShareActions from '../../../../components/ui/ArticleShareActions'
 import ArticleBookmarkButton from '../../../../components/ui/ArticleBookmarkButton'
+import ArticleFloatingTools from '../../../../components/ui/ArticleFloatingTools'
 
 interface Props {
   params: { site: string; slug: string }
@@ -178,8 +176,6 @@ export default async function ArticlePage({ params }: Props) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <ReadingProgress />
-      <ShareSidebar title={article.title} url={articleUrl} />
-      
       <ImageLightboxWrapper>
         <article className="min-h-screen bg-[var(--bg-main)] dark:bg-[#020617]">
           {/* --- HEADER SECTION --- */}
@@ -201,13 +197,9 @@ export default async function ArticlePage({ params }: Props) {
                       </span>
                       <span className="h-1 w-1 rounded-full bg-gray-300 dark:bg-white/20" />
                       <span className="text-brand-text-muted">
-                        Edisi Hari Ini
-                      </span>
-                      <span className="h-1 w-1 rounded-full bg-gray-300 dark:bg-white/20" />
-                      <span className="text-brand-text-muted">
-                      {new Date(article.publishedAt).toLocaleDateString('id-ID', {
-                        day: 'numeric', month: 'long', year: 'numeric'
-                      })}
+                        {new Date(article.publishedAt).toLocaleDateString('id-ID', {
+                          day: 'numeric', month: 'long', year: 'numeric'
+                        })}
                       </span>
                     </div>
                   </div>
@@ -217,51 +209,50 @@ export default async function ArticlePage({ params }: Props) {
                   {article.title}
                 </h1>
 
-                <div className="border-t border-gray-100 dark:border-white/10 pt-8 md:pt-10">
-                  <div className="space-y-4 md:space-y-5">
-                    <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-                      <div className="flex flex-wrap items-center gap-3 md:gap-4">
-                        <div className="w-12 h-12 rounded-xl bg-brand-red flex items-center justify-center text-white text-lg font-serif italic shadow-lg shadow-brand-red/20">
-                          {article.author?.name?.[0] || 'R'}
+                <div className="border-t border-gray-100 pt-8 dark:border-white/10 md:pt-10">
+                  <div className="space-y-5 md:space-y-6">
+                    <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between xl:gap-12">
+                      <div className="flex items-start gap-4 md:gap-5 xl:min-w-[19rem]">
+                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-brand-red text-lg font-serif italic text-white shadow-lg shadow-brand-red/20">
+                        {article.author?.name?.[0] || 'R'}
                         </div>
-                        <div className="text-left">
+                        <div className="min-w-0 text-left">
                           <div className="text-[11px] font-bold text-brand-black dark:text-white">{article.author?.name || 'Redaksi'}</div>
-                          <div className="text-[10px] text-brand-text-muted font-medium mt-0.5">Staf Redaksi BeritaKarya</div>
+                          <div className="mt-0.5 text-[10px] font-medium text-brand-text-muted">Staf Redaksi BeritaKarya</div>
                           {article.author?.id && (
                             <Link
                               href={`/${siteParam}/penulis/${article.author.id}`}
-                              className="mt-2 inline-flex text-[10px] font-black uppercase tracking-[0.18em] text-brand-red transition-colors hover:text-brand-black dark:hover:text-white"
+                              className="mt-2.5 inline-flex text-[10px] font-black uppercase tracking-[0.18em] text-brand-red transition-colors hover:text-brand-black dark:hover:text-white"
                             >
                               Lihat Profil
                             </Link>
                           )}
                         </div>
-                        <div className="inline-flex items-center gap-2 rounded-full border border-gray-100 bg-gray-50/80 px-3.5 py-2 text-[10px] font-bold uppercase tracking-[0.16em] text-brand-text-muted dark:border-white/10 dark:bg-white/[0.025] dark:text-gray-400">
-                          <BookOpen size={14} className="text-brand-red" />
+                      </div>
+                      <div className="flex flex-wrap items-center gap-3 md:gap-4 xl:ml-auto xl:flex-nowrap xl:justify-end">
+                        <div className="inline-flex h-11 items-center gap-2.5 rounded-full border border-black/[0.06] bg-white/80 px-4.5 py-2 text-[10px] font-bold uppercase tracking-[0.16em] text-brand-text-muted shadow-[0_10px_30px_rgba(15,23,42,0.06)] backdrop-blur-sm dark:border-white/10 dark:bg-white/[0.04] dark:text-gray-300 dark:shadow-none">
+                          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-red/10 text-brand-red dark:bg-brand-red/15">
+                            <BookOpen size={13} />
+                          </span>
                           <span>{readingTime} Menit Baca</span>
                         </div>
-                        <div className="inline-flex items-center gap-2 rounded-full border border-gray-100 bg-gray-50/80 px-3.5 py-2 text-[10px] font-bold uppercase tracking-[0.16em] text-brand-text-muted dark:border-white/10 dark:bg-white/[0.025] dark:text-gray-400">
-                          <Printer size={14} className="text-brand-red" />
+                        <div className="inline-flex h-11 items-center gap-2.5 rounded-full border border-black/[0.06] bg-white/80 px-4.5 py-2 text-[10px] font-bold uppercase tracking-[0.16em] text-brand-text-muted shadow-[0_10px_30px_rgba(15,23,42,0.06)] backdrop-blur-sm dark:border-white/10 dark:bg-white/[0.04] dark:text-gray-300 dark:shadow-none">
+                          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-red/10 text-brand-red dark:bg-brand-red/15">
+                            <Printer size={13} />
+                          </span>
                           <span>{article.wordCount || 0} Kata</span>
                         </div>
-                        <ArticleShareActions title={article.title} url={articleUrl} />
                         <ArticleBookmarkButton
                           article={article}
                           site={siteParam}
-                          className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white dark:border-white/10 dark:bg-white/[0.03]"
-                          activeClassName="border-brand-red/40 bg-brand-red/5 text-brand-red"
-                          idleClassName="text-brand-text-muted hover:text-brand-red hover:border-brand-red/40"
+                          className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-black/[0.06] bg-white/80 shadow-[0_10px_30px_rgba(15,23,42,0.06)] backdrop-blur-sm dark:border-white/10 dark:bg-white/[0.04] dark:shadow-none"
+                          activeClassName="border-brand-red/40 bg-brand-red/6 text-brand-red"
+                          idleClassName="text-brand-text-muted hover:text-brand-red hover:border-brand-red/30"
                           iconSize={16}
                         />
                       </div>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-3">
-                      <div className="flex flex-wrap items-center gap-3">
-                        <FontSizeControl />
-                      </div>
-                      <ArticleActions iconOnly />
-                    </div>
                   </div>
                 </div>
               </div>
@@ -271,9 +262,9 @@ export default async function ArticlePage({ params }: Props) {
           {/* --- HERO IMAGE --- */}
           <div className="mb-16 md:mb-20">
             <Container>
-              <figure className="mx-auto max-w-[66rem]">
-                <div className="rounded-[1.75rem] border border-gray-100/90 bg-white p-3 shadow-[0_24px_80px_rgba(15,23,42,0.08)] dark:border-white/5 dark:bg-white/[0.02] dark:shadow-[0_24px_80px_rgba(0,0,0,0.45)]">
-                  <div className="relative w-full overflow-hidden rounded-[1.15rem] bg-slate-100 aspect-[16/8.65] md:aspect-[16/7.95] xl:aspect-[16/7.45] dark:bg-slate-900">
+              <figure className="mx-auto max-w-[66rem] space-y-4 md:space-y-5">
+                <div className="rounded-[2rem] border border-black/[0.06] bg-white/95 p-3 shadow-[0_28px_90px_rgba(15,23,42,0.08)] dark:border-white/[0.08] dark:bg-white/[0.03] dark:shadow-[0_28px_90px_rgba(0,0,0,0.45)] md:p-4">
+                  <div className="relative aspect-[16/8.65] w-full overflow-hidden rounded-[1.35rem] bg-slate-100 dark:bg-slate-900 md:aspect-[16/7.95] xl:aspect-[16/7.45]">
                     <SmartImage 
                       src={coverImage} 
                       blur={article.featuredImageBlur}
@@ -284,14 +275,16 @@ export default async function ArticlePage({ params }: Props) {
                       className="object-cover"
                       priority
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none" />
+                    <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-black/[0.04] dark:ring-white/[0.08]" />
+                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent" />
+                    <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/18 to-transparent dark:from-black/28" />
                   </div>
                 </div>
-                <figcaption className="mt-5 grid gap-3 border-b border-gray-100 pb-6 text-brand-text-muted dark:border-white/5 dark:text-gray-400 md:grid-cols-[minmax(0,var(--content-max-width))_1fr] md:items-start">
+                <figcaption className="mt-4 grid gap-2 text-brand-text-muted dark:text-gray-400 md:grid-cols-[minmax(0,1fr)_auto] md:items-start md:gap-4">
                   <p className="text-sm italic leading-relaxed">
                     {coverImageCaption || ''}
                   </p>
-                  <span className="text-[9px] font-black uppercase tracking-[0.24em] text-gray-400 dark:text-gray-500">
+                  <span className="text-[9px] font-black uppercase tracking-[0.22em] text-gray-400 dark:text-gray-500 md:justify-self-end">
                     Foto / Dokumentasi Redaksi
                   </span>
                 </figcaption>
@@ -303,61 +296,68 @@ export default async function ArticlePage({ params }: Props) {
           <Container>
             <div className={cn(articleRailClassName, 'mb-20 md:mb-28')}>
               {/* Main Content */}
-              <div className="min-w-0">
-                <div className="space-y-12">
-                  <div className="article-content max-w-[43rem] space-y-12 text-left transition-all duration-300 2xl:max-w-[45rem]">
-                    {(article.blocks as Block[]).map((block: Block, i: number) => (
-                      <PublicBlock key={i} block={block} />
-                    ))}
+              <div className="min-w-0 xl:grid xl:grid-cols-[4.25rem_minmax(0,43rem)] xl:gap-8 2xl:grid-cols-[4.5rem_minmax(0,45rem)]">
+                <div className="hidden xl:block">
+                  <div className="sticky top-32">
+                    <ArticleFloatingTools title={article.title} url={articleUrl} />
                   </div>
                 </div>
-
-                {/* Tags */}
-                <div className="mt-24 pt-16 border-t border-gray-100 dark:border-white/5 flex flex-wrap gap-3">
-                  {(article.tags || ['Investigasi', 'KaryaNyata', 'Nusantara', 'Politik']).map((tag: string) => (
-                    <Link 
-                      key={tag} 
-                      href={`/${siteParam}?q=${encodeURIComponent(tag)}`}
-                      className="px-5 py-2.5 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 text-[10px] font-black text-brand-text-muted dark:text-gray-400 uppercase tracking-[0.2em] hover:bg-brand-red hover:text-white hover:border-brand-red transition-all rounded-full"
-                    >
-                      #{tag}
-                    </Link>
-                  ))}
-                </div>
-
-                {/* Comment Section */}
-                <div id="comments">
-                  <CommentSection articleId={article.id} />
-                </div>
-
-                {/* Recommended Articles */}
-                <section className="mt-20 border-t border-gray-100 pt-16 dark:border-white/5">
-                  <div className="mb-10 flex items-center gap-3">
-                    <div className="h-8 w-1 bg-brand-red" />
-                    <div>
-                      <h3 className="text-xl font-black uppercase tracking-tight text-brand-black dark:text-white">
-                        Rekomendasi Artikel
-                      </h3>
-                      <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.18em] text-gray-400">
-                        Lanjutkan bacaan terkait topik ini
-                      </p>
+                <div className="min-w-0">
+                  <div className="space-y-12">
+                    <div className="article-content max-w-[43rem] space-y-12 text-left transition-all duration-300 xl:max-w-none 2xl:max-w-none">
+                      {(article.blocks as Block[]).map((block: Block, i: number) => (
+                        <PublicBlock key={i} block={block} />
+                      ))}
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {relatedArticles.length > 0 ? (
-                      relatedArticles.map((rel: any) => (
-                        <NewsCard key={rel.id} article={rel} variant="medium" site={siteParam} />
-                      ))
-                    ) : (
-                      <div className="col-span-full rounded-3xl border border-dashed border-gray-200 px-6 py-12 text-center dark:border-white/10">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">
-                          Belum ada rekomendasi artikel terkait.
+                  {/* Tags */}
+                  <div className="mt-16 flex flex-wrap gap-3 border-t border-gray-100 pt-10 dark:border-white/5 md:mt-20 md:pt-12">
+                    {(article.tags || ['Investigasi', 'KaryaNyata', 'Nusantara', 'Politik']).map((tag: string) => (
+                      <Link 
+                        key={tag} 
+                        href={`/${siteParam}?q=${encodeURIComponent(tag)}`}
+                        className="px-5 py-2.5 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 text-[10px] font-black text-brand-text-muted dark:text-gray-400 uppercase tracking-[0.2em] hover:bg-brand-red hover:text-white hover:border-brand-red transition-all rounded-full"
+                      >
+                        #{tag}
+                      </Link>
+                    ))}
+                  </div>
+
+                  {/* Comment Section */}
+                  <div id="comments">
+                    <CommentSection articleId={article.id} />
+                  </div>
+
+                  {/* Recommended Articles */}
+                  <section className="mt-16 border-t border-gray-100 pt-12 dark:border-white/5 md:mt-20 md:pt-14">
+                    <div className="mb-10 flex items-center gap-3">
+                      <div className="h-8 w-1 bg-brand-red" />
+                      <div>
+                        <h3 className="text-xl font-black uppercase tracking-tight text-brand-black dark:text-white">
+                          Rekomendasi Artikel
+                        </h3>
+                        <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.18em] text-gray-400">
+                          Lanjutkan bacaan terkait topik ini
                         </p>
                       </div>
-                    )}
-                  </div>
-                </section>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+                      {relatedArticles.length > 0 ? (
+                        relatedArticles.map((rel: any) => (
+                          <NewsCard key={rel.id} article={rel} variant="medium" site={siteParam} />
+                        ))
+                      ) : (
+                        <div className="col-span-full rounded-3xl border border-dashed border-gray-200 px-6 py-12 text-center dark:border-white/10">
+                          <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                            Belum ada rekomendasi artikel terkait.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </section>
+                </div>
               </div>
 
               {/* Sidebar */}
@@ -454,7 +454,7 @@ export default async function ArticlePage({ params }: Props) {
 
                   <div className={cn(sidebarCardClass, 'space-y-5')}>
                     <p className="text-[10px] font-black uppercase tracking-[0.18em] text-gray-400">
-                      Artikel Terkait
+                      Kategori Terkait
                     </p>
                     <div className="space-y-5">
                       {sidebarRelatedArticles.length > 0 ? (
@@ -467,16 +467,16 @@ export default async function ArticlePage({ params }: Props) {
                             <BookOpen size={16} />
                           </div>
                           <p className="mt-4 text-[10px] font-black uppercase tracking-[0.18em] text-gray-400">
-                            Belum Ada Artikel Terkait
+                            Belum Ada Artikel Lain
                           </p>
                           <p className="mt-2 text-xs leading-relaxed text-brand-text-muted dark:text-gray-400">
-                            Jelajahi berita terbaru untuk menemukan liputan lain dari kanal ini.
+                            Jelajahi berita terbaru untuk menemukan artikel lain dari kategori ini.
                           </p>
                           <Link
                             href={`/${siteParam}${article.category?.name ? `?cat=${encodeURIComponent(article.category.name)}` : ''}`}
                             className="mt-4 inline-flex rounded-full bg-brand-red px-3.5 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-white transition-colors hover:bg-brand-red/90"
                           >
-                            Lihat Berita Lain
+                            Lihat Kategori Ini
                           </Link>
                         </div>
                       )}
@@ -517,7 +517,7 @@ export default async function ArticlePage({ params }: Props) {
 
 function PublicBlock({ block }: { block: Block }) {
   const bodyTextClass =
-    'font-sans text-[1.05rem] leading-8 antialiased text-left md:text-[1.125rem] md:leading-[1.85]';
+    'font-sans text-[calc(1.05rem*var(--article-font-scale,1))] leading-[calc(2rem*var(--article-font-scale,1))] antialiased text-left md:text-[calc(1.125rem*var(--article-font-scale,1))] md:leading-[calc(2.08rem*var(--article-font-scale,1))]';
 
   switch (block.type) {
     case 'paragraph':
@@ -530,10 +530,10 @@ function PublicBlock({ block }: { block: Block }) {
       const Tag = `h${block.level}` as any
       const headingSizeClass =
         block.level === 2
-          ? 'text-2xl md:text-[2.35rem]'
+          ? 'text-[calc(1.5rem*var(--article-font-scale,1))] md:text-[calc(2.35rem*var(--article-font-scale,1))]'
           : block.level === 3
-            ? 'text-xl md:text-[1.9rem]'
-            : 'text-lg md:text-[1.5rem]'
+            ? 'text-[calc(1.25rem*var(--article-font-scale,1))] md:text-[calc(1.9rem*var(--article-font-scale,1))]'
+            : 'text-[calc(1.125rem*var(--article-font-scale,1))] md:text-[calc(1.5rem*var(--article-font-scale,1))]'
       return (
         <Tag
           className={cn(
@@ -548,7 +548,7 @@ function PublicBlock({ block }: { block: Block }) {
       return (
         <div className="relative my-16 rounded-r-2xl border-l-4 border-brand-red bg-gray-50 px-6 py-10 dark:bg-white/[0.03] md:px-10 md:py-12 lg:px-16">
           <span className="absolute left-5 top-5 text-7xl font-serif leading-none text-brand-red opacity-10 select-none md:left-8 md:top-6 md:text-8xl">“</span>
-          <blockquote className="relative z-10 font-serif text-[1.25rem] italic leading-[1.5] text-brand-black dark:text-white md:text-[1.65rem]">
+          <blockquote className="relative z-10 font-serif text-[calc(1.25rem*var(--article-font-scale,1))] italic leading-[calc(1.9rem*var(--article-font-scale,1))] text-brand-black dark:text-white md:text-[calc(1.65rem*var(--article-font-scale,1))] md:leading-[calc(2.5rem*var(--article-font-scale,1))]">
             {block.content}
             {block.attribution && (
               <footer className="text-[10px] font-black uppercase tracking-[0.3em] text-brand-red mt-6">— {block.attribution}</footer>
@@ -647,7 +647,7 @@ function PublicBlock({ block }: { block: Block }) {
       }
       return (
         <div className={cn(
-          "my-16 rounded-2xl border-l-4 p-7 font-serif text-[1.05rem] leading-8 antialiased text-left md:p-10 md:text-[1.2rem] md:leading-9 shadow-sm",
+          "my-16 rounded-2xl border-l-4 p-7 font-serif text-[calc(1.05rem*var(--article-font-scale,1))] leading-[calc(2rem*var(--article-font-scale,1))] antialiased text-left md:p-10 md:text-[calc(1.2rem*var(--article-font-scale,1))] md:leading-[calc(2.25rem*var(--article-font-scale,1))] shadow-sm",
           variants[block.variant as keyof typeof variants] || variants.editorial
         )}>
           {block.content}
