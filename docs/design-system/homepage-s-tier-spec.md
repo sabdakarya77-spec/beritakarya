@@ -14,8 +14,8 @@ Homepage BeritaKarya harus terasa seperti front page editorial premium: jelas da
 - Homepage layout:
   - Hero shell: single editorial stage inside container
   - Main content area: `8/4` split on desktop
-  - Feed cards: `2-up` for featured, then `1-up stacked horizontal` for stream
-  - Editorial extras: `3-up` grid for opinion, editor picks, photo, video blocks
+  - Feed cards: `2-up` for featured (Fokus Redaksi, Pilihan Editor), then `2-up grid` for Berita Lanjutan
+  - Editorial extras: `3-up` or `4-up` grid for opinion, editor picks, photo, video blocks
 
 ## Container Rules
 
@@ -36,39 +36,39 @@ Homepage BeritaKarya harus terasa seperti front page editorial premium: jelas da
 ## Section Order
 
 1. Breaking ticker
-2. Utility + brand navigation
-3. Hero stage
-4. Radar Redaksi
-5. Radar Topik
-6. Arus Berita utama
+2. Utility + brand navigation (Navbar)
+3. Hero stage (Magazine Bento)
+4. Fokus Redaksi (editorial picks without card container)
+5. Trending (compact single-line tags)
+6. Berita Lanjutan (2-column grid)
 7. Sidebar intelligence:
-   - Social distribution
-   - Most popular
-   - Quick access to newsroom
-   - Video/ad module
-8. Editorial extras:
+   - Info Pasar (market widget)
+   - Paling Populer
+   - Partner Placement
+8. Editorial extras (without card containers):
    - Pilihan Editor
    - Opini & Analisis
-   - Foto Jurnalistik
-   - Laporan Video
-9. Footer
+   - (Opsional) Foto Jurnalistik, Laporan Video
+9. Footer (3-column layout, clean and professional)
 
 ## Visual Rhythm
 
 - Hero harus menjadi area paling dominan di atas fold
-- Setelah hero, wajib ada section transisi yang lebih ringan sebelum masuk ke feed utama
-- Feed utama tidak boleh hanya berupa grid berulang; harus ada perbedaan antara featured stories dan stream stories
+- Setelah hero, wajib ada section transisi yang lebih ringan (Fokus Redaksi) sebelum masuk ke feed utama
+- Feed utama tidak boleh hanya berupa grid berulang; harus ada perbedaan antara featured stories (Fokus Redaksi) dan stream stories (Berita Lanjutan)
 - Sidebar harus berfungsi sebagai intelligence rail, bukan tumpukan widget acak
+- Editorial sections (Fokus Redaksi, Pilihan Editor, Opini) harus bebas dari card containers for seamless flow
+- Only ad slots and widgets should use card containers for clear separation
 
 ## Color Rules
 
 - Base surface:
-  - Light: `white` / `brand-surface`
-  - Dark: `brand-dark`
+  - Light: `--bg-main` (#F8FAFC, off-white for better readability) / `brand-surface` (#F1F5F9)
+  - Dark: `brand-dark` (#020617, Navy Slate, not pure black)
 - Accent:
   - `brand-red` dipakai untuk intent, label penting, active state, dan CTA utama
 - Inverse surface:
-  - Dipakai hanya untuk ticker, social rail, dan video block
+  - Dipakai hanya untuk ticker, sidebar widgets, and video block
 - Borders:
   - Light: `black/5` atau `black/10`
   - Dark: `white/5` atau `white/10`
@@ -77,10 +77,10 @@ Homepage BeritaKarya harus terasa seperti front page editorial premium: jelas da
 ## Component Rules
 
 - Rounded system:
-  - Major panels: `rounded-3xl`
+  - Major panels (ads, widgets): `rounded-3xl`
   - Buttons/chips: `rounded-xl` atau `rounded-full`
 - Shadow system:
-  - Dipakai hanya pada major cards/panels
+  - Dipakai hanya pada major cards/panels (ads, widgets)
   - Hover shadow tidak boleh lebih dominan dari hierarchy konten
 - Tabs:
   - Aktif = white surface + red text
@@ -91,6 +91,9 @@ Homepage BeritaKarya harus terasa seperti front page editorial premium: jelas da
 - Semua shell utama sejajar pada satu container system
 - Tidak ada meta text penting di bawah `11px`
 - Homepage memiliki minimal 3 level hierarchy: hero, featured feed, stream
-- Sidebar memiliki fungsi editorial yang jelas
+- Sidebar memiliki fungsi editorial yang jelas (market info, popular, ads)
 - Warna brand terasa tegas, bukan berisik
 - Desktop, tablet, dan mobile tetap menjaga ritme yang sama
+- Editorial sections (Fokus Redaksi, Pilihan Editor, Opini) are seamless without card containers
+- Only ads and widgets use card containers for clear visual separation
+- Footer is structured with 3 columns and clean professional styling
