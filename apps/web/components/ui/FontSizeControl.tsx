@@ -5,7 +5,7 @@ import { cn } from '../../lib/utils';
 
 export default function FontSizeControl() {
   const [fontSize, setFontSize] = useState(1);
-  const [contentEl, setContentEl] = useState<HTMLElement | null>(null);
+  const contentElRef = useRef<HTMLElement | null>(null);
   const observerRef = useRef<MutationObserver | null>(null);
 
   const sizes = [
@@ -21,7 +21,7 @@ export default function FontSizeControl() {
     const applyFontSize = (el: HTMLElement | null) => {
       if (el) {
         el.style.fontSize = `${fontSize * 100}%`;
-        setContentEl(el);
+        contentElRef.current = el;
       }
     };
 
@@ -33,7 +33,7 @@ export default function FontSizeControl() {
 
     observerRef.current = new MutationObserver(() => {
       const el = findContent();
-      if (el && !contentEl) {
+      if (el && !contentElRef.current) {
         applyFontSize(el);
         observerRef.current?.disconnect();
       }
@@ -50,10 +50,10 @@ export default function FontSizeControl() {
   }, []);
 
   useEffect(() => {
-    if (contentEl) {
-      contentEl.style.fontSize = `${fontSize * 100}%`;
+    if (contentElRef.current) {
+      contentElRef.current.style.fontSize = `${fontSize * 100}%`;
     }
-  }, [fontSize, contentEl]);
+  }, [fontSize]);
 
   return (
     <div className="flex items-center gap-3 rounded-full border border-gray-200/80 bg-white/90 px-2 py-1.5 shadow-sm dark:border-white/10 dark:bg-white/[0.03]">
