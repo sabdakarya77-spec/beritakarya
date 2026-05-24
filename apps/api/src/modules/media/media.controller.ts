@@ -93,24 +93,41 @@ async function processImage(buffer: Buffer, filename: string, options: { skipWat
     let pipeline = sharp(processedBuffer)
 
     if (!options.skipWatermark) {
-      // Generate SVG Watermark
+      // Generate SVG Watermark - Corner Badge with background box
       const currentMeta = await sharp(processedBuffer).metadata()
       const currentW = currentMeta.width || maxW
-      const fontSize = Math.max(16, Math.floor(currentW * 0.025))
-      const svgWidth = fontSize * 10
-      const svgHeight = fontSize * 2
+      const currentH = currentMeta.height || maxW
+      const fontSize = Math.max(14, Math.floor(currentW * 0.02))
+      const boxWidth = Math.max(180, fontSize * 12)
+      const boxHeight = Math.max(32, fontSize * 2.2)
+      const padding = fontSize * 0.6
       
-      const watermarkSvg = `<svg width="${svgWidth}" height="${svgHeight}">
+      // Corner Badge Watermark with semi-transparent background
+      const watermarkSvg = `<svg width="${boxWidth}" height="${boxHeight}">
         <style>
-          .title { 
-            fill: rgba(255, 255, 255, 0.4); 
-            font-size: ${fontSize}px; 
-            font-weight: 800; 
-            font-family: Arial, sans-serif; 
-            filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.6)); 
+          .watermark-bg {
+            fill: rgba(0, 0, 0, 0.65);
+            rx: 4;
+            ry: 4;
+          }
+          .watermark-text {
+            fill: rgba(255, 255, 255, 0.95);
+            font-size: ${fontSize}px;
+            font-weight: 700;
+            font-family: Arial, Helvetica, sans-serif;
+            letter-spacing: 0.5px;
           }
         </style>
-        <text x="${svgWidth - 20}" y="${svgHeight - 10}" text-anchor="end" class="title">BeritaKarya</text>
+        <!-- Background box -->
+        <rect class="watermark-bg" width="${boxWidth}" height="${boxHeight}" />
+        <!-- Text centered in box -->
+        <text 
+          x="${boxWidth / 2}" 
+          y="${boxHeight / 2}" 
+          dominant-baseline="middle" 
+          text-anchor="middle" 
+          class="watermark-text"
+        >© BERITAKARYA 2026</text>
       </svg>`
       
       pipeline = pipeline.composite([{ input: Buffer.from(watermarkSvg), gravity: 'southeast' }])

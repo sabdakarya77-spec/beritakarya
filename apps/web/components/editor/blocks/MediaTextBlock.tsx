@@ -30,7 +30,7 @@ export function MediaTextBlock({ block }: Props) {
     formData.append('file', file)
 
     try {
-      const { data } = await api.post('/media/upload?purpose=editorial', formData, {
+      const { data } = await api.post('/media/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
       const imageUrl = data.data.url

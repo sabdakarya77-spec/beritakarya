@@ -21,7 +21,7 @@ export function GalleryBlock({ block }: { block: TGalleryBlock }) {
       const form = new FormData()
       form.append('file', file)
       try {
-        const { data } = await api.post('/media/upload?purpose=editorial', form, {
+        const { data } = await api.post('/media/upload', form, {
           headers: { 'Content-Type': 'multipart/form-data' }
         })
         newItems.push({ url: data.data.url, alt: file.name.replace(/.[^/.]+$/, '') })

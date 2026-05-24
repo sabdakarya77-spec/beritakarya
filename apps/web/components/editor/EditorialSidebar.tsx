@@ -38,7 +38,7 @@ export function EditorialSidebar() {
     setUploadingFeatured(true)
     try {
       addToast('Sedang mengunggah gambar utama...', 'info')
-      const { data } = await api.post('/media/upload?purpose=editorial', form, {
+      const { data } = await api.post('/media/upload', form, {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
       updateArticleData({ featuredImage: data.data.url })
