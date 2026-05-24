@@ -167,7 +167,7 @@ export default async function ArticlePage({ params }: Props) {
 
   const badgeVariant = resolveArticleBadge(article);
   const readingTime = article.readingTimeMin || Math.max(1, Math.ceil((article.wordCount || 0) / 200)) || 3;
-  const articleRailClassName = 'xl:grid xl:grid-cols-[minmax(0,var(--content-max-width))_20rem] 2xl:grid-cols-[minmax(0,var(--content-max-width))_22.5rem] xl:justify-between xl:gap-12 2xl:gap-16'
+  const articleRailClassName = 'xl:grid xl:grid-cols-[minmax(0,1.75fr)_20rem] 2xl:grid-cols-[minmax(0,1.75fr)_22.5rem] xl:justify-between xl:gap-12 2xl:gap-16'
 
   return (
     <PublicSiteLayout siteConfig={siteConfig}>
@@ -179,13 +179,13 @@ export default async function ArticlePage({ params }: Props) {
       <ShareSidebar title={article.title} url={articleUrl} />
       
       <ImageLightboxWrapper>
-        <article className="min-h-screen bg-white dark:bg-slate-950">
+        <article className="min-h-screen bg-[var(--bg-main)] dark:bg-[#020617]">
           {/* --- HEADER SECTION --- */}
-          <header className="w-full bg-brand-surface dark:bg-white/[0.02] pt-20 pb-16 md:pt-36 md:pb-28 border-b border-gray-100 dark:border-white/5">
+          <header className="w-full pt-8 pb-8 md:pt-12 md:pb-12 border-b border-gray-100 dark:border-white/5">
             <Container>
               <div className={articleRailClassName}>
                 <div className="min-w-0">
-                  <div className="flex flex-col items-start gap-4 mb-12 md:mb-14">
+                  <div className="flex flex-col items-start gap-4 mb-10 md:mb-12 lg:mb-14">
                     <div className="flex flex-wrap items-center gap-3 md:gap-4">
                       {badgeVariant && (
                         <EditorialBadge
@@ -212,11 +212,11 @@ export default async function ArticlePage({ params }: Props) {
                     </div>
                   </div>
 
-                  <h1 className="text-4xl md:text-7xl font-serif font-black text-brand-black dark:text-white leading-[1.02] tracking-tighter mb-14 md:mb-16 text-balance">
+                  <h1 className="text-2xl md:text-4xl lg:text-5xl font-serif font-black text-brand-black dark:text-white leading-[1.1] tracking-tighter mb-8 md:mb-10 lg:mb-12">
                     {article.title}
                   </h1>
 
-                  <div className="flex flex-wrap items-center gap-y-8 gap-x-8 border-t border-gray-100 dark:border-white/10 pt-10 md:pt-12">
+                  <div className="flex flex-wrap items-center gap-y-6 gap-x-6 border-t border-gray-100 dark:border-white/10 pt-8 md:pt-10">
                     <div className="flex items-center gap-3">
                       <div className="w-12 h-12 rounded-xl bg-brand-red flex items-center justify-center text-white text-lg font-serif italic shadow-lg shadow-brand-red/20">
                         {article.author?.name?.[0] || 'R'}
@@ -287,7 +287,7 @@ export default async function ArticlePage({ params }: Props) {
           </header>
 
           {/* --- HERO IMAGE --- */}
-          <div className="mb-20 md:mb-24">
+          <div className="mb-16 md:mb-20">
             <Container>
               <figure>
                 <div className="rounded-[1.75rem] border border-gray-100/90 bg-white p-3 shadow-[0_24px_80px_rgba(15,23,42,0.08)] dark:border-white/5 dark:bg-white/[0.02] dark:shadow-[0_24px_80px_rgba(0,0,0,0.45)]">
@@ -319,11 +319,11 @@ export default async function ArticlePage({ params }: Props) {
 
           {/* --- CONTENT SECTION --- */}
           <Container>
-            <div className={cn(articleRailClassName, 'mb-32')}>
+            <div className={cn(articleRailClassName, 'mb-20 md:mb-28')}>
               {/* Main Content */}
               <div className="min-w-0">
                 {/* Lead Paragraph */}
-                <div className="mb-20 md:mb-24">
+                <div className="mb-16 md:mb-20">
                   <div className="border-l border-brand-red/20 pl-6 md:pl-8">
                     <span className="inline-flex text-[10px] font-black uppercase tracking-[0.26em] text-brand-red">
                       Pembuka
@@ -374,13 +374,13 @@ export default async function ArticlePage({ params }: Props) {
                     </div>
                   </div>
 
-                  <div className="space-y-8">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {relatedArticles.length > 0 ? (
                       relatedArticles.map((rel: any) => (
-                        <NewsCard key={rel.id} article={rel} variant="minimal" site={siteParam} />
+                        <NewsCard key={rel.id} article={rel} variant="medium" site={siteParam} />
                       ))
                     ) : (
-                      <div className="rounded-3xl border border-dashed border-gray-200 px-6 py-12 text-center dark:border-white/10">
+                      <div className="col-span-full rounded-3xl border border-dashed border-gray-200 px-6 py-12 text-center dark:border-white/10">
                         <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">
                           Belum ada rekomendasi artikel terkait.
                         </p>
