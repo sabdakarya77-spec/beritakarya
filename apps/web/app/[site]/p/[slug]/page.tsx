@@ -28,7 +28,9 @@ export async function generateMetadata({ params }: { params: { site: string; slu
     about: 'Tentang Kami',
     ethics: 'Kode Etik',
     editorial: 'Redaksi',
-    ads: 'Iklan'
+    ads: 'Iklan',
+    terms: 'Ketentuan Penggunaan',
+    'media-siber': 'Pedoman Media Siber',
   }
 
   const siteSettings = await getSiteSettings(siteParam)
@@ -61,7 +63,9 @@ export default async function InfoPage({ params }: { params: { site: string; slu
     about: { title: 'Tentang Kami', content: siteSettings?.aboutUs },
     ethics: { title: 'Kode Etik', content: siteSettings?.codeOfEthics },
     editorial: { title: 'Redaksi', content: siteSettings?.editorial },
-    ads: { title: 'Iklan', content: siteSettings?.advertising }
+    ads: { title: 'Iklan', content: siteSettings?.advertising },
+    terms: { title: 'Ketentuan Penggunaan', content: siteSettings?.termsOfService },
+    'media-siber': { title: 'Pedoman Media Siber', content: siteSettings?.codeOfEthics },
   }
 
   const info = contentMap[slug]

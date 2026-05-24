@@ -15,13 +15,13 @@
     --brand-dark-rgb: 2 6 23;
     --brand-grey: #F1F5F9;
     --brand-grey-rgb: 241 245 249;
-    --brand-surface: #F8FAFC;
-    --brand-surface-rgb: 248 250 252;
+    --brand-surface: #F1F5F9;
+    --brand-surface-rgb: 241 245 249;
     --brand-text: #0F172A;
     --brand-text-rgb: 15 23 42;
     --brand-text-muted: #64748B;
     --brand-text-muted-rgb: 100 116 139;
-    --bg-main: #FFFFFF;
+    --bg-main: #F8FAFC;
 
     /* Editorial Badge Colors */
     --color-breaking: #DC2626;

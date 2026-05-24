@@ -22,8 +22,8 @@ export default function BreakingNewsTicker({
         <span className="whitespace-nowrap text-[10px] font-black uppercase tracking-[0.18em]">Breaking News</span>
       </div>
       <div className="relative flex h-full flex-1 items-center overflow-hidden group">
-        <div className="pointer-events-none absolute bottom-0 left-0 top-0 z-10 w-16 bg-gradient-to-r from-brand-black to-transparent dark:from-black" />
-        <div className="pointer-events-none absolute bottom-0 right-0 top-0 z-10 w-16 bg-gradient-to-l from-brand-black to-transparent dark:from-black" />
+        <div className="pointer-events-none absolute bottom-0 left-0 top-0 z-10 w-16 bg-gradient-to-r from-brand-black to-transparent dark:from-[#020617]" />
+        <div className="pointer-events-none absolute bottom-0 right-0 top-0 z-10 w-16 bg-gradient-to-l from-brand-black to-transparent dark:from-[#020617]" />
 
         <motion.div 
           animate={{ x: ["0%", "-50%"] }}

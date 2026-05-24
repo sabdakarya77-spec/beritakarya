@@ -95,7 +95,7 @@ async function getSiteSettings(siteId: string) {
     if (!res.ok) return null;
     const json = await res.json();
     return json?.data || null;
-  } catch (e) {
+  } catch {
     return null;
   }
 }
@@ -167,6 +167,7 @@ export default async function ArticlePage({ params }: Props) {
 
   const badgeVariant = resolveArticleBadge(article);
   const readingTime = article.readingTimeMin || Math.max(1, Math.ceil((article.wordCount || 0) / 200)) || 3;
+  const articleRailClassName = 'xl:grid xl:grid-cols-[minmax(0,var(--content-max-width))_20rem] 2xl:grid-cols-[minmax(0,var(--content-max-width))_22.5rem] xl:justify-between xl:gap-12 2xl:gap-16'
 
   return (
     <PublicSiteLayout siteConfig={siteConfig}>
@@ -181,101 +182,106 @@ export default async function ArticlePage({ params }: Props) {
         <article className="min-h-screen bg-white dark:bg-slate-950">
           {/* --- HEADER SECTION --- */}
           <header className="w-full bg-brand-surface dark:bg-white/[0.02] pt-20 pb-16 md:pt-36 md:pb-28 border-b border-gray-100 dark:border-white/5">
-            <Container size="content">
-              <div className="flex flex-col items-start gap-4 mb-12 md:mb-14">
-                <div className="flex flex-wrap items-center gap-3 md:gap-4">
-                  {badgeVariant && (
-                    <EditorialBadge
-                      variant={badgeVariant}
-                      size="sm"
-                      className="rounded-full px-3 py-1 shadow-sm shadow-black/5"
-                    />
-                  )}
-                  <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-wide">
-                    <span className="text-brand-red">
-                      {article.category?.name || 'NASIONAL'}
-                    </span>
-                    <span className="h-1 w-1 rounded-full bg-gray-300 dark:bg-white/20" />
-                    <span className="text-brand-text-muted">
-                      Edisi Hari Ini
-                    </span>
-                    <span className="h-1 w-1 rounded-full bg-gray-300 dark:bg-white/20" />
-                    <span className="text-brand-text-muted">
-                    {new Date(article.publishedAt).toLocaleDateString('id-ID', {
-                      day: 'numeric', month: 'long', year: 'numeric'
-                    })}
-                    </span>
+            <Container>
+              <div className={articleRailClassName}>
+                <div className="min-w-0">
+                  <div className="flex flex-col items-start gap-4 mb-12 md:mb-14">
+                    <div className="flex flex-wrap items-center gap-3 md:gap-4">
+                      {badgeVariant && (
+                        <EditorialBadge
+                          variant={badgeVariant}
+                          size="sm"
+                          className="rounded-full px-3 py-1 shadow-sm shadow-black/5"
+                        />
+                      )}
+                      <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-wide">
+                        <span className="text-brand-red">
+                          {article.category?.name || 'NASIONAL'}
+                        </span>
+                        <span className="h-1 w-1 rounded-full bg-gray-300 dark:bg-white/20" />
+                        <span className="text-brand-text-muted">
+                          Edisi Hari Ini
+                        </span>
+                        <span className="h-1 w-1 rounded-full bg-gray-300 dark:bg-white/20" />
+                        <span className="text-brand-text-muted">
+                        {new Date(article.publishedAt).toLocaleDateString('id-ID', {
+                          day: 'numeric', month: 'long', year: 'numeric'
+                        })}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <h1 className="text-4xl md:text-7xl font-serif font-black text-brand-black dark:text-white leading-[1.02] tracking-tighter mb-14 md:mb-16 text-balance">
+                    {article.title}
+                  </h1>
+
+                  <div className="flex flex-wrap items-center gap-y-8 gap-x-8 border-t border-gray-100 dark:border-white/10 pt-10 md:pt-12">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-xl bg-brand-red flex items-center justify-center text-white text-lg font-serif italic shadow-lg shadow-brand-red/20">
+                        {article.author?.name?.[0] || 'R'}
+                      </div>
+                      <div className="text-left">
+                        <div className="text-[11px] font-bold text-brand-black dark:text-white">{article.author?.name || 'Redaksi'}</div>
+                        <div className="text-[10px] text-brand-text-muted font-medium mt-0.5">Staf Redaksi BeritaKarya</div>
+                        {article.author?.id && (
+                          <Link
+                            href={`/${siteParam}/penulis/${article.author.id}`}
+                            className="mt-2 inline-flex text-[10px] font-black uppercase tracking-[0.18em] text-brand-red transition-colors hover:text-brand-black dark:hover:text-white"
+                          >
+                            Lihat Profil
+                          </Link>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="hidden sm:block h-8 w-px bg-gray-200 dark:bg-white/10" />
+                    
+                    <div className="flex items-center gap-6 text-brand-text-muted dark:text-gray-400 uppercase text-[10px] font-bold tracking-widest">
+                      <div className="flex items-center gap-2">
+                        <BookOpen size={14} className="text-brand-red" />
+                        {readingTime} MENIT BACA
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Printer size={14} className="text-brand-red" />
+                        {article.wordCount || 0} KATA
+                      </div>
+                    </div>
+
+                    <div className="hidden sm:block h-8 w-px bg-gray-200 dark:bg-white/10" />
+                    <div className="flex flex-wrap items-center gap-3">
+                      <span className="text-[9px] font-black uppercase tracking-[0.22em] text-gray-400">
+                        Bagikan
+                      </span>
+                      <ArticleShareActions title={article.title} url={articleUrl} />
+                    </div>
+
+                    <div className="hidden sm:block h-8 w-px bg-gray-200 dark:bg-white/10" />
+                    <div className="flex flex-wrap items-center gap-3">
+                      <span className="text-[9px] font-black uppercase tracking-[0.22em] text-gray-400">
+                        Simpan
+                      </span>
+                      <ArticleBookmarkButton
+                        article={article}
+                        site={siteParam}
+                        className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white dark:border-white/10 dark:bg-white/[0.03]"
+                        activeClassName="border-brand-red/40 bg-brand-red/5 text-brand-red"
+                        idleClassName="text-brand-text-muted hover:text-brand-red hover:border-brand-red/40"
+                        iconSize={16}
+                      />
+                    </div>
+
+                    <div className="ml-auto hidden lg:flex items-center gap-3 rounded-full border border-gray-100 bg-gray-50/80 px-3 py-2 dark:border-white/10 dark:bg-white/[0.025]">
+                      <span className="pl-1 text-[9px] font-black uppercase tracking-[0.22em] text-gray-400">
+                        Reader Tools
+                      </span>
+                      <FontSizeControl />
+                      <div className="w-px h-6 bg-gray-200 dark:bg-white/10" />
+                      <ArticleActions />
+                    </div>
                   </div>
                 </div>
-              </div>
-
-              <h1 className="max-w-4xl text-4xl md:text-7xl font-serif font-black text-brand-black dark:text-white leading-[1.02] tracking-tighter mb-14 md:mb-16 text-balance">
-                {article.title}
-              </h1>
-
-              <div className="flex flex-wrap items-center justify-center md:justify-start gap-y-8 gap-x-8 border-t border-gray-100 dark:border-white/10 pt-10 md:pt-12">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-brand-red flex items-center justify-center text-white text-lg font-serif italic shadow-lg shadow-brand-red/20">
-                    {article.author?.name?.[0] || 'R'}
-                  </div>
-                  <div className="text-left">
-                    <div className="text-[11px] font-bold text-brand-black dark:text-white">{article.author?.name || 'Redaksi'}</div>
-                    <div className="text-[10px] text-brand-text-muted font-medium mt-0.5">Staf Redaksi BeritaKarya</div>
-                    {article.author?.id && (
-                      <Link
-                        href={`/${siteParam}/penulis/${article.author.id}`}
-                        className="mt-2 inline-flex text-[10px] font-black uppercase tracking-[0.18em] text-brand-red transition-colors hover:text-brand-black dark:hover:text-white"
-                      >
-                        Lihat Profil
-                      </Link>
-                    )}
-                  </div>
-                </div>
-                
-                <div className="hidden sm:block h-8 w-px bg-gray-200 dark:bg-white/10" />
-                
-                <div className="flex items-center gap-6 text-brand-text-muted dark:text-gray-400 uppercase text-[10px] font-bold tracking-widest">
-                  <div className="flex items-center gap-2">
-                    <BookOpen size={14} className="text-brand-red" />
-                    {readingTime} MENIT BACA
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Printer size={14} className="text-brand-red" />
-                    {article.wordCount || 0} KATA
-                  </div>
-                </div>
-
-                <div className="hidden sm:block h-8 w-px bg-gray-200 dark:bg-white/10" />
-                <div className="flex flex-wrap items-center gap-3">
-                  <span className="text-[9px] font-black uppercase tracking-[0.22em] text-gray-400">
-                    Bagikan
-                  </span>
-                  <ArticleShareActions title={article.title} url={articleUrl} />
-                </div>
-
-                <div className="hidden sm:block h-8 w-px bg-gray-200 dark:bg-white/10" />
-                <div className="flex flex-wrap items-center gap-3">
-                  <span className="text-[9px] font-black uppercase tracking-[0.22em] text-gray-400">
-                    Simpan
-                  </span>
-                  <ArticleBookmarkButton
-                    article={article}
-                    site={siteParam}
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white dark:border-white/10 dark:bg-white/[0.03]"
-                    activeClassName="border-brand-red/40 bg-brand-red/5 text-brand-red"
-                    idleClassName="text-brand-text-muted hover:text-brand-red hover:border-brand-red/40"
-                    iconSize={16}
-                  />
-                </div>
-
-                <div className="ml-auto hidden lg:flex items-center gap-3 rounded-full border border-gray-100 bg-gray-50/80 px-3 py-2 dark:border-white/10 dark:bg-white/[0.025]">
-                  <span className="pl-1 text-[9px] font-black uppercase tracking-[0.22em] text-gray-400">
-                    Reader Tools
-                  </span>
-                  <FontSizeControl />
-                  <div className="w-px h-6 bg-gray-200 dark:bg-white/10" />
-                  <ArticleActions />
-                </div>
+                <div className="hidden xl:block" />
               </div>
             </Container>
           </header>
@@ -283,7 +289,7 @@ export default async function ArticlePage({ params }: Props) {
           {/* --- HERO IMAGE --- */}
           <div className="mb-20 md:mb-24">
             <Container>
-              <figure className="max-w-6xl mx-auto">
+              <figure>
                 <div className="rounded-[1.75rem] border border-gray-100/90 bg-white p-3 shadow-[0_24px_80px_rgba(15,23,42,0.08)] dark:border-white/5 dark:bg-white/[0.02] dark:shadow-[0_24px_80px_rgba(0,0,0,0.45)]">
                   <div className="aspect-[16/10] md:aspect-[16/9] w-full relative overflow-hidden rounded-[1.15rem] bg-slate-100 dark:bg-slate-900">
                     <SmartImage 
@@ -299,14 +305,10 @@ export default async function ArticlePage({ params }: Props) {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none" />
                   </div>
                 </div>
-                <figcaption className="mt-5 flex flex-col gap-3 border-b border-gray-100 pb-6 text-brand-text-muted dark:border-white/5 dark:text-gray-400 md:flex-row md:items-start md:justify-between">
-                  {coverImageCaption ? (
-                    <p className="max-w-2xl text-sm italic leading-relaxed">
-                      {coverImageCaption}
-                    </p>
-                  ) : (
-                    <span />
-                  )}
+                <figcaption className="mt-5 grid gap-3 border-b border-gray-100 pb-6 text-brand-text-muted dark:border-white/5 dark:text-gray-400 md:grid-cols-[minmax(0,var(--content-max-width))_1fr] md:items-start">
+                  <p className="text-sm italic leading-relaxed">
+                    {coverImageCaption || ''}
+                  </p>
                   <span className="text-[9px] font-black uppercase tracking-[0.24em] text-gray-400 dark:text-gray-500">
                     Foto / Dokumentasi Redaksi
                   </span>
@@ -317,12 +319,12 @@ export default async function ArticlePage({ params }: Props) {
 
           {/* --- CONTENT SECTION --- */}
           <Container>
-            <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_320px] 2xl:grid-cols-[minmax(0,1fr)_360px] gap-12 xl:gap-16 mb-32">
+            <div className={cn(articleRailClassName, 'mb-32')}>
               {/* Main Content */}
-              <div className="max-w-[760px] mx-auto lg:mx-0">
+              <div className="min-w-0">
                 {/* Lead Paragraph */}
                 <div className="mb-20 md:mb-24">
-                  <div className="max-w-3xl border-l border-brand-red/20 pl-6 md:pl-8">
+                  <div className="border-l border-brand-red/20 pl-6 md:pl-8">
                     <span className="inline-flex text-[10px] font-black uppercase tracking-[0.26em] text-brand-red">
                       Pembuka
                     </span>
@@ -553,8 +555,8 @@ function PublicBlock({ block }: { block: Block }) {
       )
     case 'quote':
       return (
-        <div className="relative my-16 py-12 px-16 border-l-4 border-brand-red bg-gray-50 dark:bg-white/[0.03] rounded-r-2xl">
-          <span className="absolute top-6 left-8 text-8xl font-serif text-brand-red opacity-10 leading-none select-none">“</span>
+        <div className="relative my-16 rounded-r-2xl border-l-4 border-brand-red bg-gray-50 px-6 py-10 dark:bg-white/[0.03] md:px-10 md:py-12 lg:px-16">
+          <span className="absolute left-5 top-5 text-7xl font-serif leading-none text-brand-red opacity-10 select-none md:left-8 md:top-6 md:text-8xl">“</span>
           <blockquote className="italic font-serif text-2xl md:text-3xl text-brand-black dark:text-white leading-[1.3] relative z-10">
             {block.content}
             {block.attribution && (

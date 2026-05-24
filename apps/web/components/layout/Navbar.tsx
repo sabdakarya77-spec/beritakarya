@@ -1,7 +1,6 @@
 'use client';
 
-import { Search, Menu, User as UserIcon, Bell, Globe, Moon, Sun, Bookmark } from 'lucide-react';
-import { SiFacebook, SiInstagram, SiTelegram, SiTiktok, SiWhatsapp, SiX, SiYoutube } from 'react-icons/si';
+import { Search, Menu, User as UserIcon, Bell, Moon, Sun, Bookmark } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -70,16 +69,6 @@ export default function Navbar({
     router.push(`/${activeSite}?cat=${encodeURIComponent(cat)}`);
   };
 
-  const socialLinks = [
-    { href: siteConfig?.socialLinks?.whatsapp, Icon: SiWhatsapp, hoverClassName: 'hover:text-emerald-500' },
-    { href: siteConfig?.socialLinks?.facebook, Icon: SiFacebook, hoverClassName: 'hover:text-[#1877F2]' },
-    { href: siteConfig?.socialLinks?.tiktok, Icon: SiTiktok, hoverClassName: 'hover:text-brand-black dark:hover:text-white' },
-    { href: siteConfig?.socialLinks?.telegram, Icon: SiTelegram, hoverClassName: 'hover:text-[#229ED9]' },
-    { href: siteConfig?.socialLinks?.youtube, Icon: SiYoutube, hoverClassName: 'hover:text-red-600' },
-    { href: siteConfig?.socialLinks?.twitter, Icon: SiX, hoverClassName: 'hover:text-brand-black dark:hover:text-white' },
-    { href: siteConfig?.socialLinks?.instagram, Icon: SiInstagram, hoverClassName: 'hover:text-pink-600' },
-  ].filter((item) => Boolean(item.href));
-
   return (
     <header className={cn(
       "sticky top-0 z-50 border-b transition-all duration-500",
@@ -90,11 +79,6 @@ export default function Navbar({
       <div className="border-b border-black/5 dark:border-white/5">
         <Container className="flex h-11 items-center justify-between gap-6 text-[12px] font-semibold uppercase tracking-[0.08em] text-brand-text-muted">
           <div className="flex min-w-0 items-center gap-4">
-            <Link href="/pusat" className="hidden sm:flex items-center gap-1.5 whitespace-nowrap hover:text-brand-red transition-colors">
-              <Globe size={12} />
-              {isArticlePage ? 'BeritaKarya Edition' : 'Global Edition'}
-            </Link>
-            <div className="hidden h-3.5 w-px bg-black/10 dark:bg-white/10 sm:block" />
             <div className="min-w-0 truncate">
               {isArticlePage ? (
                 <span className="truncate text-[12px] normal-case tracking-[0.04em] text-brand-text-muted">
@@ -104,12 +88,6 @@ export default function Navbar({
                 <DateTimeWeather />
               )}
             </div>
-          </div>
-          <div className={cn("hidden items-center gap-6 lg:flex", isArticlePage && "gap-5")}>
-            <Link href={`/${activeSite}/p/about`} className="hover:text-brand-red transition-colors">Tentang</Link>
-            {!isArticlePage && (
-              <Link href={`/${activeSite}/kebijakan-privasi`} className="hover:text-brand-red transition-colors">Privasi</Link>
-            )}
           </div>
         </Container>
       </div>
@@ -165,22 +143,6 @@ export default function Navbar({
         </motion.div>
 
         <div className={cn("flex items-center justify-end gap-2 md:gap-4", isArticlePage && "md:gap-3")}>
-          <div className={cn("hidden lg:flex items-center gap-1.5", isArticlePage && "hidden xl:flex")}>
-            {socialLinks.map(({ href, Icon, hoverClassName }, index) => (
-              <a
-                key={`${href}-${index}`}
-                href={href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={cn(
-                  "rounded-full p-2 text-brand-text-muted transition-colors hover:bg-black/5 dark:hover:bg-white/5",
-                  hoverClassName
-                )}
-              >
-                <Icon size={16} />
-              </a>
-            ))}
-          </div>
 
           {!isArticlePage && (
             <button 

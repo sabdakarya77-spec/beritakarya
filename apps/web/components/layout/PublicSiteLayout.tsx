@@ -62,7 +62,7 @@ export default function PublicSiteLayout({ children, siteConfig, initialCategory
       className="min-h-screen bg-[var(--bg-main)] transition-colors duration-500"
       style={{ '--brand-red': siteConfig.appearance?.primaryColor || '#e11d48' } as React.CSSProperties}
     >
-      <div className="border-b border-black/5 bg-brand-black text-white shadow-[0_16px_32px_rgba(2,6,23,0.18)] dark:border-white/5 dark:bg-black">
+      <div className="border-b border-black/5 bg-brand-black text-white shadow-[0_16px_32px_rgba(2,6,23,0.18)] dark:border-white/5 dark:bg-[#020617]">
         <Container>
           <BreakingNewsTicker />
         </Container>

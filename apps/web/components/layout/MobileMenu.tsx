@@ -160,36 +160,6 @@ export default function MobileMenu({
                 </div>
               </section>
 
-              {/* Extras Section */}
-              <section>
-                <h3 className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-4">Lainnya</h3>
-                <div className="space-y-4">
-                  <Link
-                    href="/pusat"
-                    onClick={onClose}
-                    className="flex items-center gap-3 text-gray-600 dark:text-gray-400 hover:text-brand-red transition-colors"
-                  >
-                    <Globe size={18} />
-                    <span className="text-sm font-bold uppercase tracking-wider">Global Edition</span>
-                  </Link>
-                  <Link
-                    href={`/${activeSite}/p/about`}
-                    onClick={onClose}
-                    className="flex items-center gap-3 text-gray-600 dark:text-gray-400 hover:text-brand-red transition-colors"
-                  >
-                    <FileText size={18} />
-                    <span className="text-sm font-bold uppercase tracking-wider">Tentang Kami</span>
-                  </Link>
-                  <Link
-                    href={`/${activeSite}/kebijakan-privasi`}
-                    onClick={onClose}
-                    className="flex items-center gap-3 text-gray-600 dark:text-gray-400 hover:text-brand-red transition-colors"
-                  >
-                    <Shield size={18} />
-                    <span className="text-sm font-bold uppercase tracking-wider">Kebijakan Privasi</span>
-                  </Link>
-                </div>
-              </section>
             </div>
 
             {/* Footer */}
