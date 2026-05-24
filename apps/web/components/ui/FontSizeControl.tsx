@@ -1,11 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { cn } from '../../lib/utils';
 
 export default function FontSizeControl() {
-  const [fontSize, setFontSize] = useState(1); // 1 = normal, 0.8 = small, 1.2 = large, etc.
-  
+  const [fontSize, setFontSize] = useState(1);
+  const [contentEl, setContentEl] = useState<HTMLElement | null>(null);
+  const observerRef = useRef<MutationObserver | null>(null);
+
   const sizes = [
     { label: 'A-', value: 0.85 },
     { label: 'Normal', value: 1 },
@@ -14,12 +16,44 @@ export default function FontSizeControl() {
   ];
 
   useEffect(() => {
-    // Apply font size to the article content class
-    const content = document.querySelector('.article-content');
+    const findContent = () => document.querySelector('.article-content') as HTMLElement | null;
+
+    const applyFontSize = (el: HTMLElement | null) => {
+      if (el) {
+        el.style.fontSize = `${fontSize * 100}%`;
+        setContentEl(el);
+      }
+    };
+
+    const content = findContent();
     if (content) {
-      (content as HTMLElement).style.fontSize = `${fontSize * 100}%`;
+      applyFontSize(content);
+      return;
     }
-  }, [fontSize]);
+
+    observerRef.current = new MutationObserver(() => {
+      const el = findContent();
+      if (el && !contentEl) {
+        applyFontSize(el);
+        observerRef.current?.disconnect();
+      }
+    });
+
+    observerRef.current.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+
+    return () => {
+      observerRef.current?.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (contentEl) {
+      contentEl.style.fontSize = `${fontSize * 100}%`;
+    }
+  }, [fontSize, contentEl]);
 
   return (
     <div className="flex items-center gap-3 rounded-full border border-gray-200/80 bg-white/90 px-2 py-1.5 shadow-sm dark:border-white/10 dark:bg-white/[0.03]">

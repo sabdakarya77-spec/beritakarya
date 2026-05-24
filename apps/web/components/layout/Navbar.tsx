@@ -37,6 +37,7 @@ export default function Navbar({
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   
   const { user, logout } = useAuthStore();
   const activeSite = siteConfig?.id || pathname.split('/')[1] || 'pusat';
@@ -55,6 +56,19 @@ export default function Navbar({
     setTheme(savedTheme);
     document.documentElement.classList.toggle('dark', savedTheme === 'dark');
   }, []);
+
+  useEffect(() => {
+    // Always start in expanded mode after refresh or route navigation.
+    setIsCollapsed(false);
+
+    const handleScroll = () => {
+      setIsCollapsed(window.scrollY > 24);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [pathname]);
 
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
@@ -76,6 +90,10 @@ export default function Navbar({
         ? "border-black/5 bg-[color:rgb(var(--brand-surface-rgb)/0.88)] backdrop-blur-xl shadow-[0_12px_36px_rgba(15,23,42,0.08)] dark:border-white/5 dark:bg-[rgba(2,6,23,0.84)]"
         : "border-black/5 bg-[var(--bg-main)] shadow-sm dark:border-white/5"
     )}>
+      <div className={cn(
+        "overflow-hidden transition-all duration-300 ease-out",
+        isCollapsed ? "max-h-0 opacity-0 pointer-events-none" : "max-h-16 opacity-100"
+      )}>
       <div className="border-b border-black/5 dark:border-white/5">
         <Container className="flex h-11 items-center justify-between gap-6 text-[12px] font-semibold uppercase tracking-[0.08em] text-brand-text-muted">
           <div className="flex min-w-0 items-center gap-4">
@@ -91,7 +109,12 @@ export default function Navbar({
           </div>
         </Container>
       </div>
+      </div>
 
+      <div className={cn(
+        "overflow-hidden transition-all duration-300 ease-out",
+        isCollapsed ? "max-h-0 opacity-0 pointer-events-none" : "max-h-40 opacity-100"
+      )}>
       <Container className={cn(
         "grid grid-cols-[1fr_auto_1fr] items-center gap-3 md:gap-4",
         isArticlePage ? "min-h-[5.25rem] md:min-h-[5.5rem]" : "min-h-[6rem] md:min-h-[6.35rem]"
@@ -223,11 +246,16 @@ export default function Navbar({
           </button>
         </div>
       </Container>
+      </div>
 
       <div className="hidden border-t border-black/5 dark:border-white/5 md:block">
         <Container className={cn(
           "relative z-40 hidden items-center justify-center text-[12px] font-bold uppercase tracking-[0.13em] text-brand-text-muted md:flex",
-          isArticlePage ? "h-12 gap-6" : "h-14 gap-7"
+          isCollapsed
+            ? "h-11 gap-5"
+            : isArticlePage
+              ? "h-12 gap-6"
+              : "h-14 gap-7"
         )}>
           {categories.map((cat, index) => {
           const isActive = selectedCategory === cat.slug || cat.subCategories?.some(sub => sub.slug === selectedCategory);
@@ -319,7 +347,10 @@ export default function Navbar({
 
       <div className="border-t border-black/5 dark:border-white/5 md:hidden">
         <Container className="md:hidden">
-          <nav className="flex gap-2 overflow-x-auto pb-3 pt-3 no-scrollbar">
+          <nav className={cn(
+            "flex gap-2 overflow-x-auto no-scrollbar transition-all duration-300",
+            isCollapsed ? "pb-2 pt-2" : "pb-3 pt-3"
+          )}>
             {categories.map((cat) => {
           const isActive = selectedCategory === cat.slug || cat.subCategories?.some(sub => sub.slug === selectedCategory);
           return (
@@ -328,6 +359,7 @@ export default function Navbar({
               onClick={() => handleCategoryClick(cat.slug)}
               className={cn(
                 "flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full border px-3 py-2 text-[12px] font-semibold transition-all",
+                        isCollapsed && "py-1.5 text-[11px]",
                 isActive
                   ? "border-brand-red bg-brand-red/10 text-brand-red dark:text-white"
                   : "border-black/10 text-brand-text-muted dark:border-white/10 dark:text-gray-400"
@@ -358,9 +390,15 @@ export default function Navbar({
         );
         if (activeParent && activeParent.subCategories && activeParent.subCategories.length > 0) {
           return (
-            <div className="border-t border-black/5 bg-black/[0.02] md:hidden dark:border-white/5 dark:bg-white/[0.03]">
+            <div className={cn(
+              "border-t border-black/5 bg-black/[0.02] transition-all duration-300 md:hidden dark:border-white/5 dark:bg-white/[0.03]",
+              isCollapsed && "border-transparent"
+            )}>
               <Container className="md:hidden">
-                <nav className="flex gap-2 overflow-x-auto pb-3 pt-2 no-scrollbar">
+                <nav className={cn(
+                  "flex gap-2 overflow-x-auto no-scrollbar transition-all duration-300",
+                  isCollapsed ? "pb-2 pt-1.5" : "pb-3 pt-2"
+                )}>
                   {activeParent.subCategories.map((sub) => {
                     const isSubActive = selectedCategory === sub.slug;
                     return (
@@ -369,6 +407,7 @@ export default function Navbar({
                         onClick={() => handleCategoryClick(sub.slug)}
                         className={cn(
                           "shrink-0 whitespace-nowrap rounded-xl px-3 py-1.5 text-[11px] font-semibold transition-all",
+                          isCollapsed && "px-2.5 py-1 text-[10px]",
                           isSubActive
                             ? "bg-brand-red text-white"
                             : "bg-black/[0.04] text-gray-600 dark:bg-white/5 dark:text-gray-400"

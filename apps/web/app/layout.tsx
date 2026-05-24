@@ -10,6 +10,7 @@ export const metadata = constructMetadata()
 
 import { Toaster } from '../components/ui/Toaster'
 import { AuthInit } from '../components/AuthInit'
+import ScrollReset from '../components/layout/ScrollReset'
 
 export default function RootLayout({
   children,
@@ -24,6 +25,10 @@ export default function RootLayout({
             __html: `
               (function() {
                 try {
+                  if ('scrollRestoration' in history) {
+                    history.scrollRestoration = 'manual';
+                  }
+
                   const theme = localStorage.getItem('theme');
                   const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
                   
@@ -42,6 +47,7 @@ export default function RootLayout({
       </head>
       <body className={`${inter.variable} ${outfit.variable} ${playfair.variable} font-sans antialiased`}>
         <AuthInit />
+        <ScrollReset />
         {children}
         <Toaster />
       </body>
