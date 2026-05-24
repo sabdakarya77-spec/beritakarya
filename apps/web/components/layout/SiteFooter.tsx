@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { MapPin, Mail, MessageCircle } from 'lucide-react';
+import { MapPin, Mail, MessageCircle, Phone } from 'lucide-react';
 import { SiFacebook, SiInstagram, SiTelegram, SiTiktok, SiWhatsapp, SiX, SiYoutube } from 'react-icons/si';
 
 import { CategoryItem } from '../../lib/constants';
@@ -102,6 +102,9 @@ export default function SiteFooter({ siteConfig, categories }: SiteFooterProps) 
               <p className="flex items-start gap-2 text-sm leading-relaxed text-brand-text-muted">
                 <MapPin size={12} className="shrink-0 mt-0.5 text-brand-red" />
                 <span>{siteConfig?.address || "Jl. Merdeka No. 123, Jakarta Pusat, Indonesia"}</span>
+              </p>
+              <p className="flex items-center gap-2 text-sm text-brand-text-muted">
+                <Phone size={12} className="text-brand-text-muted opacity-60" /> +62 815 9921 922
               </p>
               {siteConfig?.contactEmail && (
                 <p className="flex items-center gap-2 text-sm text-brand-text-muted">
