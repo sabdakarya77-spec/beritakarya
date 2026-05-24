@@ -262,6 +262,9 @@ export class SiteService {
       codeOfEthics: site.codeOfEthics,
       editorial: site.editorial,
       advertising: site.advertising,
+      privacyPolicy: site.privacyPolicy,
+      termsOfService: site.termsOfService,
+      mediaSiber: site.mediaSiber,
       socialLinks: site.socialLinks,
       appearance: site.appearance,
       trendingTopics: site.trendingTopics,
@@ -297,7 +300,7 @@ export class SiteService {
     const allowedFields = [
       'name', 'domain', 'description', 'logoUrl', 'faviconUrl', 'ogImageUrl', 'footerText',
       'address', 'contactEmail', 'phone', 'aboutUs', 'codeOfEthics',
-      'editorial', 'advertising', 'privacyPolicy', 'termsOfService', 'cookiePolicy',
+      'editorial', 'advertising', 'privacyPolicy', 'termsOfService', 'mediaSiber',
       'socialLinks', 'appearance', 'trendingTopics',
       'googleIndexingConfig'
     ]

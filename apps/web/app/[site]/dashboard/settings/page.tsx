@@ -58,7 +58,7 @@ export default function SettingsPage() {
     advertising: '',
     privacyPolicy: '',
     termsOfService: '',
-    cookiePolicy: '',
+    mediaSiber: '',
     socialLinks: {
       whatsapp: '',
       facebook: '',
@@ -202,7 +202,7 @@ export default function SettingsPage() {
           advertising: data.data.advertising || '',
           privacyPolicy: data.data.privacyPolicy || '',
           termsOfService: data.data.termsOfService || '',
-          cookiePolicy: data.data.cookiePolicy || '',
+          mediaSiber: data.data.mediaSiber || '',
           socialLinks: {
             whatsapp: data.data.socialLinks?.whatsapp || '',
             facebook: data.data.socialLinks?.facebook || '',
@@ -906,7 +906,7 @@ export default function SettingsPage() {
 
                 <div className="grid grid-cols-1 gap-6">
                   <div className="space-y-3">
-                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Tentang Kami (Visi & Misi)</label>
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Tentang Kami</label>
                     <textarea 
                       ref={aboutUsRef}
                       value={settings.aboutUs}
@@ -918,7 +918,7 @@ export default function SettingsPage() {
                   </div>
 
                   <div className="space-y-3">
-                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Kode Etik Internal</label>
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Kode Etik</label>
                     <textarea 
                       ref={codeOfEthicsRef}
                       value={settings.codeOfEthics}
@@ -931,7 +931,7 @@ export default function SettingsPage() {
 
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Susunan Redaksi</label>
+                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Redaksi</label>
                       <button
                         type="button"
                         onClick={() => {
@@ -1009,12 +1009,12 @@ Penasihat Hukum:
 
                     <div className="space-y-3">
                       <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                        <FileText size={14} className="text-brand-red" /> Syarat & Ketentuan
+                        <FileText size={14} className="text-brand-red" /> Ketentuan Penggunaan
                       </label>
                       <textarea
                         value={settings.termsOfService}
                         onChange={(e) => setSettings({...settings, termsOfService: e.target.value})}
-                        placeholder="Tuliskan syarat dan ketentuan penggunaan layanan..."
+                        placeholder="Tuliskan ketentuan penggunaan layanan portal berita..."
                         rows={4}
                         className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-4 text-base text-gray-900 dark:text-white outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 transition-all resize-none"
                       />
@@ -1022,12 +1022,12 @@ Penasihat Hukum:
 
                     <div className="space-y-3">
                       <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                        <Cookie size={14} className="text-brand-red" /> Kebijakan Cookie
+                        <BookOpen size={14} className="text-brand-red" /> Pedoman Media Siber
                       </label>
                       <textarea
-                        value={settings.cookiePolicy}
-                        onChange={(e) => setSettings({...settings, cookiePolicy: e.target.value})}
-                        placeholder="Tuliskan kebijakan penggunaan cookie..."
+                        value={settings.mediaSiber || ''}
+                        onChange={(e) => setSettings({...settings, mediaSiber: e.target.value})}
+                        placeholder="Tuliskan pedoman media siber sesuai aturan Dewan Pers..."
                         rows={4}
                         className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-4 text-base text-gray-900 dark:text-white outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 transition-all resize-none"
                       />

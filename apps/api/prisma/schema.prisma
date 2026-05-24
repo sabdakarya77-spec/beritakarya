@@ -55,7 +55,7 @@ model Site {
   advertising          String?   @db.Text
   privacyPolicy        String?   @db.Text
   termsOfService       String?   @db.Text
-  cookiePolicy        String?   @db.Text
+  mediaSiber          String?   @db.Text
   socialLinks          Json?     @default("{}")
   appearance           Json?     @default("{\"primaryColor\":\"#e11d48\"}")
   trendingTopics       Json?     @default("[]")
