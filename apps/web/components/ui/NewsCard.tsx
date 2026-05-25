@@ -34,7 +34,7 @@ export default function NewsCard({ article, variant = 'medium', site = 'pusat', 
     "rounded-sm px-2.5 py-0.5 text-[10px] font-black uppercase tracking-[0.14em]",
     getCategoryColor(article.category?.name)
   );
-  const calmMetaClass = "flex items-center gap-3 text-[11px] font-medium text-brand-text-muted dark:text-gray-400";
+  const calmMetaClass = "flex flex-wrap items-center gap-x-3 gap-y-2 text-[11px] font-medium text-brand-text-muted dark:text-gray-400";
   const defaultImageClass = 'object-cover object-[center_30%] transition-transform duration-500 ease-out group-hover:scale-[1.03]';
   const horizontalImageClass = 'object-cover object-[center_30%] transition-transform duration-500 ease-out group-hover:scale-[1.04]';
   const heroImageClass = 'object-cover object-[center_26%] opacity-75 transition-all duration-700 ease-out group-hover:scale-[1.03]';
@@ -173,8 +173,8 @@ export default function NewsCard({ article, variant = 'medium', site = 'pusat', 
               <p className="hidden line-clamp-2 text-sm leading-relaxed text-brand-text-muted/90 dark:text-gray-400 md:block">
                 {excerpt}
               </p>
-              <div className="mt-1 flex items-center gap-4 text-[11px] text-brand-text-muted dark:text-gray-400">
-                 <span className="flex items-center gap-1"><User size={10}/> {authorName}</span>
+              <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px] text-brand-text-muted dark:text-gray-400">
+                 <span className="flex min-w-0 items-center gap-1"><User size={10}/> <span className="truncate">{authorName}</span></span>
                  <span>{date}</span>
               </div>
             </div>
@@ -226,12 +226,12 @@ export default function NewsCard({ article, variant = 'medium', site = 'pusat', 
             <p className="line-clamp-2 text-sm font-normal leading-relaxed text-brand-text-muted opacity-80 dark:text-gray-400">
               {excerpt}
             </p>
-            <div className="mt-2 flex items-center gap-3 text-[11px] text-brand-text-muted dark:text-gray-400">
-               <div className="flex items-center gap-1.5">
+            <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-2 text-[11px] text-brand-text-muted dark:text-gray-400">
+               <div className="flex min-w-0 items-center gap-1.5">
                   <div className="flex h-5 w-5 items-center justify-center rounded-full bg-gray-100 text-[10px] font-semibold dark:bg-white/10">
                     {authorName[0] || 'R'}
                   </div>
-                 <span>{authorName}</span>
+                 <span className="truncate">{authorName}</span>
                </div>
                <span className="opacity-30">•</span>
                <span>{date}</span>

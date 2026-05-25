@@ -118,10 +118,10 @@ export default function Navbar({
           : "max-h-40 overflow-visible opacity-100"
       )}>
       <Container className={cn(
-        "grid grid-cols-[1fr_auto_1fr] items-center gap-3 md:gap-4",
+        "grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 md:grid-cols-[1fr_auto_1fr] md:gap-4",
         isArticlePage ? "min-h-[5.25rem] md:min-h-[5.5rem]" : "min-h-[6rem] md:min-h-[6.35rem]"
       )}>
-        <div className="flex items-center gap-3 md:gap-4">
+        <div className="flex min-w-0 items-center gap-3 md:gap-4">
           <button 
             onClick={onMenuClick}
             className="md:hidden -ml-2 rounded-full p-2.5 text-brand-black transition-colors hover:bg-black/5 dark:text-white dark:hover:bg-white/5"
@@ -141,11 +141,11 @@ export default function Navbar({
         <motion.div 
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex-shrink-0"
+          className="min-w-0 justify-self-center"
         >
-          <Link href={`/${activeSite}`} className="flex flex-col items-center group">
+          <Link href={`/${activeSite}`} className="flex max-w-full flex-col items-center group">
             {siteConfig?.logoUrl ? (
-              <div className="relative mb-1 h-12 w-[11.5rem] md:h-[3.25rem] md:w-[13rem]">
+              <div className="relative mb-1 h-10 w-[8.75rem] sm:h-12 sm:w-[11.5rem] md:h-[3.25rem] md:w-[13rem]">
                 <SmartImage 
                   src={siteConfig.logoUrl} 
                   alt={siteConfig.name} 
@@ -156,18 +156,18 @@ export default function Navbar({
                 />
               </div>
             ) : (
-              <h1 className="text-center font-serif text-[2rem] font-black leading-none tracking-[-0.05em] sm:text-[2.45rem] md:text-[3rem]">
+              <h1 className="text-center font-serif text-[1.7rem] font-black leading-none tracking-[-0.05em] sm:text-[2.45rem] md:text-[3rem]">
                 <span className="text-brand-red group-hover:text-brand-red/90 transition-colors">BERITA</span>
                 <span className="text-brand-black group-hover:opacity-90 transition-opacity">KARYA</span>
               </h1>
             )}
-            <span className="mt-1.5 max-w-[280px] text-center text-[11px] font-medium uppercase tracking-[0.18em] text-brand-text-muted transition-all">
+            <span className="mt-1.5 max-w-[9rem] text-center text-[10px] font-medium uppercase tracking-[0.12em] text-brand-text-muted transition-all sm:max-w-[280px] sm:text-[11px] sm:tracking-[0.18em]">
               Jernih Melihat Nusantara
             </span>
           </Link>
         </motion.div>
 
-        <div className={cn("flex items-center justify-end gap-2 md:gap-4", isArticlePage && "md:gap-3")}>
+        <div className={cn("flex min-w-0 items-center justify-end gap-2 md:gap-4", isArticlePage && "md:gap-3")}>
 
           {!isArticlePage && (
             <button 
