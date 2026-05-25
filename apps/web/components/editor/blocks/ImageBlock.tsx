@@ -136,7 +136,7 @@ export function ImageBlock({ block }: { block: TImageBlock }) {
                 Kredit
               </span>
               <input
-                value={(block as any).credit || ''}
+                value={block.credit || ''}
                 onChange={e => updateBlock(block.id, { credit: e.target.value })}
                 placeholder="Sumber foto / Fotografer"
                 className="flex-1 text-[11px] font-bold text-slate-400 dark:text-slate-500 outline-none bg-transparent placeholder:text-gray-200 dark:placeholder:text-white/5 uppercase tracking-wide"

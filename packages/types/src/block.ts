@@ -47,6 +47,7 @@ export interface ImageBlock extends BaseBlock {
   url: string
   alt: string
   caption?: string
+  credit?: string
   width?: number
   height?: number
 }
