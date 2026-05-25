@@ -3,10 +3,24 @@ import OpenAI from 'openai'
 import type { AIResult } from './base.service'
 import { env } from '../lib/env'
 
-const client = new OpenAI({
-  apiKey: env.OPENAI_API_KEY,
-  timeout: 30_000,
-})
+let client: OpenAI | null = null
+
+function getClient() {
+  const apiKey = env.OPENAI_API_KEY || (process.env.VITEST ? 'test-key' : undefined)
+
+  if (!apiKey) {
+    throw new Error('OPENAI_API_KEY is not configured')
+  }
+
+  if (!client) {
+    client = new OpenAI({
+      apiKey,
+      timeout: 30_000,
+    })
+  }
+
+  return client
+}
 
 export interface CaptionResult {
   caption: string
@@ -17,7 +31,7 @@ export async function generateCaption(
   imageUrl: string
 ): Promise<AIResult<CaptionResult>> {
   return callAI(async () => {
-    const res = await client.chat.completions.create({
+    const res = await getClient().chat.completions.create({
       model: 'gpt-4o',
       max_tokens: 150,
       messages: [{

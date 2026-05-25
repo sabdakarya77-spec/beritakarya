@@ -6,10 +6,24 @@ import { createHash } from 'crypto'
 import { createOpenAIBreaker } from '../lib/circuitBreaker'
 import { prisma } from '../db/client'
 
-const client = new OpenAI({
-  apiKey: env.OPENAI_API_KEY,
-  timeout: 30_000,
-})
+let client: OpenAI | null = null
+
+function getClient() {
+  const apiKey = env.OPENAI_API_KEY || (process.env.VITEST ? 'test-key' : undefined)
+
+  if (!apiKey) {
+    throw new Error('OPENAI_API_KEY is not configured')
+  }
+
+  if (!client) {
+    client = new OpenAI({
+      apiKey,
+      timeout: 30_000,
+    })
+  }
+
+  return client
+}
 
 export interface AIResult<T> {
   success: boolean
@@ -38,7 +52,7 @@ const openaiBreaker = createOpenAIBreaker(
     temperature?: number; 
     model?: string;
   }) => {
-    const res = await client.chat.completions.create({
+    const res = await getClient().chat.completions.create({
       model: opts.model || env.AI_MODEL,
       max_tokens: opts.maxTokens ?? 1000,
       temperature: opts.temperature ?? 0.7,
