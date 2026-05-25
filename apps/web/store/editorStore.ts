@@ -242,7 +242,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
         status: article.status,
         metaTitle: article.metaTitle || '',
         metaDescription: article.metaDescription || '',
-        categoryId: article.categoryId || null,
+        categoryId: article.categoryId || article.category?.id || null,
         tags: article.tags || [],
         featuredImage: article.featuredImage || '',
         isBreaking: article.isBreaking || false,
