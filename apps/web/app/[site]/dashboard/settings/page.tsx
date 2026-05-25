@@ -3,7 +3,14 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'next/navigation'
 import { 
+  AlignCenter,
+  AlignLeft,
+  AlignRight,
   Save, 
+  Bold,
+  Link as LinkIcon,
+  List,
+  ListOrdered,
   Plus, 
   X, 
   Globe, 
@@ -20,6 +27,7 @@ import {
   ExternalLink, 
   Sparkles, 
   Phone,
+  Italic,
   MapPin,
   Share2,
   Image,
@@ -29,11 +37,333 @@ import {
   Shield,
   Cookie,
   Lock as LockIcon,
+  Underline,
   Users
 } from 'lucide-react'
 import { api } from '../../../../lib/api'
 
 type SettingsTab = 'basic' | 'contact' | 'google' | 'info' | 'trending'
+type LegalFieldKey =
+  | 'aboutUs'
+  | 'codeOfEthics'
+  | 'editorial'
+  | 'privacyPolicy'
+  | 'termsOfService'
+  | 'mediaSiber'
+type LegalAlignment = 'left' | 'center' | 'right'
+
+const LEGAL_EDITOR_MIN_HEIGHT = 'min-h-[350px]'
+
+function escapeHtml(value: string) {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
+function looksLikeHtml(value: string) {
+  return /<\/?[a-z][\s\S]*>/i.test(value)
+}
+
+function plainTextToLegalHtml(value: string) {
+  const trimmed = value.trim()
+  if (!trimmed) return ''
+
+  return trimmed
+    .split(/\n{2,}/)
+    .map((paragraph) => `<p>${escapeHtml(paragraph).replace(/\n/g, '<br>')}</p>`)
+    .join('')
+}
+
+function stripEditorWrapper(value: string) {
+  const match = value.match(/^\s*<div[^>]*align="(left|center|right)"[^>]*>([\s\S]*)<\/div>\s*$/i)
+  if (!match) {
+    return { align: 'left' as LegalAlignment, html: value }
+  }
+
+  return {
+    align: match[1].toLowerCase() as LegalAlignment,
+    html: match[2],
+  }
+}
+
+function parseLegalContent(value: string) {
+  if (!value) {
+    return { align: 'left' as LegalAlignment, html: '' }
+  }
+
+  const stripped = stripEditorWrapper(value)
+  const normalizedHtml = looksLikeHtml(stripped.html)
+    ? stripped.html
+    : plainTextToLegalHtml(stripped.html)
+
+  return {
+    align: stripped.align,
+    html: normalizedHtml,
+  }
+}
+
+function serializeLegalContent(html: string, align: LegalAlignment) {
+  const normalized = html
+    .replace(/<div><br><\/div>/gi, '')
+    .replace(/<p><br><\/p>/gi, '')
+    .trim()
+
+  const plainText = normalized
+    .replace(/<br\s*\/?>/gi, '')
+    .replace(/<\/p>/gi, '')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/gi, ' ')
+    .trim()
+
+  if (!plainText) return ''
+
+  return `<div align="${align}">${normalized}</div>`
+}
+
+function LegalRichTextEditor({
+  label,
+  value,
+  onChange,
+  placeholder,
+}: {
+  label: string
+  value: string
+  onChange: (value: string) => void
+  placeholder: string
+}) {
+  const editorRef = useRef<HTMLDivElement>(null)
+  const [alignment, setAlignment] = useState<LegalAlignment>('left')
+
+  useEffect(() => {
+    const editor = editorRef.current
+    if (!editor) return
+
+    const parsed = parseLegalContent(value)
+    if (editor.innerHTML !== parsed.html) {
+      editor.innerHTML = parsed.html
+    }
+    editor.style.textAlign = parsed.align
+    setAlignment(parsed.align)
+  }, [value])
+
+  const emitChange = (nextAlign?: LegalAlignment) => {
+    const editor = editorRef.current
+    if (!editor) return
+    editor.querySelectorAll('a').forEach((anchor) => {
+      anchor.setAttribute('target', '_blank')
+      anchor.setAttribute('rel', 'noopener noreferrer')
+    })
+    onChange(serializeLegalContent(editor.innerHTML, nextAlign || alignment))
+  }
+
+  const runCommand = (
+    command:
+      | 'bold'
+      | 'italic'
+      | 'underline'
+      | 'insertUnorderedList'
+      | 'insertOrderedList'
+  ) => {
+    const editor = editorRef.current
+    if (!editor) return
+    editor.focus()
+    document.execCommand(command)
+    emitChange()
+  }
+
+  const applyBlock = (block: 'h2' | 'h3' | 'p') => {
+    const editor = editorRef.current
+    if (!editor) return
+    editor.focus()
+    document.execCommand('formatBlock', false, block)
+    emitChange()
+  }
+
+  const insertLink = () => {
+    const editor = editorRef.current
+    if (!editor) return
+    editor.focus()
+
+    const selection = window.getSelection()
+    if (!selection || selection.rangeCount === 0 || selection.toString().trim().length === 0) {
+      window.alert('Sorot teks terlebih dahulu untuk menambahkan tautan.')
+      return
+    }
+
+    const url = window.prompt('Masukkan URL tautan', 'https://')
+    if (!url) return
+
+    const normalizedUrl = /^https?:\/\//i.test(url) ? url : `https://${url}`
+    document.execCommand('createLink', false, normalizedUrl)
+    emitChange()
+  }
+
+  const applyAlignment = (nextAlign: LegalAlignment) => {
+    const editor = editorRef.current
+    if (!editor) return
+    editor.style.textAlign = nextAlign
+    setAlignment(nextAlign)
+    editor.focus()
+    onChange(serializeLegalContent(editor.innerHTML, nextAlign))
+  }
+
+  const toolbarButtonClass =
+    'inline-flex h-10 w-10 items-center justify-center rounded-lg border transition-colors'
+  const toolbarIdleClass =
+    'border-gray-200 bg-white text-gray-600 hover:border-brand-red/30 hover:text-brand-red dark:border-gray-800 dark:bg-gray-950 dark:text-gray-300'
+  const toolbarActiveClass =
+    'border-brand-red/30 bg-brand-red/10 text-brand-red dark:border-brand-red/30 dark:bg-brand-red/15'
+  const preserveSelection = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault()
+  }
+
+  return (
+    <div className="space-y-3">
+      <label className="text-sm font-bold text-gray-700 dark:text-gray-300">{label}</label>
+      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-950">
+        <div className="flex flex-wrap items-center gap-2 border-b border-gray-200 bg-gray-50 px-3 py-3 dark:border-gray-800 dark:bg-gray-900/60">
+          <button
+            type="button"
+            onMouseDown={preserveSelection}
+            onClick={() => runCommand('bold')}
+            className={`${toolbarButtonClass} ${toolbarIdleClass}`}
+            title="Tebal"
+            aria-label="Tebal"
+          >
+            <Bold size={16} />
+          </button>
+          <button
+            type="button"
+            onMouseDown={preserveSelection}
+            onClick={() => runCommand('italic')}
+            className={`${toolbarButtonClass} ${toolbarIdleClass}`}
+            title="Miring"
+            aria-label="Miring"
+          >
+            <Italic size={16} />
+          </button>
+          <button
+            type="button"
+            onMouseDown={preserveSelection}
+            onClick={() => runCommand('underline')}
+            className={`${toolbarButtonClass} ${toolbarIdleClass}`}
+            title="Garis bawah"
+            aria-label="Garis bawah"
+          >
+            <Underline size={16} />
+          </button>
+          <div className="mx-1 h-6 w-px bg-gray-200 dark:bg-gray-800" />
+          <button
+            type="button"
+            onMouseDown={preserveSelection}
+            onClick={() => applyBlock('h2')}
+            className={`${toolbarButtonClass} ${toolbarIdleClass} text-[11px] font-black`}
+            title="Heading besar"
+            aria-label="Heading besar"
+          >
+            H2
+          </button>
+          <button
+            type="button"
+            onMouseDown={preserveSelection}
+            onClick={() => applyBlock('h3')}
+            className={`${toolbarButtonClass} ${toolbarIdleClass} text-[11px] font-black`}
+            title="Heading sedang"
+            aria-label="Heading sedang"
+          >
+            H3
+          </button>
+          <button
+            type="button"
+            onMouseDown={preserveSelection}
+            onClick={() => applyBlock('p')}
+            className={`${toolbarButtonClass} ${toolbarIdleClass} text-[11px] font-black`}
+            title="Paragraf normal"
+            aria-label="Paragraf normal"
+          >
+            P
+          </button>
+          <div className="mx-1 h-6 w-px bg-gray-200 dark:bg-gray-800" />
+          <button
+            type="button"
+            onMouseDown={preserveSelection}
+            onClick={() => runCommand('insertUnorderedList')}
+            className={`${toolbarButtonClass} ${toolbarIdleClass}`}
+            title="Bullet list"
+            aria-label="Bullet list"
+          >
+            <List size={16} />
+          </button>
+          <button
+            type="button"
+            onMouseDown={preserveSelection}
+            onClick={() => runCommand('insertOrderedList')}
+            className={`${toolbarButtonClass} ${toolbarIdleClass}`}
+            title="Number list"
+            aria-label="Number list"
+          >
+            <ListOrdered size={16} />
+          </button>
+          <button
+            type="button"
+            onMouseDown={preserveSelection}
+            onClick={insertLink}
+            className={`${toolbarButtonClass} ${toolbarIdleClass}`}
+            title="Tautan"
+            aria-label="Tautan"
+          >
+            <LinkIcon size={16} />
+          </button>
+          <div className="mx-1 h-6 w-px bg-gray-200 dark:bg-gray-800" />
+          <button
+            type="button"
+            onMouseDown={preserveSelection}
+            onClick={() => applyAlignment('left')}
+            className={`${toolbarButtonClass} ${alignment === 'left' ? toolbarActiveClass : toolbarIdleClass}`}
+            title="Rata kiri"
+            aria-label="Rata kiri"
+          >
+            <AlignLeft size={16} />
+          </button>
+          <button
+            type="button"
+            onMouseDown={preserveSelection}
+            onClick={() => applyAlignment('center')}
+            className={`${toolbarButtonClass} ${alignment === 'center' ? toolbarActiveClass : toolbarIdleClass}`}
+            title="Rata tengah"
+            aria-label="Rata tengah"
+          >
+            <AlignCenter size={16} />
+          </button>
+          <button
+            type="button"
+            onMouseDown={preserveSelection}
+            onClick={() => applyAlignment('right')}
+            className={`${toolbarButtonClass} ${alignment === 'right' ? toolbarActiveClass : toolbarIdleClass}`}
+            title="Rata kanan"
+            aria-label="Rata kanan"
+          >
+            <AlignRight size={16} />
+          </button>
+        </div>
+        <div
+          ref={editorRef}
+          contentEditable
+          suppressContentEditableWarning
+          data-placeholder={placeholder}
+          onInput={() => emitChange()}
+          className={`prose prose-sm max-w-none px-4 py-3 text-base text-gray-900 outline-none dark:prose-invert dark:text-white ${LEGAL_EDITOR_MIN_HEIGHT} before:pointer-events-none before:text-gray-400 empty:before:content-[attr(data-placeholder)]`}
+        />
+      </div>
+      <p className="text-xs text-gray-500 dark:text-gray-400">
+        Toolbar: tebal, miring, garis bawah, heading, list, tautan, rata kiri, rata tengah, dan rata kanan.
+      </p>
+    </div>
+  )
+}
 
 export default function SettingsPage() {
   const { site } = useParams() as { site: string }
@@ -86,44 +416,8 @@ export default function SettingsPage() {
   const [showPrivateKey, setShowPrivateKey] = useState(false)
   const [newTag, setNewTag] = useState('')
   const [uploadingLogo, setUploadingLogo] = useState(false)
-  const [activeLegalSubTab, setActiveLegalSubTab] = useState<
-    'aboutUs' | 'codeOfEthics' | 'editorial' | 'privacyPolicy' | 'termsOfService' | 'mediaSiber'
-  >('aboutUs')
-
-  const aboutUsRef = useRef<HTMLTextAreaElement>(null)
-  const codeOfEthicsRef = useRef<HTMLTextAreaElement>(null)
-  const editorialRef = useRef<HTMLTextAreaElement>(null)
-  const privacyPolicyRef = useRef<HTMLTextAreaElement>(null)
-  const termsOfServiceRef = useRef<HTMLTextAreaElement>(null)
-  const mediaSiberRef = useRef<HTMLTextAreaElement>(null)
+  const [activeLegalSubTab, setActiveLegalSubTab] = useState<LegalFieldKey>('aboutUs')
   const logoInputRef = useRef<HTMLInputElement>(null)
-
-  useEffect(() => {
-    const adjust = (ref: React.RefObject<HTMLTextAreaElement | null>) => {
-      if (ref.current) {
-        ref.current.style.height = 'auto'
-        ref.current.style.height = `${ref.current.scrollHeight}px`
-      }
-    }
-    const timer = setTimeout(() => {
-      adjust(aboutUsRef)
-      adjust(codeOfEthicsRef)
-      adjust(editorialRef)
-      adjust(privacyPolicyRef)
-      adjust(termsOfServiceRef)
-      adjust(mediaSiberRef)
-    }, 50)
-    return () => clearTimeout(timer)
-  }, [
-    settings.aboutUs,
-    settings.codeOfEthics,
-    settings.editorial,
-    settings.privacyPolicy,
-    settings.termsOfService,
-    settings.mediaSiber,
-    activeTab,
-    activeLegalSubTab
-  ])
 
   useEffect(() => {
     if (!originalSettings) return
@@ -952,31 +1246,21 @@ export default function SettingsPage() {
                 {/* Sub-Tabs Content */}
                 <div className="pt-2">
                   {activeLegalSubTab === 'aboutUs' && (
-                    <div className="space-y-3">
-                      <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Tentang Kami</label>
-                      <textarea
-                        ref={aboutUsRef}
-                        value={settings.aboutUs}
-                        onChange={(e) => setSettings({ ...settings, aboutUs: e.target.value })}
-                        placeholder="Tuliskan sejarah berdirinya, visi, misi, dan komitmen portal regional..."
-                        rows={12}
-                        className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-3 text-base text-gray-900 dark:text-white outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 transition-all resize-none min-h-[350px]"
-                      />
-                    </div>
+                    <LegalRichTextEditor
+                      label="Tentang Kami"
+                      value={settings.aboutUs}
+                      onChange={(nextValue) => setSettings({ ...settings, aboutUs: nextValue })}
+                      placeholder="Tuliskan sejarah berdirinya, visi, misi, dan komitmen portal regional..."
+                    />
                   )}
 
                   {activeLegalSubTab === 'codeOfEthics' && (
-                    <div className="space-y-3">
-                      <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Kode Etik</label>
-                      <textarea
-                        ref={codeOfEthicsRef}
-                        value={settings.codeOfEthics}
-                        onChange={(e) => setSettings({ ...settings, codeOfEthics: e.target.value })}
-                        placeholder="Tuliskan aturan jurnalisme independen, etika peliputan..."
-                        rows={12}
-                        className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-3 text-base text-gray-900 dark:text-white outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 transition-all resize-none min-h-[350px]"
-                      />
-                    </div>
+                    <LegalRichTextEditor
+                      label="Kode Etik"
+                      value={settings.codeOfEthics}
+                      onChange={(nextValue) => setSettings({ ...settings, codeOfEthics: nextValue })}
+                      placeholder="Tuliskan aturan jurnalisme independen, etika peliputan..."
+                    />
                   )}
 
                   {activeLegalSubTab === 'editorial' && (
@@ -1034,57 +1318,40 @@ Penasihat Hukum:
                           <Sparkles size={12} /> Gunakan Template Dewan Pers
                         </button>
                       </div>
-                      <textarea
-                        ref={editorialRef}
+                      <LegalRichTextEditor
+                        label="Redaksi"
                         value={settings.editorial}
-                        onChange={(e) => setSettings({ ...settings, editorial: e.target.value })}
+                        onChange={(nextValue) => setSettings({ ...settings, editorial: nextValue })}
                         placeholder="Daftar nama Pemimpin Redaksi, Editor, Reporter, Kontributor..."
-                        rows={12}
-                        className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-3 text-base text-gray-900 dark:text-white outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 transition-all resize-none min-h-[350px]"
                       />
                     </div>
                   )}
 
                   {activeLegalSubTab === 'privacyPolicy' && (
-                    <div className="space-y-3">
-                      <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Kebijakan Privasi</label>
-                      <textarea
-                        ref={privacyPolicyRef}
-                        value={settings.privacyPolicy}
-                        onChange={(e) => setSettings({ ...settings, privacyPolicy: e.target.value })}
-                        placeholder="Tuliskan kebijakan tentang bagaimana data pengguna dikumpulkan, digunakan, dan dilindungi..."
-                        rows={12}
-                        className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-3 text-base text-gray-900 dark:text-white outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 transition-all resize-none min-h-[350px]"
-                      />
-                    </div>
+                    <LegalRichTextEditor
+                      label="Kebijakan Privasi"
+                      value={settings.privacyPolicy}
+                      onChange={(nextValue) => setSettings({ ...settings, privacyPolicy: nextValue })}
+                      placeholder="Tuliskan kebijakan tentang bagaimana data pengguna dikumpulkan, digunakan, dan dilindungi..."
+                    />
                   )}
 
                   {activeLegalSubTab === 'termsOfService' && (
-                    <div className="space-y-3">
-                      <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Ketentuan Penggunaan</label>
-                      <textarea
-                        ref={termsOfServiceRef}
-                        value={settings.termsOfService}
-                        onChange={(e) => setSettings({ ...settings, termsOfService: e.target.value })}
-                        placeholder="Tuliskan ketentuan penggunaan layanan portal berita, hak cipta konten, dan batasan tanggung jawab..."
-                        rows={12}
-                        className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-3 text-base text-gray-900 dark:text-white outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 transition-all resize-none min-h-[350px]"
-                      />
-                    </div>
+                    <LegalRichTextEditor
+                      label="Ketentuan Penggunaan"
+                      value={settings.termsOfService}
+                      onChange={(nextValue) => setSettings({ ...settings, termsOfService: nextValue })}
+                      placeholder="Tuliskan ketentuan penggunaan layanan portal berita, hak cipta konten, dan batasan tanggung jawab..."
+                    />
                   )}
 
                   {activeLegalSubTab === 'mediaSiber' && (
-                    <div className="space-y-3">
-                      <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Pedoman Media Siber</label>
-                      <textarea
-                        ref={mediaSiberRef}
+                    <LegalRichTextEditor
+                      label="Pedoman Media Siber"
                         value={settings.mediaSiber || ''}
-                        onChange={(e) => setSettings({ ...settings, mediaSiber: e.target.value })}
+                        onChange={(nextValue) => setSettings({ ...settings, mediaSiber: nextValue })}
                         placeholder="Tuliskan pedoman pemberitaan media siber sesuai aturan Dewan Pers..."
-                        rows={12}
-                        className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-3 text-base text-gray-900 dark:text-white outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 transition-all resize-none min-h-[350px]"
-                      />
-                    </div>
+                    />
                   )}
                 </div>
               </div>

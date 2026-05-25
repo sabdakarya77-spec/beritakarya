@@ -4,299 +4,288 @@ Platform manajemen konten (CMS) modern berbasis monorepo untuk mengelola jaringa
 
 ---
 
-## 🏗️ Arsitektur Project
+## Arsitektur Project
 
 ```
-beritakarya/                    ← Monorepo Root (Turborepo + pnpm)
+beritakarya/                         ← Monorepo Root (Turborepo + pnpm)
 ├── apps/
-│   ├── api/                    ← Backend REST API (Express.js + TypeScript)
+│   ├── api/                         ← Backend REST API (Express.js + TypeScript)
 │   │   ├── src/
-│   │   │   ├── modules/        ← Fitur utama (auth, article, kyc, dll)
-│   │   │   ├── middleware/     ← Auth, CSRF, rate-limit, sanitize, dll
-│   │   │   ├── ai/             ← Integrasi OpenAI (rewrite, grammar, dll)
-│   │   │   ├── cron/           ← Scheduled tasks (KYC cleanup, token cleanup)
-│   │   │   ├── db/             ← Prisma client
-│   │   │   └── lib/            ← Logger, env, monitoring, rate limit
-│   │   └── prisma/             ← Schema database & migration history
-│   └── web/                    ← Frontend (Next.js + TypeScript)
+│   │   │   ├── modules/             ← auth, article, kyc, ads, site, …
+│   │   │   ├── middleware/          ← Auth, CSRF, rate-limit, sanitize
+│   │   │   ├── ai/                  ← Integrasi OpenAI
+│   │   │   ├── cron/                ← KYC cleanup, token cleanup, scheduled publish
+│   │   │   ├── db/                  ← Prisma client
+│   │   │   └── lib/                 ← Logger, env, monitoring, rate limit
+│   │   └── prisma/                  ← Schema & migrasi
+│   └── web/                         ← Frontend (Next.js 16 App Router)
+│       ├── app/[site]/              ← Halaman multisite (publik + dashboard)
+│       └── components/
+│           ├── layout/              ← Container, PublicSiteLayout, PublicInfoShell
+│           ├── legal/               ← Dokumen legal (LegalStandardPage, …)
+│           └── marketing/           ← Landing publik (mis. AdsMarketingPage)
 ├── packages/
-│   ├── types/                  ← Shared TypeScript types
-│   ├── utils/                  ← Shared utilities
-│   └── config/                 ← Shared ESLint/TS config
+│   ├── types/                       ← Shared TypeScript types
+│   ├── utils/                       ← Shared utilities
+│   └── config/                      ← Shared ESLint/TS config
+├── docs/                            ← Design system, audit, roadmap UI/UX
 ├── infra/
-│   ├── docker/                 ← Dockerfile & docker-compose
-│   ├── nginx/                  ← Konfigurasi Nginx (dev/staging/prod)
-│   └── scripts/                ← Shell scripts (setup, SSL, backup)
-└── plans/                      ← Catatan perencanaan & arsitektur
+│   ├── docker/                      ← Dockerfile & docker-compose
+│   ├── nginx/                       ← Nginx (dev/staging/prod)
+│   └── scripts/                     ← Setup, SSL, backup
+└── .github/workflows/               ← CI & deploy (build image GHCR)
 ```
 
 ---
 
-## 🔧 Tech Stack
+## Tech Stack
 
-| Komponen      | Teknologi                                        |
-|---------------|--------------------------------------------------|
-| **Monorepo**  | Turborepo + pnpm workspaces                      |
-| **Backend**   | Express.js 4, TypeScript, Prisma ORM             |
-| **Frontend**  | Next.js 16, React 18, Tailwind CSS               |
-| **Database**  | PostgreSQL 15                                    |
-| **Cache**     | Redis 7 (via ioredis)                            |
-| **Search**    | Meilisearch v1.6                                 |
-| **AI**        | OpenAI API (GPT-4o)                              |
-| **Auth**      | JWT (cookie-based) + CSRF Protection             |
-| **Container** | Docker + Docker Compose                          |
-| **Web Server**| Nginx (host-level reverse proxy)                 |
-| **SSL**       | Let's Encrypt (Certbot, wildcard DNS-01)         |
-| **Monitoring**| Sentry, Winston Logger                           |
-
----
-
-## 🧩 Modul API (`/api/v1/`)
-
-| Modul          | Endpoint              | Deskripsi                                    |
-|----------------|-----------------------|----------------------------------------------|
-| Auth           | `/auth`               | Login, register, refresh token, logout       |
-| User           | `/users`              | CRUD user, profil                            |
-| Article        | `/articles`           | CRUD artikel, workflow editorial             |
-| Category       | `/categories`         | Manajemen kategori                           |
-| Site           | `/sites`              | Manajemen multisitus                         |
-| Media          | `/media`              | Upload & manajemen gambar/file               |
-| AI             | `/ai`                 | Rewrite, expand, grammar, readability        |
-| KYC            | `/kyc`                | Verifikasi identitas jurnalis                |
-| Invitation     | `/invitations`        | Undangan user oleh admin                     |
-| Comment        | `/comments`           | Komentar artikel                             |
-| Newsletter     | `/newsletter`         | Subscriber newsletter                        |
-| Advertisement  | `/ads`                | Manajemen iklan per slot                     |
-| Analytics      | `/analytics`          | Page view & statistik konten                 |
-| Notification   | `/notifications`      | Notifikasi in-app                            |
-| Audit          | `/audit`              | Audit log semua aksi editorial               |
-| Admin          | `/admin`              | Panel administrasi superadmin                |
+| Komponen       | Teknologi                                  |
+|----------------|--------------------------------------------|
+| **Monorepo**   | Turborepo + pnpm workspaces                |
+| **Backend**    | Express.js 4, TypeScript, Prisma ORM     |
+| **Frontend**   | Next.js 16, React 18, Tailwind CSS, Zustand |
+| **Database**   | PostgreSQL 15                              |
+| **Cache**      | Redis 7 (ioredis) — rate limiting          |
+| **Search**     | Meilisearch v1.6                           |
+| **AI**         | OpenAI API (GPT-4o default)                |
+| **Auth**       | JWT HttpOnly cookie + CSRF                 |
+| **Container**  | Docker + Docker Compose                    |
+| **Web Server** | Nginx (reverse proxy di VPS)               |
+| **SSL**        | Let's Encrypt (Certbot)                    |
+| **Monitoring** | Sentry, Winston                            |
 
 ---
 
-## 👥 Sistem Role
+## Modul API (`/api/v1/`)
 
-| Role          | Kemampuan                                                                       |
-|---------------|---------------------------------------------------------------------------------|
-| `reader`      | Membaca konten publik, berkomentar                                               |
-| `jurnalis`    | Menulis & submit artikel (perlu KYC approved)                                   |
-| `wapimred`    | Review, approve, reject artikel; kelola kategori & pengaturan site               |
-| `superadmin`  | Akses penuh: semua site, semua user, buat/hapus site                            |
+| Modul          | Endpoint           | Deskripsi                              |
+|----------------|--------------------|----------------------------------------|
+| Auth           | `/auth`            | Login, register, refresh, logout       |
+| User           | `/users`           | CRUD user, profil, heartbeat           |
+| Article        | `/articles`        | CRUD artikel, workflow editorial       |
+| Category       | `/categories`      | Kategori global & per situs            |
+| Site           | `/sites`           | Manajemen multisitus & settings        |
+| Media          | `/media`           | Upload & manajemen file                |
+| AI             | `/ai`              | Rewrite, grammar, layout, quota        |
+| KYC            | `/kyc`             | Verifikasi identitas penulis           |
+| Invitation     | `/invitations`     | Undangan user                          |
+| Comment        | `/comments`        | Komentar artikel                       |
+| Newsletter     | `/newsletter`      | Subscriber                             |
+| Advertisement  | `/ads`             | Paket iklan, booking, slot banner      |
+| Analytics      | `/analytics`       | Page view & statistik                  |
+| Notification   | `/notifications`   | Notifikasi in-app                      |
+| Audit          | `/audit`           | Audit log editorial                    |
+| Admin          | `/admin`           | Panel superadmin                       |
+
+Dokumentasi interaktif: **http://localhost:3001/api-docs** (Swagger).
 
 ---
 
-## 🛡️ Fitur Keamanan
+## Sistem Role
 
-- **JWT Cookie-based Auth** — Token disimpan di HttpOnly cookie, bukan localStorage
-- **CSRF Protection** — Token CSRF untuk semua mutasi (POST/PUT/PATCH/DELETE)
-- **Rate Limiting** — Redis-backed: 100 req/menit API umum, 10 req/menit auth
-- **Helmet.js** — Security headers (HSTS, XSS, frame options)
-- **Input Sanitization** — DOMPurify untuk semua input user
-- **KYC Lock** — Akun terkunci sementara setelah 3x gagal verifikasi
-- **Soft Delete** — Data tidak dihapus permanen, hanya ditandai `deletedAt`
-- **AI Quota System** — Daily limit & monthly budget per user/role
+| Role           | Kemampuan utama |
+|----------------|-----------------|
+| `reader`       | Membaca konten publik, berkomentar |
+| `reporter`     | Menulis & submit artikel (perlu KYC disetujui) |
+| `kontributor`  | Kontributor konten (KYC & gate serupa reporter) |
+| `wapimred`     | Review/approve artikel, kategori, pengaturan situs |
+| `advertiser`   | Memesan & mengelola kampanye iklan (dashboard ads) |
+| `superadmin`   | Akses penuh semua situs & user |
+
+> Role lama `jurnalis` telah dimigrasi ke `reporter` (lihat migrasi Prisma).
 
 ---
 
-## 🚀 Cara Menjalankan Lokal (Development)
+## Halaman Publik (Frontend)
+
+| URL | Komponen | Keterangan |
+|-----|----------|------------|
+| `/[site]` | `SiteHomePage` | Homepage edisi |
+| `/[site]/artikel/[slug]` | — | Halaman baca artikel |
+| `/[site]/kebijakan-privasi` | `LegalStandardPage` | Kebijakan privasi (CMS `privacyPolicy`) |
+| `/[site]/p/about`, `ethics`, `editorial`, `terms`, `media-siber` | `LegalStandardPage` | Dokumen legal dari site settings |
+| `/[site]/p/ads` | `AdsMarketingPage` | Landing iklan untuk calon pengiklan |
+| `/[site]/dashboard/ads` | — | Panel operasional iklan (login) |
+
+Shell bersama halaman informasi: **`PublicInfoShell`** (`components/layout/`). Dokumen legal memakai **`components/legal/`**; marketing iklan memakai **`components/marketing/`**.
+
+---
+
+## Fitur Keamanan
+
+- **JWT cookie-based** — Token di HttpOnly cookie, bukan `localStorage`
+- **CSRF** — Token CSRF pada mutasi API (kecuali beberapa route auth)
+- **Rate limiting (Redis)** — API umum: **1000 req/menit**; auth: **30 percobaan / 15 menit** (hanya yang gagal)
+- **Helmet.js** — Security headers
+- **Sanitasi input** — DOMPurify pada body request
+- **KYC lock** — Lock sementara setelah percobaan verifikasi gagal berulang
+- **Soft delete** — `deletedAt` pada entitas utama
+- **Kuota AI** — Limit harian & budget bulanan per user/role
+
+Ringkasan audit lengkap: [AUDIT_SISTEM.md](./AUDIT_SISTEM.md).
+
+---
+
+## Menjalankan Lokal
 
 ### Prasyarat
 
 - Node.js 20+
 - pnpm 10+
-- PostgreSQL 15 (native atau Docker)
-- Redis 7 (opsional untuk dev, required untuk rate-limiting)
-- Meilisearch (opsional untuk dev)
+- PostgreSQL 15
+- Redis 7 (disarankan untuk rate limit production-like)
+- Meilisearch (opsional)
 
-### Langkah Setup
+### Setup
 
 ```bash
-# 1. Clone repository
 git clone https://github.com/sabdakarya77-spec/beritakarya.git
 cd beritakarya
 
-# 2. Install dependencies
 pnpm install
 
-# 3. Setup environment variables
 cp apps/api/.env.example apps/api/.env
 cp apps/web/.env.example apps/web/.env.local
-# Edit kedua file tersebut sesuai konfigurasi lokal Anda
+# Edit: minimal DATABASE_URL, JWT_SECRET (api) dan NEXT_PUBLIC_API_URL (web)
 
-# 4. Generate Prisma client
 pnpm --filter @beritakarya/api run db:generate
-
-# 5. Jalankan migrasi database
 pnpm --filter @beritakarya/api run db:migrate
+pnpm --filter @beritakarya/api run db:seed   # opsional
 
-# 6. (Opsional) Seed data awal
-pnpm --filter @beritakarya/api run db:seed
-
-# 7. Jalankan semua aplikasi
 pnpm dev
 ```
 
-Aplikasi akan berjalan di:
-- **Frontend (Web):** http://localhost:3000
-- **Backend (API):** http://localhost:3001
-- **API Docs (Swagger):** http://localhost:3001/api-docs
+| Layanan | URL |
+|---------|-----|
+| Web     | http://localhost:3000 |
+| API     | http://localhost:3001 |
+| Swagger | http://localhost:3001/api-docs |
 
 ---
 
-## 📦 Scripts Tersedia
+## Scripts
 
 ### Root (Turborepo)
 
-| Script         | Deskripsi                                  |
-|----------------|--------------------------------------------|
-| `pnpm dev`     | Jalankan semua apps dalam mode development |
-| `pnpm build`   | Build semua apps untuk production          |
-| `pnpm test`    | Jalankan semua test suite                  |
-| `pnpm lint`    | Lint semua apps                            |
-| `pnpm type-check` | TypeScript check semua apps            |
+| Script            | Deskripsi                    |
+|-------------------|------------------------------|
+| `pnpm dev`        | Dev semua apps               |
+| `pnpm build`      | Build production             |
+| `pnpm test`       | Vitest (api, web, utils)     |
+| `pnpm lint`       | ESLint                       |
+| `pnpm type-check` | `tsc --noEmit`               |
 
 ### API (`apps/api`)
 
-| Script                    | Deskripsi                          |
-|---------------------------|------------------------------------|
-| `pnpm run db:generate`    | Generate Prisma Client             |
-| `pnpm run db:migrate`     | Buat & jalankan migrasi baru (dev) |
-| `pnpm run db:migrate:deploy` | Deploy migrasi (production)    |
-| `pnpm run db:studio`      | Buka Prisma Studio (DB GUI)        |
-| `pnpm run db:seed`        | Seed data awal                     |
+| Script                 | Deskripsi                |
+|------------------------|--------------------------|
+| `db:generate`          | Generate Prisma Client   |
+| `db:migrate`           | Migrasi dev              |
+| `db:migrate:deploy`    | Migrasi production       |
+| `db:studio`            | Prisma Studio            |
+| `db:seed`              | Seed data                |
 
----
-
-## 🗄️ Skema Database
-
-Database menggunakan **PostgreSQL 15** dengan Prisma ORM. Model utama:
-
-- **Site** — Entitas situs/publikasi
-- **User** — Pengguna dengan role dan data KYC
-- **Article** — Artikel dengan workflow editorial (draft → review → published)
-- **ArticleVersion** — Riwayat versi artikel
-- **Category** — Kategori global & per-situs
-- **RefreshToken / BlacklistedToken** — Manajemen session
-- **KYCViewLog** — Audit trail akses dokumen KYC
-- **AIUsage** — Tracking penggunaan fitur AI
-- **RoleQuota** — Kuota AI per role
-- **AuditLog** — Log semua aksi editorial
-- **Notification** — Notifikasi in-app
-- **PageView** — Analitik halaman
-- **Media** — Manajemen file/gambar
-- **Advertisement** — Iklan per slot
-- **NewsletterSubscriber** — Subscriber newsletter
-- **Invitation** — Sistem undangan user
-- **Comment** — Komentar artikel dengan nested replies
-
----
-
-## 📂 Environment Variables
-
-Lihat file contoh untuk masing-masing aplikasi:
-
-- **API:** `apps/api/.env.example`
-- **Web:** `apps/web/.env.example`
-- **Production (VPS):** `.env.production.example`
-- **Docker (infra):** `infra/docker/.env` _(di-gitignore, buat manual di VPS)_
-
----
-
-## 🔄 Alur Deployment Production
-
-Untuk panduan deployment lengkap ke VPS, lihat:
-
-👉 **[VPS_DEPLOYMENT_GUIDE.md](./VPS_DEPLOYMENT_GUIDE.md)**
-
----
-
-## 🧪 Testing
+### Web — Playwright (layout E2E)
 
 ```bash
-# Jalankan semua test
-pnpm test
-
-# Test hanya API
-pnpm --filter @beritakarya/api test
+pnpm --filter @beritakarya/web exec playwright test
 ```
-
-Test menggunakan **Vitest** dengan **Supertest** untuk integration test.
 
 ---
 
-## 📐 Layout System & Container Component
+## Environment Variables
 
-**Phase 2 Migration Complete (21 Mei 2026)**
+| File | Dipakai oleh |
+|------|----------------|
+| `apps/api/.env.example` | API + Prisma |
+| `apps/web/.env.example` | Next.js (utama: `NEXT_PUBLIC_*` untuk dev lokal) |
+| `.env.production.example` | Referensi VPS |
+| `infra/docker/.env` | Docker di server _(buat manual, di-gitignore)_ |
 
-Kami telah mengimplementasikan sistem layout terstandar yang memastikan konsistensi lintas semua halaman publik. Fitur utama:
+---
 
-- **Container Component** — Komponen layout reusable dengan padding responsif
-- **Dual-Width Strategy** — 760px untuk konten teks, 1280px untuk media
-- **Bleed Support** — Dukungan edge-to-edge untuk hero sections
-- **Design Tokens** — CSS custom properties untuk maintainability
+## Database (ringkas)
 
-### Usage
+PostgreSQL 15 + Prisma. Model utama: **Site**, **User**, **Article**, **ArticleVersion**, **Category**, **Media**, **Advertisement** / **AdBooking**, **Comment**, **AuditLog**, **Notification**, **PageView**, **AIUsage**, **Invitation**, **NewsletterSubscriber**, dan tabel session/KYC.
+
+Workflow artikel: `draft` → `submitted` → `review` → `revision` → `approved` → `scheduled` → `published` (atau `archived` / `rejected`).
+
+---
+
+## Deployment
+
+Panduan VPS: **[VPS_DEPLOYMENT_GUIDE.md](./VPS_DEPLOYMENT_GUIDE.md)**
+
+GitHub Actions:
+
+- **`ci.yml`** — lint, type-check, build, `pnpm audit` (level high)
+- **`deploy.yml`** — test + build & push image Docker ke GHCR (job deploy VPS dapat dinonaktifkan)
+
+Frontend juga dapat di-deploy ke **Vercel** (`apps/web/vercel.json`).
+
+---
+
+## Testing
+
+```bash
+pnpm test                              # semua paket
+pnpm --filter @beritakarya/api test    # API (Vitest + Supertest)
+pnpm --filter @beritakarya/web test    # Web (Vitest)
+```
+
+---
+
+## Design System & Dokumentasi
+
+### Layout & halaman publik
+
+- [Layout System](./docs/design-system/layout-system.md) — `Container`, token, bleed
+- [Homepage Spec](./docs/design-system/homepage-spec.md)
+- [Article Page Spec](./docs/design-system/article-spec.md)
+- [Legal Public Pages](./docs/design-system/legal-public-page-spec.md)
+- [Ads Public Page](./docs/design-system/ads-public-page-spec.md)
+
+### Contoh `Container`
 
 ```tsx
 import { Container } from '@/components/layout/Container'
 
-// Standard width (1280px max)
-<Container>
-  <main>Page content</main>
-</Container>
-
-// Reading-optimized (760px max)
-<Container size="content">
-  <article>Article body</article>
-</Container>
-
-// Full-bleed sections
-<Container bleed>
-  <section className="bg-cover">Hero</section>
-</Container>
+<Container>{/* max ~1160px */}</Container>
+<Container size="content">{/* ~760px untuk baca */}</Container>
+<Container bleed>{/* edge-to-edge */}</Container>
 ```
 
-### Documentation
-- 📖 [Layout System Guide](./docs/design-system/layout-system.md)
-- ✅ [Migration Summary](./PHASE_2_MIGRATION_SUMMARY.md)
-- 🚀 [Deployment Checklist](./DEPLOYMENT_CHECKLIST_PHASE_2.md)
+### Contoh halaman legal
+
+```tsx
+import { LegalStandardPage } from '@/components/legal'
+
+<LegalStandardPage
+  siteConfig={siteConfig}
+  title="Ketentuan Penggunaan"
+  intro="…"
+  content={htmlFromCms}
+/>
+```
+
+### Roadmap & audit
+
+- [UI/UX Roadmap (checklist S-tier)](./docs/UI_UX_ROADMAP.md)
+- [Audit Sistem](./AUDIT_SISTEM.md)
 
 ---
 
-## 🔍 Visual Regression Testing
-
-Untuk memastikan konsistensi layout, kami menggunakan Playwright:
+## Backup Database
 
 ```bash
-# Install E2E testing dependencies
-pnpm --filter @beritakarya/web add -D @playwright/test
-
-# Run visual regression tests
-pnpm --filter @beritakarya/web e2e
-```
-
-Test suite mencakup:
-- Horizontal overflow checks pada semua viewport
-- Container padding consistency
-- Bleed section validation
-- CLS (Cumulative Layout Shift) monitoring
-- Snapshot testing untuk baseline layouts
-
----
-
-## 📋 Backup Database
-
-Script backup tersedia di `infra/scripts/backup-database.sh`.
-
-```bash
-# Jalankan manual
 bash infra/scripts/backup-database.sh
 ```
 
-Backup disimpan di `/var/backups/beritakarya/` dan dirotasi otomatis setiap 7 hari.
+Backup di `/var/backups/beritakarya/`, rotasi 7 hari.
 
 ---
 
-## 📄 Lisensi
+## Lisensi
 
-Project ini bersifat proprietary dan dikembangkan untuk BeritaKarya.
+Proprietary — dikembangkan untuk BeritaKarya.

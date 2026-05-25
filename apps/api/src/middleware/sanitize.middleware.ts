@@ -5,10 +5,10 @@ import DOMPurify from 'dompurify'
 const { window } = new JSDOM('')
 const purify = DOMPurify(window as any)
 
-// Config: izinkan tag inline saja (bold, italic, link)
+// Config: izinkan tag sederhana untuk rich text legal/settings
 const PURIFY_CONFIG = {
-  ALLOWED_TAGS: ['b', 'strong', 'i', 'em', 'u', 'a', 'br'],
-  ALLOWED_ATTR: ['href', 'target', 'rel'],
+  ALLOWED_TAGS: ['b', 'strong', 'i', 'em', 'u', 'a', 'br', 'p', 'div', 'h2', 'h3', 'ul', 'ol', 'li'],
+  ALLOWED_ATTR: ['href', 'target', 'rel', 'align'],
   FORCE_BODY: true
 }
 
