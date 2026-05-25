@@ -47,10 +47,14 @@ export function middleware(req: NextRequest) {
 
   const url = req.nextUrl.clone()
 
-  // --- Auth Guard ---
+  // Guard both `/dashboard` and `/{site}/dashboard` URLs before they reach the app.
   const token = req.cookies.get('accessToken')?.value
-  const isDashboardRoute = url.pathname.startsWith('/dashboard')
-  
+  const pathname = url.pathname
+  const isDashboardRoute =
+    pathname === '/dashboard' ||
+    pathname.startsWith('/dashboard/') ||
+    /^\/[a-zA-Z0-9-]+\/dashboard(?:\/|$)/.test(pathname)
+
   if (isDashboardRoute && !token) {
     const loginUrl = new URL('/login', req.url)
     return NextResponse.redirect(loginUrl)

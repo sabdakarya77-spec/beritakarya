@@ -18,9 +18,18 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
     },
   ],
-  webServer: {
-    command: 'pnpm --filter @beritakarya/web dev',
-    url: process.env.NEXT_PUBLIC_URL || 'http://localhost:3000',
-    reuseExistingServer: !process.env.CI,
-  },
+  webServer: [
+    {
+      command: 'pnpm --filter @beritakarya/api dev',
+      url: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/health`,
+      reuseExistingServer: !process.env.CI,
+      timeout: 120 * 1000,
+    },
+    {
+      command: 'pnpm --filter @beritakarya/web dev',
+      url: process.env.NEXT_PUBLIC_URL || 'http://localhost:3000',
+      reuseExistingServer: !process.env.CI,
+      timeout: 120 * 1000,
+    },
+  ],
 })

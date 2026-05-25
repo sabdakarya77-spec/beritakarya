@@ -16,7 +16,7 @@ export async function fetchSiteSettings(site: string) {
   try {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
     const res = await fetch(`${apiUrl}/api/v1/sites/settings?site=${site}`, {
-      next: { revalidate: 3600 },
+      cache: 'no-store',
     })
     if (!res.ok) return null
     const json = await res.json()

@@ -168,7 +168,7 @@ app.use('/api/v1/auth', authLimiter, authRouter)
 app.use('/api/v1/users', csrfProtection, userRouter)
 app.use('/api/v1/articles', csrfProtection, articleRouter)
 app.use('/api/v1/media', csrfProtection, mediaRouter)
-app.use('/api/v1/ai', aiRouter)
+app.use('/api/v1/ai', csrfProtection, aiRouter)
 
 // Category routes - using functions directly (not routers)
 // GET: public (anyone can read categories)

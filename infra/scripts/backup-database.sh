@@ -7,11 +7,16 @@ DATE=$(date +%Y%m%d_%H%M%S)
 BACKUP_DIR="/var/backups/beritakarya"
 BACKUP_FILE="$BACKUP_DIR/beritakarya_backup_$DATE.sql"
 
+# Container name matches docker-compose.backend.yml (beritakarya_db)
+DB_CONTAINER="${DB_CONTAINER:-beritakarya_db}"
+DB_NAME="${DB_NAME:-beritakarya_prod}"
+DB_USER="${DB_USER:-beritakarya}"
+
 # Create backup directory if not exists
 mkdir -p $BACKUP_DIR
 
 # Backup database
-docker exec beritakarya_postgres pg_dump -U beritakarya beritakarya_prod > $BACKUP_FILE
+docker exec "$DB_CONTAINER" pg_dump -U "$DB_USER" "$DB_NAME" > "$BACKUP_FILE"
 
 # Compress backup
 gzip $BACKUP_FILE

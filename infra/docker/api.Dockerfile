@@ -61,6 +61,6 @@ EXPOSE 3001
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
   CMD curl -f http://localhost:3001/health || exit 1
 
-# Jalankan dari folder apps/api menggunakan pnpm
+# Jalankan dari folder apps/api menggunakan output build TypeScript yang aktual
 WORKDIR /app/apps/api
-CMD ["sh", "-c", "pnpm run db:migrate:deploy && node dist/apps/api/src/main.js"]
+CMD ["sh", "-c", "pnpm run db:migrate:deploy && node dist/main.js"]

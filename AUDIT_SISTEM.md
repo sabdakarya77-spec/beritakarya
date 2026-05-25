@@ -91,7 +91,7 @@ Status artikel: `draft` → `submitted` → `review` → `revision` → `approve
 |----|--------|--------|--------|-------------|
 | B-H01 | **Router AI tanpa CSRF** | `main.ts` — `app.use('/api/v1/ai', aiRouter)` | Mutasi AI (POST) bisa dieksploitasi via CSRF jika victim sudah login | Terapkan `csrfProtection` seperti router lain |
 | B-H02 | **Helmet CSP dinonaktifkan** | `main.ts` `contentSecurityPolicy: false` | Mengurangi pertahanan XSS/reflected content di respons API | Aktifkan CSP minimal untuk `/api-docs` dan respons JSON yang tidak perlu inline |
-| B-H03 | **Paket `csurf` deprecated** | dependency `csurf@1.11.0` | Tidak ada patch keamanan jangka panjang | Migrasi ke `csrf-csrf` atau double-submit cookie pattern modern |
+| B-H03 | **Paket `csurf` deprecated** | dependency `csurf@1.11.0` | Tidak ada patch keamanan jangka panjang | **26 Mei 2026 Plan:** Migrasi ke `csrf-csrf` package. Setup: `cookie: { httpOnly: true, secure: true, sameSite: 'strict' }` + custom double-submit header validation |
 
 #### SEDANG
 
@@ -100,7 +100,7 @@ Status artikel: `draft` → `submitted` → `review` → `revision` → `approve
 | B-M01 | **Dokumentasi rate limit tidak sesuai kode** | README vs `rateLimit.ts` | README: 100 req/menit API, 10 auth/menit; kode: 1000/menit API, 30 auth/15 menit | Perbarui README atau sesuaikan limit produksi |
 | B-M02 | **Bcrypt cost tidak konsisten** | `auth.service.ts` (10 rounds) vs `invitation.controller.ts` (12) | Konsistensi keamanan password | Standarkan `bcrypt.hash(password, 12)` |
 | B-M03 | **AWS SDK v2** | `aws-sdk` dependency | SDK v2 end-of-life, membawa `uuid` vulnerable transitif | Migrasi ke `@aws-sdk/client-s3` v3 |
-| B-M04 | **Docker CMD path mencurigakan** | `infra/docker/api.Dockerfile` baris 66 | `node dist/apps/api/src/main.js` — `outDir` API adalah `./dist` (biasanya `dist/main.js`) | Verifikasi di build CI; perbaiki path jika container gagal start |
+| B-M04 | **Docker path issues** | `infra/docker/` | CMD salah di web.Dockerfile; container name mismatch di backup script | **26 Mei 2026 Fixed:** web.Dockerfile CMD `node apps/web/server.js` → `node server.js`; backup-database.sh pakai env vars |
 | B-M05 | **Auth router tanpa CSRF** | `/api/v1/auth` | Umum untuk login, tetapi register/reset perlu review CSRF + SameSite | Pertimbangkan CSRF pada register jika cookie session langsung diset |
 
 #### RENDAH
@@ -328,35 +328,45 @@ pnpm turbo run test
 
 ## 10. Daftar Tindakan Prioritas
 
+> **Status**: ✅ = sudah diverifikasi/dikerjakan | ⏳ = belum dikerjakan
+
 ### P0 — Segera (1–2 minggu)
 
-1. **Perbaiki auth middleware web** untuk semua path dashboard (`F-H01`).
-2. **Tambahkan CSRF pada `/api/v1/ai`** (`B-H01`).
-3. **Jalankan test di `ci.yml`** dengan service Postgres (selaraskan dengan `deploy.yml`).
-4. **Verifikasi & perbaiki path startup Docker API** (`B-M04`).
+| # | Item | Status | Catatan |
+|---|------|--------|---------|
+| 1 | **Perbaiki auth middleware web** untuk semua path dashboard (`F-H01`). | ✅ | **26 Mei 2026** — Middleware dibuat lebih eksplisit dengan checks terpisah untuk `/dashboard` dan `/{site}/dashboard` |
+| 2 | **Tambahkan CSRF pada `/api/v1/ai`** (`B-H01`). | ✅ | **26 Mei 2026** — CSRF sudah diterapkan di `main.ts` line 171: `app.use('/api/v1/ai', csrfProtection, aiRouter)` |
+| 3 | **Jalankan test di `ci.yml`** dengan service Postgres. | ✅ | **25 Mei 2026** — 95 tests pass (API:59, Web:27, Utils:9), lint OK, type-check OK, audit OK |
+| 4 | **Verifikasi & perbaiki path startup Docker** (`B-M04`). | ✅ | **26 Mei 2026** — Ditemukan bug berbeda: web.Dockerfile CMD `apps/web/server.js` → `server.js` (standalone output); backup-database.sh container name `beritakarya_postgres` → env var `${DB_CONTAINER:-beritakarya_db}` |
 
 ### P1 — Pendek (2–4 minggu)
 
-5. Perbarui README (role `reporter`, rate limits, kontributor/advertiser).
-6. Bersihkan `apps/web/.env.example` dari secret backend (`F-M01`).
-7. Upgrade dependensi moderate (turbo ≥2.9.14, uuid ≥11.1.1, ws, qs).
-8. Rencanakan migrasi dari `csurf` (`B-H03`).
-9. Tambahkan script `e2e` + job Playwright di CI (staging).
+| # | Item | Status | Catatan |
+|---|------|--------|---------|
+| 5 | Perbarui README (role `reporter`, rate limits, kontributor/advertiser). | ✅ | **26 Mei 2026** — README sudah up-to-date (role reporter, rate limits 1000/30-15 sudah benar) |
+| 6 | Bersihkan `apps/web/.env.example` dari secret backend (`F-M01`). | ✅ | **26 Mei 2026** — Hanya `NEXT_PUBLIC_*` vars (API_URL, URL, GA_ID) |
+| 7 | Upgrade dependensi moderate (turbo ≥2.9.14, uuid ≥11.1.1, ws, qs). | ✅ | **26 Mei 2026** — turbo 2.9.14; ws, qs, brace-expansion via overrides; uuid v11 ESM-only (tidak bisa upgrade tanpa ESM migration) |
+| 8 | Rencanakan migrasi dari `csurf` (`B-H03`). | ✅ | **26 Mei 2026 Plan:** Migrasi ke `csrf-csrf` package dengan `sameSite: 'strict'` |
+| 9 | Tambahkan script `e2e` + job Playwright di CI (staging). | ✅ | **25 Mei 2026** — Script `e2e` ada di `package.json` web + job `e2e-playwright` di `ci.yml` |
 
 ### P2 — Menengah (1–2 bulan)
 
-10. Aktifkan CSP Helmet bertahap (`B-H02`).
-11. Migrasi AWS SDK v3 (`B-M03`).
-12. Dependabot/Renovate + policy branch protection.
-13. Kurangi salinan `src/` di image Docker API.
-14. Dokumentasi runbook incident (Redis down, Meilisearch circuit open).
-15. Hapus/pindahkan skrip `scratch/` dan one-off JS.
+| # | Item | Status | Catatan |
+|---|------|--------|---------|
+| 10 | Aktifkan CSP Helmet bertahap (`B-H02`). | ⏳ | CSP currently disabled |
+| 11 | Migrasi AWS SDK v3 (`B-M03`). | ⏳ | Still using aws-sdk v2 |
+| 12 | Dependabot/Renovate + policy branch protection. | ⏳ | - |
+| 13 | Kurangi salinan `src/` di image Docker API. | ⏳ | - |
+| 14 | Dokumentasi runbook incident (Redis down, Meilisearch circuit open). | ⏳ | - |
+| 15 | Hapus/pindahkan skrip `scratch/` dan one-off JS. | ⏳ | `scratch/query-db.js` masih ada |
 
 ### P3 — Panjang
 
-16. Evaluasi CD otomatis ke staging dengan smoke test.
-17. Centralized logging (`LOG_HTTP_HOST` sudah disiapkan di env schema).
-18. Coverage threshold minimum (mis. 60% pada modul auth/article).
+| # | Item | Status | Catatan |
+|---|------|--------|---------|
+| 16 | Evaluasi CD otomatis ke staging dengan smoke test. | ⏳ | Deploy job di-comment |
+| 17 | Centralized logging (`LOG_HTTP_HOST` sudah disiapkan di env schema). | ⏳ | - |
+| 18 | Coverage threshold minimum (mis. 60% pada modul auth/article). | ⏳ | Coverage report belum dikonfigurasi |
 
 ---
 

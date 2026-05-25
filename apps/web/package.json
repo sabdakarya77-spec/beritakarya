@@ -8,6 +8,7 @@
     "lint": "cross-env ESLINT_USE_FLAT_CONFIG=false eslint . --ext .ts,.tsx,.js,.jsx",
     "type-check": "tsc --noEmit",
     "test": "vitest run",
+    "e2e": "playwright test",
     "analyze": "ANALYZE=true next build"
   },
   "dependencies": {
