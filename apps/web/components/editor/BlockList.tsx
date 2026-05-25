@@ -1,31 +1,30 @@
 'use client'
 import { useEditorStore } from '../../store/editorStore'
 import { BlockWrapper } from './BlockWrapper'
-import { ParagraphBlock } from './blocks/ParagraphBlock'
-import { HeadingBlock } from './blocks/HeadingBlock'
-import { QuoteBlock } from './blocks/QuoteBlock'
-import { ImageBlock } from './blocks/ImageBlock'
-import { EmbedBlock } from './blocks/EmbedBlock'
-import { ImageGridBlock } from './blocks/ImageGridBlock'
-import { GalleryBlock } from './blocks/GalleryBlock'
-import { ListBlock } from './blocks/ListBlock'
-import { CalloutBlock } from './blocks/CalloutBlock'
-import { MediaTextBlock } from './blocks/MediaTextBlock'
-import type { Block } from '@beritakarya/types'
+import { BlockRenderer } from './BlockRegistry'
+import { FileText, Plus } from 'lucide-react'
 
 export function BlockList() {
   const { blocks } = useEditorStore()
 
   if (!blocks.length) {
     return (
-      <p className="text-gray-300 text-sm py-4 text-center">
-        Belum ada blok. Klik + untuk menambah konten.
-      </p>
+      <div className="flex flex-col items-center justify-center py-20 px-4 border-2 border-dashed border-gray-100 rounded-2xl bg-gray-50/30 text-center animate-in fade-in duration-500">
+        <div className="w-16 h-16 bg-white rounded-2xl shadow-sm border border-gray-100 flex items-center justify-center mb-4 text-gray-300">
+          <FileText size={32} />
+        </div>
+        <div className="max-w-[280px] space-y-2">
+          <h3 className="text-sm font-semibold text-gray-600">Mulai menulis artikel</h3>
+          <p className="text-xs text-gray-400 leading-relaxed">
+            Kanvas Anda masih kosong. Tekan <kbd className="px-1.5 py-0.5 rounded border border-gray-200 bg-white text-[10px] font-sans shadow-sm">Enter</kbd> atau klik tombol <span className="inline-flex items-center gap-0.5 text-blue-500 font-medium"><Plus size={10} /> Tambah Blok</span> untuk memulai.
+          </p>
+        </div>
+      </div>
     )
   }
 
   return (
-    <div className="space-y-1">
+    <div className="space-y-1 pb-32">
       {blocks.map((block, idx) => (
         <BlockWrapper key={block.id} block={block} index={idx}>
           <BlockRenderer block={block} />
@@ -33,25 +32,4 @@ export function BlockList() {
       ))}
     </div>
   )
-}
-
-function BlockRenderer({ block }: { block: Block }) {
-  switch (block.type) {
-    case 'paragraph': return <ParagraphBlock block={block} />
-    case 'heading': return <HeadingBlock block={block} />
-    case 'quote': return <QuoteBlock block={block} />
-    case 'image': return <ImageBlock block={block} />
-    case 'imageGrid': return <ImageGridBlock block={block} />
-    case 'gallery': return <GalleryBlock block={block} />
-    case 'list': return <ListBlock block={block} />
-    case 'callout': return <CalloutBlock block={block} />
-    case 'embed': return <EmbedBlock block={block} />
-    case 'mediaText': return <MediaTextBlock block={block} />
-    default:
-      return (
-        <div className="text-xs text-gray-400 py-2 px-3 border rounded bg-gray-50">
-          Blok tipe &quot;{(block as any).type}&quot; belum didukung
-        </div>
-      )
-  }
 }

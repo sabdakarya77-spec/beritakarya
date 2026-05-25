@@ -1,8 +1,9 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useCaption } from '../../../hooks/useAI'
 import { Upload, Copy, Check } from 'lucide-react'
 import { useKeyboardShortcuts } from '../../../hooks/useKeyboardShortcuts'
+import { useEditorStore } from '../../../store/editorStore'
 
 interface Props {
   model?: string
@@ -10,12 +11,26 @@ interface Props {
 }
 
 export function ImageTab({ model = 'gpt-4o', onTrigger }: Props) {
+  const { blocks, activeBlockId, featuredImage } = useEditorStore()
   const [imageUrl, setImageUrl] = useState('')
   const [altText, setAltText] = useState('')
   const [uploadMode, setUploadMode] = useState<'url' | 'preview'>('url')
   const [copied, setCopied] = useState<'caption' | 'alt' | null>(null)
   
   const [captionState, generateCaption] = useCaption(model)
+
+  useEffect(() => {
+    const activeBlock = blocks.find((block) => block.id === activeBlockId)
+    if (activeBlock?.type === 'image' && activeBlock.url) {
+      setImageUrl(activeBlock.url)
+      setAltText(activeBlock.alt || '')
+      return
+    }
+
+    if (featuredImage) {
+      setImageUrl((current) => current || featuredImage)
+    }
+  }, [activeBlockId, blocks, featuredImage])
   
   const handleGenerate = async () => {
     if (!imageUrl) return

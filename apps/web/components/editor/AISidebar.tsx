@@ -1,152 +1,189 @@
 'use client'
-import { useState, useEffect, useRef } from 'react'
+
+import { useEffect, useMemo, useState } from 'react'
+import { Sparkles, ChevronDown, Wand2, ScanSearch, CheckCheck, LayoutTemplate, Image as ImageIcon, SearchCheck } from 'lucide-react'
 import { WriteTab } from './ai/WriteTab'
 import { OptimizeTab } from './ai/OptimizeTab'
 import { ValidateTab } from './ai/ValidateTab'
 import { LayoutTab } from './ai/LayoutTab'
 import { ImageTab } from './ai/ImageTab'
 import { SEOAuditTab } from './ai/SEOAuditTab'
+import { useEditorStore } from '../../store/editorStore'
+import { cn } from '../../lib/utils'
 
 type Tab = 'write' | 'optimize' | 'validate' | 'seo' | 'layout' | 'image'
 
-const TABS: { id: Tab; label: string }[] = [
-  { id: 'write', label: 'Tulis' },
-  { id: 'optimize', label: 'Optimasi' },
-  { id: 'validate', label: 'Validasi' },
-  { id: 'seo', label: 'SEO Audit' },
-  { id: 'layout', label: 'Layout' },
-  { id: 'image', label: 'Gambar' }
+const TABS: { id: Tab; label: string; icon: typeof Sparkles }[] = [
+  { id: 'write', label: 'Tulis', icon: Wand2 },
+  { id: 'optimize', label: 'Optimasi', icon: ScanSearch },
+  { id: 'validate', label: 'Validasi', icon: CheckCheck },
+  { id: 'seo', label: 'SEO Audit', icon: SearchCheck },
+  { id: 'layout', label: 'Layout', icon: LayoutTemplate },
+  { id: 'image', label: 'Gambar', icon: ImageIcon }
 ]
 
-import { Sparkles, X, ChevronDown } from 'lucide-react'
-import { cn } from '../../lib/utils'
-
 const AI_MODELS = [
-  { value: 'gpt-4o', label: 'GPT-4o (Best)', price: '$$$' },
-  { value: 'gpt-4-turbo', label: 'GPT-4 Turbo (Balanced)', price: '$$' },
-  { value: 'gpt-3.5-turbo', label: 'GPT-3.5 Turbo (Fast)', price: '$' }
+  { value: 'gpt-4o', label: 'GPT-4o', price: 'Premium', hint: 'Kualitas terbaik untuk artikel penting' },
+  { value: 'gpt-4-turbo', label: 'GPT-4 Turbo', price: 'Seimbang', hint: 'Cepat dan tetap akurat untuk workflow harian' },
+  { value: 'gpt-3.5-turbo', label: 'GPT-3.5 Turbo', price: 'Hemat', hint: 'Cocok untuk draft cepat dan eksplorasi awal' }
 ]
 
 export function AISidebar() {
-  const [open, setOpen] = useState(false)
+  const { blocks, activeBlockId } = useEditorStore()
   const [tab, setTab] = useState<Tab>('write')
   const [selectedModel, setSelectedModel] = useState('gpt-4o')
-  const [showShortcuts, setShowShortcuts] = useState(false)
-  const sidebarRef = useRef<HTMLDivElement>(null)
-  
-  // Load saved model preference from localStorage
+
   useEffect(() => {
     const saved = localStorage.getItem('ai-model')
     if (saved) setSelectedModel(saved)
   }, [])
-  
-  const handleModelChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const model = e.target.value
+
+  const activeBlock = useMemo(
+    () => blocks.find((block) => block.id === activeBlockId) ?? null,
+    [activeBlockId, blocks]
+  )
+
+  const activeBlockLabel = useMemo(() => {
+    if (!activeBlock) return 'Belum ada blok aktif'
+    const labels: Record<string, string> = {
+      paragraph: 'Paragraf',
+      heading: 'Subjudul',
+      quote: 'Kutipan',
+      image: 'Gambar',
+      imageGrid: 'Grid Gambar',
+      gallery: 'Galeri',
+      list: 'Daftar',
+      callout: 'Highlight',
+      embed: 'Embed',
+      mediaText: 'Media & Teks'
+    }
+    return labels[activeBlock.type] || activeBlock.type
+  }, [activeBlock])
+
+  const handleModelChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const model = event.target.value
     setSelectedModel(model)
     localStorage.setItem('ai-model', model)
   }
 
-  if (!open) {
-    return (
-      <button
-        onClick={() => setOpen(true)}
-        className="fixed right-6 bottom-6 text-[10px] font-black uppercase tracking-[0.2em] px-6 py-3.5 rounded-xl shadow-2xl shadow-black/40 flex items-center gap-3 transition-all duration-300 z-40 border border-white/10 hover:bg-brand-red hover:scale-105 active:scale-95 group"
-        style={{ backgroundColor: '#0f172a', color: '#ffffff' }}
-      >
-        <Sparkles size={14} className="text-amber-400 group-hover:text-white" />
-        <span className="text-white">Asisten AI</span>
-      </button>
-    )
-  }
+  const selectedModelMeta = AI_MODELS.find((model) => model.value === selectedModel) ?? AI_MODELS[0]
 
   return (
-    <div className="fixed right-0 top-0 h-full w-96 bg-white dark:bg-[#090e18] border-l border-gray-100 dark:border-white/5 shadow-[-20px_0_50px_rgba(0,0,0,0.05)] dark:shadow-[-20px_0_50px_rgba(0,0,0,0.3)] flex flex-col z-[60] animate-fade-in text-gray-900 dark:text-gray-100">
-      {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-gray-50 dark:border-white/5 bg-brand-surface dark:bg-[#0d1525]">
-        <div className="flex items-center gap-2">
-          <Sparkles size={18} className="text-brand-red" />
-          <span className="text-[11px] font-semibold uppercase tracking-wide text-brand-black dark:text-white">Asisten AI Redaksi</span>
-        </div>
-        <button
-          onClick={() => setOpen(false)}
-          className="p-2 text-gray-400 hover:text-brand-black dark:hover:text-white transition-colors"
-        >
-          <X size={20} />
-        </button>
-      </div>
-      
-      {/* Model Selector */}
-      <div className="px-6 py-3 border-b border-gray-50 dark:border-white/5 bg-gray-25 dark:bg-[#070b13]">
-        <div className="flex items-center gap-2">
-          <label className="text-xs font-medium text-gray-500 dark:text-gray-400 shrink-0">Model:</label>
-          <div className="relative flex-1">
-            <select
-              value={selectedModel}
-              onChange={handleModelChange}
-              className="w-full text-xs border border-gray-200 dark:border-white/5 rounded-lg px-2.5 py-1.5 pr-8 outline-none focus:border-amber-400 appearance-none bg-white dark:bg-[#0a0f1d] text-gray-800 dark:text-gray-200"
-            >
-              {AI_MODELS.map(m => (
-                <option key={m.value} value={m.value}>
-                  {m.label} ({m.price})
-                </option>
-              ))}
-            </select>
-            <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+    <div className="space-y-5">
+      <section className="rounded-[28px] border border-gray-200/80 bg-white/95 p-5 shadow-sm dark:border-white/10 dark:bg-slate-950/50">
+        <div className="flex items-start gap-3">
+          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-brand-red text-white shadow-lg shadow-brand-red/15">
+            <Sparkles size={18} />
+          </span>
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-[0.24em] text-gray-500 dark:text-gray-400">
+              Assist
+            </p>
+            <h4 className="mt-1 text-sm font-semibold text-brand-black dark:text-white">
+              Asisten AI dalam workflow editor
+            </h4>
+            <p className="mt-1 text-xs leading-5 text-gray-500 dark:text-gray-400">
+              Gunakan AI untuk menulis ulang, memeriksa kualitas, dan mengoptimasi artikel tanpa keluar dari inspector.
+            </p>
           </div>
         </div>
-        <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-1">
-          {selectedModel === 'gpt-4o' && 'Best quality - Recommended for important articles'}
-          {selectedModel === 'gpt-4-turbo' && 'Good balance - Fast and accurate'}
-          {selectedModel === 'gpt-3.5-turbo' && 'Fastest & cheapest - Good for drafts'}
-        </p>
-      </div>
 
-      {/* Tabs */}
-      <div className="flex border-b border-gray-50 dark:border-white/5 bg-white dark:bg-[#090e18]">
-        {TABS.map(t => (
-          <button
-            key={t.id}
-            onClick={() => setTab(t.id)}
-            className={cn(
-              "flex-1 py-4 text-[10px] font-black uppercase tracking-widest transition-all border-b-2",
-              tab === t.id
-                ? 'border-brand-red text-brand-red bg-brand-red/[0.02] dark:bg-brand-red/[0.01]'
-                : 'border-transparent text-gray-400 hover:text-brand-black dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/[0.01]'
-            )}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
+        <div className="mt-5 grid gap-3 md:grid-cols-2">
+          <div className="rounded-2xl border border-gray-200/80 bg-gray-50/80 p-4 dark:border-white/10 dark:bg-slate-900/60">
+            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gray-500 dark:text-gray-400">
+              Fokus Saat Ini
+            </p>
+            <p className="mt-2 text-sm font-semibold text-brand-black dark:text-white">
+              {activeBlockLabel}
+            </p>
+            <p className="mt-1 text-xs leading-5 text-gray-500 dark:text-gray-400">
+              {activeBlock ? 'AI akan terasa lebih relevan jika Anda memilih blok yang ingin dibantu terlebih dahulu.' : 'Pilih blok pada kanvas untuk memberi konteks yang lebih jelas ke panel AI.'}
+            </p>
+          </div>
 
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto p-6 scrollbar-thin dark:bg-[#090e18]">
-        <div style={{ display: tab === 'write' ? 'block' : 'none' }}>
-          <WriteTab model={selectedModel} onTrigger={() => { setOpen(true); setTab('write') }} />
+          <div className="rounded-2xl border border-gray-200/80 bg-gray-50/80 p-4 dark:border-white/10 dark:bg-slate-900/60">
+            <label className="text-[10px] font-black uppercase tracking-[0.22em] text-gray-500 dark:text-gray-400">
+              Model AI
+            </label>
+            <div className="relative mt-2">
+              <select
+                value={selectedModel}
+                onChange={handleModelChange}
+                className="w-full appearance-none rounded-2xl border border-gray-200 bg-white px-4 py-3 pr-10 text-sm text-brand-black outline-none transition-colors focus:border-brand-red dark:border-white/10 dark:bg-slate-900 dark:text-white"
+              >
+                {AI_MODELS.map((model) => (
+                  <option key={model.value} value={model.value}>
+                    {model.label} · {model.price}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown size={14} className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-400" />
+            </div>
+            <p className="mt-2 text-xs leading-5 text-gray-500 dark:text-gray-400">
+              {selectedModelMeta.hint}
+            </p>
+          </div>
         </div>
-        <div style={{ display: tab === 'optimize' ? 'block' : 'none' }}>
-          <OptimizeTab model={selectedModel} onTrigger={() => { setOpen(true); setTab('optimize') }} />
-        </div>
-        <div style={{ display: tab === 'validate' ? 'block' : 'none' }}>
-          <ValidateTab model={selectedModel} onTrigger={() => { setOpen(true); setTab('validate') }} />
-        </div>
-        <div style={{ display: tab === 'seo' ? 'block' : 'none' }}>
-          <SEOAuditTab />
-        </div>
-        <div style={{ display: tab === 'layout' ? 'block' : 'none' }}>
-          <LayoutTab model={selectedModel} onTrigger={() => { setOpen(true); setTab('layout') }} />
-        </div>
-        <div style={{ display: tab === 'image' ? 'block' : 'none' }}>
-          <ImageTab model={selectedModel} onTrigger={() => { setOpen(true); setTab('image') }} />
-        </div>
-      </div>
+      </section>
 
-      {/* Footer */}
-      <div className="px-6 py-4 border-t border-gray-50 dark:border-white/5 bg-brand-surface dark:bg-[#0d1525]">
-          <p className="text-[10px] text-gray-400 dark:text-gray-500 text-center leading-relaxed">
-            AI bersifat asistif — Selalu tinjau konten sebelum dipublikasikan demi menjaga integritas jurnalistik.
+      <section className="rounded-[28px] border border-gray-200/80 bg-white/95 p-5 shadow-sm dark:border-white/10 dark:bg-slate-950/50">
+        <div className="mb-4">
+          <p className="text-[10px] font-black uppercase tracking-[0.24em] text-gray-500 dark:text-gray-400">
+            Toolset AI
           </p>
-      </div>
+          <h4 className="mt-1 text-sm font-semibold text-brand-black dark:text-white">
+            Pilih bantuan yang paling sesuai
+          </h4>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2">
+          {TABS.map(({ id, label, icon: Icon }) => (
+            <button
+              key={id}
+              onClick={() => setTab(id)}
+              className={cn(
+                'flex items-center gap-2 rounded-2xl border px-3 py-3 text-left text-xs font-black uppercase tracking-[0.18em] transition-all',
+                tab === id
+                  ? 'border-brand-red/30 bg-brand-red/[0.05] text-brand-red dark:border-brand-red/20 dark:bg-brand-red/[0.08]'
+                  : 'border-gray-200/80 bg-gray-50/70 text-gray-500 hover:border-brand-red/20 hover:text-brand-red dark:border-white/10 dark:bg-slate-900/60 dark:text-gray-300'
+              )}
+            >
+              <Icon size={14} />
+              {label}
+            </button>
+          ))}
+        </div>
+
+        <div className="mt-5 rounded-[24px] border border-gray-200/80 bg-gray-50/70 p-4 dark:border-white/10 dark:bg-slate-900/60">
+          <div style={{ display: tab === 'write' ? 'block' : 'none' }}>
+            <WriteTab model={selectedModel} />
+          </div>
+          <div style={{ display: tab === 'optimize' ? 'block' : 'none' }}>
+            <OptimizeTab model={selectedModel} />
+          </div>
+          <div style={{ display: tab === 'validate' ? 'block' : 'none' }}>
+            <ValidateTab model={selectedModel} />
+          </div>
+          <div style={{ display: tab === 'seo' ? 'block' : 'none' }}>
+            <SEOAuditTab />
+          </div>
+          <div style={{ display: tab === 'layout' ? 'block' : 'none' }}>
+            <LayoutTab model={selectedModel} />
+          </div>
+          <div style={{ display: tab === 'image' ? 'block' : 'none' }}>
+            <ImageTab model={selectedModel} />
+          </div>
+        </div>
+      </section>
+
+      <section className="rounded-[28px] border border-dashed border-gray-200 bg-white/90 p-5 dark:border-white/10 dark:bg-slate-950/40">
+        <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gray-500 dark:text-gray-400">
+          Catatan Editorial
+        </p>
+        <p className="mt-2 text-xs leading-6 text-gray-500 dark:text-gray-400">
+          AI bersifat asistif. Semua hasil tetap perlu ditinjau ulang agar akurat, selaras dengan angle redaksi, dan aman dipublikasikan.
+        </p>
+      </section>
     </div>
   )
 }

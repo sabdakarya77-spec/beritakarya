@@ -10,14 +10,13 @@ interface Props {
 }
 
 export function OptimizeTab({ model = 'gpt-4o', onTrigger }: Props) {
-  const { blocks } = useEditorStore()
+  const { title, excerpt, blocks } = useEditorStore()
   const [headlineState, generateHeadlines] = useHeadlines(model)
   const [seoState, generateSEO] = useSEO(model)
   
-  // Get title and first paragraph for SEO/headline context
-  const title = blocks.find(b => b.type === 'heading')?.content || ''
+  // Prefer editorial title and deck, then fallback to article body
   const firstParagraph = blocks.find(b => b.type === 'paragraph')?.content || ''
-  const excerpt = firstParagraph.slice(0, 200)
+  const contentExcerpt = (excerpt || firstParagraph).slice(0, 200)
 
   // Keyboard shortcuts
   useKeyboardShortcuts([
@@ -29,7 +28,7 @@ export function OptimizeTab({ model = 'gpt-4o', onTrigger }: Props) {
       action: () => {
         if (title && !headlineState.loading) {
           if (onTrigger) onTrigger()
-          generateHeadlines({ title, contentExcerpt: excerpt })
+          generateHeadlines({ title, contentExcerpt })
         }
       }
     },
@@ -41,7 +40,7 @@ export function OptimizeTab({ model = 'gpt-4o', onTrigger }: Props) {
       action: () => {
         if (title && !seoState.loading) {
           if (onTrigger) onTrigger()
-          generateSEO({ title, contentExcerpt: excerpt })
+          generateSEO({ title, contentExcerpt })
         }
       }
     }
@@ -54,7 +53,7 @@ export function OptimizeTab({ model = 'gpt-4o', onTrigger }: Props) {
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs font-semibold text-gray-700">Headline Generator</span>
           <button
-            onClick={() => generateHeadlines({ title: title || 'Untitled', contentExcerpt: excerpt })}
+            onClick={() => generateHeadlines({ title: title || 'Untitled', contentExcerpt })}
             disabled={headlineState.loading || !title}
             className="text-xs px-3 py-1.5 bg-amber-600 text-white rounded-lg hover:bg-amber-700 disabled:opacity-50"
           >
@@ -83,7 +82,7 @@ export function OptimizeTab({ model = 'gpt-4o', onTrigger }: Props) {
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs font-semibold text-gray-700">SEO Meta Generator</span>
           <button
-            onClick={() => generateSEO({ title: title || 'Untitled', contentExcerpt: excerpt })}
+            onClick={() => generateSEO({ title: title || 'Untitled', contentExcerpt })}
             disabled={seoState.loading || !title}
             className="text-xs px-3 py-1.5 bg-amber-600 text-white rounded-lg hover:bg-amber-700 disabled:opacity-50"
           >

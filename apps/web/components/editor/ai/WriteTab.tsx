@@ -25,7 +25,7 @@ interface Props {
 }
 
 export function WriteTab({ model = 'gpt-4o', onTrigger }: Props) {
-  const { blocks, updateBlock } = useEditorStore()
+  const { blocks, updateBlock, activeBlockId } = useEditorStore()
   const [selectedId, setSelectedId] = useState('')
   const [tone, setTone] = useState<Tone>('berita')
   const [length, setLength] = useState<Length>('sama')
@@ -49,6 +49,14 @@ export function WriteTab({ model = 'gpt-4o', onTrigger }: Props) {
   
   const rewriteCost = rewriteState.result ? estimateCost(content.length, rewriteState.result.length) : '~$0.015'
   const expandCost = expandState.result ? estimateCost(content.length, expandState.result.length) : '~$0.012'
+
+  useEffect(() => {
+    if (!activeBlockId) return
+    const activeBlock = blocks.find((block) => block.id === activeBlockId)
+    if (activeBlock && (activeBlock.type === 'paragraph' || activeBlock.type === 'quote')) {
+      setSelectedId(activeBlock.id)
+    }
+  }, [activeBlockId, blocks])
 
   const handleRewrite = async () => {
     if (!content) return

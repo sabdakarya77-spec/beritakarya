@@ -22,6 +22,12 @@ export function buildMetaDescriptionExcerpt(blocks: any[] | undefined, maxLen = 
   return text.length <= maxLen ? text : `${text.slice(0, maxLen - 3).trim()}...`
 }
 
+export function trimExcerpt(text: string | undefined, maxLen = 160): string {
+  const value = text?.trim() || ''
+  if (!value) return ''
+  return value.length <= maxLen ? value : `${value.slice(0, maxLen - 3).trim()}...`
+}
+
 export type ArticleContentLimitOptions = {
   /** Wajib untuk submit/publish; draft boleh disimpan di bawah batas ini. */
   requireMinWords?: boolean
@@ -53,11 +59,13 @@ export function validateArticleContentLimits(
   }
 }
 
-export function applySeoDefaults<T extends { title: string; blocks?: any[]; metaDescription?: string }>(
+export function applySeoDefaults<T extends { title: string; blocks?: any[]; excerpt?: string; metaDescription?: string }>(
   input: T
 ): T & { metaDescription?: string } {
   if (input.metaDescription?.trim()) return input
-  const excerpt = buildMetaDescriptionExcerpt(input.blocks)
-  if (!excerpt) return input
-  return { ...input, metaDescription: excerpt }
+  const excerptFromField = trimExcerpt(input.excerpt)
+  if (excerptFromField) return { ...input, metaDescription: excerptFromField }
+  const excerptFromBlocks = buildMetaDescriptionExcerpt(input.blocks)
+  if (!excerptFromBlocks) return input
+  return { ...input, metaDescription: excerptFromBlocks }
 }

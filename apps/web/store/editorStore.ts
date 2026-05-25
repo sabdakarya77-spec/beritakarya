@@ -8,6 +8,7 @@ export interface EditorState {
   articleId: string | null
   siteId: string | null
   title: string
+  excerpt: string
   blocks: Block[]
   status: ArticleStatus
   saving: boolean
@@ -30,10 +31,12 @@ export interface EditorState {
   // UI State
   isSidebarOpen: boolean
   isFocusMode: boolean
-  activeTab: 'content' | 'settings' | 'seo' | 'history'
+  activeTab: 'content' | 'settings' | 'seo' | 'history' | 'assist'
+  activeBlockId: string | null
   
   // Actions
   setTitle: (title: string) => void
+  setExcerpt: (excerpt: string) => void
   setBlocks: (blocks: Block[]) => void
   addBlock: (type: Block['type'], afterId?: string) => void
   updateBlock: (id: string, data: Partial<Block>) => void
@@ -52,9 +55,14 @@ export interface EditorState {
   toggleSidebar: (isOpen?: boolean) => void
   toggleFocusMode: (isFocus?: boolean) => void
   setActiveTab: (tab: EditorState['activeTab']) => void
+  setActiveBlockId: (blockId: string | null) => void
   publishArticle: () => Promise<void>
   submitForReview: () => Promise<void>
   reset: (siteId?: string) => void
+  
+  // Derived State (Getters)
+  getMissingRequirements: () => string[]
+  getCompletionScore: () => number
 }
 
 export function createDefaultBlock(type: Block['type'], existingId?: string): Block {
@@ -69,7 +77,7 @@ function defaultBlock(type: Block['type']): Block {
     case 'paragraph': return { id, type, content: '' }
     case 'heading': return { id, type, level: 2, content: '' }
     case 'quote': return { id, type, content: '', attribution: '' }
-    case 'image': return { id, type, url: '', alt: '', caption: '' }
+    case 'image': return { id, type, url: '', alt: '', caption: '', credit: '' } as any
     case 'imageGrid': return { id, type, columns: 2, images: [] }
     case 'gallery': return { id, type, images: [] }
     case 'list': return { id, type, items: [''], ordered: false }
@@ -82,10 +90,17 @@ function defaultBlock(type: Block['type']): Block {
 
 let saveTimer: ReturnType<typeof setTimeout> | null = null
 
+function hasMeaningfulContent(state: Pick<EditorState, 'title' | 'blocks'>) {
+  const firstBlock = state.blocks[0] as { content?: string } | undefined
+  const firstBlockContent = typeof firstBlock?.content === 'string' ? firstBlock.content.trim() : ''
+  return Boolean(state.title.trim() || firstBlockContent || state.blocks.length > 1)
+}
+
 export const useEditorStore = create<EditorState>((set, get) => ({
   articleId: null,
   siteId: null,
   title: '',
+  excerpt: '',
   blocks: [{ id: uuidv4(), type: 'paragraph', content: '' }],
   status: 'draft',
   saving: false,
@@ -107,9 +122,14 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   isSidebarOpen: false,
   isFocusMode: false,
   activeTab: 'content',
+  activeBlockId: null,
 
   setTitle: (title) => {
     set({ title, isDirty: true })
+    scheduleAutoSave(get)
+  },
+  setExcerpt: (excerpt) => {
+    set({ excerpt, isDirty: true })
     scheduleAutoSave(get)
   },
   setSiteId: (siteId) => set({ siteId }),
@@ -125,7 +145,12 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       const idx = afterId ? s.blocks.findIndex(b => b.id === afterId) : s.blocks.length - 1
       const next = [...s.blocks]
       next.splice(idx + 1, 0, newBlock)
-      return { undoStack: [...s.undoStack.slice(-20), s.blocks], blocks: next, isDirty: true }
+      return {
+        undoStack: [...s.undoStack.slice(-20), s.blocks],
+        blocks: next,
+        isDirty: true,
+        activeBlockId: newBlock.id
+      }
     })
     scheduleAutoSave(get)
   },
@@ -144,17 +169,25 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       blocks: s.blocks.map(b =>
         b.id === id ? createDefaultBlock(type, id) : b
       ),
-      isDirty: true
+      isDirty: true,
+      activeBlockId: id
     }))
     scheduleAutoSave(get)
   },
 
   removeBlock: (id) => {
-    set((s) => ({
-      undoStack: [...s.undoStack.slice(-20), s.blocks],
-      blocks: s.blocks.filter(b => b.id !== id),
-      isDirty: true
-    }))
+    set((s) => {
+      const nextBlocks = s.blocks.filter(b => b.id !== id)
+      const fallbackBlock = { id: uuidv4(), type: 'paragraph' as const, content: '' }
+      const resolvedBlocks = nextBlocks.length ? nextBlocks : [fallbackBlock]
+      return {
+        undoStack: [...s.undoStack.slice(-20), s.blocks],
+        blocks: resolvedBlocks,
+        isDirty: true,
+        activeBlockId: s.activeBlockId === id ? resolvedBlocks[0]?.id ?? null : s.activeBlockId
+      }
+    })
+    scheduleAutoSave(get)
   },
 
   moveBlock: (id, direction) => {
@@ -167,6 +200,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       ;[next[idx], next[target]] = [next[target], next[idx]]
       return { undoStack: [...s.undoStack.slice(-20), s.blocks], blocks: next, isDirty: true }
     })
+    scheduleAutoSave(get)
   },
 
   reorderBlocks: (fromIdx, toIdx) => {
@@ -176,6 +210,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       next.splice(toIdx, 0, moved)
       return { undoStack: [...s.undoStack.slice(-20), s.blocks], blocks: next, isDirty: true }
     })
+    scheduleAutoSave(get)
   },
 
   undo: () => {
@@ -184,6 +219,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       const prev = s.undoStack[s.undoStack.length - 1]
       return { blocks: prev, undoStack: s.undoStack.slice(0, -1), isDirty: true }
     })
+    scheduleAutoSave(get)
   },
 
   loadArticle: async (id, siteId) => {
@@ -201,6 +237,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       set({
         articleId: article.id,
         title: article.title || '',
+        excerpt: article.excerpt || '',
         blocks,
         status: article.status,
         metaTitle: article.metaTitle || '',
@@ -213,7 +250,8 @@ export const useEditorStore = create<EditorState>((set, get) => ({
         isFeatured: article.isFeatured || false,
         isDirty: false,
         isLoading: false,
-        undoStack: []
+        undoStack: [],
+        activeBlockId: blocks[0]?.id ?? null
       })
     } catch (err: any) {
       console.error('Failed to load article:', err)
@@ -232,6 +270,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     try {
       const payload = {
         title: (s.title || 'Tanpa Judul').trim(),
+        excerpt: s.excerpt?.trim() || undefined,
         blocks: normalizeArticleBlocks(s.blocks) as unknown as Block[],
         metaTitle: s.metaTitle?.slice(0, 60) || undefined,
         metaDescription: s.metaDescription?.slice(0, 160) || undefined,
@@ -290,6 +329,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     isSidebarOpen: isFocus ? false : s.isSidebarOpen 
   })),
   setActiveTab: (activeTab) => set({ activeTab }),
+  setActiveBlockId: (activeBlockId) => set({ activeBlockId }),
 
   publishArticle: async () => {
     const { articleId, siteId } = get()
@@ -315,21 +355,59 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   },
 
   reset: (siteId?: string) => set({
+    ...(function () {
+      const initialBlock = { id: uuidv4(), type: 'paragraph' as const, content: '' }
+      return {
+        blocks: [initialBlock],
+        activeBlockId: initialBlock.id
+      }
+    })(),
     articleId: null, siteId: siteId ?? null, title: '', status: 'draft',
-    blocks: [{ id: uuidv4(), type: 'paragraph', content: '' }],
+    excerpt: '',
     saving: false, saveError: null, lastSaved: null, isDirty: false, isLoading: false, undoStack: [],
     metaTitle: '', metaDescription: '', categoryId: null, tags: [],
     featuredImage: '', isBreaking: false, isExclusive: false, isFeatured: false,
     isSidebarOpen: false, activeTab: 'content'
-  })
+  }),
+
+  getMissingRequirements: () => {
+    const s = get()
+    const missing: string[] = []
+    
+    if (!s.title?.trim()) missing.push('Judul artikel belum diisi')
+    if (!s.excerpt?.trim()) missing.push('Deck / Excerpt belum diisi')
+    if (!s.categoryId) missing.push('Kategori belum dipilih')
+    if (!s.featuredImage) missing.push('Gambar utama belum diunggah')
+    
+    const paragraphCount = s.blocks.filter(b => b.type === 'paragraph' && (b as any).content?.trim()).length
+    if (paragraphCount < 1) missing.push('Konten artikel masih kosong')
+    
+    return missing
+  },
+
+  getCompletionScore: () => {
+    const s = get()
+    let score = 0
+    
+    if (s.title?.trim()) score += 20
+    if (s.excerpt?.trim()) score += 20
+    if (s.categoryId) score += 20
+    if (s.featuredImage) score += 20
+    if (s.blocks.some(b => b.type === 'paragraph' && (b as any).content?.trim())) score += 20
+    
+    return score
+  }
 }))
 
 function scheduleAutoSave(get: () => EditorState) {
   if (saveTimer) clearTimeout(saveTimer)
   saveTimer = setTimeout(() => {
     const state = get()
-    if (state.isDirty && state.articleId) {
+    if (!state.isDirty || state.saving || !hasMeaningfulContent(state)) return
+    if (state.articleId) {
       state.saveArticle()
+      return
     }
+    state.saveArticle()
   }, 5000)
 }

@@ -6,14 +6,10 @@ interface Props {
 
 export default async function NewArticlePage({ params }: Props) {
   const resolvedParams = await params
-  return (
-    <main className="min-h-screen bg-white">
-      <Editor articleId="new" siteId={resolvedParams.site} />
-    </main>
-  )
+  return <Editor articleId="new" siteId={resolvedParams.site} />
 }
 
 export async function generateMetadata({ params }: Props) {
   const resolvedParams = await params
-  return { title: `Post Baru — ${resolvedParams.site} | BeritaKarya` }
+  return { title: `Tulis Post Baru — ${resolvedParams.site} | BeritaKarya` }
 }

@@ -77,6 +77,7 @@ const optionalCategoryId = z.preprocess(
 
 export const createArticleSchema = z.object({
   title: z.string().trim().min(1, 'Judul wajib diisi').max(200),
+  excerpt: z.string().trim().max(280).optional(),
   categoryId: optionalCategoryId,
   tags: z.array(z.string()).default([]),
   blocks: blocksField,
@@ -90,6 +91,7 @@ export const createArticleSchema = z.object({
 
 export const updateArticleSchema = z.object({
   title: z.string().min(1).max(200).optional(),
+  excerpt: z.string().trim().max(280).optional(),
   categoryId: optionalCategoryId,
   tags: z.array(z.string()).optional(),
   blocks: blocksField.optional(),

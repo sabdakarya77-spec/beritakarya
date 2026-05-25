@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname, useParams } from 'next/navigation'
 import { useAuthStore } from '../../../store/authStore'
 import { 
+  ArrowLeft,
   FileText, 
   Tag, 
   LayoutDashboard, 
@@ -150,9 +151,122 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     .filter(item => pathname === item.href || (item.href !== `/${site}/dashboard` && pathname.startsWith(item.href + '/')))
     .sort((a, b) => b.href.length - a.href.length)[0]
   const activeHref = activeItem?.href
+  const articleListHref = `/${site}/dashboard/articles`
+  const articleEditorPrefix = `${articleListHref}/`
+  const articleEditorSegment = pathname.startsWith(articleEditorPrefix)
+    ? pathname.slice(articleEditorPrefix.length)
+    : ''
+  const isArticleEditorRoute = articleEditorSegment === 'new' || Boolean(articleEditorSegment && !articleEditorSegment.includes('/'))
+  const editorTitle = articleEditorSegment === 'new' ? 'Tulis Post' : 'Editor Post'
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-[#0a0f1a] flex flex-col md:flex-row font-sans text-brand-black dark:text-white transition-colors duration-500">
+      {isArticleEditorRoute ? (
+        <>
+          <aside className="hidden md:flex w-64 flex-shrink-0 flex-col border-r border-gray-200/80 bg-white/95 dark:border-white/5 dark:bg-[#050a15]">
+            <div className="border-b border-gray-100 px-6 py-6 dark:border-white/5">
+              <Link href={articleListHref} className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-red text-sm font-black text-white shadow-lg shadow-brand-red/30">
+                  BK
+                </div>
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gray-500 dark:text-gray-400">
+                    Ruang Editor
+                  </p>
+                  <h2 className="mt-1 text-sm font-black uppercase tracking-tight text-brand-black dark:text-white">
+                    {editorTitle}
+                  </h2>
+                </div>
+              </Link>
+            </div>
+
+            <div className="px-4 py-4">
+              <Link
+                href={articleListHref}
+                className="flex items-center gap-3 rounded-2xl border border-gray-200/80 bg-gray-50/80 px-4 py-3 text-sm font-semibold text-brand-black transition-colors hover:border-brand-red/20 hover:text-brand-red dark:border-white/10 dark:bg-white/5 dark:text-white"
+              >
+                <ArrowLeft size={16} />
+                Kembali ke Daftar Post
+              </Link>
+            </div>
+
+            <div className="px-4">
+              <div className="rounded-[24px] border border-gray-200/80 bg-white/90 p-4 shadow-sm dark:border-white/10 dark:bg-white/[0.03]">
+                <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gray-500 dark:text-gray-400">
+                  Portal Aktif
+                </p>
+                <p className="mt-2 text-sm font-semibold uppercase tracking-tight text-brand-black dark:text-white">
+                  {site === 'pusat' ? 'Pusat (Nasional)' : site.charAt(0).toUpperCase() + site.slice(1)}
+                </p>
+                <p className="mt-2 text-xs leading-5 text-gray-500 dark:text-gray-400">
+                  Mode menulis dipangkas agar fokus tetap pada judul, konten, dan workflow editorial.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-4 flex-1 px-4">
+              <div className="rounded-[24px] border border-dashed border-gray-200 bg-white/80 p-4 dark:border-white/10 dark:bg-white/[0.02]">
+                <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gray-500 dark:text-gray-400">
+                  Akses Cepat
+                </p>
+                <div className="mt-3 space-y-2">
+                  <Link
+                    href={articleListHref}
+                    className="flex items-center gap-3 rounded-2xl px-3 py-3 text-xs font-black uppercase tracking-[0.18em] text-gray-500 transition-colors hover:bg-gray-50 hover:text-brand-red dark:hover:bg-white/5"
+                  >
+                    <FileText size={14} />
+                    Daftar Post
+                  </Link>
+                  <Link
+                    href={`/${site}`}
+                    target="_blank"
+                    className="flex items-center gap-3 rounded-2xl px-3 py-3 text-xs font-black uppercase tracking-[0.18em] text-gray-500 transition-colors hover:bg-gray-50 hover:text-brand-red dark:hover:bg-white/5"
+                  >
+                    <ExternalLink size={14} />
+                    Lihat Portal
+                  </Link>
+                </div>
+              </div>
+            </div>
+
+            <div className="border-t border-gray-100 p-4 dark:border-white/5">
+              <div className="mb-4 flex items-center gap-3 rounded-2xl bg-gray-50/80 px-3 py-3 dark:bg-white/5">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-brand-red to-red-900 text-xs font-black text-white shadow-lg">
+                  {initials}
+                </div>
+                <div className="min-w-0">
+                  <p className="truncate text-xs font-black text-brand-black dark:text-white">{user?.name}</p>
+                  <p className="mt-1 text-[8px] font-black uppercase tracking-[0.22em] text-brand-red">
+                    {ROLE_LABELS[user?.role || ''] || user?.role}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                <button
+                  onClick={toggleTheme}
+                  className="flex flex-1 items-center justify-center rounded-2xl border border-gray-200 bg-white px-3 py-3 text-gray-500 transition-colors hover:text-brand-red dark:border-white/10 dark:bg-white/5 dark:text-gray-300"
+                  title="Ganti tema"
+                >
+                  {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
+                </button>
+                <button
+                  onClick={logout}
+                  className="flex flex-1 items-center justify-center gap-2 rounded-2xl border border-gray-200 bg-white px-3 py-3 text-[10px] font-black uppercase tracking-[0.18em] text-gray-500 transition-colors hover:border-red-200 hover:text-red-500 dark:border-white/10 dark:bg-white/5 dark:text-gray-300"
+                >
+                  <LogOut size={14} />
+                  Keluar
+                </button>
+              </div>
+            </div>
+          </aside>
+
+          <main className="flex-1 min-h-screen overflow-x-hidden">
+            {children}
+          </main>
+        </>
+      ) : (
+        <>
       
       {/* Sidebar Desktop */}
       <aside className={cn(
@@ -397,6 +511,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </div>
       </main>
+        </>
+      )}
       
       <AIConsentModal />
     </div>
