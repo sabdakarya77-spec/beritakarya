@@ -46,6 +46,7 @@ export function FeaturedImageSection({
       eyebrow="Media"
       title="Gambar Utama"
       description="Gunakan visual yang kuat sebagai pintu masuk pembaca di homepage dan kartu berita."
+      helper="Gambar utama adalah visual pembuka artikel yang biasanya tampil di kartu berita, halaman depan, dan preview distribusi."
     >
       <div className="space-y-4">
         <div className="relative aspect-video overflow-hidden rounded-2xl border border-dashed border-gray-200 bg-gray-50 dark:border-white/10 dark:bg-slate-950/40">
@@ -93,7 +94,7 @@ export function FeaturedImageSection({
         />
 
         <div className="space-y-2">
-          <FieldLabel>URL Gambar</FieldLabel>
+          <FieldLabel helper="Bisa diisi manual jika gambar sudah punya URL sendiri. Jika kosong, gunakan upload langsung agar lebih praktis.">URL Gambar</FieldLabel>
           <input
             type="text"
             defaultValue={featuredImage}

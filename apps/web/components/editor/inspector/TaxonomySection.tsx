@@ -34,10 +34,11 @@ export function TaxonomySection({
       eyebrow="Taksonomi"
       title="Kategori dan Tag"
       description="Pastikan artikel mudah ditemukan, dipilah, dan dibawa ke permukaan yang tepat."
+      helper="Kategori menentukan kanal utama artikel. Tag membantu artikel terhubung dengan topik, tokoh, atau isu yang sama."
     >
       <div className="space-y-5">
         <div className="space-y-2">
-          <FieldLabel>Kategori</FieldLabel>
+          <FieldLabel helper="Pilih kanal utama artikel. Gunakan kategori yang paling mewakili topik utama berita.">Kategori</FieldLabel>
           <select
             value={categoryId || ''}
             onChange={(event) => updateArticleData({ categoryId: event.target.value || null })}
@@ -58,7 +59,7 @@ export function TaxonomySection({
         </div>
 
         <div className="space-y-2">
-          <FieldLabel>Tagar dan Topik</FieldLabel>
+          <FieldLabel helper="Tag berfungsi sebagai penanda tambahan, misalnya nama tokoh, lokasi, isu, atau peristiwa terkait.">Tagar dan Topik</FieldLabel>
           <div className="flex flex-wrap gap-2">
             {tags.length > 0 ? tags.map((tag) => (
               <span

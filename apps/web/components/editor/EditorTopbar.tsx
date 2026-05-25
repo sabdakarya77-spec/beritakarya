@@ -17,6 +17,7 @@ import {
 import { cn } from '../../lib/utils';
 import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { EditorHelpHint } from './EditorHelpHint';
 
 const STATUS_LABELS: Record<string, string> = {
   draft: 'Draft',
@@ -26,6 +27,16 @@ const STATUS_LABELS: Record<string, string> = {
   approved: 'Disetujui',
   scheduled: 'Terjadwal',
   published: 'Terbit'
+};
+
+const STATUS_HELPERS: Record<string, string> = {
+  draft: 'Artikel masih dalam tahap penulisan dan belum dikirim untuk review.',
+  submitted: 'Artikel telah dikirim dan menunggu tanggapan dari redaksi.',
+  review: 'Artikel sedang dalam proses pemeriksaan oleh redaktur.',
+  revision: 'Artikel perlu direvisi sesuai catatan dari redaktur.',
+  approved: 'Artikel telah disetujui dan siap untuk diterbitkan.',
+  scheduled: 'Artikel dijadwalkan untuk terbit pada waktu tertentu.',
+  published: 'Artikel sudah terbit dan visible untuk pembaca.'
 };
 
 const STATUS_COLORS: Record<string, string> = {
@@ -175,11 +186,16 @@ export function EditorTopbar() {
         <div className="h-6 w-px bg-gray-100 dark:bg-white/5" />
         <div className="flex items-center gap-3">
           <span className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-black dark:text-white">Ruang Editor</span>
-          <div className={cn(
-            "px-2 py-0.5 rounded-sm text-[9px] font-black uppercase tracking-widest border",
-            STATUS_COLORS[status] || STATUS_COLORS.draft
-          )}>
-            {STATUS_LABELS[status] || status}
+          <div className="inline-flex items-center gap-1.5">
+            <div className={cn(
+              "px-2 py-0.5 rounded-sm text-[9px] font-black uppercase tracking-widest border",
+              STATUS_COLORS[status] || STATUS_COLORS.draft
+            )}>
+              {STATUS_LABELS[status] || status}
+            </div>
+            {STATUS_HELPERS[status] && (
+              <EditorHelpHint text={STATUS_HELPERS[status]} />
+            )}
           </div>
         </div>
       </div>

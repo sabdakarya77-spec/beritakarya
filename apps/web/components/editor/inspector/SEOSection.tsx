@@ -22,6 +22,7 @@ export function SEOSection({
         eyebrow="Preview"
         title="Tampilan Mesin Pencari"
         description="Cek bagaimana judul dan deskripsi akan tampil di halaman hasil pencarian."
+        helper="Preview ini membantu membayangkan tampilan artikel di hasil pencarian, meski hasil akhir bisa sedikit berbeda di Google."
       >
         <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-4 dark:border-white/10 dark:bg-slate-950/40">
           <p className="mb-3 flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.22em] text-gray-500 dark:text-gray-400">
@@ -44,10 +45,11 @@ export function SEOSection({
         eyebrow="Meta"
         title="Optimasi SEO"
         description="Jaga judul dan deskripsi tetap ringkas, jelas, dan konsisten dengan angle editorial."
+        helper="SEO membantu artikel lebih mudah ditemukan di mesin pencari. Fokus utamanya tetap judul yang jelas dan deskripsi yang meyakinkan."
       >
         <div className="space-y-5">
           <div className="space-y-2">
-            <FieldLabel>Meta Title</FieldLabel>
+            <FieldLabel helper="Judul alternatif untuk mesin pencari. Jika kosong, sistem biasanya memakai judul artikel utama.">Meta Title</FieldLabel>
             <input
               type="text"
               value={metaTitle}
@@ -59,7 +61,7 @@ export function SEOSection({
           </div>
 
           <div className="space-y-2">
-            <FieldLabel>Meta Description</FieldLabel>
+            <FieldLabel helper="Ringkasan pendek untuk cuplikan hasil pencarian dan preview tautan.">Meta Description</FieldLabel>
             <textarea
               rows={4}
               value={metaDescription}

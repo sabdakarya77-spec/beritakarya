@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { CheckCircle2 } from 'lucide-react'
 import { useEditorStore } from '../../store/editorStore'
 import { cn } from '../../lib/utils'
+import { EditorHelpHint } from './EditorHelpHint'
 
 interface EditorTitleStageProps {
   isFocusMode: boolean
@@ -139,7 +140,10 @@ function ExcerptInput({
   return (
     <div className="rounded-[24px] border border-gray-200/80 bg-gray-50/70 p-4 dark:border-white/10 dark:bg-slate-950/40">
       <label className="block text-[10px] font-black uppercase tracking-[0.22em] text-gray-500 dark:text-gray-400">
-        Deck / Excerpt
+        <span className="inline-flex items-center gap-2">
+          <span>Deck / Excerpt</span>
+          <EditorHelpHint text="Ringkasan singkat isi berita. Biasanya dipakai sebagai pembuka editorial dan fallback preview di kartu berita." />
+        </span>
       </label>
       <textarea
         value={value}

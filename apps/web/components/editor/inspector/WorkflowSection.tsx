@@ -1,6 +1,7 @@
 import { Award, ShieldAlert, Star } from 'lucide-react'
 import { cn } from '../../../lib/utils'
 import { InspectorSection } from './InspectorSection'
+import { EditorHelpHint } from '../EditorHelpHint'
 
 interface WorkflowSectionProps {
   isBreaking: boolean
@@ -21,6 +22,7 @@ export function WorkflowSection({
       value: isBreaking,
       label: 'Breaking News',
       description: 'Dorong artikel sebagai berita paling mendesak.',
+      helper: 'Tandai artikel yang bersifat urgent dan harus disampaikan segera kepada pembaca.',
       icon: ShieldAlert,
       tone: 'text-red-500'
     },
@@ -29,6 +31,7 @@ export function WorkflowSection({
       value: isExclusive,
       label: 'Eksklusif',
       description: 'Tandai artikel dengan nilai liputan khusus.',
+      helper: 'Tandakan artikel dengan nilai liputan eksklusif yang tidak dimiliki media lain.',
       icon: Award,
       tone: 'text-violet-500'
     },
@@ -37,6 +40,7 @@ export function WorkflowSection({
       value: isFeatured,
       label: 'Headline',
       description: 'Siapkan artikel untuk slot utama halaman depan.',
+      helper: 'Jadikan artikel ini sebagai prioritas di halaman utama atau slot sorotan.',
       icon: Star,
       tone: 'text-amber-500'
     }
@@ -47,6 +51,7 @@ export function WorkflowSection({
       eyebrow="Workflow"
       title="Kelengkapan Editorial"
       description="Lengkapi elemen inti sebelum artikel masuk ke jalur review."
+      helper="Flag editorial membantu redaksi menentukan prioritas tayang, urgensi berita, dan posisi artikel di halaman utama."
     >
       <div className="space-y-3">
         {items.map((item) => (
@@ -65,7 +70,10 @@ export function WorkflowSection({
                 <item.icon size={18} className={cn(item.value ? item.tone : 'text-gray-400')} />
               </span>
               <div>
-                <p className="text-sm font-semibold text-brand-black dark:text-white">{item.label}</p>
+                <p className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-black dark:text-white">
+                  {item.label}
+                  {item.helper && <EditorHelpHint text={item.helper} />}
+                </p>
                 <p className="mt-1 text-xs leading-5 text-gray-500 dark:text-gray-400">{item.description}</p>
               </div>
             </div>
