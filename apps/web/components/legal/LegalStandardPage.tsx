@@ -9,8 +9,6 @@ export type LegalStandardPageProps = {
   title: string
   intro: string
   content: string | null | undefined
-  /** Heading inside document section; defaults to `title` */
-  documentTitle?: string
   emptyMessage?: string
 }
 
@@ -22,7 +20,6 @@ export function LegalStandardPage({
   title,
   intro,
   content,
-  documentTitle,
   emptyMessage,
 }: LegalStandardPageProps) {
   return (
@@ -31,7 +28,8 @@ export function LegalStandardPage({
       <div className="space-y-10 md:space-y-12">
         <LegalPageIntro text={intro} />
         <LegalDocumentBody
-          title={documentTitle ?? title}
+          pageTitle={title}
+          intro={intro}
           content={content}
           siteName={siteConfig.name}
           emptyMessage={emptyMessage}

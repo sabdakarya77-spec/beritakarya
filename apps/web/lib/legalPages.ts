@@ -99,3 +99,67 @@ export function formatLegalRichContent(value: string | null | undefined) {
     .map((paragraph) => `<p>${escapeHtml(paragraph).replace(/\n/g, '<br>')}</p>`)
     .join('')
 }
+
+function normalizeComparableText(value: string) {
+  return value
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase()
+}
+
+function textsAreDuplicate(a: string, b: string) {
+  const left = normalizeComparableText(a)
+  const right = normalizeComparableText(b)
+  if (!left || !right) return false
+  if (left === right) return true
+  const shorter = left.length <= right.length ? left : right
+  const longer = left.length > right.length ? left : right
+  if (shorter.length >= 24 && longer.startsWith(shorter.slice(0, Math.min(shorter.length, 120)))) {
+    return true
+  }
+  return false
+}
+
+const LEADING_BLOCK_RE =
+  /^\s*<(h[1-3]|p|div)(?:\s[^>]*)?>([\s\S]*?)<\/\1>\s*/i
+
+/**
+ * Remove leading CMS blocks that repeat the page H1 or static intro
+ * (common when legal copy was authored as a full document in settings).
+ */
+export function prepareLegalDocumentContent(
+  value: string | null | undefined,
+  options?: { pageTitle?: string; intro?: string }
+) {
+  let html = formatLegalRichContent(value)
+  if (!html || !options?.pageTitle) return html
+
+  const titleNorm = normalizeComparableText(options.pageTitle)
+  const introNorm = options.intro ? normalizeComparableText(options.intro) : ''
+
+  let guard = 0
+  while (guard < 8) {
+    guard += 1
+    const match = html.match(LEADING_BLOCK_RE)
+    if (!match) break
+
+    const inner = match[2]
+    const innerNorm = normalizeComparableText(inner)
+
+    const duplicatesTitle =
+      innerNorm === titleNorm ||
+      (innerNorm.length > 0 && titleNorm.includes(innerNorm) && innerNorm.length <= titleNorm.length + 8)
+
+    const duplicatesIntro = introNorm
+      ? textsAreDuplicate(inner, options.intro ?? '') || innerNorm === introNorm
+      : false
+
+    if (!duplicatesTitle && !duplicatesIntro) break
+
+    html = html.slice(match[0].length).trim()
+  }
+
+  return html
+}

@@ -1,28 +1,40 @@
-import { LEGAL_DOCUMENT_EYEBROW, formatLegalRichContent } from '../../lib/legalPages'
+import { LEGAL_DOCUMENT_EYEBROW, prepareLegalDocumentContent } from '../../lib/legalPages'
 import { legalProseClassName } from './legalStyles'
 
 type LegalDocumentBodyProps = {
-  title: string
+  /** Page H1 — used to strip duplicate headings from CMS HTML */
+  pageTitle: string
   content: string | null | undefined
   siteName: string
+  /** Static intro above — stripped from CMS if repeated */
+  intro?: string
   emptyMessage?: string
   eyebrow?: string
+  /** H2 under “Dokumen Portal”; omit when it would repeat the page H1 */
+  sectionTitle?: string | null
   /** Smaller prose for nested sections (e.g. ads terms footer) */
   proseSize?: 'default' | 'compact'
 }
 
 export function LegalDocumentBody({
-  title,
+  pageTitle,
   content,
   siteName,
+  intro,
   emptyMessage,
   eyebrow = LEGAL_DOCUMENT_EYEBROW,
+  sectionTitle = null,
   proseSize = 'default',
 }: LegalDocumentBodyProps) {
   const proseClass =
     proseSize === 'compact'
       ? 'prose prose-sm md:prose-base dark:prose-invert max-w-none'
       : legalProseClassName
+
+  const preparedHtml = prepareLegalDocumentContent(content, {
+    pageTitle,
+    intro,
+  })
 
   const fallbackEmpty =
     emptyMessage ??
@@ -31,25 +43,31 @@ export function LegalDocumentBody({
   return (
     <section className="border-t border-black/5 dark:border-white/5 pt-10 md:pt-12">
       <div className="max-w-4xl mx-auto">
-        <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <span className="h-2 w-2 rounded-full bg-brand-red" aria-hidden />
-              <span className="text-[11px] font-black uppercase tracking-[0.18em] text-brand-red">
-                {eyebrow}
-              </span>
+        {(eyebrow || sectionTitle) && (
+          <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+            <div>
+              {eyebrow ? (
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="h-2 w-2 rounded-full bg-brand-red" aria-hidden />
+                  <span className="text-[11px] font-black uppercase tracking-[0.18em] text-brand-red">
+                    {eyebrow}
+                  </span>
+                </div>
+              ) : null}
+              {sectionTitle ? (
+                <h2 className="text-2xl md:text-3xl font-serif font-black text-brand-black dark:text-white tracking-tight">
+                  {sectionTitle}
+                </h2>
+              ) : null}
             </div>
-            <h2 className="text-2xl md:text-3xl font-serif font-black text-brand-black dark:text-white tracking-tight">
-              {title}
-            </h2>
           </div>
-        </div>
+        )}
 
-        {content ? (
+        {preparedHtml ? (
           <div className={proseClass}>
             <div
               className="text-brand-text-muted leading-relaxed"
-              dangerouslySetInnerHTML={{ __html: formatLegalRichContent(content) }}
+              dangerouslySetInnerHTML={{ __html: preparedHtml }}
             />
           </div>
         ) : (

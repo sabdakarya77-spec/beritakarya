@@ -247,7 +247,8 @@ export function AdsMarketingPage({
         </div>
 
         <LegalDocumentBody
-          title="Syarat & Ketentuan Umum Periklanan"
+          pageTitle="Syarat & Ketentuan Umum Periklanan"
+          sectionTitle="Syarat & Ketentuan Umum Periklanan"
           content={termsContent}
           siteName={siteConfig.name}
           eyebrow="Dokumen Portal"
