@@ -132,8 +132,8 @@ export default function SiteFooter({ siteConfig, categories }: SiteFooterProps) 
           <div>
             <h5 className="mb-5 text-[11px] font-black uppercase tracking-[0.16em] text-brand-red">KERJA SAMA</h5>
             <ul className="space-y-3 text-sm text-brand-text-muted">
-              {partnershipLinks.map((item) => (
-                <li key={item.href}>
+              {partnershipLinks.map((item, index) => (
+                <li key={`${item.href}-${index}`}>
                   <Link href={item.href} className="hover:text-brand-red transition-colors font-semibold">
                     {item.label}
                   </Link>

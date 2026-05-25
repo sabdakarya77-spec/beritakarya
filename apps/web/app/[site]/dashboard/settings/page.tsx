@@ -28,7 +28,8 @@ import {
   FileText,
   Shield,
   Cookie,
-  Lock as LockIcon
+  Lock as LockIcon,
+  Users
 } from 'lucide-react'
 import { api } from '../../../../lib/api'
 
@@ -86,11 +87,17 @@ export default function SettingsPage() {
   const [showPrivateKey, setShowPrivateKey] = useState(false)
   const [newTag, setNewTag] = useState('')
   const [uploadingLogo, setUploadingLogo] = useState(false)
+  const [activeLegalSubTab, setActiveLegalSubTab] = useState<
+    'aboutUs' | 'codeOfEthics' | 'editorial' | 'advertising' | 'privacyPolicy' | 'termsOfService' | 'mediaSiber'
+  >('aboutUs')
 
   const aboutUsRef = useRef<HTMLTextAreaElement>(null)
   const codeOfEthicsRef = useRef<HTMLTextAreaElement>(null)
   const editorialRef = useRef<HTMLTextAreaElement>(null)
   const advertisingRef = useRef<HTMLTextAreaElement>(null)
+  const privacyPolicyRef = useRef<HTMLTextAreaElement>(null)
+  const termsOfServiceRef = useRef<HTMLTextAreaElement>(null)
+  const mediaSiberRef = useRef<HTMLTextAreaElement>(null)
   const logoInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -105,9 +112,22 @@ export default function SettingsPage() {
       adjust(codeOfEthicsRef)
       adjust(editorialRef)
       adjust(advertisingRef)
+      adjust(privacyPolicyRef)
+      adjust(termsOfServiceRef)
+      adjust(mediaSiberRef)
     }, 50)
     return () => clearTimeout(timer)
-  }, [settings.aboutUs, settings.codeOfEthics, settings.editorial, settings.advertising, activeTab])
+  }, [
+    settings.aboutUs,
+    settings.codeOfEthics,
+    settings.editorial,
+    settings.advertising,
+    settings.privacyPolicy,
+    settings.termsOfService,
+    settings.mediaSiber,
+    activeTab,
+    activeLegalSubTab
+  ])
 
   useEffect(() => {
     if (!originalSettings) return
@@ -894,7 +914,7 @@ export default function SettingsPage() {
 
             {/* TAB 4: HALAMAN INFORMASI PORTAL */}
             {activeTab === 'info' && (
-              <div className="space-y-8">
+              <div className="space-y-6">
                 <div>
                   <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
                     <BookOpen size={18} className="text-brand-red" /> Halaman Informasi & Legalitas
@@ -904,41 +924,78 @@ export default function SettingsPage() {
                   </p>
                 </div>
 
-                <div className="grid grid-cols-1 gap-6">
-                  <div className="space-y-3">
-                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Tentang Kami</label>
-                    <textarea 
-                      ref={aboutUsRef}
-                      value={settings.aboutUs}
-                      onChange={(e) => setSettings({...settings, aboutUs: e.target.value})}
-                      placeholder="Tuliskan sejarah berdirinya, visi, misi, dan komitmen portal regional..."
-                      rows={4}
-                      className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-3 text-base text-gray-900 dark:text-white outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 transition-all resize-none"
-                    />
-                  </div>
-
-                  <div className="space-y-3">
-                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Kode Etik</label>
-                    <textarea 
-                      ref={codeOfEthicsRef}
-                      value={settings.codeOfEthics}
-                      onChange={(e) => setSettings({...settings, codeOfEthics: e.target.value})}
-                      placeholder="Tuliskan aturan jurnalisme independen, etika peliputan..."
-                      rows={4}
-                      className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-3 text-base text-gray-900 dark:text-white outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 transition-all resize-none"
-                    />
-                  </div>
-
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Redaksi</label>
+                {/* Sub-Tabs Navigation */}
+                <div className="flex flex-wrap gap-2 border-b border-gray-200 dark:border-gray-800 pb-3">
+                  {[
+                    { id: 'aboutUs', label: 'Tentang Kami', icon: BookOpen },
+                    { id: 'codeOfEthics', label: 'Kode Etik', icon: FileText },
+                    { id: 'editorial', label: 'Redaksi', icon: Users },
+                    { id: 'advertising', label: 'Iklan', icon: Share2 },
+                    { id: 'privacyPolicy', label: 'Privasi', icon: Shield },
+                    { id: 'termsOfService', label: 'Syarat', icon: FileText },
+                    { id: 'mediaSiber', label: 'Media Siber', icon: BookOpen }
+                  ].map((subTab) => {
+                    const SubIcon = subTab.icon
+                    const isSubActive = activeLegalSubTab === subTab.id
+                    return (
                       <button
+                        key={subTab.id}
                         type="button"
-                        onClick={() => {
-                          if (confirm('Apakah Anda yakin ingin memuat format Dewan Pers standar? Teks saat ini akan ditimpa.')) {
-                            setSettings({
-                              ...settings,
-                              editorial: `PT SABDA KARYA MEDIA (BERITAKARYA.CO)
+                        onClick={() => setActiveLegalSubTab(subTab.id as any)}
+                        className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all ${
+                          isSubActive
+                            ? 'bg-brand-red/10 text-brand-red border border-brand-red/20'
+                            : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-200 border border-transparent'
+                        }`}
+                      >
+                        <SubIcon size={14} />
+                        <span>{subTab.label}</span>
+                      </button>
+                    )
+                  })}
+                </div>
+
+                {/* Sub-Tabs Content */}
+                <div className="pt-2">
+                  {activeLegalSubTab === 'aboutUs' && (
+                    <div className="space-y-3">
+                      <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Tentang Kami</label>
+                      <textarea
+                        ref={aboutUsRef}
+                        value={settings.aboutUs}
+                        onChange={(e) => setSettings({ ...settings, aboutUs: e.target.value })}
+                        placeholder="Tuliskan sejarah berdirinya, visi, misi, dan komitmen portal regional..."
+                        rows={12}
+                        className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-3 text-base text-gray-900 dark:text-white outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 transition-all resize-none min-h-[350px]"
+                      />
+                    </div>
+                  )}
+
+                  {activeLegalSubTab === 'codeOfEthics' && (
+                    <div className="space-y-3">
+                      <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Kode Etik</label>
+                      <textarea
+                        ref={codeOfEthicsRef}
+                        value={settings.codeOfEthics}
+                        onChange={(e) => setSettings({ ...settings, codeOfEthics: e.target.value })}
+                        placeholder="Tuliskan aturan jurnalisme independen, etika peliputan..."
+                        rows={12}
+                        className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-3 text-base text-gray-900 dark:text-white outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 transition-all resize-none min-h-[350px]"
+                      />
+                    </div>
+                  )}
+
+                  {activeLegalSubTab === 'editorial' && (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Redaksi</label>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (confirm('Apakah Anda yakin ingin memuat format Dewan Pers standar? Teks saat ini akan ditimpa.')) {
+                              setSettings({
+                                ...settings,
+                                editorial: `PT SABDA KARYA MEDIA (BERITAKARYA.CO)
 SK MENKUMHAM: AHU-0012345.AH.01.01.TAHUN 2026
 
 SUSUNAN REDAKSI & TATA KELOLA PERUSAHAAN
@@ -975,64 +1032,80 @@ Email: redaksi@beritakarya.co | Telp: +62 812-3456-7890
 
 Penasihat Hukum:
 - [Nama Advokat], S.H., M.H.`
-                            })
-                          }
-                        }}
-                        className="text-sm font-medium text-brand-red hover:underline flex items-center gap-1"
-                      >
-                        <Sparkles size={12} /> Gunakan Template Dewan Pers
-                      </button>
-                    </div>
-                    <textarea 
-                      ref={editorialRef}
-                      value={settings.editorial}
-                      onChange={(e) => setSettings({...settings, editorial: e.target.value})}
-                      placeholder="Daftar nama Pemimpin Redaksi, Editor, Reporter, Kontributor..."
-                      rows={5}
-                      className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-3 text-base text-gray-900 dark:text-white outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 transition-all resize-none"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="space-y-3">
-                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                        <Shield size={14} className="text-brand-red" /> Kebijakan Privasi
-                      </label>
+                              })
+                            }
+                          }}
+                          className="text-sm font-medium text-brand-red hover:underline flex items-center gap-1"
+                        >
+                          <Sparkles size={12} /> Gunakan Template Dewan Pers
+                        </button>
+                      </div>
                       <textarea
+                        ref={editorialRef}
+                        value={settings.editorial}
+                        onChange={(e) => setSettings({ ...settings, editorial: e.target.value })}
+                        placeholder="Daftar nama Pemimpin Redaksi, Editor, Reporter, Kontributor..."
+                        rows={12}
+                        className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-3 text-base text-gray-900 dark:text-white outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 transition-all resize-none min-h-[350px]"
+                      />
+                    </div>
+                  )}
+
+                  {activeLegalSubTab === 'advertising' && (
+                    <div className="space-y-3">
+                      <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Info Iklan & Kerjasama</label>
+                      <textarea
+                        ref={advertisingRef}
+                        value={settings.advertising}
+                        onChange={(e) => setSettings({ ...settings, advertising: e.target.value })}
+                        placeholder="Tuliskan informasi tarif iklan, syarat pemasangan iklan, dan kontak kerjasama iklan..."
+                        rows={12}
+                        className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-3 text-base text-gray-900 dark:text-white outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 transition-all resize-none min-h-[350px]"
+                      />
+                    </div>
+                  )}
+
+                  {activeLegalSubTab === 'privacyPolicy' && (
+                    <div className="space-y-3">
+                      <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Kebijakan Privasi</label>
+                      <textarea
+                        ref={privacyPolicyRef}
                         value={settings.privacyPolicy}
-                        onChange={(e) => setSettings({...settings, privacyPolicy: e.target.value})}
-                        placeholder="Tuliskan kebijakan tentang bagaimana data pengguna dikumpulkan..."
-                        rows={4}
-                        className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-3 text-base text-gray-900 dark:text-white outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 transition-all resize-none"
+                        onChange={(e) => setSettings({ ...settings, privacyPolicy: e.target.value })}
+                        placeholder="Tuliskan kebijakan tentang bagaimana data pengguna dikumpulkan, digunakan, dan dilindungi..."
+                        rows={12}
+                        className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-3 text-base text-gray-900 dark:text-white outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 transition-all resize-none min-h-[350px]"
                       />
                     </div>
+                  )}
 
+                  {activeLegalSubTab === 'termsOfService' && (
                     <div className="space-y-3">
-                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                        <FileText size={14} className="text-brand-red" /> Ketentuan Penggunaan
-                      </label>
+                      <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Ketentuan Penggunaan</label>
                       <textarea
+                        ref={termsOfServiceRef}
                         value={settings.termsOfService}
-                        onChange={(e) => setSettings({...settings, termsOfService: e.target.value})}
-                        placeholder="Tuliskan ketentuan penggunaan layanan portal berita..."
-                        rows={4}
-                        className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-4 text-base text-gray-900 dark:text-white outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 transition-all resize-none"
+                        onChange={(e) => setSettings({ ...settings, termsOfService: e.target.value })}
+                        placeholder="Tuliskan ketentuan penggunaan layanan portal berita, hak cipta konten, dan batasan tanggung jawab..."
+                        rows={12}
+                        className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-3 text-base text-gray-900 dark:text-white outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 transition-all resize-none min-h-[350px]"
                       />
                     </div>
+                  )}
 
+                  {activeLegalSubTab === 'mediaSiber' && (
                     <div className="space-y-3">
-                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                        <BookOpen size={14} className="text-brand-red" /> Pedoman Media Siber
-                      </label>
+                      <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Pedoman Media Siber</label>
                       <textarea
+                        ref={mediaSiberRef}
                         value={settings.mediaSiber || ''}
-                        onChange={(e) => setSettings({...settings, mediaSiber: e.target.value})}
-                        placeholder="Tuliskan pedoman media siber sesuai aturan Dewan Pers..."
-                        rows={4}
-                        className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-4 text-base text-gray-900 dark:text-white outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 transition-all resize-none"
+                        onChange={(e) => setSettings({ ...settings, mediaSiber: e.target.value })}
+                        placeholder="Tuliskan pedoman pemberitaan media siber sesuai aturan Dewan Pers..."
+                        rows={12}
+                        className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-3 text-base text-gray-900 dark:text-white outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 transition-all resize-none min-h-[350px]"
                       />
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
             )}
