@@ -64,7 +64,7 @@ export async function findArticlesBySite(
     prisma.article.findMany({
       where,
       select: {
-        id: true, title: true, slug: true, excerpt: true, status: true,
+        id: true, title: true, slug: true, excerpt: true, categoryId: true, status: true,
         siteId: true, authorId: true, publishedAt: true, createdAt: true, updatedAt: true,
         isBreaking: true, isExclusive: true, isFeatured: true,
         featuredImage: true, featuredImageBlur: true, featuredImageColor: true,
@@ -97,7 +97,7 @@ export async function findArticlesByIds(
       ...(opts.authorId && { authorId: opts.authorId })
     },
     select: {
-      id: true, title: true, slug: true, excerpt: true, status: true,
+      id: true, title: true, slug: true, excerpt: true, categoryId: true, status: true,
       siteId: true, authorId: true, publishedAt: true, createdAt: true, updatedAt: true,
       isBreaking: true, isExclusive: true, isFeatured: true,
       featuredImage: true, featuredImageBlur: true, featuredImageColor: true,
@@ -133,7 +133,7 @@ export async function findArticleById(id: string, siteId: string) {
   return prisma.article.findFirst({
     where: { id, siteId, ...articleNotDeleted },
     select: {
-      id: true, title: true, slug: true, excerpt: true, status: true,
+      id: true, title: true, slug: true, excerpt: true, categoryId: true, status: true,
       siteId: true, authorId: true, publishedAt: true, createdAt: true, updatedAt: true,
       isBreaking: true, isExclusive: true, isFeatured: true,
       featuredImage: true, featuredImageBlur: true, featuredImageColor: true,
@@ -149,7 +149,7 @@ export async function findArticleBySlug(slug: string, siteId: string) {
   return prisma.article.findFirst({
     where: { siteId, slug, ...articleNotDeleted },
     select: {
-      id: true, title: true, slug: true, excerpt: true, status: true,
+      id: true, title: true, slug: true, excerpt: true, categoryId: true, status: true,
       siteId: true, authorId: true, publishedAt: true, createdAt: true, updatedAt: true,
       isBreaking: true, isExclusive: true, isFeatured: true,
       featuredImage: true, featuredImageBlur: true, featuredImageColor: true,
@@ -165,7 +165,7 @@ export async function findPublishedArticleBySlug(slug: string, siteId: string) {
   return prisma.article.findFirst({
     where: { siteId, slug, status: 'published', ...articleNotDeleted },
     select: {
-      id: true, title: true, slug: true, excerpt: true, status: true,
+      id: true, title: true, slug: true, excerpt: true, categoryId: true, status: true,
       siteId: true, authorId: true, publishedAt: true, createdAt: true, updatedAt: true,
       isBreaking: true, isExclusive: true, isFeatured: true,
       featuredImage: true, featuredImageBlur: true, featuredImageColor: true,
@@ -187,7 +187,7 @@ export async function createArticle(data: {
   return prisma.article.create({
     data: { ...data, blocks: data.blocks ?? [] },
     select: {
-      id: true, title: true, slug: true, excerpt: true, status: true,
+      id: true, title: true, slug: true, excerpt: true, categoryId: true, status: true,
       siteId: true, authorId: true, publishedAt: true, createdAt: true, updatedAt: true,
       isBreaking: true, isExclusive: true, isFeatured: true,
       featuredImage: true, featuredImageBlur: true, featuredImageColor: true,
@@ -215,7 +215,7 @@ export async function updateArticle(
     where: { id },
     data: data as any,
     select: {
-      id: true, title: true, slug: true, excerpt: true, status: true,
+      id: true, title: true, slug: true, excerpt: true, categoryId: true, status: true,
       siteId: true, authorId: true, publishedAt: true, createdAt: true, updatedAt: true,
       isBreaking: true, isExclusive: true, isFeatured: true,
       featuredImage: true, featuredImageBlur: true, featuredImageColor: true,
