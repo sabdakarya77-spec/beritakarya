@@ -3,7 +3,8 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": [".next/**", "dist/**"]
+      "outputs": [".next/**", "dist/**"],
+      "passThroughEnv": ["NODE_ENV"]
     },
     "db:generate": {
       "cache": false
