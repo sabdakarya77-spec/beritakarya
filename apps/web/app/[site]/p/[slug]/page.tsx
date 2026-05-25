@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: { params: { site: string; slu
     about: 'Tentang Kami',
     ethics: 'Kode Etik',
     editorial: 'Redaksi',
-    ads: 'Iklan',
+    ads: 'Layanan Iklan',
     terms: 'Ketentuan Penggunaan',
     'media-siber': 'Pedoman Media Siber',
   }
@@ -65,7 +65,7 @@ export default async function InfoPage({ params }: { params: { site: string; slu
     editorial: { title: 'Redaksi', content: siteSettings?.editorial },
     ads: { title: 'Iklan', content: siteSettings?.advertising },
     terms: { title: 'Ketentuan Penggunaan', content: siteSettings?.termsOfService },
-    'media-siber': { title: 'Pedoman Media Siber', content: siteSettings?.codeOfEthics },
+    'media-siber': { title: 'Pedoman Media Siber', content: siteSettings?.mediaSiber },
   }
 
   const info = contentMap[slug]

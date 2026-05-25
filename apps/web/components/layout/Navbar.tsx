@@ -112,8 +112,10 @@ export default function Navbar({
       </div>
 
       <div className={cn(
-        "overflow-hidden transition-all duration-300 ease-out",
-        isCollapsed ? "max-h-0 opacity-0 pointer-events-none" : "max-h-40 opacity-100"
+        "transition-all duration-300 ease-out",
+        isCollapsed
+          ? "max-h-0 overflow-hidden opacity-0 pointer-events-none"
+          : "max-h-40 overflow-visible opacity-100"
       )}>
       <Container className={cn(
         "grid grid-cols-[1fr_auto_1fr] items-center gap-3 md:gap-4",

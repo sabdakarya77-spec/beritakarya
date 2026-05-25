@@ -56,7 +56,6 @@ export default function SettingsPage() {
     aboutUs: '',
     codeOfEthics: '',
     editorial: '',
-    advertising: '',
     privacyPolicy: '',
     termsOfService: '',
     mediaSiber: '',
@@ -88,13 +87,12 @@ export default function SettingsPage() {
   const [newTag, setNewTag] = useState('')
   const [uploadingLogo, setUploadingLogo] = useState(false)
   const [activeLegalSubTab, setActiveLegalSubTab] = useState<
-    'aboutUs' | 'codeOfEthics' | 'editorial' | 'advertising' | 'privacyPolicy' | 'termsOfService' | 'mediaSiber'
+    'aboutUs' | 'codeOfEthics' | 'editorial' | 'privacyPolicy' | 'termsOfService' | 'mediaSiber'
   >('aboutUs')
 
   const aboutUsRef = useRef<HTMLTextAreaElement>(null)
   const codeOfEthicsRef = useRef<HTMLTextAreaElement>(null)
   const editorialRef = useRef<HTMLTextAreaElement>(null)
-  const advertisingRef = useRef<HTMLTextAreaElement>(null)
   const privacyPolicyRef = useRef<HTMLTextAreaElement>(null)
   const termsOfServiceRef = useRef<HTMLTextAreaElement>(null)
   const mediaSiberRef = useRef<HTMLTextAreaElement>(null)
@@ -111,7 +109,6 @@ export default function SettingsPage() {
       adjust(aboutUsRef)
       adjust(codeOfEthicsRef)
       adjust(editorialRef)
-      adjust(advertisingRef)
       adjust(privacyPolicyRef)
       adjust(termsOfServiceRef)
       adjust(mediaSiberRef)
@@ -121,7 +118,6 @@ export default function SettingsPage() {
     settings.aboutUs,
     settings.codeOfEthics,
     settings.editorial,
-    settings.advertising,
     settings.privacyPolicy,
     settings.termsOfService,
     settings.mediaSiber,
@@ -219,7 +215,6 @@ export default function SettingsPage() {
           aboutUs: data.data.aboutUs || '',
           codeOfEthics: data.data.codeOfEthics || '',
           editorial: data.data.editorial || '',
-          advertising: data.data.advertising || '',
           privacyPolicy: data.data.privacyPolicy || '',
           termsOfService: data.data.termsOfService || '',
           mediaSiber: data.data.mediaSiber || '',
@@ -930,9 +925,8 @@ export default function SettingsPage() {
                     { id: 'aboutUs', label: 'Tentang Kami', icon: BookOpen },
                     { id: 'codeOfEthics', label: 'Kode Etik', icon: FileText },
                     { id: 'editorial', label: 'Redaksi', icon: Users },
-                    { id: 'advertising', label: 'Iklan', icon: Share2 },
-                    { id: 'privacyPolicy', label: 'Privasi', icon: Shield },
-                    { id: 'termsOfService', label: 'Syarat', icon: FileText },
+                    { id: 'privacyPolicy', label: 'Kebijakan Privasi', icon: Shield },
+                    { id: 'termsOfService', label: 'Ketentuan Penggunaan', icon: FileText },
                     { id: 'mediaSiber', label: 'Media Siber', icon: BookOpen }
                   ].map((subTab) => {
                     const SubIcon = subTab.icon
@@ -1045,20 +1039,6 @@ Penasihat Hukum:
                         value={settings.editorial}
                         onChange={(e) => setSettings({ ...settings, editorial: e.target.value })}
                         placeholder="Daftar nama Pemimpin Redaksi, Editor, Reporter, Kontributor..."
-                        rows={12}
-                        className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-3 text-base text-gray-900 dark:text-white outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 transition-all resize-none min-h-[350px]"
-                      />
-                    </div>
-                  )}
-
-                  {activeLegalSubTab === 'advertising' && (
-                    <div className="space-y-3">
-                      <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Info Iklan & Kerjasama</label>
-                      <textarea
-                        ref={advertisingRef}
-                        value={settings.advertising}
-                        onChange={(e) => setSettings({ ...settings, advertising: e.target.value })}
-                        placeholder="Tuliskan informasi tarif iklan, syarat pemasangan iklan, dan kontak kerjasama iklan..."
                         rows={12}
                         className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-3 text-base text-gray-900 dark:text-white outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 transition-all resize-none min-h-[350px]"
                       />
