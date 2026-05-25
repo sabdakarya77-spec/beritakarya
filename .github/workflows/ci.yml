@@ -61,7 +61,7 @@ jobs:
         run: pnpm --filter @beritakarya/api db:generate
 
       - name: Run Prisma Migrations
-        run: pnpm --filter @beritakarya/api prisma migrate deploy
+        run: pnpm --filter @beritakarya/api db:migrate:deploy
 
       - name: Test
         run: pnpm test
