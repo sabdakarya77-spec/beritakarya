@@ -16,12 +16,12 @@ export default function BreakingNewsTicker({
   ] 
 }: BreakingNewsTickerProps) {
   return (
-    <div className="flex h-10 items-center overflow-hidden text-white">
+    <div className="flex h-10 max-w-full items-center overflow-hidden text-white">
       <div className="flex h-full shrink-0 items-center gap-2 bg-brand-red px-4 shadow-[4px_0_12px_rgba(0,0,0,0.15)]">
         <Zap size={14} className="fill-white animate-pulse" />
         <span className="whitespace-nowrap text-[10px] font-black uppercase tracking-[0.18em]">Breaking News</span>
       </div>
-      <div className="relative flex h-full flex-1 items-center overflow-hidden group">
+      <div className="relative flex h-full min-w-0 flex-1 items-center overflow-hidden group">
         <div className="pointer-events-none absolute bottom-0 left-0 top-0 z-10 w-16 bg-gradient-to-r from-brand-black to-transparent dark:from-[#020617]" />
         <div className="pointer-events-none absolute bottom-0 right-0 top-0 z-10 w-16 bg-gradient-to-l from-brand-black to-transparent dark:from-[#020617]" />
 
@@ -32,7 +32,7 @@ export default function BreakingNewsTicker({
             repeat: Infinity, 
             ease: "linear" 
           }}
-          className="flex h-full w-max items-center gap-12 whitespace-nowrap pl-16 pr-6"
+          className="absolute inset-y-0 left-0 flex h-full min-w-max items-center gap-12 whitespace-nowrap pl-16 pr-6 will-change-transform"
         >
           {news.map((item, i) => (
             <div key={i} className="flex items-center gap-12">
@@ -43,7 +43,7 @@ export default function BreakingNewsTicker({
             </div>
           ))}
           {news.map((item, i) => (
-            <div key={`dup-${i}`} className="flex items-center gap-12">
+            <div key={`dup-${i}`} aria-hidden="true" className="flex items-center gap-12">
               <span className="cursor-pointer text-[13px] font-semibold tracking-tight text-white/90 transition-colors hover:text-brand-red">
                 {item}
               </span>

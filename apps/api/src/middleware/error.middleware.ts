@@ -4,7 +4,6 @@ import multer from 'multer'
 import { logger } from '../lib/logger'
 import { env } from '../lib/env'
 import { AppError } from '../utils/AppError'
-// Import type augmentation to recognize `site` property on Request
 import { Prisma } from '@prisma/client'
 import '../types/express'
 
@@ -58,6 +57,14 @@ export function errorMiddleware(
     return res.status(400).json({
       success: false,
       error: { code: 'FILE_ERROR', message: err.message }
+    })
+  }
+
+  // CSRF token errors (from csrf-csrf via double-submit cookie pattern)
+  if (err?.code === 'EBADCSRFTOKEN' || err?.message?.includes('csrf')) {
+    return res.status(403).json({
+      success: false,
+      error: { code: 'EBADCSRFTOKEN', message: 'invalid csrf token' }
     })
   }
 

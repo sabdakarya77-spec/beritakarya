@@ -40,7 +40,7 @@ import { logger, httpLogger } from './lib/logger'
 import { metrics } from './lib/monitoring'
 import { asyncHandler } from './utils/asyncHandler'
 import cookieParser from 'cookie-parser'
-import csurf from 'csurf'
+import { doubleCsrf } from 'csrf-csrf'
 import { getMeilisearchCircuitStatus } from './modules/article/search.service'
 import { processDueScheduledArticles } from './modules/article/article.service'
 
@@ -139,17 +139,30 @@ app.use(securityHeadersMiddleware)
 app.use(cookieParser())
 app.use(jwtVerify)
 
-// [M-005] CSRF Protection setup
-const csrfProtection = csurf({ 
-  cookie: { 
-    httpOnly: true, 
+// [M-005] CSRF Protection setup (replaces deprecated csurf)
+const CSRF_SECRET = env.NODE_ENV === 'production'
+  ? (env.CSRF_SECRET || (() => { throw new Error('CSRF_SECRET env var must be set in production') })())
+  : (env.CSRF_SECRET || 'dev-csrf-secret-change-in-production')
+
+const { generateCsrfToken, doubleCsrfProtection } = doubleCsrf({
+  getSecret: () => CSRF_SECRET,
+  getSessionIdentifier: (req) => req.cookies?.accessToken || req.ip || 'anonymous',
+  cookieName: 'x-csrf-token',
+  cookieOptions: {
+    httpOnly: true,
     secure: env.NODE_ENV === 'production',
-    sameSite: 'none'
-  } 
+    sameSite: 'none',
+    path: '/',
+  },
+  ignoredMethods: ['GET', 'HEAD', 'OPTIONS'],
+  getCsrfTokenFromRequest: (req) =>
+    req.headers['x-csrf-token'] as string ||
+    req.headers['x-xsrf-token'] as string,
 })
 
-app.get('/api/v1/csrf-token', csrfProtection, (req, res) => {
-  res.json({ success: true, data: { csrfToken: req.csrfToken() } })
+app.get('/api/v1/csrf-token', (req, res) => {
+  const csrfToken = generateCsrfToken(req, res)
+  res.json({ success: true, data: { csrfToken } })
 })
 
 app.use(express.json({ limit: '10mb' }))
@@ -165,10 +178,10 @@ app.use('/api/v1', (req, res, next) => {
 })
 
 app.use('/api/v1/auth', authLimiter, authRouter)
-app.use('/api/v1/users', csrfProtection, userRouter)
-app.use('/api/v1/articles', csrfProtection, articleRouter)
-app.use('/api/v1/media', csrfProtection, mediaRouter)
-app.use('/api/v1/ai', csrfProtection, aiRouter)
+app.use('/api/v1/users', doubleCsrfProtection, userRouter)
+app.use('/api/v1/articles', doubleCsrfProtection, articleRouter)
+app.use('/api/v1/media', doubleCsrfProtection, mediaRouter)
+app.use('/api/v1/ai', doubleCsrfProtection, aiRouter)
 
 // Category routes - using functions directly (not routers)
 // GET: public (anyone can read categories)
@@ -176,15 +189,15 @@ app.get('/api/v1/categories/tree', siteMiddleware, asyncHandler(categoryControll
 app.get('/api/v1/categories', siteMiddleware, asyncHandler(categoryController.getCategories))
 // POST/PUT/DELETE: requires auth + site scope + role wapimred/superadmin
 app.post('/api/v1/categories',
-  requireAuth, csrfProtection, siteMiddleware, requireSiteAccess,
+  requireAuth, doubleCsrfProtection, siteMiddleware, requireSiteAccess,
   requireRole(['superadmin', 'wapimred']),
   asyncHandler(categoryController.createCategory))
 app.put('/api/v1/categories/:id',
-  requireAuth, csrfProtection, siteMiddleware, requireSiteAccess,
+  requireAuth, doubleCsrfProtection, siteMiddleware, requireSiteAccess,
   requireRole(['superadmin', 'wapimred']),
   asyncHandler(categoryController.updateCategory))
 app.delete('/api/v1/categories/:id',
-  requireAuth, csrfProtection, siteMiddleware, requireSiteAccess,
+  requireAuth, doubleCsrfProtection, siteMiddleware, requireSiteAccess,
   requireRole(['superadmin', 'wapimred']),
   asyncHandler(categoryController.deleteCategory))
 
@@ -195,32 +208,32 @@ app.get('/api/v1/sites/settings', asyncHandler(siteController.getSiteSettings))
 app.get('/api/v1/sites/:id', asyncHandler(siteController.getSiteById))
 // PATCH settings: requires auth + site scope + role wapimred/superadmin
 app.patch('/api/v1/sites/settings',
-  requireAuth, csrfProtection, siteMiddleware, requireSiteAccess,
+  requireAuth, doubleCsrfProtection, siteMiddleware, requireSiteAccess,
   requireRole(['superadmin', 'wapimred']),
   asyncHandler(siteController.updateSiteSettings))
 // POST/PUT/DELETE/assignWapimred: superadmin only
 app.post('/api/v1/sites',
-  requireAuth, csrfProtection, requireRole(['superadmin']),
+  requireAuth, doubleCsrfProtection, requireRole(['superadmin']),
   asyncHandler(siteController.createSite))
 app.put('/api/v1/sites/:id',
-  requireAuth, csrfProtection, requireRole(['superadmin']),
+  requireAuth, doubleCsrfProtection, requireRole(['superadmin']),
   asyncHandler(siteController.updateSite))
 app.delete('/api/v1/sites/:id',
-  requireAuth, csrfProtection, requireRole(['superadmin']),
+  requireAuth, doubleCsrfProtection, requireRole(['superadmin']),
   asyncHandler(siteController.deleteSite))
 app.post('/api/v1/sites/:id/wapimred',
-  requireAuth, csrfProtection, requireRole(['superadmin']),
+  requireAuth, doubleCsrfProtection, requireRole(['superadmin']),
   asyncHandler(siteController.assignWapimred))
 
-app.use('/api/v1/ads', csrfProtection, adRouter)
-app.use('/api/v1/newsletter', csrfProtection, newsletterRouter)
-app.use('/api/v1/audit', csrfProtection, auditRouter)
-app.use('/api/v1/analytics', csrfProtection, analyticsRouter)
-app.use('/api/v1/notifications', csrfProtection, notificationRouter)
-app.use('/api/v1/comments', csrfProtection, commentRouter)
-app.use('/api/v1/kyc', csrfProtection, kycRouter)
-app.use('/api/v1/invitations', csrfProtection, invitationRouter)
-app.use('/api/v1/admin', csrfProtection, adminRouter)
+app.use('/api/v1/ads', doubleCsrfProtection, adRouter)
+app.use('/api/v1/newsletter', doubleCsrfProtection, newsletterRouter)
+app.use('/api/v1/audit', doubleCsrfProtection, auditRouter)
+app.use('/api/v1/analytics', doubleCsrfProtection, analyticsRouter)
+app.use('/api/v1/notifications', doubleCsrfProtection, notificationRouter)
+app.use('/api/v1/comments', doubleCsrfProtection, commentRouter)
+app.use('/api/v1/kyc', doubleCsrfProtection, kycRouter)
+app.use('/api/v1/invitations', doubleCsrfProtection, invitationRouter)
+app.use('/api/v1/admin', doubleCsrfProtection, adminRouter)
 
 app.get('/health', asyncHandler(async (_, res) => {
   let databaseHealth = false

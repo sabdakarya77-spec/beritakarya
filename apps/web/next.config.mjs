@@ -9,6 +9,7 @@ const nextConfig = {
   reactStrictMode: true,
   output: 'standalone',
   turbopack: {},
+  allowedDevOrigins: ['127.0.0.1', 'localhost'],
   images: {
     formats: ['image/avif', 'image/webp'],
     remotePatterns: [
