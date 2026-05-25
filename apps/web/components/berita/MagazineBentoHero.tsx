@@ -59,7 +59,7 @@ export function MagazineBentoHero({ articles, site }: { articles: any[], site: s
   const sideArticles = articles.slice(1, 4);
 
   return (
-    <section className="relative mb-14 w-full md:mb-16">
+    <section className="relative mb-14 w-full md:mb-16 overflow-hidden">
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85%] h-[85%] bg-brand-red/5 dark:bg-brand-red/10 blur-[80px] -z-10 rounded-full" />
       
       <div className="grid h-auto grid-cols-1 gap-4 lg:h-[450px] lg:grid-cols-12 lg:gap-5 xl:h-[470px]">

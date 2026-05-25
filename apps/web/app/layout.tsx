@@ -45,7 +45,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`${inter.variable} ${outfit.variable} ${playfair.variable} font-sans antialiased`}>
+      <body className={`${inter.variable} ${outfit.variable} ${playfair.variable} font-sans antialiased overflow-x-hidden`}>
         <AuthInit />
         <ScrollReset />
         {children}

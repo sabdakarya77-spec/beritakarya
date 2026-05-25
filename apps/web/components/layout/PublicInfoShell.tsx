@@ -19,13 +19,15 @@ export function PublicInfoShell({
 }: PublicInfoShellProps) {
   return (
     <PublicSiteLayout siteConfig={siteConfig}>
-      <Container>
-        <div
-          className={cn('py-16 md:py-20 mx-auto', publicInfoShellWidthClass[width])}
-        >
-          {children}
-        </div>
-      </Container>
+      <main id="main-content">
+        <Container>
+          <div
+            className={cn('py-16 md:py-20 mx-auto', publicInfoShellWidthClass[width])}
+          >
+            {children}
+          </div>
+        </Container>
+      </main>
     </PublicSiteLayout>
   )
 }
