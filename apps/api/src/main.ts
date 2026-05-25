@@ -151,7 +151,7 @@ const { generateCsrfToken, doubleCsrfProtection } = doubleCsrf({
   cookieOptions: {
     httpOnly: true,
     secure: env.NODE_ENV === 'production',
-    sameSite: 'none',
+    sameSite: env.NODE_ENV === 'production' ? 'none' : 'lax',
     path: '/',
   },
   ignoredMethods: ['GET', 'HEAD', 'OPTIONS'],

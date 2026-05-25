@@ -62,16 +62,17 @@ authRouter.post('/login', asyncHandler(async (req: Request, res: Response) => {
     await resetFailedAttempts(email)
     
     // Set httpOnly cookies
+    const isProd = process.env.NODE_ENV === 'production'
     res.cookie('accessToken', result.accessToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'none',
+      secure: isProd,
+      sameSite: isProd ? 'none' : 'lax',
       maxAge: 15 * 60 * 1000 // 15 mins
     })
     res.cookie('refreshToken', result.refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'none',
+      secure: isProd,
+      sameSite: isProd ? 'none' : 'lax',
       maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
     })
 
@@ -91,16 +92,17 @@ authRouter.post('/register', asyncHandler(async (req: Request, res: Response) =>
   )
   
   // Set httpOnly cookies
+  const isProd = process.env.NODE_ENV === 'production'
   res.cookie('accessToken', result.accessToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'none',
+    secure: isProd,
+    sameSite: isProd ? 'none' : 'lax',
     maxAge: 15 * 60 * 1000
   })
   res.cookie('refreshToken', result.refreshToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'none',
+    secure: isProd,
+    sameSite: isProd ? 'none' : 'lax',
     maxAge: 30 * 24 * 60 * 60 * 1000
   })
 
@@ -117,16 +119,17 @@ authRouter.post('/refresh', asyncHandler(async (req: Request, res: Response) => 
   const result = await authService.refreshAccessToken(refreshToken)
   
   // Update cookies
+  const isProd = process.env.NODE_ENV === 'production'
   res.cookie('accessToken', result.accessToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'none',
+    secure: isProd,
+    sameSite: isProd ? 'none' : 'lax',
     maxAge: 15 * 60 * 1000
   })
   res.cookie('refreshToken', result.refreshToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'none',
+    secure: isProd,
+    sameSite: isProd ? 'none' : 'lax',
     maxAge: 30 * 24 * 60 * 60 * 1000
   })
 
@@ -137,8 +140,9 @@ authRouter.post('/logout', asyncHandler(async (req: any, res: Response) => {
   const refreshToken = req.body.refreshToken || (req.cookies ? req.cookies.refreshToken : undefined)
   
   // Clear cookies regardless of auth status
-  res.clearCookie('accessToken', { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'none' as const })
-  res.clearCookie('refreshToken', { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'none' as const })
+  const isProd = process.env.NODE_ENV === 'production'
+  res.clearCookie('accessToken', { httpOnly: true, secure: isProd, sameSite: (isProd ? 'none' : 'lax') as any })
+  res.clearCookie('refreshToken', { httpOnly: true, secure: isProd, sameSite: (isProd ? 'none' : 'lax') as any })
 
   // If we have user info from jwtVerify middleware, blacklist the token
   if (refreshToken && req.user?.userId) {
