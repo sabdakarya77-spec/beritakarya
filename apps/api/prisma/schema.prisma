@@ -188,6 +188,7 @@ model Article {
   id         String  @id @default(uuid())
   title      String
   slug       String
+  excerpt    String?
   siteId     String
   categoryId String?
   authorId   String

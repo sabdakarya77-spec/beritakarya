@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'next/navigation'
 import { 
   AlignCenter,
+  AlignJustify,
   AlignLeft,
   AlignRight,
   Save, 
@@ -50,7 +51,7 @@ type LegalFieldKey =
   | 'privacyPolicy'
   | 'termsOfService'
   | 'mediaSiber'
-type LegalAlignment = 'left' | 'center' | 'right'
+type LegalAlignment = 'left' | 'center' | 'right' | 'justify'
 
 const LEGAL_EDITOR_MIN_HEIGHT = 'min-h-[350px]'
 
@@ -348,6 +349,16 @@ function LegalRichTextEditor({
           >
             <AlignRight size={16} />
           </button>
+          <button
+            type="button"
+            onMouseDown={preserveSelection}
+            onClick={() => applyAlignment('justify')}
+            className={`${toolbarButtonClass} ${alignment === 'justify' ? toolbarActiveClass : toolbarIdleClass}`}
+            title="Rata kiri kanan"
+            aria-label="Rata kiri kanan"
+          >
+            <AlignJustify size={16} />
+          </button>
         </div>
         <div
           ref={editorRef}
@@ -359,7 +370,7 @@ function LegalRichTextEditor({
         />
       </div>
       <p className="text-xs text-gray-500 dark:text-gray-400">
-        Toolbar: tebal, miring, garis bawah, heading, list, tautan, rata kiri, rata tengah, dan rata kanan.
+        Toolbar: tebal, miring, garis bawah, heading, list, tautan, rata kiri, rata tengah, rata kanan, dan rata kiri kanan.
       </p>
     </div>
   )

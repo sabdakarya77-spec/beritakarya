@@ -6,6 +6,7 @@ export interface Article {
   id: string
   title: string
   slug: string
+  excerpt?: string
   siteId: string
   authorId: string
   blocks: Block[]
@@ -22,12 +23,14 @@ export interface Article {
 
 export interface CreateArticleInput {
   title: string
+  excerpt?: string
   siteId: string
   blocks?: Block[]
 }
 
 export interface UpdateArticleInput {
   title?: string
+  excerpt?: string
   blocks?: Block[]
   metaTitle?: string
   metaDescription?: string
@@ -39,6 +42,7 @@ export interface ArticleListItem {
   id: string
   title: string
   slug: string
+  excerpt?: string
   status: ArticleStatus
   authorId: string
   siteId: string

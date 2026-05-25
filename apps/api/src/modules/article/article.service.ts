@@ -147,6 +147,7 @@ export async function getPublishedArticleBySlug(
 export async function createArticle(
   input: { 
     title: string; 
+    excerpt?: string;
     blocks?: any[]; 
     categoryId?: string | null; 
     tags?: string[];
@@ -197,6 +198,7 @@ export async function createArticle(
   const withSeo = applySeoDefaults({
     title: input.title,
     blocks: input.blocks,
+    excerpt: input.excerpt,
     metaDescription: input.metaDescription
   })
 
@@ -204,6 +206,7 @@ export async function createArticle(
   const article = await createArticleWithSlugRetry({
     title: input.title,
     slug,
+    excerpt: input.excerpt?.trim() || undefined,
     siteId,
     authorId: user.userId,
     categoryId: input.categoryId,
@@ -235,7 +238,7 @@ export async function createArticle(
 export async function updateArticle(
   id: string, siteId: string,
   input: Partial<{ 
-    title: string; blocks: any[]; metaTitle: string; metaDescription: string; 
+    title: string; excerpt: string; blocks: any[]; metaTitle: string; metaDescription: string; 
     categoryId: string | null; tags: string[]; status: string;
     isBreaking: boolean; isExclusive: boolean; isFeatured: boolean;
     featuredImage: string; reviewNotes: string; reviewedBy: string;
@@ -322,6 +325,7 @@ export async function updateArticle(
     const withSeo = applySeoDefaults({
       title: input.title || article.title,
       blocks: input.blocks,
+      excerpt: input.excerpt,
       metaDescription: input.metaDescription
     })
     if (withSeo.metaDescription) data.metaDescription = withSeo.metaDescription
