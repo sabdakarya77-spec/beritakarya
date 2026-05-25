@@ -136,7 +136,7 @@ jobs:
         run: pnpm --filter @beritakarya/api db:generate
 
       - name: Run Prisma Migrations
-        run: pnpm --filter @beritakarya/api prisma migrate deploy
+        run: pnpm --filter @beritakarya/api db:migrate:deploy
 
       - name: Install Playwright Browsers
         run: pnpm --filter @beritakarya/web exec playwright install --with-deps chromium
