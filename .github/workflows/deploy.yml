@@ -45,7 +45,7 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 20, cache: pnpm }
       - run: pnpm install --frozen-lockfile
-      - run: cd apps/api && pnpm db:generate && pnpm prisma migrate deploy
+      - run: cd apps/api && pnpm db:generate && pnpm db:migrate:deploy
       - run: pnpm turbo run test
       - run: pnpm turbo run lint type-check
 
