@@ -1,5 +1,5 @@
 import { prepareLegalDocumentContent } from '../../lib/legalPages'
-import { legalCompactClassName, legalProseClassName } from './legalStyles'
+import { legalProseClassName } from './legalStyles'
 
 type LegalDocumentBodyProps = {
   /** Page H1 — used to strip duplicate headings from CMS HTML */
@@ -28,7 +28,7 @@ export function LegalDocumentBody({
 }: LegalDocumentBodyProps) {
   const proseClass =
     proseSize === 'compact'
-      ? legalCompactClassName
+      ? 'prose prose-sm md:prose-base dark:prose-invert max-w-none'
       : legalProseClassName
 
   const preparedHtml = prepareLegalDocumentContent(content, {

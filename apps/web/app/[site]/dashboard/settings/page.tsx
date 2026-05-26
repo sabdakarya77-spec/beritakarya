@@ -303,35 +303,31 @@ function LegalRichTextEditor({
     emitChange()
   }
 
-  const isSelectionInsideList = () => {
-    const editor = editorRef.current
-    const selection = window.getSelection()
-
-    if (!editor || !selection || selection.rangeCount === 0) return false
-
-    let node: Node | null = selection.anchorNode
-    while (node && node !== editor) {
-      if (
-        node instanceof HTMLElement &&
-        ['UL', 'OL', 'LI'].includes(node.tagName)
-      ) {
-        return true
-      }
-      node = node.parentNode
-    }
-
-    return false
-  }
-
   const applyList = (listTag: 'ul' | 'ol') => {
     const command = listTag === 'ul' ? 'insertUnorderedList' : 'insertOrderedList'
-    const wasInsideList = isSelectionInsideList()
     runCommand(command)
 
-    const insideList = isSelectionInsideList()
+    const editor = editorRef.current
+    const selection = window.getSelection()
+    const insideList =
+      !!editor &&
+      !!selection &&
+      selection.rangeCount > 0 &&
+      (() => {
+        let node: Node | null = selection.anchorNode
+        while (node && node !== editor) {
+          if (
+            node instanceof HTMLElement &&
+            ['UL', 'OL', 'LI'].includes(node.tagName)
+          ) {
+            return true
+          }
+          node = node.parentNode
+        }
+        return false
+      })()
 
-    // Fallback hanya untuk kasus browser gagal membuat list baru.
-    if (!wasInsideList && !insideList) {
+    if (!insideList) {
       insertListFallback(listTag)
       emitChange()
     }
