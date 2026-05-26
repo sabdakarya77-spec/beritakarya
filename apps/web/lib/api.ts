@@ -28,6 +28,13 @@ export const fetchCsrfToken = async () => {
   return csrfTokenPromise;
 }
 
+// Invalidasi cache dan paksa ambil ulang token CSRF dari server
+export const refreshCsrfToken = async () => {
+  csrfToken = null;
+  csrfTokenPromise = null;
+  await fetchCsrfToken();
+}
+
 if (typeof window !== 'undefined') {
   fetchCsrfToken();
 }
@@ -90,6 +97,21 @@ api.interceptors.response.use(
   (res) => res,
   async (error) => {
     const original = error.config
+
+    // [CSRF] Jika 403 dengan kode EBADCSRFTOKEN, ambil token CSRF baru secara silent lalu coba ulang
+    const isCsrfError =
+      error.response?.status === 403 &&
+      (error.response?.data?.error?.code === 'EBADCSRFTOKEN' ||
+        error.response?.data?.error?.message?.toLowerCase().includes('csrf'))
+
+    if (isCsrfError && !original._csrfRetry) {
+      original._csrfRetry = true
+      await refreshCsrfToken()
+      if (csrfToken) {
+        original.headers['X-CSRF-Token'] = csrfToken
+      }
+      return api(original)
+    }
 
     // Jangan auto-refresh untuk auth endpoints — biarkan callernya yang handle
     const isAuthEndpoint = AUTH_SKIP_REFRESH_URLS.some(url => original.url?.includes(url))

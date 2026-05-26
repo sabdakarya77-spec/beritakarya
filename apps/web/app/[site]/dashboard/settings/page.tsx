@@ -136,11 +136,18 @@ function LegalRichTextEditor({
   placeholder: string
 }) {
   const editorRef = useRef<HTMLDivElement>(null)
+  const lastEmittedValueRef = useRef<string>('')
   const [alignment, setAlignment] = useState<LegalAlignment>('left')
 
   useEffect(() => {
     const editor = editorRef.current
     if (!editor) return
+
+    // Jika nilai yang masuk sama dengan nilai terakhir yang dikirim (internal update),
+    // jangan perbarui DOM agar caret/kursor tidak melompat.
+    if (value === lastEmittedValueRef.current) {
+      return
+    }
 
     const parsed = parseLegalContent(value)
     if (editor.innerHTML !== parsed.html) {
@@ -148,6 +155,9 @@ function LegalRichTextEditor({
     }
     editor.style.textAlign = parsed.align
     setAlignment(parsed.align)
+
+    // Sinkronisasi nilai terakhir agar tetap up-to-date saat ada pembaruan eksternal
+    lastEmittedValueRef.current = value
   }, [value])
 
   const emitChange = (nextAlign?: LegalAlignment) => {
@@ -157,7 +167,9 @@ function LegalRichTextEditor({
       anchor.setAttribute('target', '_blank')
       anchor.setAttribute('rel', 'noopener noreferrer')
     })
-    onChange(serializeLegalContent(editor.innerHTML, nextAlign || alignment))
+    const serialized = serializeLegalContent(editor.innerHTML, nextAlign || alignment)
+    lastEmittedValueRef.current = serialized
+    onChange(serialized)
   }
 
   const runCommand = (
@@ -208,7 +220,9 @@ function LegalRichTextEditor({
     editor.style.textAlign = nextAlign
     setAlignment(nextAlign)
     editor.focus()
-    onChange(serializeLegalContent(editor.innerHTML, nextAlign))
+    const serialized = serializeLegalContent(editor.innerHTML, nextAlign)
+    lastEmittedValueRef.current = serialized
+    onChange(serialized)
   }
 
   const toolbarButtonClass =
