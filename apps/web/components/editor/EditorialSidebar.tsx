@@ -183,7 +183,7 @@ export function EditorialSidebar() {
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 24, stiffness: 220 }}
-            className="fixed inset-x-0 bottom-0 top-[4.5rem] z-[70] flex w-full flex-col rounded-t-[28px] border border-gray-100 bg-white shadow-2xl dark:border-white/5 dark:bg-slate-900 sm:top-[4.75rem] md:top-[5rem] md:left-auto md:rounded-none md:border-y-0 md:border-r-0 md:w-[23rem] md:max-w-[23rem] xl:top-0 xl:w-[22rem] xl:max-w-[22rem] 2xl:w-[23rem] 2xl:max-w-[23rem]"
+            className="fixed inset-x-0 bottom-0 top-[4.5rem] z-[70] flex w-full flex-col rounded-t-[28px] border border-gray-100 bg-white shadow-2xl dark:border-white/5 dark:bg-slate-900 sm:top-[4.75rem] md:top-[5rem] md:left-auto md:rounded-none md:border-y-0 md:border-r-0 md:w-[24.5rem] md:max-w-[24.5rem] xl:top-0 xl:w-[23.5rem] xl:max-w-[23.5rem] 2xl:w-[24.5rem] 2xl:max-w-[24.5rem]"
           >
             <div className="border-b border-gray-100 px-4 py-4 dark:border-white/5 sm:px-5 md:px-6 md:py-5">
               <div className="flex items-start justify-between gap-3 md:gap-4">
