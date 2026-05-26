@@ -303,31 +303,34 @@ function LegalRichTextEditor({
     emitChange()
   }
 
-  const applyList = (listTag: 'ul' | 'ol') => {
-    const command = listTag === 'ul' ? 'insertUnorderedList' : 'insertOrderedList'
-    runCommand(command)
-
+  const isSelectionInsideList = () => {
     const editor = editorRef.current
     const selection = window.getSelection()
-    const insideList =
-      !!editor &&
-      !!selection &&
-      selection.rangeCount > 0 &&
-      (() => {
-        let node: Node | null = selection.anchorNode
-        while (node && node !== editor) {
-          if (
-            node instanceof HTMLElement &&
-            ['UL', 'OL', 'LI'].includes(node.tagName)
-          ) {
-            return true
-          }
-          node = node.parentNode
-        }
-        return false
-      })()
 
-    if (!insideList) {
+    if (!editor || !selection || selection.rangeCount === 0) return false
+
+    let node: Node | null = selection.anchorNode
+    while (node && node !== editor) {
+      if (
+        node instanceof HTMLElement &&
+        ['UL', 'OL', 'LI'].includes(node.tagName)
+      ) {
+        return true
+      }
+      node = node.parentNode
+    }
+
+    return false
+  }
+
+  const applyList = (listTag: 'ul' | 'ol') => {
+    const command = listTag === 'ul' ? 'insertUnorderedList' : 'insertOrderedList'
+    const wasInsideList = isSelectionInsideList()
+    runCommand(command)
+
+    const insideList = isSelectionInsideList()
+
+    if (!wasInsideList && !insideList) {
       insertListFallback(listTag)
       emitChange()
     }
