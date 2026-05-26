@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useEditorStore } from '../../../store/editorStore'
 import { cn } from '../../../lib/utils'
+import { InlineToolbar } from './InlineToolbar'
 import type { ParagraphBlock as TParagraphBlock, Block } from '@beritakarya/types'
 
 const BLOCK_TYPES: { type: Block['type']; label: string; desc: string; aliases: string[] }[] = [
@@ -11,23 +12,23 @@ const BLOCK_TYPES: { type: Block['type']; label: string; desc: string; aliases: 
   { type: 'callout', label: 'Highlight', desc: 'Tegaskan informasi paling penting', aliases: ['highlight', 'callout', 'sorot'] },
   { type: 'image', label: 'Gambar', desc: 'Masukkan satu foto utama', aliases: ['gambar', 'foto', 'image'] },
   { type: 'imageGrid', label: 'Grid Gambar', desc: 'Tampilkan dua atau tiga visual sejajar', aliases: ['grid', 'galeri', 'foto'] },
-  { type: 'gallery', label: 'Galeri', desc: 'Kumpulan foto dalam satu blok', aliases: ['gallery', 'galeri', 'slideshow'] },
+  { type: 'gallery', label: 'Galeri', desc: 'Kumpulkan foto dalam satu blok', aliases: ['gallery', 'galeri', 'slideshow'] },
   { type: 'embed', label: 'Embed', desc: 'Sisipkan YouTube atau konten eksternal', aliases: ['embed', 'youtube', 'video'] },
 ]
 
 export function ParagraphBlock({ block }: { block: TParagraphBlock }) {
   const { updateBlock, replaceBlock } = useEditorStore()
-  const ref = useRef<HTMLDivElement>(null)
+  const editorRef = useRef<HTMLDivElement>(null)
   const [showMenu, setShowMenu] = useState(false)
   const [slashQuery, setSlashQuery] = useState('')
 
   useEffect(() => {
-    const element = ref.current
+    const element = editorRef.current
     if (!element) return
 
     const nextValue = block.content || ''
-    if (element.textContent !== nextValue) {
-      element.textContent = nextValue
+    if (element.innerHTML !== nextValue) {
+      element.innerHTML = nextValue
     }
   }, [block.content])
 
@@ -41,23 +42,23 @@ export function ParagraphBlock({ block }: { block: TParagraphBlock }) {
   }, [slashQuery])
 
   const extractSlashCommand = (value: string) => {
-    const normalized = value.replace(/\u00a0/g, ' ')
-    const match = normalized.match(/^\s*\/([a-zA-Z0-9-]*)$/)
-
-    if (!match) {
-      return { isCommand: false, query: '' }
+    const normalized = value.replace(/\u00a0/g, ' ').trim()
+    if (normalized === '/') {
+      return { isCommand: true, query: '' }
     }
-
-    return {
-      isCommand: true,
-      query: match[1] || ''
-    }
+    const match = normalized.match(/^\/([a-zA-Z0-9-]*)$/)
+    if (!match) return { isCommand: false, query: '' }
+    return { isCommand: true, query: match[1] || '' }
   }
 
-  const handleInput = (e: React.FormEvent<HTMLDivElement>) => {
-    const text = e.currentTarget.textContent || ''
-    updateBlock(block.id, { content: text })
+  const handleInput = () => {
+    const element = editorRef.current
+    if (!element) return
 
+    const html = element.innerHTML
+    updateBlock(block.id, { content: html })
+
+    const text = element.textContent || ''
     const command = extractSlashCommand(text)
     setShowMenu(command.isCommand)
     setSlashQuery(command.query)
@@ -69,30 +70,19 @@ export function ParagraphBlock({ block }: { block: TParagraphBlock }) {
     setSlashQuery('')
   }
 
-  const toggleDropCap = () => {
-    updateBlock(block.id, { dropCap: !block.dropCap })
+  const handleFormat = (command: string) => {
+    const element = editorRef.current
+    if (element) {
+      updateBlock(block.id, { content: element.innerHTML })
+    }
   }
 
   return (
     <div className="relative group/p">
-      {/* DropCap Toggle */}
-      <div className="absolute -left-12 top-0 opacity-0 group-hover/p:opacity-100 transition-opacity hidden md:block">
-        <button 
-          onClick={toggleDropCap}
-          className={cn(
-            "w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black border transition-all",
-            block.dropCap 
-              ? "bg-brand-red text-white border-brand-red shadow-lg shadow-brand-red/20" 
-              : "bg-white dark:bg-white/5 text-gray-400 border-gray-100 dark:border-white/5 hover:border-brand-red hover:text-brand-red"
-          )}
-          title="Toggle Drop Cap"
-        >
-          DC
-        </button>
-      </div>
+      <InlineToolbar editorRef={editorRef} onFormat={handleFormat} />
 
       <div
-        ref={ref}
+        ref={editorRef}
         contentEditable
         suppressContentEditableWarning
         onInput={handleInput}
@@ -101,21 +91,42 @@ export function ParagraphBlock({ block }: { block: TParagraphBlock }) {
             setShowMenu(false)
             setSlashQuery('')
           }
+          if (e.key === 'b' && (e.ctrlKey || e.metaKey)) {
+            e.preventDefault()
+            document.execCommand('bold', false)
+            handleFormat('bold')
+          }
+          if (e.key === 'i' && (e.ctrlKey || e.metaKey)) {
+            e.preventDefault()
+            document.execCommand('italic', false)
+            handleFormat('italic')
+          }
+          if (e.key === 'u' && (e.ctrlKey || e.metaKey)) {
+            e.preventDefault()
+            document.execCommand('underline', false)
+            handleFormat('underline')
+          }
         }}
-        onBlur={(e) => {
-          updateBlock(block.id, { content: e.currentTarget.textContent || '' })
+        onBlur={() => {
+          const element = editorRef.current
+          if (element) {
+            updateBlock(block.id, { content: element.innerHTML })
+          }
           setTimeout(() => setShowMenu(false), 200)
         }}
         data-placeholder="Tulis paragraf... (ketik '/' untuk opsi)"
         className={cn(
           "min-h-[1.75em] outline-none font-serif text-[1.02rem] leading-8 tracking-[0.01em] text-brand-black dark:text-gray-200 empty:before:content-[attr(data-placeholder)] empty:before:text-gray-300 dark:empty:before:text-white/20 empty:before:pointer-events-none lg:text-[1.08rem] lg:leading-[2rem] xl:text-[1.14rem] xl:leading-[2.1rem]",
-          block.dropCap && "first-letter:float-left first-letter:mr-3 first-letter:mt-2 first-letter:text-5xl first-letter:font-black first-letter:leading-none first-letter:text-brand-red lg:first-letter:mr-4 lg:first-letter:text-6xl"
+          "[&_b]:font-bold [&_strong]:font-bold",
+          "[&_i]:italic [&_em]:italic",
+          "[&_u]:underline",
+          "[&_a]:text-brand-red [&_a]:underline"
         )}
       />
-      
+
       {showMenu && (
-        <div className="absolute left-0 top-full mt-2 w-64 bg-white dark:bg-slate-900 border border-gray-100 dark:border-white/5 rounded-xl shadow-2xl z-50 p-2 overflow-hidden animate-fade-in">
-          <div className="px-2 py-1.5 mb-1 text-[10px] font-black uppercase tracking-widest text-gray-400">
+        <div className="absolute left-0 top-full z-50 mt-2 w-64 overflow-hidden rounded-xl border border-gray-200/70 bg-white/95 p-2 shadow-xl backdrop-blur-xl dark:border-white/10 dark:bg-slate-900/90 animate-fade-in">
+          <div className="mb-1 px-2 py-1.5 text-[10px] font-black uppercase tracking-widest text-gray-400">
             {slashQuery ? `Perintah: /${slashQuery}` : 'Pilih Tipe Blok'}
           </div>
           <div className="flex flex-col gap-0.5">
@@ -123,15 +134,15 @@ export function ParagraphBlock({ block }: { block: TParagraphBlock }) {
               <button
                 key={t.type}
                 onClick={() => handleSelect(t.type)}
-                className="flex flex-col text-left px-3 py-2 rounded-lg hover:bg-brand-red/5 hover:text-brand-red dark:hover:bg-white/5 transition-colors group"
+                className="flex flex-col px-3 py-2 text-left transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-white/5"
               >
-                <span className="text-sm font-bold text-brand-black dark:text-white group-hover:text-brand-red transition-colors">{t.label}</span>
+                <span className="text-sm font-bold text-brand-black dark:text-white">{t.label}</span>
                 <span className="text-[10px] text-gray-400">{t.desc}</span>
               </button>
             ))}
             {matchingBlocks.length === 0 && (
               <div className="px-3 py-2 text-xs text-gray-400">
-                Tidak ada tipe blok yang cocok dengan perintah tersebut.
+                Tidak ada tipe blok yang cocok.
               </div>
             )}
           </div>
