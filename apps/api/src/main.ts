@@ -179,7 +179,7 @@ app.use('/api/v1', (req, res, next) => {
 
 const csrfProtectionWithBypass = (req: any, res: any, next: any) => {
   // Bypass CSRF for background heartbeat pings as they carry no CSRF vulnerability
-  if (req.originalUrl === '/api/v1/users/heartbeat') {
+  if (req.originalUrl.split('?')[0] === '/api/v1/users/heartbeat') {
     return next()
   }
   return doubleCsrfProtection(req, res, next)
