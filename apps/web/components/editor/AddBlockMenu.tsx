@@ -4,29 +4,25 @@ import { Search, Type, Heading1, List, Quote, Sparkles, Image, Grid2X2, GalleryV
 import { useEditorStore } from '../../store/editorStore'
 import type { Block } from '@beritakarya/types'
 
-type BlockCategory = 'Teks' | 'Media' | 'Sorotan' | 'Sisipan'
-
 interface BlockTypeOption {
   type: Block['type']
   label: string
-  desc: string
-  helper?: string
-  category: BlockCategory
+  category: string
   keywords: string[]
   icon: typeof Type
 }
 
 const BLOCK_TYPES: BlockTypeOption[] = [
-  { type: 'paragraph', label: 'Paragraf', desc: 'Blok teks utama untuk isi berita dan narasi utama.', helper: 'Unit teks utama untuk menulis isi berita dan narasi.', category: 'Teks', keywords: ['teks', 'isi', 'body'], icon: Type },
-  { type: 'heading', label: 'Subjudul', desc: 'Memecah artikel ke beberapa bagian agar alurnya mudah dipindai.', helper: 'Membagi artikel menjadi bagian-bagian dengan judul bantu agar mudah discan.', category: 'Teks', keywords: ['heading', 'judul', 'h2', 'h3'], icon: Heading1 },
-  { type: 'list', label: 'Daftar', desc: 'Cocok untuk poin fakta, langkah, atau rangkuman cepat.', helper: 'Daftar poin untuk fakta, langkah-langkah, atau rangkuman.', category: 'Teks', keywords: ['list', 'bullet', 'poin'], icon: List },
-  { type: 'quote', label: 'Kutipan', desc: 'Menonjolkan ucapan narasumber atau kalimat penting.', helper: 'Menampilkan ucapan narasumber atau kalimat penting secara menonjol.', category: 'Sorotan', keywords: ['quote', 'kutipan', 'statement'], icon: Quote },
-  { type: 'callout', label: 'Highlight', desc: 'Sorotan visual untuk info penting, catatan redaksi, atau peringatan.', helper: 'Sorotan visual untuk info penting, catatan redaksi, atau peringatan.', category: 'Sorotan', keywords: ['callout', 'highlight', 'sorot'], icon: Sparkles },
-  { type: 'image', label: 'Gambar', desc: 'Satu foto dengan caption untuk memperkuat konteks berita.', helper: 'Satu foto dengan keterangan untuk memperkuat konteks berita.', category: 'Media', keywords: ['foto', 'image', 'gambar'], icon: Image },
-  { type: 'imageGrid', label: 'Grid Gambar', desc: 'Menampilkan dua atau tiga foto sejajar dalam satu blok.', helper: 'Menyusun 2-3 foto sejajar dalam satu blok visual.', category: 'Media', keywords: ['grid', 'galeri', 'foto'], icon: Grid2X2 },
-  { type: 'gallery', label: 'Galeri', desc: 'Kumpulan beberapa foto jika satu visual tidak cukup.', helper: 'Koleksi foto yang bisa discroll atau di-klik untuk memperbesar.', category: 'Media', keywords: ['gallery', 'slideshow', 'galeri'], icon: GalleryVertical },
-  { type: 'mediaText', label: 'Media & Teks', desc: 'Visual dan narasi berdampingan untuk highlight yang lebih terarah.', helper: 'Menempatkan visual dan teks bersebelahan untuk sorotan yang terarah.', category: 'Media', keywords: ['media', 'teks', 'kolom'], icon: Columns2 },
-  { type: 'embed', label: 'Embed', desc: 'Menyematkan YouTube atau konten eksternal langsung ke artikel.', helper: 'Menyisipkan video YouTube atau konten eksternal agar langsung diputar di artikel.', category: 'Sisipan', keywords: ['youtube', 'embed', 'video'], icon: PlaySquare },
+  { type: 'paragraph', label: 'Paragraf', category: 'Teks', keywords: ['teks', 'isi', 'body'], icon: Type },
+  { type: 'heading', label: 'Subjudul', category: 'Teks', keywords: ['heading', 'judul', 'h2', 'h3'], icon: Heading1 },
+  { type: 'list', label: 'Daftar', category: 'Teks', keywords: ['list', 'bullet', 'poin'], icon: List },
+  { type: 'quote', label: 'Kutipan', category: 'Sorotan', keywords: ['quote', 'kutipan', 'statement'], icon: Quote },
+  { type: 'callout', label: 'Highlight', category: 'Sorotan', keywords: ['callout', 'highlight', 'sorot'], icon: Sparkles },
+  { type: 'image', label: 'Gambar', category: 'Media', keywords: ['foto', 'image', 'gambar'], icon: Image },
+  { type: 'imageGrid', label: 'Grid Gambar', category: 'Media', keywords: ['grid', 'galeri', 'foto'], icon: Grid2X2 },
+  { type: 'gallery', label: 'Galeri', category: 'Media', keywords: ['gallery', 'slideshow', 'galeri'], icon: GalleryVertical },
+  { type: 'mediaText', label: 'Media & Teks', category: 'Media', keywords: ['media', 'teks', 'kolom'], icon: Columns2 },
+  { type: 'embed', label: 'Embed', category: 'Sisipan', keywords: ['youtube', 'embed', 'video'], icon: PlaySquare },
 ]
 
 interface Props {
@@ -51,12 +47,12 @@ export function AddBlockMenu({ afterId, compact, onClose }: Props) {
     const normalizedQuery = query.trim().toLowerCase()
     if (!normalizedQuery) return BLOCK_TYPES
 
-    return BLOCK_TYPES.filter(({ label, desc, keywords }) =>
-      [label, desc, ...keywords].some((value) => value.toLowerCase().includes(normalizedQuery))
+    return BLOCK_TYPES.filter(({ label, keywords }) =>
+      [label, ...keywords].some((value) => value.toLowerCase().includes(normalizedQuery))
     )
   }, [query])
 
-  if (compact && !open) {
+  if (!open) {
     return (
       <button
         onClick={() => setOpen(true)}
@@ -68,73 +64,44 @@ export function AddBlockMenu({ afterId, compact, onClose }: Props) {
     )
   }
 
-  if (!open) {
-    return (
-      <button
-        onClick={() => setOpen(true)}
-        className="flex w-full items-center justify-between rounded-2xl border border-dashed border-gray-300/80 bg-white/80 px-5 py-4 text-left transition-colors hover:border-brand-red/40 hover:bg-brand-red/[0.03] dark:border-white/10 dark:bg-slate-950/40 dark:hover:border-brand-red/30"
-      >
-        <div className="flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gray-100 text-lg leading-none text-gray-500 dark:bg-white/5 dark:text-gray-300">
-            +
-          </span>
-          <div>
-            <p className="text-sm font-semibold text-brand-black dark:text-white">Tambah blok baru</p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">Blok adalah unit isi artikel seperti paragraf, subjudul, gambar, kutipan, atau embed.</p>
-          </div>
-        </div>
-        <span className="text-[10px] font-black uppercase tracking-[0.22em] text-gray-400">Slash / menu</span>
-      </button>
-    )
-  }
-
   return (
-    <div className="rounded-[22px] border border-gray-200/80 bg-white/95 p-3 shadow-[0_18px_48px_rgba(15,23,42,0.06)] dark:border-white/10 dark:bg-slate-900/90">
-      <div className="mb-3 flex items-center gap-2.5">
+    <div className="rounded-2xl border border-gray-200/70 bg-white/95 p-3 shadow-xl dark:border-white/10 dark:bg-slate-900/90">
+      <div className="mb-2.5 flex items-center gap-2">
         <div className="relative flex-1">
-          <Search size={14} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+          <Search size={13} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           <input
             value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Cari paragraf, subjudul, gambar, embed..."
-            className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-3.5 text-[13px] text-brand-black outline-none transition-colors focus:border-brand-red dark:border-white/10 dark:bg-slate-950/60 dark:text-white"
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Cari blok..."
+            className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2 pl-9 pr-3 text-[12px] text-brand-black outline-none transition-colors focus:border-brand-red dark:border-white/10 dark:bg-slate-950/60 dark:text-white"
           />
         </div>
         <button
-          onClick={() => {
-            setOpen(false)
-            setQuery('')
-          }}
+          onClick={() => { setOpen(false); setQuery(''); }}
           className="rounded-full p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-brand-black dark:hover:bg-white/5 dark:hover:text-white"
-          aria-label="Tutup menu blok"
+          aria-label="Tutup"
         >
-          <X size={15} />
+          <X size={14} />
         </button>
       </div>
 
-      <div className="mb-2.5 flex items-center justify-between px-0.5">
-        <span className="text-[10px] uppercase tracking-[0.16em] text-gray-400 dark:text-gray-500">
-          {filteredBlocks.length} blok tersedia
-        </span>
-      </div>
-
-      <div className="overflow-hidden rounded-xl border border-gray-200/70 bg-gray-50/40 dark:border-white/10 dark:bg-slate-950/30">
+      <div className="grid grid-cols-3 gap-1">
         {filteredBlocks.map(({ type, label, icon: Icon }) => (
           <button
             key={type}
             onClick={() => handleAdd(type)}
-            className="flex w-full items-center gap-2.5 border-b border-gray-200/70 bg-transparent px-3 py-2.5 text-left transition-colors last:border-b-0 hover:bg-brand-red/[0.04] dark:border-white/10 dark:hover:bg-white/[0.03]"
+            className="group flex flex-col items-center gap-1.5 rounded-xl border border-transparent py-2.5 px-2 text-center transition-all hover:border-brand-red/20 hover:bg-brand-red/[0.03] dark:hover:bg-white/[0.03]"
           >
-            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-white text-gray-500 dark:bg-slate-900 dark:text-gray-300">
-              <Icon size={13} />
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gray-100 text-gray-500 transition-colors group-hover:bg-brand-red group-hover:text-white dark:bg-white/5 dark:group-hover:bg-brand-red dark:group-hover:text-white">
+              <Icon size={16} />
             </span>
-            <span className="text-[12px] font-medium text-brand-black dark:text-white">{label}</span>
+            <span className="text-[10px] font-medium text-gray-500 transition-colors group-hover:text-brand-black dark:text-gray-400 dark:group-hover:text-white">{label}</span>
           </button>
         ))}
 
         {filteredBlocks.length === 0 && (
-          <div className="rounded-xl border border-dashed border-gray-200 px-4 py-5 text-center text-sm text-gray-500 dark:border-white/10 dark:text-gray-400">
-            Tidak ada tipe blok yang cocok dengan kata kunci tersebut.
+          <div className="col-span-3 rounded-xl border border-dashed border-gray-200 py-4 text-center text-[11px] text-gray-400 dark:border-white/10 dark:text-gray-500">
+            Tidak ada blok yang cocok
           </div>
         )}
       </div>
