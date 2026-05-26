@@ -1,11 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { MapPin, Mail, MessageCircle, Phone } from 'lucide-react';
+import { MapPin, Mail, Phone } from 'lucide-react';
 import { SiFacebook, SiInstagram, SiTelegram, SiTiktok, SiWhatsapp, SiX, SiYoutube } from 'react-icons/si';
 
 import { CategoryItem } from '../../lib/constants';
 import { Container } from './Container';
+import { ALL_LEGAL_PAGES } from '../../lib/legalPages';
 
 interface SiteFooterProps {
   siteConfig: any;
@@ -31,7 +32,6 @@ function buildWhatsAppLink(phone?: string | null) {
 
 export default function SiteFooter({ siteConfig, categories }: SiteFooterProps) {
   const activeSite = siteConfig?.id || 'pusat';
-  const supportEmail = siteConfig?.contactEmail || 'support.beritakarya@gmail.com';
   const resolvedSocialLinks = {
     whatsapp: siteConfig?.socialLinks?.whatsapp?.trim() || buildWhatsAppLink(siteConfig?.phone),
     facebook: siteConfig?.socialLinks?.facebook?.trim() || '',
@@ -51,14 +51,10 @@ export default function SiteFooter({ siteConfig, categories }: SiteFooterProps) 
     { href: `/${activeSite}/p/ads`, label: 'Kemitraan & Partner' },
   ];
 
-  const bottomLinks = [
-    { href: `/${activeSite}/p/about`, label: 'Tentang Kami' },
-    { href: `/${activeSite}/p/editorial`, label: 'Redaksi' },
-    { href: `/${activeSite}/p/ethics`, label: 'Kode Etik' },
-    { href: `/${activeSite}/kebijakan-privasi`, label: 'Kebijakan Privasi' },
-    { href: `/${activeSite}/p/media-siber`, label: 'Pedoman Media Siber' },
-    { href: `/${activeSite}/p/terms`, label: 'Ketentuan Penggunaan' },
-  ];
+  const bottomLinks = ALL_LEGAL_PAGES.map((page) => ({
+    href: page.href(activeSite),
+    label: page.title,
+  }));
   const socialLinks = [
     { href: resolvedSocialLinks.whatsapp, label: 'WhatsApp', Icon: SiWhatsapp },
     { href: resolvedSocialLinks.facebook, label: 'Facebook', Icon: SiFacebook },

@@ -30,13 +30,6 @@ export const LEGAL_PAGE_INTROS: Record<LegalSlug, string> = {
     'Rujukan pedoman media siber dan praktik publikasi yang mengikuti prinsip tanggung jawab pers.',
 }
 
-export const PRIVACY_PAGE = {
-  title: 'Kebijakan Privasi',
-  intro:
-    'Penjelasan mengenai bagaimana portal mengumpulkan, menggunakan, menyimpan, dan melindungi data pengguna serta informasi yang relevan dengan operasional layanan.',
-  settingsKey: 'privacyPolicy' as const,
-}
-
 type SiteSettingsLike = {
   aboutUs?: string | null
   codeOfEthics?: string | null
@@ -44,6 +37,73 @@ type SiteSettingsLike = {
   termsOfService?: string | null
   mediaSiber?: string | null
   privacyPolicy?: string | null
+}
+
+export type LegalPageConfig = {
+  id: string
+  slug: string
+  title: string
+  settingsKey: keyof SiteSettingsLike
+  intro: string
+  href: (siteId: string) => string
+}
+
+export const ALL_LEGAL_PAGES: LegalPageConfig[] = [
+  {
+    id: 'aboutUs',
+    slug: 'about',
+    title: 'Tentang Kami',
+    settingsKey: 'aboutUs',
+    intro: 'Mengenal identitas, arah editorial, dan komitmen portal dalam melayani pembaca di wilayah ini.',
+    href: (siteId) => `/${siteId}/p/about`,
+  },
+  {
+    id: 'editorial',
+    slug: 'editorial',
+    title: 'Redaksi',
+    settingsKey: 'editorial',
+    intro: 'Struktur redaksi, penanggung jawab, dan informasi kelembagaan yang menjadi fondasi operasional portal.',
+    href: (siteId) => `/${siteId}/p/editorial`,
+  },
+  {
+    id: 'codeOfEthics',
+    slug: 'ethics',
+    title: 'Kode Etik',
+    settingsKey: 'codeOfEthics',
+    intro: 'Pedoman etika redaksi dan prinsip kerja jurnalistik yang menjadi dasar setiap proses peliputan.',
+    href: (siteId) => `/${siteId}/p/ethics`,
+  },
+  {
+    id: 'privacyPolicy',
+    slug: 'kebijakan-privasi',
+    title: 'Kebijakan Privasi',
+    settingsKey: 'privacyPolicy',
+    intro: 'Penjelasan mengenai bagaimana portal mengumpulkan, menggunakan, menyimpan, dan melindungi data pengguna serta informasi yang relevan dengan operasional layanan.',
+    href: (siteId) => `/${siteId}/kebijakan-privasi`,
+  },
+  {
+    id: 'mediaSiber',
+    slug: 'media-siber',
+    title: 'Pedoman Media Siber',
+    settingsKey: 'mediaSiber',
+    intro: 'Rujukan pedoman media siber dan praktik publikasi yang mengikuti prinsip tanggung jawab pers.',
+    href: (siteId) => `/${siteId}/p/media-siber`,
+  },
+  {
+    id: 'termsOfService',
+    slug: 'terms',
+    title: 'Ketentuan Penggunaan',
+    settingsKey: 'termsOfService',
+    intro: 'Ketentuan penggunaan layanan, hak cipta, serta batas tanggung jawab yang berlaku bagi seluruh pengguna.',
+    href: (siteId) => `/${siteId}/p/terms`,
+  },
+]
+
+export const PRIVACY_PAGE = {
+  title: 'Kebijakan Privasi',
+  intro:
+    'Penjelasan mengenai bagaimana portal mengumpulkan, menggunakan, menyimpan, dan melindungi data pengguna serta informasi yang relevan dengan operasional layanan.',
+  settingsKey: 'privacyPolicy' as const,
 }
 
 const CONTENT_BY_SLUG: Record<

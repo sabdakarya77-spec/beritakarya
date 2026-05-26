@@ -11,6 +11,8 @@ import {
 import { buildPublicSiteConfig, fetchSiteSettings } from '../../../../lib/siteSettings'
 import { constructMetadata } from '../../../../lib/metadata'
 
+export const dynamic = 'force-dynamic'
+
 async function getAdPackages(site: string): Promise<AdPackage[]> {
   try {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'

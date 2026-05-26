@@ -35,13 +35,11 @@ import {
   Eye as EyeIcon,
   Download,
   FileText,
-  Shield,
-  Cookie,
   Lock as LockIcon,
-  Underline,
-  Users
+  Underline
 } from 'lucide-react'
 import { api } from '../../../../lib/api'
+import { ALL_LEGAL_PAGES } from '../../../../lib/legalPages'
 
 type SettingsTab = 'basic' | 'contact' | 'google' | 'info' | 'trending'
 type LegalFieldKey =
@@ -1287,67 +1285,47 @@ export default function SettingsPage() {
                   </p>
                 </div>
 
-                {/* Sub-Tabs Navigation */}
+                {/* Sub-Tabs Navigation — dihasilkan otomatis dari ALL_LEGAL_PAGES */}
                 <div className="flex flex-wrap gap-2 border-b border-gray-200 dark:border-gray-800 pb-3">
-                  {[
-                    { id: 'aboutUs', label: 'Tentang Kami', icon: BookOpen },
-                    { id: 'codeOfEthics', label: 'Kode Etik', icon: FileText },
-                    { id: 'editorial', label: 'Redaksi', icon: Users },
-                    { id: 'privacyPolicy', label: 'Kebijakan Privasi', icon: Shield },
-                    { id: 'termsOfService', label: 'Ketentuan Penggunaan', icon: FileText },
-                    { id: 'mediaSiber', label: 'Media Siber', icon: BookOpen }
-                  ].map((subTab) => {
-                    const SubIcon = subTab.icon
-                    const isSubActive = activeLegalSubTab === subTab.id
+                  {ALL_LEGAL_PAGES.map((legalPage) => {
+                    const isSubActive = activeLegalSubTab === legalPage.id
                     return (
                       <button
-                        key={subTab.id}
+                        key={legalPage.id}
                         type="button"
-                        onClick={() => setActiveLegalSubTab(subTab.id as any)}
+                        onClick={() => setActiveLegalSubTab(legalPage.id as any)}
                         className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all ${
                           isSubActive
                             ? 'bg-brand-red/10 text-brand-red border border-brand-red/20'
                             : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-200 border border-transparent'
                         }`}
                       >
-                        <SubIcon size={14} />
-                        <span>{subTab.label}</span>
+                        <FileText size={14} />
+                        <span>{legalPage.title}</span>
                       </button>
                     )
                   })}
                 </div>
 
-                {/* Sub-Tabs Content */}
+                {/* Sub-Tabs Content — dihasilkan otomatis dari ALL_LEGAL_PAGES */}
                 <div className="pt-2">
-                  {activeLegalSubTab === 'aboutUs' && (
-                    <LegalRichTextEditor
-                      label="Tentang Kami"
-                      value={settings.aboutUs}
-                      onChange={(nextValue) => setSettings({ ...settings, aboutUs: nextValue })}
-                      placeholder="Tuliskan sejarah berdirinya, visi, misi, dan komitmen portal regional..."
-                    />
-                  )}
+                  {ALL_LEGAL_PAGES.map((legalPage) => {
+                    if (activeLegalSubTab !== legalPage.id) return null
+                    const fieldKey = legalPage.settingsKey as keyof typeof settings
 
-                  {activeLegalSubTab === 'codeOfEthics' && (
-                    <LegalRichTextEditor
-                      label="Kode Etik"
-                      value={settings.codeOfEthics}
-                      onChange={(nextValue) => setSettings({ ...settings, codeOfEthics: nextValue })}
-                      placeholder="Tuliskan aturan jurnalisme independen, etika peliputan..."
-                    />
-                  )}
-
-                  {activeLegalSubTab === 'editorial' && (
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Redaksi</label>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (confirm('Apakah Anda yakin ingin memuat format Dewan Pers standar? Teks saat ini akan ditimpa.')) {
-                              setSettings({
-                                ...settings,
-                                editorial: `PT SABDA KARYA MEDIA (BERITAKARYA.CO)
+                    // Kasus khusus: tab Redaksi memiliki tombol Template Dewan Pers
+                    if (legalPage.id === 'editorial') {
+                      return (
+                        <div key={legalPage.id} className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <label className="text-sm font-bold text-gray-700 dark:text-gray-300">{legalPage.title}</label>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (confirm('Apakah Anda yakin ingin memuat format Dewan Pers standar? Teks saat ini akan ditimpa.')) {
+                                  setSettings({
+                                    ...settings,
+                                    editorial: `PT SABDA KARYA MEDIA (BERITAKARYA.CO)
 SK MENKUMHAM: AHU-0012345.AH.01.01.TAHUN 2026
 
 SUSUNAN REDAKSI & TATA KELOLA PERUSAHAAN
@@ -1384,49 +1362,34 @@ Email: redaksi@beritakarya.co | Telp: +62 812-3456-7890
 
 Penasihat Hukum:
 - [Nama Advokat], S.H., M.H.`
-                              })
-                            }
-                          }}
-                          className="text-sm font-medium text-brand-red hover:underline flex items-center gap-1"
-                        >
-                          <Sparkles size={12} /> Gunakan Template Dewan Pers
-                        </button>
-                      </div>
+                                  })
+                                }
+                              }}
+                              className="text-sm font-medium text-brand-red hover:underline flex items-center gap-1"
+                            >
+                              <Sparkles size={12} /> Gunakan Template Dewan Pers
+                            </button>
+                          </div>
+                          <LegalRichTextEditor
+                            label={legalPage.title}
+                            value={(settings[fieldKey] as string) || ''}
+                            onChange={(nextValue) => setSettings({ ...settings, [fieldKey]: nextValue })}
+                            placeholder={`Tuliskan konten ${legalPage.title}...`}
+                          />
+                        </div>
+                      )
+                    }
+
+                    return (
                       <LegalRichTextEditor
-                        label="Redaksi"
-                        value={settings.editorial}
-                        onChange={(nextValue) => setSettings({ ...settings, editorial: nextValue })}
-                        placeholder="Daftar nama Pemimpin Redaksi, Editor, Reporter, Kontributor..."
+                        key={legalPage.id}
+                        label={legalPage.title}
+                        value={(settings[fieldKey] as string) || ''}
+                        onChange={(nextValue) => setSettings({ ...settings, [fieldKey]: nextValue })}
+                        placeholder={`Tuliskan konten ${legalPage.title}...`}
                       />
-                    </div>
-                  )}
-
-                  {activeLegalSubTab === 'privacyPolicy' && (
-                    <LegalRichTextEditor
-                      label="Kebijakan Privasi"
-                      value={settings.privacyPolicy}
-                      onChange={(nextValue) => setSettings({ ...settings, privacyPolicy: nextValue })}
-                      placeholder="Tuliskan kebijakan tentang bagaimana data pengguna dikumpulkan, digunakan, dan dilindungi..."
-                    />
-                  )}
-
-                  {activeLegalSubTab === 'termsOfService' && (
-                    <LegalRichTextEditor
-                      label="Ketentuan Penggunaan"
-                      value={settings.termsOfService}
-                      onChange={(nextValue) => setSettings({ ...settings, termsOfService: nextValue })}
-                      placeholder="Tuliskan ketentuan penggunaan layanan portal berita, hak cipta konten, dan batasan tanggung jawab..."
-                    />
-                  )}
-
-                  {activeLegalSubTab === 'mediaSiber' && (
-                    <LegalRichTextEditor
-                      label="Pedoman Media Siber"
-                        value={settings.mediaSiber || ''}
-                        onChange={(nextValue) => setSettings({ ...settings, mediaSiber: nextValue })}
-                        placeholder="Tuliskan pedoman pemberitaan media siber sesuai aturan Dewan Pers..."
-                    />
-                  )}
+                    )
+                  })}
                 </div>
               </div>
             )}

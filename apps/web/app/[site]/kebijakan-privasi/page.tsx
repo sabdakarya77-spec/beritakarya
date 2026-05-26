@@ -5,6 +5,8 @@ import { PRIVACY_PAGE } from '../../../lib/legalPages'
 import { buildPublicSiteConfig, fetchSiteSettings } from '../../../lib/siteSettings'
 import { constructMetadata } from '../../../lib/metadata'
 
+export const dynamic = 'force-dynamic'
+
 export async function generateMetadata({
   params,
 }: {
