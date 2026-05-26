@@ -5,8 +5,34 @@ import { asyncHandler } from '../../utils/asyncHandler'
 import { checkAccountLockout, recordFailedAttempt, resetFailedAttempts } from '../../lib/accountLockout'
 import { requireAuth } from '../../middleware/auth.middleware'
 import { prisma } from '../../db/client'
+import { env } from '../../lib/env'
 
 export const authRouter: Router = Router()
+
+const getCookieOptions = (isProd: boolean, maxAge: number) => {
+  const options: any = {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: isProd ? 'none' : 'lax',
+    maxAge
+  }
+  if (isProd && env.COOKIE_DOMAIN) {
+    options.domain = env.COOKIE_DOMAIN
+  }
+  return options
+}
+
+const getClearCookieOptions = (isProd: boolean) => {
+  const options: any = {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: isProd ? 'none' : 'lax' as any
+  }
+  if (isProd && env.COOKIE_DOMAIN) {
+    options.domain = env.COOKIE_DOMAIN
+  }
+  return options
+}
 
 authRouter.get('/me', requireAuth, asyncHandler(async (req: any, res: Response) => {
   const user = await prisma.user.findUnique({
@@ -63,18 +89,8 @@ authRouter.post('/login', asyncHandler(async (req: Request, res: Response) => {
     
     // Set httpOnly cookies
     const isProd = process.env.NODE_ENV === 'production'
-    res.cookie('accessToken', result.accessToken, {
-      httpOnly: true,
-      secure: isProd,
-      sameSite: isProd ? 'none' : 'lax',
-      maxAge: 15 * 60 * 1000 // 15 mins
-    })
-    res.cookie('refreshToken', result.refreshToken, {
-      httpOnly: true,
-      secure: isProd,
-      sameSite: isProd ? 'none' : 'lax',
-      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
-    })
+    res.cookie('accessToken', result.accessToken, getCookieOptions(isProd, 15 * 60 * 1000))
+    res.cookie('refreshToken', result.refreshToken, getCookieOptions(isProd, 30 * 24 * 60 * 60 * 1000))
 
     res.json({ success: true, data: { user: result.user } })
   } catch (error) {
@@ -93,18 +109,8 @@ authRouter.post('/register', asyncHandler(async (req: Request, res: Response) =>
   
   // Set httpOnly cookies
   const isProd = process.env.NODE_ENV === 'production'
-  res.cookie('accessToken', result.accessToken, {
-    httpOnly: true,
-    secure: isProd,
-    sameSite: isProd ? 'none' : 'lax',
-    maxAge: 15 * 60 * 1000
-  })
-  res.cookie('refreshToken', result.refreshToken, {
-    httpOnly: true,
-    secure: isProd,
-    sameSite: isProd ? 'none' : 'lax',
-    maxAge: 30 * 24 * 60 * 60 * 1000
-  })
+  res.cookie('accessToken', result.accessToken, getCookieOptions(isProd, 15 * 60 * 1000))
+  res.cookie('refreshToken', result.refreshToken, getCookieOptions(isProd, 30 * 24 * 60 * 60 * 1000))
 
   res.status(201).json({ success: true, data: { user: result.user } })
 }))
@@ -120,18 +126,8 @@ authRouter.post('/refresh', asyncHandler(async (req: Request, res: Response) => 
   
   // Update cookies
   const isProd = process.env.NODE_ENV === 'production'
-  res.cookie('accessToken', result.accessToken, {
-    httpOnly: true,
-    secure: isProd,
-    sameSite: isProd ? 'none' : 'lax',
-    maxAge: 15 * 60 * 1000
-  })
-  res.cookie('refreshToken', result.refreshToken, {
-    httpOnly: true,
-    secure: isProd,
-    sameSite: isProd ? 'none' : 'lax',
-    maxAge: 30 * 24 * 60 * 60 * 1000
-  })
+  res.cookie('accessToken', result.accessToken, getCookieOptions(isProd, 15 * 60 * 1000))
+  res.cookie('refreshToken', result.refreshToken, getCookieOptions(isProd, 30 * 24 * 60 * 60 * 1000))
 
   res.json({ success: true, data: { user: result.user } })
 }))
@@ -141,8 +137,8 @@ authRouter.post('/logout', asyncHandler(async (req: any, res: Response) => {
   
   // Clear cookies regardless of auth status
   const isProd = process.env.NODE_ENV === 'production'
-  res.clearCookie('accessToken', { httpOnly: true, secure: isProd, sameSite: (isProd ? 'none' : 'lax') as any })
-  res.clearCookie('refreshToken', { httpOnly: true, secure: isProd, sameSite: (isProd ? 'none' : 'lax') as any })
+  res.clearCookie('accessToken', getClearCookieOptions(isProd))
+  res.clearCookie('refreshToken', getClearCookieOptions(isProd))
 
   // If we have user info from jwtVerify middleware, blacklist the token
   if (refreshToken && req.user?.userId) {

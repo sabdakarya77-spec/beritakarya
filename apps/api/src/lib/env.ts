@@ -23,6 +23,7 @@ const envSchema = z.object({
   TRUST_PROXY: z.string().optional(),
   RESET_SECRET: z.string().min(32).optional(),
   CSRF_SECRET: z.string().min(16).optional(),
+  COOKIE_DOMAIN: z.string().optional(),
 })
 
 const parsed = envSchema.safeParse(process.env)
