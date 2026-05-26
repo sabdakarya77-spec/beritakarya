@@ -1,7 +1,6 @@
 import type { PublicSiteConfig } from '../../lib/siteSettings'
 import { PublicInfoShell } from '../layout/PublicInfoShell'
 import { LegalPageHeader } from './LegalPageHeader'
-import { LegalPageIntro } from './LegalPageIntro'
 import { LegalDocumentBody } from './LegalDocumentBody'
 
 export type LegalStandardPageProps = {
@@ -25,16 +24,13 @@ export function LegalStandardPage({
   return (
     <PublicInfoShell siteConfig={siteConfig}>
       <LegalPageHeader title={title} />
-      <div className="space-y-10 md:space-y-12">
-        <LegalPageIntro text={intro} />
-        <LegalDocumentBody
-          pageTitle={title}
-          intro={intro}
-          content={content}
-          siteName={siteConfig.name}
-          emptyMessage={emptyMessage}
-        />
-      </div>
+      <LegalDocumentBody
+        pageTitle={title}
+        intro={intro}
+        content={content}
+        siteName={siteConfig.name}
+        emptyMessage={emptyMessage}
+      />
     </PublicInfoShell>
   )
 }

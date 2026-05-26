@@ -1,4 +1,4 @@
-import { LEGAL_DOCUMENT_EYEBROW, prepareLegalDocumentContent } from '../../lib/legalPages'
+import { prepareLegalDocumentContent } from '../../lib/legalPages'
 import { legalProseClassName } from './legalStyles'
 
 type LegalDocumentBodyProps = {
@@ -10,7 +10,7 @@ type LegalDocumentBodyProps = {
   intro?: string
   emptyMessage?: string
   eyebrow?: string
-  /** H2 under “Dokumen Portal”; omit when it would repeat the page H1 */
+  /** Optional subheading above the body when a page needs an extra section title */
   sectionTitle?: string | null
   /** Smaller prose for nested sections (e.g. ads terms footer) */
   proseSize?: 'default' | 'compact'
@@ -22,7 +22,7 @@ export function LegalDocumentBody({
   siteName,
   intro,
   emptyMessage,
-  eyebrow = LEGAL_DOCUMENT_EYEBROW,
+  eyebrow = null,
   sectionTitle = null,
   proseSize = 'default',
 }: LegalDocumentBodyProps) {
@@ -41,10 +41,10 @@ export function LegalDocumentBody({
     `Konten belum tersedia untuk halaman ini. Silakan hubungi redaksi ${siteName} untuk informasi lebih lanjut.`
 
   return (
-    <section className="border-t border-black/5 dark:border-white/5 pt-10 md:pt-12">
+    <section className="pt-2 md:pt-3">
       <div className="max-w-4xl mx-auto">
         {(eyebrow || sectionTitle) && (
-          <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+          <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
             <div>
               {eyebrow ? (
                 <div className="flex items-center gap-2 mb-3">
