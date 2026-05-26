@@ -177,8 +177,16 @@ app.use('/api/v1', (req, res, next) => {
   return apiLimiter(req, res, next)
 })
 
+const csrfProtectionWithBypass = (req: any, res: any, next: any) => {
+  // Bypass CSRF for background heartbeat pings as they carry no CSRF vulnerability
+  if (req.originalUrl === '/api/v1/users/heartbeat') {
+    return next()
+  }
+  return doubleCsrfProtection(req, res, next)
+}
+
 app.use('/api/v1/auth', authLimiter, authRouter)
-app.use('/api/v1/users', doubleCsrfProtection, userRouter)
+app.use('/api/v1/users', csrfProtectionWithBypass, userRouter)
 app.use('/api/v1/articles', doubleCsrfProtection, articleRouter)
 app.use('/api/v1/media', doubleCsrfProtection, mediaRouter)
 app.use('/api/v1/ai', doubleCsrfProtection, aiRouter)
