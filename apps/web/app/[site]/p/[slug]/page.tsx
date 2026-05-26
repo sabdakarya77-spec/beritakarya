@@ -37,10 +37,14 @@ export async function generateMetadata({
 
   const siteSettings = await fetchSiteSettings(siteParam)
   const siteName = siteSettings?.name || siteParam.charAt(0).toUpperCase() + siteParam.slice(1)
+  const faviconUrl = siteSettings?.faviconUrl || '/favicon.ico'
+  const ogImageUrl = siteSettings?.ogImageUrl || '/logo.png'
 
   if (isAdsPublicSlug(slug)) {
     return constructMetadata({
       title: `${ADS_PUBLIC_PAGE.metadataTitle} - ${siteName}`,
+      image: ogImageUrl,
+      icons: faviconUrl,
       siteParam,
     })
   }
@@ -48,12 +52,16 @@ export async function generateMetadata({
   if (!isLegalSlug(slug)) {
     return constructMetadata({
       title: 'Informasi',
+      image: ogImageUrl,
+      icons: faviconUrl,
       siteParam,
     })
   }
 
   return constructMetadata({
     title: `${LEGAL_SLUG_TITLES[slug]} - ${siteName}`,
+    image: ogImageUrl,
+    icons: faviconUrl,
     siteParam,
   })
 }

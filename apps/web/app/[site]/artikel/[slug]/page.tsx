@@ -30,11 +30,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const siteParam = resolvedParams?.site || 'pusat';
   const slugParam = resolvedParams?.slug;
   
-  const article = await getArticle(siteParam, slugParam)
+  const [article, siteSettings] = await Promise.all([
+    getArticle(siteParam, slugParam),
+    getSiteSettings(siteParam)
+  ])
+  
   if (!article) return { title: 'Post Tidak Ditemukan' }
 
-  const siteConfig = SITE_MAP[siteParam] || SITE_MAP['pusat']
-  const siteName = siteConfig?.name || (siteParam.charAt(0).toUpperCase() + siteParam.slice(1));
+  const fallbackConfig = SITE_MAP[siteParam] || SITE_MAP['pusat']
+  const siteName = siteSettings?.name || fallbackConfig?.name || (siteParam.charAt(0).toUpperCase() + siteParam.slice(1));
+  const faviconUrl = siteSettings?.faviconUrl || '/favicon.ico';
   
   const excerpt = article.blocks.find((b: any) => b.type === 'paragraph')?.content || ''
   const coverImage = article.featuredImage || article.blocks.find((b: any) => b.type === 'image')?.url || '/logo.png'
@@ -43,6 +48,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: article.metaTitle || `${article.title} - ${siteName}`,
     description: article.metaDescription || excerpt.substring(0, 160),
     image: coverImage,
+    icons: faviconUrl,
     siteParam,
     slug: slugParam
   })
@@ -504,6 +510,7 @@ export default async function ArticlePage({ params }: Props) {
                   )}
 
                   <AdSpace type="rectangle" label="Advertisement" />
+                  <AdSpace type="rectangle" slot="rectangle_secondary" label="Sponsored" />
                 </div>
               </aside>
             </div>

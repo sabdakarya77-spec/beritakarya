@@ -69,19 +69,27 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const resolvedParams = await params
   const siteParam = resolvedParams?.site || 'pusat'
   const authorId = resolvedParams?.id
-  const siteConfig = SITE_MAP[siteParam] || SITE_MAP.pusat
-  const profileData = await getAuthorProfile(siteParam, authorId)
+  
+  const [profileData, siteSettings] = await Promise.all([
+    getAuthorProfile(siteParam, authorId),
+    getSiteSettings(siteParam)
+  ])
+
+  const fallbackConfig = SITE_MAP[siteParam] || SITE_MAP.pusat
+  const siteName = siteSettings?.name || fallbackConfig?.name || 'BeritaKarya'
+  const faviconUrl = siteSettings?.faviconUrl || '/favicon.ico'
 
   if (!profileData) {
     return {
       title: 'Profil Penulis Tidak Ditemukan',
       description: 'Profil penulis yang Anda cari tidak tersedia.',
+      icons: faviconUrl
     }
   }
 
   const baseUrl = process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'
-  const title = `${profileData.profile.name} - Profil Penulis ${siteConfig.name || 'BeritaKarya'}`
-  const description = (profileData.profile.bio || getFallbackBio(profileData.profile.name, profileData.profile.role, siteConfig.name || 'BeritaKarya')).slice(0, 160)
+  const title = `${profileData.profile.name} - Profil Penulis ${siteName}`
+  const description = (profileData.profile.bio || getFallbackBio(profileData.profile.name, profileData.profile.role, siteName)).slice(0, 160)
   const url = `${baseUrl}/${siteParam}/penulis/${authorId}`
 
   return {
@@ -92,7 +100,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title,
       description,
       url,
-      siteName: 'BeritaKarya',
+      siteName: siteName,
       locale: 'id_ID',
       type: 'profile',
     },
@@ -102,6 +110,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description,
       creator: '@beritakarya',
     },
+    icons: faviconUrl,
   }
 }
 

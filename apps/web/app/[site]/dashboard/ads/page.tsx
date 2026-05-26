@@ -549,11 +549,22 @@ export default function AdsDashboard() {
                               <CreditCard size={18} className="text-brand-red" />
                               <span className="text-[10px] font-black uppercase tracking-widest text-brand-red">BANK TRANSFER TUJUAN PUSAT</span>
                             </div>
-                            <h4 className="text-xs font-black uppercase tracking-widest text-gray-400">BANK MANDIRI PUSAT</h4>
-                            <p className="text-xl font-black mt-2 tracking-wide text-white">131-00-1234567-8</p>
-                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">a.n. PT Sabda Karya BeritaKarya</p>
+                            
+                            <div className="space-y-4">
+                              <div>
+                                <h4 className="text-[9px] font-black uppercase tracking-widest text-gray-400">BANK BCA NUSANTARA</h4>
+                                <p className="text-base font-black tracking-widest text-white">829-0123-456</p>
+                                <p className="text-[9px] font-bold text-brand-red uppercase tracking-widest">a/n PT Berita Karya Nusantara</p>
+                              </div>
+                              
+                              <div className="border-t border-white/5 pt-3">
+                                <h4 className="text-[9px] font-black uppercase tracking-widest text-gray-400">BANK MANDIRI</h4>
+                                <p className="text-base font-black tracking-widest text-white">137-00-1234567-8</p>
+                                <p className="text-[9px] font-bold text-brand-red uppercase tracking-widest">a/n PT Berita Karya Nusantara</p>
+                              </div>
+                            </div>
 
-                            <div className="mt-8 pt-6 border-t border-white/5 space-y-1.5 text-[9px] text-gray-400 uppercase tracking-widest leading-relaxed">
+                            <div className="mt-6 pt-4 border-t border-white/5 space-y-1 text-[9px] text-gray-400 uppercase tracking-widest leading-relaxed">
                               <p>• Nominal Transfer wajib pas sesuai paket</p>
                               <p>• Simpan struk / bukti transfer bank Anda</p>
                               <p>• Unggah bukti transfer pada kolom di samping</p>

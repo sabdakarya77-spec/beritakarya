@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { api } from '../../../../../lib/api';
 import { 
   ArrowLeft, 
@@ -33,6 +33,8 @@ interface AdPackage {
 export default function OrderAdPage() {
   const { site } = useParams() as { site: string };
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const packageId = searchParams.get('package');
   
   const [step, setStep] = useState(1);
   const [packages, setPackages] = useState<AdPackage[]>([]);
@@ -99,24 +101,30 @@ export default function OrderAdPage() {
     const fetchPackages = async () => {
       try {
         const res = await api.get('/ads/packages');
+        let pkgList = FALLBACK_PACKAGES;
         if (res.data && res.data.success && res.data.data && res.data.data.length > 0) {
-          setPackages(res.data.data);
-          setSelectedPackage(res.data.data[0]);
-        } else {
-          // If no packages are in DB, use fallback mock
-          setPackages(FALLBACK_PACKAGES);
-          setSelectedPackage(FALLBACK_PACKAGES[0]);
+          pkgList = res.data.data;
+        }
+        setPackages(pkgList);
+        
+        // Auto-select package matching the query param
+        const matchingPkg = pkgList.find((p: AdPackage) => p.id === packageId);
+        if (matchingPkg) {
+          setSelectedPackage(matchingPkg);
+        } else if (pkgList.length > 0) {
+          setSelectedPackage(pkgList[0]);
         }
       } catch (e) {
         console.error('Gagal mengambil paket iklan:', e);
         setPackages(FALLBACK_PACKAGES);
-        setSelectedPackage(FALLBACK_PACKAGES[0]);
+        const matchingPkg = FALLBACK_PACKAGES.find((p: AdPackage) => p.id === packageId);
+        setSelectedPackage(matchingPkg || FALLBACK_PACKAGES[0]);
       } finally {
         setLoadingPackages(false);
       }
     };
     fetchPackages();
-  }, []);
+  }, [packageId]);
 
   const handleAdFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {

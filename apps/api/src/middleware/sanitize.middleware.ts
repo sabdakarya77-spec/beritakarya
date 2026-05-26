@@ -5,10 +5,27 @@ import DOMPurify from 'dompurify'
 const { window } = new JSDOM('')
 const purify = DOMPurify(window as any)
 
+// Hook: hanya izinkan properti CSS text-align pada atribut style
+// Ini mencegah CSS injection (expression(), javascript:, dll) sambil
+// tetap mempertahankan perataan teks (center/right/justify) dari editor.
+purify.addHook('uponSanitizeAttribute', (node, data) => {
+  if (data.attrName === 'style') {
+    const raw = data.attrValue || ''
+    // Ekstrak hanya nilai text-align yang valid
+    const match = raw.match(/text-align\s*:\s*(left|center|right|justify)/i)
+    if (match) {
+      data.attrValue = `text-align: ${match[1].toLowerCase()}`
+    } else {
+      data.attrValue = ''
+    }
+  }
+})
+
 // Config: izinkan tag sederhana untuk rich text legal/settings
+// 'style' diizinkan tetapi dibatasi hanya text-align via hook di atas
 const PURIFY_CONFIG = {
   ALLOWED_TAGS: ['b', 'strong', 'i', 'em', 'u', 'a', 'br', 'p', 'div', 'h2', 'h3', 'ul', 'ol', 'li'],
-  ALLOWED_ATTR: ['href', 'target', 'rel', 'align'],
+  ALLOWED_ATTR: ['href', 'target', 'rel', 'align', 'style'],
   FORCE_BODY: true
 }
 

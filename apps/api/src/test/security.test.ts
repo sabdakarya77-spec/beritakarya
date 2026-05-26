@@ -50,6 +50,32 @@ describe('sanitizeMiddleware — XSS prevention', () => {
     expect(res.body.body.content).toContain('<b>Tebal</b>')
     expect(res.body.body.content).toContain('<i>miring</i>')
   })
+
+  it('mempertahankan style text-align agar perataan teks di editor tidak hilang saat disimpan', async () => {
+    const res = await request(app)
+      .post('/test')
+      .send({ content: '<p style="text-align: center;">Teks tengah</p>' })
+    expect(res.body.body.content).toContain('text-align: center')
+    expect(res.body.body.content).toContain('Teks tengah')
+  })
+
+  it('memblokir CSS berbahaya (expression, javascript) dalam atribut style', async () => {
+    const res = await request(app)
+      .post('/test')
+      .send({ content: '<p style="background:url(javascript:alert(1))">Teks</p>' })
+    expect(res.body.body.content).not.toContain('javascript')
+    expect(res.body.body.content).not.toContain('expression')
+    expect(res.body.body.content).toContain('Teks')
+  })
+
+  it('hanya mempertahankan text-align dan membuang properti CSS lain', async () => {
+    const res = await request(app)
+      .post('/test')
+      .send({ content: '<p style="text-align: right; color: red; font-size: 99px;">Teks</p>' })
+    expect(res.body.body.content).toContain('text-align: right')
+    expect(res.body.body.content).not.toContain('color')
+    expect(res.body.body.content).not.toContain('font-size')
+  })
 })
 
 describe('securityHeadersMiddleware', () => {

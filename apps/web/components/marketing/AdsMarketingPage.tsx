@@ -93,6 +93,14 @@ export function AdsMarketingPage({
     {} as Record<string, AdPackage[]>
   )
 
+  const formatRupiah = (val: string | number) => {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0
+    }).format(Number(val));
+  };
+
   return (
     <PublicInfoShell siteConfig={siteConfig} width="wide">
       <LegalPageHeader
@@ -191,10 +199,10 @@ export function AdsMarketingPage({
                       <div className="flex items-center justify-between pt-4 border-t border-black/5 dark:border-white/5">
                         <div>
                           <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">
-                            Durasi
+                            Tarif Iklan
                           </span>
-                          <p className="text-lg font-black text-brand-black dark:text-white">
-                            {pkg.durationDays} Hari
+                          <p className="text-lg font-black text-brand-red">
+                            {formatRupiah(pkg.price)}
                           </p>
                         </div>
                         <Link

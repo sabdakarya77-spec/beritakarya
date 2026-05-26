@@ -72,8 +72,18 @@ export default function SiteFooter({ siteConfig, categories }: SiteFooterProps) 
           <div className="col-span-1">
             <Link href={`/${activeSite}`} className="flex flex-col mb-5">
               <span className="font-serif text-3xl font-black tracking-tighter uppercase">
-                <span className="text-brand-red">BERITA</span>
-                <span className="text-brand-black dark:text-white">KARYA</span>
+                {(() => {
+                  const siteName = siteConfig?.name || 'BERITA KARYA';
+                  const nameParts = siteName.split(' ');
+                  const firstName = nameParts[0] || 'BERITA';
+                  const lastName = nameParts.slice(1).join(' ') || 'KARYA';
+                  return (
+                    <>
+                      <span className="text-brand-red">{firstName}</span>{' '}
+                      <span className="text-brand-black dark:text-white">{lastName}</span>
+                    </>
+                  );
+                })()}
               </span>
             </Link>
             <p className="mb-6 max-w-xs text-sm leading-relaxed text-brand-text-muted opacity-80">
@@ -100,7 +110,7 @@ export default function SiteFooter({ siteConfig, categories }: SiteFooterProps) 
                 <span>{siteConfig?.address || "Jl. Merdeka No. 123, Jakarta Pusat, Indonesia"}</span>
               </p>
               <p className="flex items-center gap-2 text-sm text-brand-text-muted">
-                <Phone size={12} className="text-brand-text-muted opacity-60" /> +62 815 9921 922
+                <Phone size={12} className="text-brand-text-muted opacity-60" /> {siteConfig?.phone || "+62 815 9921 922"}
               </p>
               {siteConfig?.contactEmail && (
                 <p className="flex items-center gap-2 text-sm text-brand-text-muted">

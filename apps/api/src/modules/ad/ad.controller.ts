@@ -86,8 +86,20 @@ adRouter.post('/',
   requireSiteAccess,
   asyncHandler(async (req: Request, res: Response) => {
     const { slot, code, imageUrl, linkUrl, isActive } = req.body
-    const ad = await prisma.advertisement.create({
-      data: {
+    const ad = await prisma.advertisement.upsert({
+      where: {
+        siteId_slot: {
+          siteId: req.site!,
+          slot
+        }
+      },
+      update: {
+        code: code || null,
+        imageUrl: imageUrl || null,
+        linkUrl: linkUrl || null,
+        isActive: isActive ?? true
+      },
+      create: {
         siteId: req.site!,
         slot,
         code: code || null,
