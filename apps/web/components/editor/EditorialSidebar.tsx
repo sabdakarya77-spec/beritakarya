@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
   BarChart3,
+  ChevronLeft,
   History,
   LayoutGrid,
   Sparkles,
@@ -97,17 +98,6 @@ export function EditorialSidebar() {
   const panelMeta = TAB_META[currentTab]
 
   useEffect(() => {
-    if (typeof window === 'undefined') return
-    if (window.innerWidth < 1280) return
-
-    if (activeTab === 'content') {
-      setActiveTab('settings')
-    }
-
-    toggleSidebar(true)
-  }, [])
-
-  useEffect(() => {
     const loadCategories = async () => {
       try {
         const { data } = await api.get('/categories/tree', {
@@ -161,15 +151,31 @@ export function EditorialSidebar() {
   const categorySlug = resolveCategorySlug(categoriesTree, categoryId)
 
   return (
-    <AnimatePresence>
-      {isSidebarOpen && (
-        <>
+    <>
+      {!isSidebarOpen && (
+        <button
+          onClick={() => {
+            setActiveTab('settings')
+            toggleSidebar(true)
+          }}
+          className="fixed right-0 top-1/2 z-[65] hidden -translate-y-1/2 rounded-l-2xl border border-r-0 border-gray-200/80 bg-white/95 px-3 py-4 text-[10px] font-black uppercase tracking-[0.18em] text-gray-500 shadow-[0_20px_50px_rgba(15,23,42,0.12)] transition-all hover:px-4 hover:text-brand-red dark:border-white/10 dark:bg-slate-900/95 dark:text-gray-300 lg:flex lg:flex-col lg:items-center lg:gap-2"
+          aria-label="Buka pengaturan post"
+          title="Buka pengaturan post"
+        >
+          <ChevronLeft size={16} className="text-brand-red" />
+          <span className="[writing-mode:vertical-rl] rotate-180">Inspector</span>
+        </button>
+      )}
+
+      <AnimatePresence>
+        {isSidebarOpen && (
+          <>
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => toggleSidebar(false)}
-            className="fixed inset-0 z-[60] bg-black/20 backdrop-blur-sm lg:hidden"
+            className="fixed inset-0 z-[60] bg-black/30 backdrop-blur-sm lg:hidden"
           />
 
           <motion.aside
@@ -177,10 +183,10 @@ export function EditorialSidebar() {
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 24, stiffness: 220 }}
-            className="fixed top-0 right-0 bottom-0 z-[70] flex w-full max-w-md flex-col border-l border-gray-100 bg-white shadow-2xl dark:border-white/5 dark:bg-slate-900"
+            className="fixed inset-x-0 bottom-0 top-[4.5rem] z-[70] flex w-full flex-col rounded-t-[28px] border border-gray-100 bg-white shadow-2xl dark:border-white/5 dark:bg-slate-900 sm:top-[4.75rem] md:top-[5rem] md:left-auto md:rounded-none md:border-y-0 md:border-r-0 md:w-[23rem] md:max-w-[23rem] xl:top-0 xl:w-[22rem] xl:max-w-[22rem] 2xl:w-[23rem] 2xl:max-w-[23rem]"
           >
-            <div className="border-b border-gray-100 px-6 py-5 dark:border-white/5">
-              <div className="flex items-start justify-between gap-4">
+            <div className="border-b border-gray-100 px-4 py-4 dark:border-white/5 sm:px-5 md:px-6 md:py-5">
+              <div className="flex items-start justify-between gap-3 md:gap-4">
                 <div>
                   <p className="text-[10px] font-black uppercase tracking-[0.24em] text-gray-500 dark:text-gray-400">
                     Inspector Editor
@@ -202,20 +208,20 @@ export function EditorialSidebar() {
               </div>
             </div>
 
-            <div className="flex border-b border-gray-100 dark:border-white/5">
+            <div className="grid grid-cols-4 border-b border-gray-100 dark:border-white/5">
               {TABS.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
                   className={cn(
-                    'relative flex flex-1 flex-col items-center gap-1.5 py-4 transition-colors',
+                    'relative flex min-w-0 flex-col items-center gap-1 py-3 text-center transition-colors sm:gap-1.5 sm:py-4',
                     currentTab === tab.id
                       ? 'text-brand-red'
                       : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
                   )}
                 >
                   <tab.icon size={16} />
-                  <span className="text-[9px] font-black uppercase tracking-widest">{tab.label}</span>
+                  <span className="px-1 text-[8px] font-black uppercase tracking-[0.16em] sm:text-[9px] sm:tracking-widest">{tab.label}</span>
                   {currentTab === tab.id && (
                     <motion.div layoutId="editor-sidebar-active-tab" className="absolute inset-x-0 bottom-0 h-0.5 bg-brand-red" />
                   )}
@@ -223,7 +229,7 @@ export function EditorialSidebar() {
               ))}
             </div>
 
-            <div className="flex-1 space-y-6 overflow-y-auto p-6 no-scrollbar">
+            <div className="flex-1 space-y-5 overflow-y-auto p-4 no-scrollbar sm:p-5 md:space-y-6 md:p-6">
               <ReadinessSummary completionScore={completionScore} missingRequirements={missingRequirements} />
 
               {currentTab === 'settings' && (
@@ -274,7 +280,7 @@ export function EditorialSidebar() {
               {currentTab === 'assist' && <AISidebar />}
             </div>
 
-            <div className="border-t border-gray-100 bg-gray-50/60 px-6 py-5 dark:border-white/5 dark:bg-white/[0.02]">
+            <div className="border-t border-gray-100 bg-gray-50/60 px-4 py-4 dark:border-white/5 dark:bg-white/[0.02] sm:px-5 md:px-6 md:py-5">
               <button
                 onClick={() => toggleSidebar(false)}
                 className="w-full rounded-2xl bg-brand-black py-4 text-[11px] font-black uppercase tracking-[0.2em] text-white transition-opacity hover:opacity-90 dark:bg-white dark:text-slate-900"
@@ -283,9 +289,10 @@ export function EditorialSidebar() {
               </button>
             </div>
           </motion.aside>
-        </>
-      )}
-    </AnimatePresence>
+          </>
+        )}
+      </AnimatePresence>
+    </>
   )
 }
 

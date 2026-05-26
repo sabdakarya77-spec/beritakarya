@@ -31,9 +31,9 @@ export function ArticleEditorShell({
       <EditorTopbar />
 
       <main className={cn(
-        "mx-auto w-full max-w-5xl px-4 pb-40 transition-all duration-700 ease-in-out sm:px-6 lg:px-8",
-        !isFocusMode && isSidebarOpen && "xl:max-w-7xl xl:pr-[24rem]",
-        isFocusMode ? "pt-24 opacity-100 scale-100" : "pt-28 opacity-100"
+        "mx-auto w-full max-w-6xl px-4 pb-40 transition-all duration-700 ease-in-out sm:px-6 lg:max-w-7xl lg:px-8 xl:max-w-[92rem] 2xl:max-w-[110rem]",
+        !isFocusMode && isSidebarOpen && "lg:max-w-[88rem] lg:px-8 lg:pr-[23.5rem] xl:max-w-[100rem] 2xl:max-w-[122rem] 2xl:pr-[24.5rem]",
+        isFocusMode ? "pt-24 opacity-100 scale-100" : "pt-[5.5rem] sm:pt-24 lg:pt-[5.75rem] opacity-100"
       )}>
         <EditorStatusNotice isLoading={isLoading} saveError={saveError} />
 

@@ -91,7 +91,7 @@ export function ImageBlock({ block }: { block: TImageBlock }) {
   }
 
   return (
-    <div className="relative group/block mb-8">
+    <div className="group/block relative my-2 lg:my-3">
       {/* Action Overlay */}
       <div className="absolute top-3 right-3 z-10 flex items-center gap-2 opacity-0 group-hover/block:opacity-100 transition-all duration-300 translate-y-1 group-hover/block:translate-y-0">
         <button
@@ -110,7 +110,7 @@ export function ImageBlock({ block }: { block: TImageBlock }) {
         </button>
       </div>
 
-      <div className="overflow-hidden rounded-2xl bg-gray-50 dark:bg-white/5 ring-1 ring-gray-200/50 dark:ring-white/10">
+      <div className="overflow-hidden rounded-[28px] bg-gray-50 dark:bg-white/5 ring-1 ring-gray-200/50 dark:ring-white/10">
         <SmartImage
           src={block.url}
           alt={block.alt || 'Article image'}
@@ -122,16 +122,16 @@ export function ImageBlock({ block }: { block: TImageBlock }) {
         />
       </div>
 
-      <div className="mt-4 px-2">
-        <div className="flex flex-col md:flex-row md:items-start gap-4">
+      <div className="mt-5 px-2 lg:mt-6">
+        <div className="flex flex-col gap-4 md:flex-row md:items-start lg:gap-5">
           <div className="flex-1">
             <input
               value={block.caption || ''}
               onChange={e => updateBlock(block.id, { caption: e.target.value })}
               placeholder="Tulis keterangan foto (caption)..."
-              className="w-full text-sm font-medium text-slate-600 dark:text-slate-300 outline-none bg-transparent placeholder:text-gray-300 dark:placeholder:text-white/10 italic"
+              className="w-full bg-transparent font-serif text-[1rem] italic text-slate-600 outline-none placeholder:text-gray-300 dark:text-slate-300 dark:placeholder:text-white/10 lg:text-[1.06rem]"
             />
-            <div className="mt-2 flex items-center gap-3">
+            <div className="mt-3 flex items-center gap-3">
               <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 shrink-0">
                 Kredit
               </span>

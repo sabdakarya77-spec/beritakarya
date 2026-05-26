@@ -11,7 +11,18 @@ interface EditorProps {
 }
 
 export function Editor({ articleId, siteId }: EditorProps) {
-  const { loadArticle, saveArticle, undo, isFocusMode, reset, setSiteId, isLoading, saveError } = useEditorStore()
+  const {
+    loadArticle,
+    saveArticle,
+    undo,
+    isFocusMode,
+    reset,
+    setSiteId,
+    isLoading,
+    saveError,
+    setActiveTab,
+    toggleSidebar
+  } = useEditorStore()
 
   useEffect(() => {
     setSiteId(siteId)
@@ -20,7 +31,12 @@ export function Editor({ articleId, siteId }: EditorProps) {
     } else if (articleId === 'new') {
       reset(siteId)
     }
-  }, [articleId, siteId, loadArticle, reset, setSiteId])
+
+    if (typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches) {
+      setActiveTab('settings')
+      toggleSidebar(true)
+    }
+  }, [articleId, siteId, loadArticle, reset, setSiteId, setActiveTab, toggleSidebar])
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'z') {

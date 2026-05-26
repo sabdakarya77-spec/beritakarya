@@ -108,8 +108,8 @@ export function ParagraphBlock({ block }: { block: TParagraphBlock }) {
         }}
         data-placeholder="Tulis paragraf... (ketik '/' untuk opsi)"
         className={cn(
-          "min-h-[1.5em] outline-none text-base leading-relaxed text-brand-black dark:text-gray-200 empty:before:content-[attr(data-placeholder)] empty:before:text-gray-300 dark:empty:before:text-white/20 empty:before:pointer-events-none",
-          block.dropCap && "first-letter:text-5xl first-letter:font-black first-letter:float-left first-letter:mr-3 first-letter:mt-2 first-letter:text-brand-red font-serif"
+          "min-h-[1.75em] outline-none font-serif text-[1.02rem] leading-8 tracking-[0.01em] text-brand-black dark:text-gray-200 empty:before:content-[attr(data-placeholder)] empty:before:text-gray-300 dark:empty:before:text-white/20 empty:before:pointer-events-none lg:text-[1.08rem] lg:leading-[2rem] xl:text-[1.14rem] xl:leading-[2.1rem]",
+          block.dropCap && "first-letter:float-left first-letter:mr-3 first-letter:mt-2 first-letter:text-5xl first-letter:font-black first-letter:leading-none first-letter:text-brand-red lg:first-letter:mr-4 lg:first-letter:text-6xl"
         )}
       />
       

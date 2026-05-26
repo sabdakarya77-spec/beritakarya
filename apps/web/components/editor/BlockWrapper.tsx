@@ -19,12 +19,12 @@ export function BlockWrapper({ block, index, children }: Props) {
   const isActive = activeBlockId === block.id
 
   if (isFocusMode) {
-    return <div className="py-1">{children}</div>
+    return <div className="py-2 lg:py-3">{children}</div>
   }
 
   return (
     <div
-      className="group relative mb-3"
+      className="group relative mb-5 lg:mb-6"
       onClick={() => setActiveBlockId(block.id)}
       onFocusCapture={() => setActiveBlockId(block.id)}
     >
@@ -82,7 +82,7 @@ export function BlockWrapper({ block, index, children }: Props) {
       </div>
 
       <div className={cn(
-        "rounded-[26px] border px-3 py-3 transition-all duration-200",
+        "rounded-[26px] border px-3 py-3 transition-all duration-200 lg:px-4 lg:py-4",
         isActive
           ? "border-brand-red/20 bg-brand-red/[0.03] shadow-[0_16px_40px_rgba(224,36,36,0.08)] dark:border-brand-red/20 dark:bg-brand-red/[0.06]"
           : "border-transparent bg-transparent group-hover:border-gray-200/70 group-hover:bg-gray-50/40 dark:group-hover:border-white/10 dark:group-hover:bg-white/[0.02]"
@@ -92,7 +92,7 @@ export function BlockWrapper({ block, index, children }: Props) {
 
       <div
         className={cn(
-          "relative mt-2 h-8 transition-opacity",
+          "relative mt-3 h-8 transition-opacity lg:mt-4",
           isActive ? "opacity-100" : "opacity-0 group-hover:opacity-100"
         )}
       >
@@ -115,7 +115,7 @@ export function BlockWrapper({ block, index, children }: Props) {
       </div>
       
       {showAddMenu && (
-        <div className="my-4 animate-in fade-in slide-in-from-top-2">
+        <div className="my-5 animate-in fade-in slide-in-from-top-2 lg:my-6">
           <AddBlockMenu afterId={block.id} onClose={() => setShowAddMenu(false)} />
         </div>
       )}

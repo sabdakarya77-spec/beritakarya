@@ -19,7 +19,7 @@ export function CalloutBlock({ block }: { block: TCalloutBlock }) {
 
   return (
     <div className={cn(
-      "relative p-8 rounded-2xl border transition-all duration-300 group/callout",
+      "group/callout relative rounded-[28px] border p-6 transition-all duration-300 lg:p-8",
       config.color
     )}>
       {/* Variant Selector */}
@@ -40,8 +40,8 @@ export function CalloutBlock({ block }: { block: TCalloutBlock }) {
         ))}
       </div>
 
-      <div className="flex gap-6">
-        <div className="shrink-0 mt-1">
+      <div className="flex gap-4 lg:gap-6">
+        <div className="mt-1 shrink-0">
           <Icon size={24} strokeWidth={2.5} />
         </div>
         <textarea
@@ -49,7 +49,7 @@ export function CalloutBlock({ block }: { block: TCalloutBlock }) {
           onChange={(e) => updateBlock(block.id, { content: e.target.value })}
           placeholder="Tulis informasi penting atau highlight di sini..."
           rows={2}
-          className="flex-1 bg-transparent border-none outline-none resize-none text-base md:text-lg font-bold leading-relaxed placeholder-current/30"
+          className="flex-1 resize-none border-none bg-transparent font-serif text-[1.05rem] font-bold leading-8 outline-none placeholder-current/30 md:text-[1.12rem] lg:text-[1.18rem] lg:leading-[2rem]"
         />
       </div>
     </div>

@@ -5,13 +5,13 @@ import type { QuoteBlock as TQuoteBlock } from '@beritakarya/types'
 export function QuoteBlock({ block }: { block: TQuoteBlock }) {
   const { updateBlock } = useEditorStore()
   return (
-    <div className="border-l-4 border-blue-400 pl-4 py-1">
+    <div className="border-l-4 border-blue-400 py-2 pl-5 lg:pl-6">
       <div
         contentEditable
         suppressContentEditableWarning
         onBlur={e => updateBlock(block.id, { content: e.currentTarget.innerText })}
         data-placeholder="Tulis kutipan..."
-        className="text-lg italic text-gray-700 outline-none empty:before:content-[attr(data-placeholder)] empty:before:text-gray-300 empty:before:not-italic"
+        className="font-serif text-[1.15rem] italic leading-8 text-gray-700 outline-none empty:before:content-[attr(data-placeholder)] empty:before:text-gray-300 empty:before:not-italic dark:text-gray-100 lg:text-[1.25rem] lg:leading-[2.2rem]"
         dangerouslySetInnerHTML={{ __html: block.content }}
       />
       <div
@@ -19,7 +19,7 @@ export function QuoteBlock({ block }: { block: TQuoteBlock }) {
         suppressContentEditableWarning
         onBlur={e => updateBlock(block.id, { attribution: e.currentTarget.innerText })}
         data-placeholder="— Nama narasumber"
-        className="text-sm text-gray-400 mt-1 outline-none empty:before:content-[attr(data-placeholder)] empty:before:text-gray-300"
+        className="mt-3 text-sm uppercase tracking-[0.14em] text-gray-400 outline-none empty:before:content-[attr(data-placeholder)] empty:before:text-gray-300"
         dangerouslySetInnerHTML={{ __html: block.attribution || '' }}
       />
     </div>

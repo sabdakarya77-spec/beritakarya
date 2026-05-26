@@ -3,10 +3,10 @@ import { useEditorStore } from '../../../store/editorStore'
 import type { HeadingBlock as THeadingBlock } from '@beritakarya/types'
 
 const SIZE: Record<number, string> = {
-  1: 'text-3xl font-black tracking-tight',
-  2: 'text-2xl font-bold tracking-tight',
-  3: 'text-xl font-bold',
-  4: 'text-lg font-semibold',
+  1: 'font-serif text-3xl font-black tracking-tight md:text-4xl',
+  2: 'font-serif text-[1.7rem] font-black tracking-tight md:text-[2rem] lg:text-[2.2rem]',
+  3: 'font-serif text-[1.35rem] font-bold tracking-tight md:text-[1.55rem] lg:text-[1.7rem]',
+  4: 'text-lg font-semibold tracking-tight md:text-xl',
   5: 'text-base font-semibold',
   6: 'text-sm font-semibold'
 }
@@ -45,7 +45,7 @@ export function HeadingBlock({ block }: { block: THeadingBlock }) {
           suppressContentEditableWarning
           onBlur={e => updateBlock(block.id, { content: e.currentTarget.innerText })}
           data-placeholder={`${LABELS[safeLevel as keyof typeof LABELS] || 'Heading'}...`}
-          className={`outline-none leading-tight text-slate-900 dark:text-white ${SIZE[safeLevel]} empty:before:content-[attr(data-placeholder)] empty:before:text-gray-300 dark:empty:before:text-white/10 empty:before:font-normal`}
+          className={`outline-none text-slate-900 dark:text-white ${SIZE[safeLevel]} empty:before:content-[attr(data-placeholder)] empty:before:text-gray-300 dark:empty:before:text-white/10 empty:before:font-normal ${safeLevel === 2 ? 'leading-[1.1]' : safeLevel === 3 ? 'leading-[1.2]' : 'leading-tight'}`}
           dangerouslySetInnerHTML={{ __html: block.content }}
         />
       </div>
