@@ -3,7 +3,6 @@ import { useMemo, useState } from 'react'
 import { Search, Type, Heading1, List, Quote, Sparkles, Image, Grid2X2, GalleryVertical, PlaySquare, Columns2, X, Plus } from 'lucide-react'
 import { useEditorStore } from '../../store/editorStore'
 import type { Block } from '@beritakarya/types'
-import { EditorHelpHint } from './EditorHelpHint'
 
 type BlockCategory = 'Teks' | 'Media' | 'Sorotan' | 'Sisipan'
 
@@ -120,22 +119,16 @@ export function AddBlockMenu({ afterId, compact, onClose }: Props) {
       </div>
 
       <div className="overflow-hidden rounded-xl border border-gray-200/70 bg-gray-50/40 dark:border-white/10 dark:bg-slate-950/30">
-        {filteredBlocks.map(({ type, label, desc, helper, icon: Icon }) => (
+        {filteredBlocks.map(({ type, label, icon: Icon }) => (
           <button
             key={type}
             onClick={() => handleAdd(type)}
-            className="flex w-full items-start gap-2.5 border-b border-gray-200/70 bg-transparent px-3 py-2.5 text-left transition-colors last:border-b-0 hover:bg-brand-red/[0.04] dark:border-white/10 dark:hover:bg-white/[0.03]"
+            className="flex w-full items-center gap-2.5 border-b border-gray-200/70 bg-transparent px-3 py-2.5 text-left transition-colors last:border-b-0 hover:bg-brand-red/[0.04] dark:border-white/10 dark:hover:bg-white/[0.03]"
           >
-            <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-white text-gray-500 dark:bg-slate-900 dark:text-gray-300">
-              <Icon size={14} />
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-white text-gray-500 dark:bg-slate-900 dark:text-gray-300">
+              <Icon size={13} />
             </span>
-            <span className="min-w-0 flex-1">
-              <span className="inline-flex items-center gap-1.5">
-                <span className="block text-[13px] font-semibold leading-5 text-brand-black dark:text-white">{label}</span>
-                {helper && <EditorHelpHint text={helper} />}
-              </span>
-              <span className="mt-0.5 block truncate text-[10px] leading-4 text-gray-400 dark:text-gray-500">{desc}</span>
-            </span>
+            <span className="text-[12px] font-medium text-brand-black dark:text-white">{label}</span>
           </button>
         ))}
 
