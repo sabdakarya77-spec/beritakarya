@@ -40,6 +40,7 @@ import {
 } from 'lucide-react'
 import { api } from '../../../../lib/api'
 import { ALL_LEGAL_PAGES } from '../../../../lib/legalPages'
+import { legalProseClassName } from '../../../../components/legal/legalStyles'
 
 type SettingsTab = 'basic' | 'contact' | 'google' | 'info' | 'trending'
 type LegalFieldKey =
@@ -157,6 +158,80 @@ function LegalRichTextEditor({
   const editorRef = useRef<HTMLDivElement>(null)
   const lastEmittedValueRef = useRef<string>('')
   const [alignment, setAlignment] = useState<LegalAlignment>('left')
+  const editorPreviewClassName = `${legalProseClassName} !max-w-none px-4 py-3 text-base outline-none [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_li]:my-1 [&_li]:marker:text-gray-500 dark:[&_li]:marker:text-gray-400`
+
+  const isSelectionInsideEditor = (selection: Selection | null, editor: HTMLDivElement) => {
+    if (!selection || selection.rangeCount === 0) return false
+    const range = selection.getRangeAt(0)
+    return editor.contains(range.commonAncestorContainer)
+  }
+
+  const ensureEditorSelection = () => {
+    const editor = editorRef.current
+    if (!editor) return null
+
+    const selection = window.getSelection()
+    if (isSelectionInsideEditor(selection, editor)) {
+      return selection
+    }
+
+    editor.focus()
+    const nextSelection = window.getSelection()
+    if (!nextSelection) return null
+
+    const range = document.createRange()
+    range.selectNodeContents(editor)
+    range.collapse(false)
+    nextSelection.removeAllRanges()
+    nextSelection.addRange(range)
+    return nextSelection
+  }
+
+  const placeCaretAtEnd = (node: Node) => {
+    const selection = window.getSelection()
+    if (!selection) return
+    const range = document.createRange()
+    range.selectNodeContents(node)
+    range.collapse(false)
+    selection.removeAllRanges()
+    selection.addRange(range)
+  }
+
+  const insertListFallback = (listTag: 'ul' | 'ol') => {
+    const editor = editorRef.current
+    const selection = ensureEditorSelection()
+    if (!editor || !selection || selection.rangeCount === 0) return
+
+    const range = selection.getRangeAt(0)
+    const selectedText = selection.toString().trim()
+    const list = document.createElement(listTag)
+    const item = document.createElement('li')
+
+    if (selectedText) {
+      item.textContent = selectedText
+    } else {
+      item.appendChild(document.createElement('br'))
+    }
+
+    list.appendChild(item)
+    range.deleteContents()
+    range.insertNode(list)
+    placeCaretAtEnd(item)
+  }
+
+  const normalizeEditorLists = () => {
+    const editor = editorRef.current
+    if (!editor) return
+
+    editor.querySelectorAll('ul, ol').forEach((list) => {
+      list.classList.remove('list-disc', 'list-decimal')
+      if (list.tagName.toLowerCase() === 'ul') {
+        list.classList.add('list-disc')
+      } else {
+        list.classList.add('list-decimal')
+      }
+    })
+  }
 
   // Deteksi alignment paragraf di posisi kursor saat ini
   const detectAlignment = (): LegalAlignment => {
@@ -203,6 +278,7 @@ function LegalRichTextEditor({
   const emitChange = () => {
     const editor = editorRef.current
     if (!editor) return
+    normalizeEditorLists()
     editor.querySelectorAll('a').forEach((anchor) => {
       anchor.setAttribute('target', '_blank')
       anchor.setAttribute('rel', 'noopener noreferrer')
@@ -222,15 +298,45 @@ function LegalRichTextEditor({
   ) => {
     const editor = editorRef.current
     if (!editor) return
-    editor.focus()
+    ensureEditorSelection()
     document.execCommand(command)
     emitChange()
+  }
+
+  const applyList = (listTag: 'ul' | 'ol') => {
+    const command = listTag === 'ul' ? 'insertUnorderedList' : 'insertOrderedList'
+    runCommand(command)
+
+    const editor = editorRef.current
+    const selection = window.getSelection()
+    const insideList =
+      !!editor &&
+      !!selection &&
+      selection.rangeCount > 0 &&
+      (() => {
+        let node: Node | null = selection.anchorNode
+        while (node && node !== editor) {
+          if (
+            node instanceof HTMLElement &&
+            ['UL', 'OL', 'LI'].includes(node.tagName)
+          ) {
+            return true
+          }
+          node = node.parentNode
+        }
+        return false
+      })()
+
+    if (!insideList) {
+      insertListFallback(listTag)
+      emitChange()
+    }
   }
 
   const applyBlock = (block: 'h2' | 'h3' | 'p') => {
     const editor = editorRef.current
     if (!editor) return
-    editor.focus()
+    ensureEditorSelection()
     document.execCommand('formatBlock', false, block)
     emitChange()
   }
@@ -238,7 +344,7 @@ function LegalRichTextEditor({
   const insertLink = () => {
     const editor = editorRef.current
     if (!editor) return
-    editor.focus()
+    ensureEditorSelection()
 
     const selection = window.getSelection()
     if (!selection || selection.rangeCount === 0 || selection.toString().trim().length === 0) {
@@ -258,7 +364,7 @@ function LegalRichTextEditor({
   const applyAlignment = (nextAlign: LegalAlignment) => {
     const editor = editorRef.current
     if (!editor) return
-    editor.focus()
+    ensureEditorSelection()
     const commandMap: Record<LegalAlignment, string> = {
       left: 'justifyLeft',
       center: 'justifyCenter',
@@ -350,7 +456,7 @@ function LegalRichTextEditor({
           <button
             type="button"
             onMouseDown={preserveSelection}
-            onClick={() => runCommand('insertUnorderedList')}
+            onClick={() => applyList('ul')}
             className={`${toolbarButtonClass} ${toolbarIdleClass}`}
             title="Bullet list"
             aria-label="Bullet list"
@@ -360,7 +466,7 @@ function LegalRichTextEditor({
           <button
             type="button"
             onMouseDown={preserveSelection}
-            onClick={() => runCommand('insertOrderedList')}
+            onClick={() => applyList('ol')}
             className={`${toolbarButtonClass} ${toolbarIdleClass}`}
             title="Number list"
             aria-label="Number list"
@@ -427,7 +533,7 @@ function LegalRichTextEditor({
           onInput={() => emitChange()}
           onKeyUp={updateToolbarAlignment}
           onMouseUp={updateToolbarAlignment}
-          className={`prose prose-sm max-w-none px-4 py-3 text-base text-gray-900 outline-none dark:prose-invert dark:text-white ${LEGAL_EDITOR_MIN_HEIGHT} before:pointer-events-none before:text-gray-400 empty:before:content-[attr(data-placeholder)]`}
+          className={`${editorPreviewClassName} ${LEGAL_EDITOR_MIN_HEIGHT} before:pointer-events-none before:text-gray-400 empty:before:content-[attr(data-placeholder)]`}
         />
       </div>
       <p className="text-xs text-gray-500 dark:text-gray-400">

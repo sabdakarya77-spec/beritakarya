@@ -11,15 +11,26 @@ describe('prepareLegalDocumentContent', () => {
     expect(html).toContain('Isi kebijakan yang sebenarnya')
   })
 
-  it('menghapus paragraf pembuka yang mengulang intro statis', () => {
+  it('tetap mempertahankan paragraf pembuka walau mirip intro statis', () => {
     const intro =
       'Penjelasan mengenai bagaimana portal mengumpulkan data pengguna.'
     const html = prepareLegalDocumentContent(
       `<p>${intro}</p><p>Klausul pertama yang unik.</p>`,
       { pageTitle: 'Kebijakan Privasi', intro }
     )
-    expect(html).not.toContain(intro)
+
+    expect(html).toContain(intro)
     expect(html).toContain('Klausul pertama yang unik')
+  })
+
+  it('tetap mempertahankan heading yang tidak sama persis dengan judul', () => {
+    const html = prepareLegalDocumentContent(
+      '<h2>Kebijakan Privasi Portal</h2><p>Isi kebijakan yang sebenarnya.</p>',
+      { pageTitle: 'Kebijakan Privasi', intro: 'Penjelasan singkat.' }
+    )
+
+    expect(html).toContain('Kebijakan Privasi Portal')
+    expect(html).toContain('Isi kebijakan yang sebenarnya')
   })
 })
 
