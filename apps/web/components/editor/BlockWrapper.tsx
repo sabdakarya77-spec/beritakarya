@@ -92,8 +92,8 @@ export function BlockWrapper({ block, index, children }: Props) {
         <button
           onClick={(e) => { e.stopPropagation(); setShowAddMenu(!showAddMenu); }}
           className={cn(
-            "flex h-5 w-5 items-center justify-center rounded text-gray-400 transition-all hover:text-brand-red",
-            showAddMenu && "rotate-45 text-brand-red"
+            "flex h-5 w-5 items-center justify-center rounded text-gray-400 transition-all hover:text-gray-900 dark:hover:text-white",
+            showAddMenu && "rotate-45 text-gray-900 dark:text-white"
           )}
           title="Tambah blok"
         >
@@ -103,7 +103,7 @@ export function BlockWrapper({ block, index, children }: Props) {
       
       {showAddMenu && (
         <div className="my-2 animate-in fade-in slide-in-from-top-1">
-          <AddBlockMenu afterId={block.id} onClose={() => setShowAddMenu(false)} />
+          <AddBlockMenu afterId={block.id} isOpen={showAddMenu} onClose={() => setShowAddMenu(false)} />
         </div>
       )}
     </div>

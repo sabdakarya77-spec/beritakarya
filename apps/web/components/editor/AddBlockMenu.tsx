@@ -27,18 +27,16 @@ const BLOCK_TYPES: BlockTypeOption[] = [
 
 interface Props {
   afterId?: string
-  compact?: boolean
+  isOpen?: boolean
   onClose?: () => void
 }
 
-export function AddBlockMenu({ afterId, compact, onClose }: Props) {
-  const [open, setOpen] = useState(false)
+export function AddBlockMenu({ afterId, isOpen = false, onClose }: Props) {
   const [query, setQuery] = useState('')
   const { addBlock } = useEditorStore()
 
   const handleAdd = (type: Block['type']) => {
     addBlock(type, afterId)
-    setOpen(false)
     setQuery('')
     onClose?.()
   }
@@ -52,10 +50,10 @@ export function AddBlockMenu({ afterId, compact, onClose }: Props) {
     )
   }, [query])
 
-  if (!open) {
+  if (!isOpen) {
     return (
       <button
-        onClick={() => setOpen(true)}
+        onClick={onClose}
         className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-gray-500 shadow-sm transition-colors hover:border-brand-red/30 hover:text-brand-red dark:border-white/10 dark:bg-slate-900 dark:text-gray-300"
       >
         <Plus size={13} />
@@ -77,7 +75,7 @@ export function AddBlockMenu({ afterId, compact, onClose }: Props) {
           />
         </div>
         <button
-          onClick={() => { setOpen(false); setQuery(''); }}
+          onClick={() => { setQuery(''); onClose?.(); }}
           className="rounded-full p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-brand-black dark:hover:bg-white/5 dark:hover:text-white"
           aria-label="Tutup"
         >
@@ -90,12 +88,12 @@ export function AddBlockMenu({ afterId, compact, onClose }: Props) {
           <button
             key={type}
             onClick={() => handleAdd(type)}
-            className="group flex flex-col items-center gap-1.5 rounded-xl border border-transparent py-2.5 px-2 text-center transition-all hover:border-brand-red/20 hover:bg-brand-red/[0.03] dark:hover:bg-white/[0.03]"
+            className="group flex flex-col items-center gap-1.5 rounded-xl border border-transparent py-2.5 px-2 text-center transition-all hover:border-gray-200 hover:bg-gray-50 dark:hover:bg-white/[0.03]"
           >
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gray-100 text-gray-500 transition-colors group-hover:bg-brand-red group-hover:text-white dark:bg-white/5 dark:group-hover:bg-brand-red dark:group-hover:text-white">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gray-100 text-gray-500 transition-colors group-hover:bg-gray-800 group-hover:text-white dark:bg-white/5 dark:group-hover:bg-white/20 dark:group-hover:text-white">
               <Icon size={16} />
             </span>
-            <span className="text-[10px] font-medium text-gray-500 transition-colors group-hover:text-brand-black dark:text-gray-400 dark:group-hover:text-white">{label}</span>
+            <span className="text-[10px] font-medium text-gray-500 transition-colors group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white">{label}</span>
           </button>
         ))}
 
