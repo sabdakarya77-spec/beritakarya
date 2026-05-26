@@ -90,7 +90,7 @@ export function BlockWrapper({ block, index, children }: Props) {
 
       <div
         className={cn(
-          "relative -mb-1 flex items-center justify-center py-2 transition-all duration-300",
+          "relative -mb-1 flex items-center justify-end py-2 pr-2 transition-all duration-300",
           isActive ? "opacity-100 h-8" : "opacity-0 h-2 group-hover:opacity-100 group-hover:h-8"
         )}
       >

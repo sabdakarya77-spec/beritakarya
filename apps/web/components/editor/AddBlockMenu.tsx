@@ -30,8 +30,6 @@ const BLOCK_TYPES: BlockTypeOption[] = [
   { type: 'embed', label: 'Embed', desc: 'Menyematkan YouTube atau konten eksternal langsung ke artikel.', helper: 'Menyisipkan video YouTube atau konten eksternal agar langsung diputar di artikel.', category: 'Sisipan', keywords: ['youtube', 'embed', 'video'], icon: PlaySquare },
 ]
 
-const BLOCK_GROUPS: BlockCategory[] = ['Teks', 'Media', 'Sorotan', 'Sisipan']
-
 interface Props {
   afterId?: string
   compact?: boolean
@@ -92,77 +90,57 @@ export function AddBlockMenu({ afterId, compact, onClose }: Props) {
   }
 
   return (
-    <div className="rounded-[28px] border border-gray-200/80 bg-white/95 p-4 shadow-[0_24px_80px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-slate-900/90">
-      <div className="mb-4 flex items-start justify-between gap-4">
-        <div>
-          <p className="text-[10px] font-black uppercase tracking-[0.24em] text-gray-500 dark:text-gray-400">
-            Sisipkan Blok
-          </p>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            Cari tipe konten atau pilih dari grup editorial yang paling relevan dengan kebutuhan artikel.
-          </p>
+    <div className="rounded-[22px] border border-gray-200/80 bg-white/95 p-3 shadow-[0_18px_48px_rgba(15,23,42,0.06)] dark:border-white/10 dark:bg-slate-900/90">
+      <div className="mb-3 flex items-center gap-2.5">
+        <div className="relative flex-1">
+          <Search size={14} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+          <input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Cari paragraf, subjudul, gambar, embed..."
+            className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-3.5 text-[13px] text-brand-black outline-none transition-colors focus:border-brand-red dark:border-white/10 dark:bg-slate-950/60 dark:text-white"
+          />
         </div>
         <button
           onClick={() => {
             setOpen(false)
             setQuery('')
           }}
-          className="rounded-full p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-brand-black dark:hover:bg-white/5 dark:hover:text-white"
+          className="rounded-full p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-brand-black dark:hover:bg-white/5 dark:hover:text-white"
           aria-label="Tutup menu blok"
         >
-          <X size={16} />
+          <X size={15} />
         </button>
       </div>
 
-      <div className="relative mb-5">
-        <Search size={15} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-        <input
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          placeholder="Cari paragraf, subjudul, gambar, embed..."
-          className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-3 pl-11 pr-4 text-sm text-brand-black outline-none transition-colors focus:border-brand-red dark:border-white/10 dark:bg-slate-950/60 dark:text-white"
-        />
+      <div className="mb-2.5 flex items-center justify-between px-0.5">
+        <span className="text-[10px] uppercase tracking-[0.16em] text-gray-400 dark:text-gray-500">
+          {filteredBlocks.length} blok tersedia
+        </span>
       </div>
 
-      <div className="space-y-5">
-        {BLOCK_GROUPS.map((group) => {
-          const items = filteredBlocks.filter((block) => block.category === group)
-          if (!items.length) return null
-
-          return (
-            <section key={group}>
-              <div className="mb-2 flex items-center justify-between">
-                <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gray-500 dark:text-gray-400">
-                  {group}
-                </p>
-                <span className="text-[11px] text-gray-400 dark:text-gray-500">{items.length} opsi</span>
-              </div>
-              <div className="grid gap-2 md:grid-cols-2">
-                {items.map(({ type, label, desc, helper, icon: Icon }) => (
-                  <button
-                    key={type}
-                    onClick={() => handleAdd(type)}
-                    className="flex items-start gap-3 rounded-2xl border border-gray-200/80 bg-gray-50/70 p-4 text-left transition-all hover:border-brand-red/30 hover:bg-brand-red/[0.04] dark:border-white/10 dark:bg-slate-950/40 dark:hover:border-brand-red/30"
-                  >
-                    <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white text-gray-500 shadow-sm dark:bg-slate-900 dark:text-gray-300">
-                      <Icon size={18} />
-                    </span>
-                    <span className="flex-1">
-                      <span className="inline-flex items-center gap-1.5">
-                        <span className="block text-sm font-semibold text-brand-black dark:text-white">{label}</span>
-                        {helper && <EditorHelpHint text={helper} />}
-                      </span>
-                      <span className="mt-1 block text-xs leading-5 text-gray-500 dark:text-gray-400">{desc}</span>
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </section>
-          )
-        })}
+      <div className="overflow-hidden rounded-xl border border-gray-200/70 bg-gray-50/40 dark:border-white/10 dark:bg-slate-950/30">
+        {filteredBlocks.map(({ type, label, desc, helper, icon: Icon }) => (
+          <button
+            key={type}
+            onClick={() => handleAdd(type)}
+            className="flex w-full items-start gap-2.5 border-b border-gray-200/70 bg-transparent px-3 py-2.5 text-left transition-colors last:border-b-0 hover:bg-brand-red/[0.04] dark:border-white/10 dark:hover:bg-white/[0.03]"
+          >
+            <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-white text-gray-500 dark:bg-slate-900 dark:text-gray-300">
+              <Icon size={14} />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="inline-flex items-center gap-1.5">
+                <span className="block text-[13px] font-semibold leading-5 text-brand-black dark:text-white">{label}</span>
+                {helper && <EditorHelpHint text={helper} />}
+              </span>
+              <span className="mt-0.5 block truncate text-[10px] leading-4 text-gray-400 dark:text-gray-500">{desc}</span>
+            </span>
+          </button>
+        ))}
 
         {filteredBlocks.length === 0 && (
-          <div className="rounded-2xl border border-dashed border-gray-200 px-4 py-6 text-center text-sm text-gray-500 dark:border-white/10 dark:text-gray-400">
+          <div className="rounded-xl border border-dashed border-gray-200 px-4 py-5 text-center text-sm text-gray-500 dark:border-white/10 dark:text-gray-400">
             Tidak ada tipe blok yang cocok dengan kata kunci tersebut.
           </div>
         )}
