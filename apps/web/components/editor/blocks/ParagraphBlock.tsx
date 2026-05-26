@@ -18,12 +18,14 @@ const BLOCK_TYPES: { type: Block['type']; label: string; desc: string; aliases: 
 ]
 
 export function ParagraphBlock({ block }: { block: TParagraphBlock }) {
-  const { updateBlock, replaceBlock } = useEditorStore()
+  const { updateBlock, replaceBlock, addBlock, activeBlockId, setActiveBlockId } = useEditorStore()
   const containerRef = useRef<HTMLDivElement>(null)
   const editorRef = useRef<HTMLDivElement>(null)
+  const slashRangeRef = useRef<Range | null>(null)
   const [showMenu, setShowMenu] = useState(false)
   const [slashQuery, setSlashQuery] = useState('')
   const [slashMenuPosition, setSlashMenuPosition] = useState({ top: 40, left: 0 })
+  const isActive = activeBlockId === block.id
 
   useEffect(() => {
     const element = editorRef.current
@@ -44,14 +46,90 @@ export function ParagraphBlock({ block }: { block: TParagraphBlock }) {
     )
   }, [slashQuery])
 
+  const getTextBeforeCaret = () => {
+    const editor = editorRef.current
+    const selection = window.getSelection()
+    if (!editor || !selection || !selection.rangeCount) return null
+
+    const range = selection.getRangeAt(0)
+    if (!editor.contains(range.commonAncestorContainer)) return null
+
+    const beforeCaretRange = range.cloneRange()
+    beforeCaretRange.selectNodeContents(editor)
+    beforeCaretRange.setEnd(range.endContainer, range.endOffset)
+    return beforeCaretRange.toString()
+  }
+
   const extractSlashCommand = (value: string) => {
-    const normalized = value.replace(/\u00a0/g, ' ').trim()
-    if (normalized === '/') {
-      return { isCommand: true, query: '' }
+    // Normalisasi spasi dan ambil teks hingga kursor
+    const normalized = value.replace(/\u00a0/g, ' ')
+    // Cari '/' terakhir yang didahului oleh spasi atau awal baris
+    const lastSlashIndex = normalized.lastIndexOf('/')
+    
+    if (lastSlashIndex === -1) {
+      return { isCommand: false, query: '', textStart: -1, textEnd: -1 }
     }
-    const match = normalized.match(/^\/([a-zA-Z0-9-]*)$/)
-    if (!match) return { isCommand: false, query: '' }
-    return { isCommand: true, query: match[1] || '' }
+
+    // Pastikan '/' didahului spasi atau awal baris
+    const charBefore = lastSlashIndex > 0 ? normalized[lastSlashIndex - 1] : ' '
+    if (charBefore !== ' ' && charBefore !== '\n') {
+      return { isCommand: false, query: '', textStart: -1, textEnd: -1 }
+    }
+
+    const query = normalized.slice(lastSlashIndex + 1)
+    // Query hanya boleh alphanumeric (opsional)
+    if (!/^[a-zA-Z0-9-]*$/.test(query)) {
+      return { isCommand: false, query: '', textStart: -1, textEnd: -1 }
+    }
+
+    return {
+      isCommand: true,
+      query: query,
+      textStart: lastSlashIndex,
+      textEnd: normalized.length
+    }
+  }
+
+  const createRangeFromTextOffsets = (root: HTMLElement, start: number, end: number) => {
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT)
+    const range = document.createRange()
+    let currentOffset = 0
+    let lastTextNode: Text | null = null
+    let startNode: Text | null = null
+    let endNode: Text | null = null
+    let startOffset = 0
+    let endOffset = 0
+
+    while (walker.nextNode()) {
+      const node = walker.currentNode as Text
+      const textLength = node.textContent?.length ?? 0
+      const nextOffset = currentOffset + textLength
+      lastTextNode = node
+
+      if (!startNode && start <= nextOffset) {
+        startNode = node
+        startOffset = Math.max(0, start - currentOffset)
+      }
+
+      if (end <= nextOffset) {
+        endNode = node
+        endOffset = Math.max(0, end - currentOffset)
+        break
+      }
+
+      currentOffset = nextOffset
+    }
+
+    if (!startNode || !endNode) {
+      if (!lastTextNode) return null
+      range.setStart(lastTextNode, lastTextNode.textContent?.length ?? 0)
+      range.setEnd(lastTextNode, lastTextNode.textContent?.length ?? 0)
+      return range
+    }
+
+    range.setStart(startNode, startOffset)
+    range.setEnd(endNode, endOffset)
+    return range
   }
 
   const updateSlashMenuPosition = () => {
@@ -60,18 +138,25 @@ export function ParagraphBlock({ block }: { block: TParagraphBlock }) {
     const selection = window.getSelection()
     if (!container || !editor || !selection || !selection.rangeCount) return
 
-    const range = selection.getRangeAt(0).cloneRange()
-    range.collapse(false)
+    const selectionRange = selection.getRangeAt(0)
+    const resolvedRange = editor.contains(selectionRange.commonAncestorContainer)
+      ? selectionRange.cloneRange()
+      : slashRangeRef.current?.cloneRange()
+    if (!resolvedRange) return
 
-    const rect = range.getBoundingClientRect()
+    resolvedRange.collapse(false)
+
+    const rect = resolvedRange.getBoundingClientRect()
     const containerRect = container.getBoundingClientRect()
     const menuWidth = Math.min(416, Math.max(288, containerRect.width - 16))
 
-    const fallbackTop = editor.offsetTop + 44
-    const fallbackLeft = 0
-
-    if (!rect.width && !rect.height && !rect.top && !rect.left) {
-      setSlashMenuPosition({ top: fallbackTop, left: fallbackLeft })
+    // Fallback positioning if getBoundingClientRect returns zero (can happen in empty blocks)
+    if (rect.top === 0 && rect.left === 0) {
+      const editorRect = editor.getBoundingClientRect()
+      setSlashMenuPosition({
+        top: editorRect.bottom - containerRect.top + 5,
+        left: 0
+      })
       return
     }
 
@@ -81,7 +166,7 @@ export function ParagraphBlock({ block }: { block: TParagraphBlock }) {
     const nextLeft = Math.min(Math.max(0, rawLeft), maxLeft)
 
     setSlashMenuPosition({
-      top: Math.max(fallbackTop, nextTop),
+      top: nextTop,
       left: nextLeft
     })
   }
@@ -93,8 +178,13 @@ export function ParagraphBlock({ block }: { block: TParagraphBlock }) {
     const html = element.innerHTML
     updateBlock(block.id, { content: html })
 
-    const text = element.textContent || ''
-    const command = extractSlashCommand(text)
+    const textBeforeCaret = getTextBeforeCaret()
+    const command = extractSlashCommand(textBeforeCaret || '')
+    slashRangeRef.current =
+      command.isCommand && textBeforeCaret
+        ? createRangeFromTextOffsets(element, command.textStart, command.textEnd)
+        : null
+
     setShowMenu(command.isCommand)
     setSlashQuery(command.query)
     if (command.isCommand) {
@@ -103,9 +193,34 @@ export function ParagraphBlock({ block }: { block: TParagraphBlock }) {
   }
 
   const handleSelect = (type: Block['type']) => {
-    replaceBlock(block.id, type)
+    const element = editorRef.current
+    const slashRange = slashRangeRef.current
+
+    if (!element || !slashRange) {
+      replaceBlock(block.id, type)
+      setShowMenu(false)
+      setSlashQuery('')
+      slashRangeRef.current = null
+      return
+    }
+
+    const cleanupRange = slashRange.cloneRange()
+    cleanupRange.deleteContents()
+    element.normalize()
+
+    const nextHtml = element.innerHTML
+    const remainingText = (element.textContent || '').replace(/\u00a0/g, ' ').trim()
+
+    if (!remainingText) {
+      replaceBlock(block.id, type)
+    } else {
+      updateBlock(block.id, { content: nextHtml })
+      addBlock(type, block.id)
+    }
+
     setShowMenu(false)
     setSlashQuery('')
+    slashRangeRef.current = null
   }
 
   const handleFormat = (command: string) => {
@@ -117,17 +232,20 @@ export function ParagraphBlock({ block }: { block: TParagraphBlock }) {
 
   return (
     <div ref={containerRef} className="relative group/p">
-      <InlineToolbar editorRef={editorRef} onFormat={handleFormat} />
+      <InlineToolbar editorRef={editorRef} onFormat={handleFormat} active={isActive} />
 
       <div
         ref={editorRef}
         contentEditable
         suppressContentEditableWarning
+        onFocus={() => setActiveBlockId(block.id)}
+        onClick={() => setActiveBlockId(block.id)}
         onInput={handleInput}
         onKeyDown={(e) => {
           if (e.key === 'Escape') {
             setShowMenu(false)
             setSlashQuery('')
+            slashRangeRef.current = null
           }
           if (e.key === 'b' && (e.ctrlKey || e.metaKey)) {
             e.preventDefault()
@@ -182,6 +300,7 @@ export function ParagraphBlock({ block }: { block: TParagraphBlock }) {
             {matchingBlocks.map(({ type, label, icon: Icon }) => (
               <button
                 key={type}
+                onMouseDown={(e) => e.preventDefault()}
                 onClick={() => handleSelect(type)}
                 className="group flex items-center gap-2 rounded-xl border border-transparent px-2.5 py-2 text-left transition-all hover:border-gray-200 hover:bg-gray-50 dark:hover:border-white/10 dark:hover:bg-white/[0.04]"
               >
