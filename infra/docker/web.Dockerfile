@@ -49,5 +49,5 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
   CMD wget -qO- http://127.0.0.1:3000/api/health || exit 1
 
 # Next.js standalone output is copied to /app/ (standalone folder contents)
-# so server.js is directly at /app/server.js
-CMD ["node", "server.js"]
+# so the entry point in a monorepo is at apps/web/server.js
+CMD ["node", "apps/web/server.js"]

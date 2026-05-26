@@ -17,18 +17,21 @@ mkdir -p $BACKUP_DIR
 
 # Backup database
 docker exec "$DB_CONTAINER" pg_dump -U "$DB_USER" "$DB_NAME" > "$BACKUP_FILE"
+PG_STATUS=$?
 
-# Compress backup
-gzip $BACKUP_FILE
-
-# Keep only last 7 days of backups
-find $BACKUP_DIR -name "beritakarya_backup_*.sql.gz" -mtime +7 -delete
-
-# Send notification on success/failure
-if [ $? -eq 0 ]; then
+# Send notification on success/failure based on pg_dump status
+if [ $PG_STATUS -eq 0 ]; then
+  # Compress backup only if pg_dump succeeded
+  gzip "$BACKUP_FILE"
+  
+  # Keep only last 7 days of backups (run only on successful backup)
+  find "$BACKUP_DIR" -name "beritakarya_backup_*.sql.gz" -mtime +7 -delete
+  
   echo "✅ Backup successful" | mail -s "Backup Success - BeritaKarya" adminberitakarya@gmail.com
   exit 0
 else
-  echo "❌ Backup failed" | mail -s "Backup FAILED - BeritaKarya" adminberitakarya@gmail.com
+  # Cleanup potential incomplete/failed backup file
+  rm -f "$BACKUP_FILE"
+  echo "❌ Backup failed during pg_dump execution" | mail -s "Backup FAILED - BeritaKarya" adminberitakarya@gmail.com
   exit 1
 fi

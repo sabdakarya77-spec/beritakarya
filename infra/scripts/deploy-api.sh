@@ -9,29 +9,24 @@ set -e
 COMPOSE_FILE="infra/docker/docker-compose.backend.yml"
 PROJECT_DIR="/opt/beritakarya"
 
-echo "🚀 [1/6] Masuk ke direktori project..."
+echo "🚀 [1/5] Masuk ke direktori project..."
 cd "$PROJECT_DIR"
 
-echo "📥 [2/6] Pull perubahan terbaru dari Git..."
+echo "📥 [2/5] Pull perubahan terbaru dari Git..."
 git pull origin main
 
-echo "🛑 [3/6] Stop container API yang berjalan..."
-docker compose -f "$COMPOSE_FILE" stop api || true
+echo "🔨 [3/5] Build image API baru (Selagi container lama tetap menyala melayani request)..."
+docker compose -f "$COMPOSE_FILE" build api
 
-echo "🗑  [4/6] Hapus image API lama agar build dari awal..."
-docker compose -f "$COMPOSE_FILE" rm -f api || true
-docker image rm beritakarya-api 2>/dev/null || true
-# Hapus semua dangling images untuk hemat disk
+echo "▶️  [4/5] Deploy kontainer baru dengan Zero-Downtime restart..."
+# up -d --no-deps api akan menggantikan container api yang lama dengan yang baru dalam waktu < 2 detik!
+docker compose -f "$COMPOSE_FILE" up -d --no-deps api
+
+echo "🧹 [5/5] Membersihkan image lama yang tidak terpakai..."
 docker image prune -f
 
-echo "🔨 [5/6] Build image API baru (dengan --no-cache)..."
-docker compose -f "$COMPOSE_FILE" build --no-cache api
-
-echo "▶️  [6/6] Jalankan semua services..."
-docker compose -f "$COMPOSE_FILE" up -d
-
 echo ""
-echo "⏳ Menunggu API selesai startup (60 detik)..."
+echo "⏳ Menunggu API selesai startup (20 detik)..."
 sleep 20
 
 echo ""

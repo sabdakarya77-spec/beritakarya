@@ -166,11 +166,11 @@ else
 fi
 
 # Check PostgreSQL credentials in backup script
-PGUSER=$(grep -E "^PGUSER=" "$BACKUP_SCRIPT" | head -1 | cut -d'=' -f2- | tr -d ' ' | tr -d '"' | tr -d "'")
-PGDATABASE=$(grep -E "^PGDATABASE=" "$BACKUP_SCRIPT" | head -1 | cut -d'=' -f2- | tr -d ' ' | tr -d '"' | tr -d "'")
+DB_USER_VAL=$(grep -E "^DB_USER=" "$BACKUP_SCRIPT" | head -1 | cut -d'=' -f2- | tr -d ' ' | tr -d '"' | tr -d "'" | sed -E 's/\$\{DB_USER:-?([a-zA-Z0-9_-]+)\}/\1/')
+DB_NAME_VAL=$(grep -E "^DB_NAME=" "$BACKUP_SCRIPT" | head -1 | cut -d'=' -f2- | tr -d ' ' | tr -d '"' | tr -d "'" | sed -E 's/\$\{DB_NAME:-?([a-zA-Z0-9_-]+)\}/\1/')
 
-if [ -n "$PGUSER" ] && [ -n "$PGDATABASE" ]; then
-  print_status PASS "Database credentials in backup script: $PGUSER/$PGDATABASE"
+if [ -n "$DB_USER_VAL" ] && [ -n "$DB_NAME_VAL" ]; then
+  print_status PASS "Database credentials in backup script: $DB_USER_VAL/$DB_NAME_VAL"
 else
   print_warn "Database credentials not found in backup script (may use environment)"
 fi
