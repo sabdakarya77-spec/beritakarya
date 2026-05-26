@@ -183,11 +183,17 @@ export function prepareLegalDocumentContent(
   let html = formatLegalRichContent(value)
   if (!html || !options?.pageTitle) return html
 
+  // Strip the editor wrapper div if present to allow stripping the leading title
+  const wrapperMatch = html.match(
+    /^\s*<div[^>]*align="[a-z]+"[^>]*>([\s\S]*)<\/div>\s*$/i
+  )
+  let contentHtml = wrapperMatch ? wrapperMatch[1].trim() : html
+
   const titleNorm = normalizeComparableText(options.pageTitle)
   let guard = 0
   while (guard < 8) {
     guard += 1
-    const match = html.match(LEADING_BLOCK_RE)
+    const match = contentHtml.match(LEADING_BLOCK_RE)
     if (!match) break
 
     const tagName = match[1].toLowerCase()
@@ -198,8 +204,8 @@ export function prepareLegalDocumentContent(
 
     if (!duplicatesTitle) break
 
-    html = html.slice(match[0].length).trim()
+    contentHtml = contentHtml.slice(match[0].length).trim()
   }
 
-  return html
+  return contentHtml
 }
