@@ -55,20 +55,25 @@ function TitleInput({ compact = false }: { compact?: boolean }) {
   }, [title])
 
   return (
-    <textarea
-      ref={textareaRef}
-      value={title}
-      onChange={e => setTitle(e.target.value)}
-      placeholder="Tulis Judul Berita yang Memikat..."
-      rows={compact ? 2 : 3}
-      className={cn(
-        "w-full overflow-hidden border-none bg-transparent font-serif font-black leading-[1.05] tracking-tight text-slate-950 outline-none resize-none dark:text-white",
-        "placeholder:text-gray-300 dark:placeholder:text-white/15",
-        compact
-          ? "min-h-[80px] text-[2rem] sm:min-h-[96px] sm:text-4xl md:min-h-[120px] md:text-5xl"
-          : "min-h-[96px] text-[2.25rem] sm:min-h-[132px] sm:text-[2.9rem] md:min-h-[176px] md:text-6xl lg:text-[4.5rem]"
-      )}
-    />
+    <div>
+      <label className="block text-[9px] font-black uppercase tracking-[0.18em] text-gray-400 dark:text-gray-500 mb-2">
+        Judul
+      </label>
+      <textarea
+        ref={textareaRef}
+        value={title}
+        onChange={e => setTitle(e.target.value)}
+        placeholder="Tulis Judul Berita..."
+        rows={compact ? 2 : 3}
+        className={cn(
+          "w-full overflow-hidden border-none bg-transparent font-serif font-black leading-[1.1] tracking-tight text-slate-950 outline-none resize-none dark:text-white",
+          "placeholder:text-gray-300 dark:placeholder:text-white/15",
+          compact
+            ? "min-h-[60px] text-xl sm:min-h-[72px] sm:text-2xl md:text-3xl"
+            : "min-h-[72px] text-2xl sm:min-h-[96px] sm:text-3xl md:text-4xl lg:text-[2.75rem]"
+        )}
+      />
+    </div>
   )
 }
 
