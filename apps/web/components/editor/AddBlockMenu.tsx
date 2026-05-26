@@ -1,6 +1,6 @@
 'use client'
 import { useMemo, useState } from 'react'
-import { Search, Type, Heading1, List, Quote, Sparkles, Image, Grid2X2, GalleryVertical, PlaySquare, Columns2, X } from 'lucide-react'
+import { Search, Type, Heading1, List, Quote, Sparkles, Image, Grid2X2, GalleryVertical, PlaySquare, Columns2, X, Plus } from 'lucide-react'
 import { useEditorStore } from '../../store/editorStore'
 import type { Block } from '@beritakarya/types'
 import { EditorHelpHint } from './EditorHelpHint'
@@ -63,9 +63,10 @@ export function AddBlockMenu({ afterId, compact, onClose }: Props) {
     return (
       <button
         onClick={() => setOpen(true)}
-        className="rounded-full px-3 py-1 text-xs font-semibold text-gray-400 transition-colors hover:bg-brand-red/5 hover:text-brand-red"
+        className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-gray-500 shadow-sm transition-colors hover:border-brand-red/30 hover:text-brand-red dark:border-white/10 dark:bg-slate-900 dark:text-gray-300"
       >
-        + Tambah blok
+        <Plus size={13} />
+        <span>Tambah blok</span>
       </button>
     )
   }

@@ -1,6 +1,8 @@
 'use client'
 
 import { FileText } from 'lucide-react'
+import type { Block } from '@beritakarya/types'
+import { useEditorStore } from '../../store/editorStore'
 import { BlockList } from './BlockList'
 import { AddBlockMenu } from './AddBlockMenu'
 import { cn } from '../../lib/utils'
@@ -11,6 +13,9 @@ interface EditorCanvasProps {
 }
 
 export function EditorCanvas({ isFocusMode }: EditorCanvasProps) {
+  const { blocks } = useEditorStore()
+  const isCanvasEmpty = blocks.every(isBlockEmpty)
+
   return (
     <section
       className={cn(
@@ -42,7 +47,7 @@ export function EditorCanvas({ isFocusMode }: EditorCanvasProps) {
       )}>
         <BlockList />
         
-        {!isFocusMode && (
+        {!isFocusMode && isCanvasEmpty && (
           <div className="mt-12 flex justify-center border-t border-gray-100 pt-8 dark:border-white/5 sm:mt-16 sm:pt-12">
             <AddBlockMenu afterId={undefined} />
           </div>
@@ -50,4 +55,26 @@ export function EditorCanvas({ isFocusMode }: EditorCanvasProps) {
       </div>
     </section>
   )
+}
+
+function isBlockEmpty(block: Block) {
+  switch (block.type) {
+    case 'paragraph':
+    case 'heading':
+    case 'quote':
+    case 'callout':
+      return !block.content?.trim()
+    case 'list':
+      return !block.items?.some((item) => item?.trim())
+    case 'image':
+    case 'embed':
+      return !(block as { url?: string }).url?.trim()
+    case 'imageGrid':
+    case 'gallery':
+      return !block.images?.length
+    case 'mediaText':
+      return !block.content?.trim() && !block.url?.trim()
+    default:
+      return false
+  }
 }

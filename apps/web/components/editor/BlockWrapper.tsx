@@ -37,19 +37,22 @@ export function BlockWrapper({ block, index, children }: Props) {
 
       <div
         className={cn(
-          "absolute -top-5 left-1/2 z-30 -translate-x-1/2 transition-all duration-200",
-          isActive ? "opacity-100 pointer-events-auto" : "pointer-events-none scale-95 opacity-0 group-hover:pointer-events-auto group-hover:scale-100 group-hover:opacity-100"
+          "absolute -top-5 left-1/2 z-30 -translate-x-1/2 transition-all duration-300 ease-out",
+          isActive 
+            ? "opacity-100 pointer-events-auto translate-y-0" 
+            : "pointer-events-none translate-y-2 scale-95 opacity-0 group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:scale-100 group-hover:opacity-100"
         )}
       >
-        <div className="flex items-center gap-1 rounded-full border border-gray-200 bg-white p-1.5 px-3 shadow-2xl dark:border-white/10 dark:bg-slate-900">
-          <div className="mr-1 flex items-center gap-1 rounded-full bg-gray-50 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:bg-white/5 dark:text-gray-400">
-            <GripVertical size={12} />
-            Blok {index + 1}
+        <div className="flex items-center gap-0.5 rounded-full border border-gray-200/50 bg-white/95 p-1 shadow-[0_8px_30px_rgb(0,0,0,0.08)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-900/90">
+          <div className="mr-1 flex items-center gap-1.5 rounded-full bg-gray-50 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.15em] text-gray-500 dark:bg-white/5 dark:text-gray-400">
+            <GripVertical size={11} className="text-gray-400/60" />
+            <span className="select-none">Blok {index + 1}</span>
           </div>
+          
           <button
             onClick={() => moveBlock(block.id, 'up')}
             disabled={index === 0}
-            className="p-1.5 text-gray-400 hover:text-brand-black dark:hover:text-white disabled:opacity-20 transition-colors"
+            className="flex h-8 w-8 items-center justify-center rounded-full text-gray-400 transition-all hover:bg-gray-100 hover:text-brand-black disabled:opacity-20 dark:hover:bg-white/5 dark:hover:text-white"
             title="Naik"
           >
             <ChevronUp size={14} strokeWidth={2.5} />
@@ -58,13 +61,13 @@ export function BlockWrapper({ block, index, children }: Props) {
           <button
             onClick={() => moveBlock(block.id, 'down')}
             disabled={index === blocks.length - 1}
-            className="p-1.5 text-gray-400 hover:text-brand-black dark:hover:text-white disabled:opacity-20 transition-colors"
+            className="flex h-8 w-8 items-center justify-center rounded-full text-gray-400 transition-all hover:bg-gray-100 hover:text-brand-black disabled:opacity-20 dark:hover:bg-white/5 dark:hover:text-white"
             title="Turun"
           >
             <ChevronDown size={14} strokeWidth={2.5} />
           </button>
 
-          <div className="w-px h-4 bg-gray-100 dark:bg-white/5 mx-1" />
+          <div className="mx-1 h-3.5 w-px bg-gray-200/60 dark:bg-white/10" />
 
           <button
             onClick={() => {
@@ -72,11 +75,11 @@ export function BlockWrapper({ block, index, children }: Props) {
                 removeBlock(block.id)
               }
             }}
-            className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-full transition-colors flex items-center gap-1.5"
+            className="group/del flex h-8 items-center gap-1.5 rounded-full px-3 text-gray-400 transition-all hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-500/10"
             title="Hapus blok"
           >
-            <Trash2 size={14} strokeWidth={2.5} />
-            <span className="text-[10px] font-bold uppercase tracking-wider pr-1">Hapus</span>
+            <Trash2 size={13} strokeWidth={2.5} className="transition-transform group-hover/del:scale-110" />
+            <span className="text-[9px] font-black uppercase tracking-widest">Hapus</span>
           </button>
         </div>
       </div>
@@ -92,26 +95,33 @@ export function BlockWrapper({ block, index, children }: Props) {
 
       <div
         className={cn(
-          "relative mt-3 h-8 transition-opacity lg:mt-4",
+          "mt-4 flex justify-end transition-opacity lg:mt-5",
           isActive ? "opacity-100" : "opacity-0 group-hover:opacity-100"
         )}
       >
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-full h-px bg-gray-100 dark:bg-white/5" />
-          <button 
-            onClick={() => setShowAddMenu(!showAddMenu)}
+        <button 
+          onClick={() => setShowAddMenu(!showAddMenu)}
+          className={cn(
+            "inline-flex h-8 items-center rounded-full border bg-white/80 py-1 text-[10px] font-black uppercase tracking-widest shadow-sm transition-all backdrop-blur-md dark:bg-slate-900/80",
+            showAddMenu || isActive
+              ? "gap-2 border-brand-red/30 px-4 text-brand-red dark:border-brand-red/30"
+              : "gap-0 border-gray-200 px-2.5 text-gray-400 dark:border-white/10 dark:text-gray-500 hover:gap-2 hover:border-brand-red/30 hover:px-4 hover:text-brand-red"
+          )}
+          title="Sisipkan blok setelah bagian ini"
+          aria-label="Tambah blok"
+        >
+          <Plus size={14} className={cn("transition-transform duration-300", showAddMenu && "rotate-45")} />
+          <span
             className={cn(
-              "absolute flex h-8 items-center gap-2 rounded-full border bg-white px-3 text-xs font-semibold text-gray-500 shadow-sm transition-all dark:bg-slate-900 dark:text-gray-300",
+              "overflow-hidden whitespace-nowrap transition-all duration-300",
               showAddMenu || isActive
-                ? "border-brand-red/30 text-brand-red dark:border-brand-red/30"
-                : "border-gray-200 dark:border-white/10 hover:border-brand-red/30 hover:text-brand-red"
+                ? "max-w-24 opacity-100"
+                : "max-w-0 opacity-0 group-hover:max-w-24 group-hover:opacity-100"
             )}
-            title="Sisipkan blok setelah bagian ini"
           >
-            <Plus size={14} className={cn("transition-transform", showAddMenu && "rotate-45")} />
-            <span>Tambah blok</span>
-          </button>
-        </div>
+            Tambah blok
+          </span>
+        </button>
       </div>
       
       {showAddMenu && (
