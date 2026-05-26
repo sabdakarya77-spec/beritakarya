@@ -79,7 +79,7 @@ function plainTextToLegalHtml(value: string) {
 }
 
 function stripEditorWrapper(value: string) {
-  const match = value.match(/^\s*<div[^>]*align="(left|center|right)"[^>]*>([\s\S]*)<\/div>\s*$/i)
+  const match = value.match(/^\s*<div[^>]*align="(left|center|right|justify)"[^>]*>([\s\S]*)<\/div>\s*$/i)
   if (!match) {
     return { align: 'left' as LegalAlignment, html: value }
   }
@@ -90,23 +90,43 @@ function stripEditorWrapper(value: string) {
   }
 }
 
+/**
+ * Parse konten legal dari format penyimpanan ke HTML editor.
+ * Backward-compat: jika data lama menggunakan wrapper <div align="center">,
+ * alignment akan dimigrasi ke tiap elemen blok (per-paragraf).
+ */
 function parseLegalContent(value: string) {
   if (!value) {
-    return { align: 'left' as LegalAlignment, html: '' }
+    return { html: '' }
   }
 
   const stripped = stripEditorWrapper(value)
-  const normalizedHtml = looksLikeHtml(stripped.html)
+  let normalizedHtml = looksLikeHtml(stripped.html)
     ? stripped.html
     : plainTextToLegalHtml(stripped.html)
 
-  return {
-    align: stripped.align,
-    html: normalizedHtml,
+  // Migrasi data lama: jika wrapper punya alignment non-left,
+  // terapkan ke setiap elemen blok yang belum punya alignment eksplisit
+  if (stripped.align !== 'left') {
+    const temp = document.createElement('div')
+    temp.innerHTML = normalizedHtml
+    temp.querySelectorAll('p, h1, h2, h3, h4, h5, h6, div, ul, ol, li').forEach((el) => {
+      const htmlEl = el as HTMLElement
+      if (!htmlEl.style.textAlign) {
+        htmlEl.style.textAlign = stripped.align
+      }
+    })
+    normalizedHtml = temp.innerHTML
   }
+
+  return { html: normalizedHtml }
 }
 
-function serializeLegalContent(html: string, align: LegalAlignment) {
+/**
+ * Serialize HTML editor ke format penyimpanan.
+ * Alignment per-paragraf sudah embedded di dalam HTML masing-masing elemen.
+ */
+function serializeLegalContent(html: string) {
   const normalized = html
     .replace(/<div><br><\/div>/gi, '')
     .replace(/<p><br><\/p>/gi, '')
@@ -121,7 +141,8 @@ function serializeLegalContent(html: string, align: LegalAlignment) {
 
   if (!plainText) return ''
 
-  return `<div align="${align}">${normalized}</div>`
+  // Wrapper netral agar kompatibel dengan parser yang mengharapkan <div align="...">
+  return `<div align="left">${normalized}</div>`
 }
 
 function LegalRichTextEditor({
@@ -139,6 +160,29 @@ function LegalRichTextEditor({
   const lastEmittedValueRef = useRef<string>('')
   const [alignment, setAlignment] = useState<LegalAlignment>('left')
 
+  // Deteksi alignment paragraf di posisi kursor saat ini
+  const detectAlignment = (): LegalAlignment => {
+    const selection = window.getSelection()
+    if (!selection || selection.rangeCount === 0) return 'left'
+    let node: Node | null = selection.anchorNode
+    const editor = editorRef.current
+    while (node && node !== editor) {
+      if (node instanceof HTMLElement) {
+        const computedAlign = window.getComputedStyle(node).textAlign
+        if (computedAlign === 'center') return 'center'
+        if (computedAlign === 'right') return 'right'
+        if (computedAlign === 'justify') return 'justify'
+        if (computedAlign === 'left' || computedAlign === 'start') return 'left'
+      }
+      node = node.parentNode
+    }
+    return 'left'
+  }
+
+  const updateToolbarAlignment = () => {
+    setAlignment(detectAlignment())
+  }
+
   useEffect(() => {
     const editor = editorRef.current
     if (!editor) return
@@ -153,21 +197,19 @@ function LegalRichTextEditor({
     if (editor.innerHTML !== parsed.html) {
       editor.innerHTML = parsed.html
     }
-    editor.style.textAlign = parsed.align
-    setAlignment(parsed.align)
 
     // Sinkronisasi nilai terakhir agar tetap up-to-date saat ada pembaruan eksternal
     lastEmittedValueRef.current = value
   }, [value])
 
-  const emitChange = (nextAlign?: LegalAlignment) => {
+  const emitChange = () => {
     const editor = editorRef.current
     if (!editor) return
     editor.querySelectorAll('a').forEach((anchor) => {
       anchor.setAttribute('target', '_blank')
       anchor.setAttribute('rel', 'noopener noreferrer')
     })
-    const serialized = serializeLegalContent(editor.innerHTML, nextAlign || alignment)
+    const serialized = serializeLegalContent(editor.innerHTML)
     lastEmittedValueRef.current = serialized
     onChange(serialized)
   }
@@ -214,15 +256,20 @@ function LegalRichTextEditor({
     emitChange()
   }
 
+  // Alignment per-paragraf menggunakan execCommand (seperti Microsoft Word)
   const applyAlignment = (nextAlign: LegalAlignment) => {
     const editor = editorRef.current
     if (!editor) return
-    editor.style.textAlign = nextAlign
-    setAlignment(nextAlign)
     editor.focus()
-    const serialized = serializeLegalContent(editor.innerHTML, nextAlign)
-    lastEmittedValueRef.current = serialized
-    onChange(serialized)
+    const commandMap: Record<LegalAlignment, string> = {
+      left: 'justifyLeft',
+      center: 'justifyCenter',
+      right: 'justifyRight',
+      justify: 'justifyFull',
+    }
+    document.execCommand(commandMap[nextAlign])
+    setAlignment(nextAlign)
+    emitChange()
   }
 
   const toolbarButtonClass =
@@ -380,6 +427,8 @@ function LegalRichTextEditor({
           suppressContentEditableWarning
           data-placeholder={placeholder}
           onInput={() => emitChange()}
+          onKeyUp={updateToolbarAlignment}
+          onMouseUp={updateToolbarAlignment}
           className={`prose prose-sm max-w-none px-4 py-3 text-base text-gray-900 outline-none dark:prose-invert dark:text-white ${LEGAL_EDITOR_MIN_HEIGHT} before:pointer-events-none before:text-gray-400 empty:before:content-[attr(data-placeholder)]`}
         />
       </div>
