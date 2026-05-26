@@ -97,6 +97,17 @@ export function EditorialSidebar() {
   const panelMeta = TAB_META[currentTab]
 
   useEffect(() => {
+    if (typeof window === 'undefined') return
+    if (window.innerWidth < 1280) return
+
+    if (activeTab === 'content') {
+      setActiveTab('settings')
+    }
+
+    toggleSidebar(true)
+  }, [])
+
+  useEffect(() => {
     const loadCategories = async () => {
       try {
         const { data } = await api.get('/categories/tree', {

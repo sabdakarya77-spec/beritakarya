@@ -1,7 +1,6 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { CheckCircle2 } from 'lucide-react'
 import { useEditorStore } from '../../store/editorStore'
 import { cn } from '../../lib/utils'
 import { EditorHelpHint } from './EditorHelpHint'
@@ -11,10 +10,7 @@ interface EditorTitleStageProps {
 }
 
 export function EditorTitleStage({ isFocusMode }: EditorTitleStageProps) {
-  const { title, excerpt, setExcerpt, blocks } = useEditorStore()
-  const paragraphCount = blocks.filter((block) => block.type === 'paragraph').length
-  const titleLength = title.trim().length
-  const excerptLength = excerpt.trim().length
+  const { excerpt, setExcerpt } = useEditorStore()
 
   if (isFocusMode) {
     return (
@@ -33,8 +29,8 @@ export function EditorTitleStage({ isFocusMode }: EditorTitleStageProps) {
       animate={{ opacity: 1, y: 0 }}
       className="mb-10 rounded-[32px] border border-gray-200/80 bg-white/95 p-6 shadow-[0_32px_100px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-slate-900/60 md:p-8"
     >
-      <div className="mb-8 flex flex-col gap-5 border-b border-gray-100 pb-8 dark:border-white/5 md:flex-row md:items-start md:justify-between">
-        <div className="max-w-2xl">
+      <div className="mb-8 border-b border-gray-100 pb-8 dark:border-white/5">
+        <div className="max-w-4xl">
           <div className="mb-4 flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-brand-red text-sm font-black text-white shadow-lg shadow-brand-red/20">
               BK
@@ -56,27 +52,6 @@ export function EditorTitleStage({ isFocusMode }: EditorTitleStageProps) {
             Gunakan judul yang cepat dipahami pembaca, informatif untuk mesin pencari, dan tetap enak dibaca di halaman depan.
           </p>
         </div>
-
-        <div className="grid gap-3 md:min-w-[220px]">
-          <TitleMetaCard
-            label="Status Judul"
-            value={titleLength > 0 ? 'Sudah diisi' : 'Belum diisi'}
-            hint={titleLength > 0 ? `${titleLength} karakter` : 'Isi judul untuk mulai autosave'}
-            tone={titleLength > 0 ? 'success' : 'muted'}
-          />
-          <TitleMetaCard
-            label="Blok Paragraf"
-            value={`${paragraphCount} blok`}
-            hint="Pantau ritme awal tulisan sebelum menambah media"
-            tone="muted"
-          />
-          <TitleMetaCard
-            label="Deck / Excerpt"
-            value={excerptLength > 0 ? 'Sudah diisi' : 'Belum diisi'}
-            hint={excerptLength > 0 ? `${excerptLength} karakter` : 'Ringkas inti berita dalam 1-2 kalimat pembuka'}
-            tone={excerptLength > 0 ? 'success' : 'muted'}
-          />
-        </div>
       </div>
     </motion.section>
   )
@@ -96,35 +71,6 @@ function TitleInput({ compact = false }: { compact?: boolean }) {
         compact ? "text-4xl md:text-5xl" : "text-4xl md:text-6xl"
       )}
     />
-  )
-}
-
-function TitleMetaCard({
-  label,
-  value,
-  hint,
-  tone
-}: {
-  label: string
-  value: string
-  hint: string
-  tone: 'success' | 'muted'
-}) {
-  return (
-    <div className="rounded-2xl border border-gray-200/80 bg-gray-50/80 p-4 dark:border-white/10 dark:bg-slate-950/50">
-      <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gray-500 dark:text-gray-400">
-        {label}
-      </p>
-      <div className="mt-2 flex items-center gap-2">
-        {tone === 'success' && <CheckCircle2 size={15} className="text-emerald-500" />}
-        <p className="text-sm font-bold text-brand-black dark:text-white">
-          {value}
-        </p>
-      </div>
-      <p className="mt-1 text-xs leading-5 text-gray-500 dark:text-gray-400">
-        {hint}
-      </p>
-    </div>
   )
 }
 
