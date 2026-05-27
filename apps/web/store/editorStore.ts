@@ -510,5 +510,5 @@ function scheduleAutoSave(get: () => EditorState) {
       return
     }
     state.saveArticle()
-  }, 5000)
+  }, 15000)
 }
