@@ -26,6 +26,7 @@ export function BlockWrapper({ block, index, children }: Props) {
   if (editorMode === 'wordpress') {
     return (
       <div
+        data-block-wrapper
         className="group relative py-0.5"
         onClick={() => setActiveBlockId(block.id)}
         onFocusCapture={() => setActiveBlockId(block.id)}
