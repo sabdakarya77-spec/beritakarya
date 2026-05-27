@@ -6,6 +6,9 @@ import { cn } from '../../../lib/utils'
 import { InlineToolbar } from './InlineToolbar'
 import type { ParagraphBlock as TParagraphBlock, Block } from '@beritakarya/types'
 
+// Module-level ref for restoring cursor after mergeWithPrevious
+let __mergeCursor: { blockId: string; offset: number } | null = null
+
 const BLOCK_TYPES: { type: Block['type']; label: string; desc: string; aliases: string[]; icon: typeof Type }[] = [
   { type: 'heading', label: 'Subjudul', desc: 'Bagi artikel jadi bagian yang jelas', aliases: ['judul', 'heading', 'h2', 'subjudul'], icon: Heading1 },
   { type: 'list', label: 'Daftar', desc: 'Poin fakta, kronologi, atau rangkuman', aliases: ['list', 'bullet', 'daftar', 'poin'], icon: List },
@@ -28,8 +31,6 @@ export function ParagraphBlock({ block }: { block: TParagraphBlock }) {
   const [slashMenuPosition, setSlashMenuPosition] = useState({ top: 40, left: 0 })
   const isActive = activeBlockId === block.id
 
-  const pendingCursorRef = useRef<{ offset: number } | null>(null)
-
   useEffect(() => {
     const el = editorRef.current
     if (!el) return
@@ -39,10 +40,11 @@ export function ParagraphBlock({ block }: { block: TParagraphBlock }) {
       el.innerHTML = nextValue
     }
 
-    // Restore cursor if this block was the merge target
-    if (pendingCursorRef.current) {
-      const offset = pendingCursorRef.current.offset
-      pendingCursorRef.current = null
+    // After mergeWithPrevious: restore cursor at correct offset
+    // __mergeCursor is set by the now-removed block before React unmounts it
+    if (__mergeCursor && __mergeCursor.blockId === block.id) {
+      const offset = __mergeCursor.offset
+      __mergeCursor = null
       el.focus()
       const sel = window.getSelection()
       if (sel) {
@@ -282,41 +284,9 @@ export function ParagraphBlock({ block }: { block: TParagraphBlock }) {
     sel.addRange(range)
   }
 
-  const focusAtOffset = (targetBlockId: string, offset: number) => {
-    requestAnimationFrame(() => {
-      const allWrappers = document.querySelectorAll('[data-block-wrapper]')
-      for (const w of allWrappers) {
-        const editorEl = w.querySelector('[contenteditable]') as HTMLElement | null
-        if (!editorEl) continue
-        if ((editorEl as HTMLElement).dataset.blockId === targetBlockId) {
-          editorEl.focus()
-          const sel = window.getSelection()
-          if (!sel) return
-          sel.removeAllRanges()
-          const r = document.createRange()
-          const node = editorEl.firstChild
-          if (node && node.nodeType === Node.TEXT_NODE) {
-            r.setStart(node, Math.min(offset, node.textContent?.length || 0))
-          } else {
-            r.setStart(editorEl, 0)
-          }
-          r.collapse(true)
-          sel.addRange(r)
-          return
-        }
-      }
-    })
-  }
-
   const sanitizePastedHTML = (html: string): string => {
-    // Parse HTML dari clipboard
     const doc = new DOMParser().parseFromString(html, 'text/html')
-    
-    // Hapus semua tag yang tidak diizinkan, pertahankan hanya:
-    // b, strong, i, em, u, s, a, br, span
     const allowedTags = new Set(['b', 'strong', 'i', 'em', 'u', 's', 'a', 'br', 'span'])
-    
-    // Walk all nodes and clean
     const walker = document.createTreeWalker(doc.body, NodeFilter.SHOW_ELEMENT, null)
     const nodesToRemove: Node[] = []
     
@@ -325,16 +295,13 @@ export function ParagraphBlock({ block }: { block: TParagraphBlock }) {
       const tagName = el.tagName.toLowerCase()
       
       if (tagName === 'a') {
-        // Only keep href attribute
         const href = el.getAttribute('href')
-        // Remove all attributes
         while (el.attributes.length > 0) el.removeAttribute(el.attributes[0].name)
         if (href) el.setAttribute('href', href)
         continue
       }
       
       if (tagName === 'span') {
-        // Only keep limited inline styles
         const style = el.getAttribute('style') || ''
         const allowedStyles = ['color', 'background-color', 'font-weight', 'font-style', 'text-decoration']
         const cleanedStyles = style.split(';')
@@ -344,11 +311,8 @@ export function ParagraphBlock({ block }: { block: TParagraphBlock }) {
             return prop && allowedStyles.some(allowed => prop.startsWith(allowed))
           })
           .join('; ')
-        
         el.removeAttribute('style')
         if (cleanedStyles) el.setAttribute('style', cleanedStyles)
-        
-        // Remove all other attributes
         const attrsToRemove: string[] = []
         for (let i = 0; i < el.attributes.length; i++) {
           const name = el.attributes[i].name
@@ -358,17 +322,14 @@ export function ParagraphBlock({ block }: { block: TParagraphBlock }) {
         continue
       }
       
-      // Remove all attributes from allowed tags (except a and span handled above)
       if (allowedTags.has(tagName)) {
         while (el.attributes.length > 0) el.removeAttribute(el.attributes[0].name)
         continue
       }
       
-      // For disallowed tags, mark for removal but preserve their text content
       nodesToRemove.push(el)
     }
     
-    // Replace disallowed nodes with their text content
     for (const node of nodesToRemove) {
       const parent = node.parentNode
       if (parent) {
@@ -384,18 +345,13 @@ export function ParagraphBlock({ block }: { block: TParagraphBlock }) {
 
   const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
     e.preventDefault()
-    
-    // Priority 1: Try to get HTML from clipboard
     const htmlData = e.clipboardData.getData('text/html')
     const textData = e.clipboardData.getData('text/plain')
-    
     let sanitized: string
     
     if (htmlData) {
-      // Sanitize HTML — strip disallowed tags, keep only basic formatting
       sanitized = sanitizePastedHTML(htmlData)
     } else if (textData) {
-      // Plain text: escape HTML entities and replace newlines with <br>
       sanitized = textData
         .replace(/&/g, '&#38;')
         .replace(/</g, '&#60;')
@@ -407,10 +363,7 @@ export function ParagraphBlock({ block }: { block: TParagraphBlock }) {
       return
     }
     
-    // Insert the sanitized content at cursor position
     document.execCommand('insertHTML', false, sanitized)
-    
-    // Sync content back to store
     handleFormat('paste')
   }
 
@@ -453,22 +406,33 @@ export function ParagraphBlock({ block }: { block: TParagraphBlock }) {
       if (!selection || !selection.rangeCount) return
       const range = selection.getRangeAt(0)
       
-      // If the editor is empty, just split into two empty paragraphs
       const isEmpty = !editor.textContent?.trim()
       if (isEmpty) {
         const newBlockId = splitBlock(block.id, '', '')
         if (newBlockId) {
           requestAnimationFrame(() => {
-            focusAtOffset(newBlockId, 0)
+            const allWrappers = document.querySelectorAll('[data-block-wrapper]')
+            for (const w of allWrappers) {
+              const el = w.querySelector('[contenteditable]') as HTMLElement | null
+              if (el && el.dataset.blockId === newBlockId) {
+                el.focus()
+                const sel = window.getSelection()
+                if (sel) {
+                  sel.removeAllRanges()
+                  const r = document.createRange()
+                  r.setStart(el.firstChild || el, 0)
+                  r.collapse(true)
+                  sel.addRange(r)
+                }
+                return
+              }
+            }
           })
         }
         return
       }
       
-      // Collapse the range first to handle multi-character selections
       range.collapse(true)
-      
-      // Extract content before cursor
       const beforeRange = range.cloneRange()
       beforeRange.selectNodeContents(editor)
       beforeRange.setEnd(range.endContainer, range.endOffset)
@@ -476,7 +440,6 @@ export function ParagraphBlock({ block }: { block: TParagraphBlock }) {
       const tempBefore = document.createElement('div')
       tempBefore.appendChild(contentBefore)
       
-      // Extract content after cursor
       const afterRange = range.cloneRange()
       afterRange.selectNodeContents(editor)
       afterRange.setStart(range.endContainer, range.endOffset)
@@ -489,13 +452,28 @@ export function ParagraphBlock({ block }: { block: TParagraphBlock }) {
       
       const newBlockId = splitBlock(block.id, beforeHtml, afterHtml)
       if (newBlockId) {
-        // Focus the new block on the next frame — the old editor ref is stale
-        focusAtOffset(newBlockId, 0)
+        requestAnimationFrame(() => {
+          const allWrappers = document.querySelectorAll('[data-block-wrapper]')
+          for (const w of allWrappers) {
+            const el = w.querySelector('[contenteditable]') as HTMLElement | null
+            if (el && el.dataset.blockId === newBlockId) {
+              el.focus()
+              const sel = window.getSelection()
+              if (sel) {
+                sel.removeAllRanges()
+                const r = document.createRange()
+                r.setStart(el.firstChild || el, 0)
+                r.collapse(true)
+                sel.addRange(r)
+              }
+              return
+            }
+          }
+        })
       }
       return
     }
 
-    // B. Shift+Enter → soft line break within paragraph
     if (e.key === 'Enter' && e.shiftKey) {
       e.preventDefault()
       document.execCommand('insertHTML', false, '<br>')
@@ -508,8 +486,6 @@ export function ParagraphBlock({ block }: { block: TParagraphBlock }) {
       if (!selection || !selection.rangeCount) return
       const range = selection.getRangeAt(0)
       
-      // Determine if cursor is truly at the start of the editor content.
-      // The startContainer might be a text node inside the editor, not the editor itself.
       const isEditorEmpty = !editor.textContent?.trim().length
       const cursorAtStart = isEditorEmpty || (
         range.startOffset === 0 &&
@@ -521,47 +497,18 @@ export function ParagraphBlock({ block }: { block: TParagraphBlock }) {
         e.preventDefault()
         const result = mergeWithPrevious(block.id)
         if (result) {
-          // Set cursor offset for the target block's useEffect to read after innerHTML sync
-          // Wait one frame for the target block's component to mount/receive new block.content
-          setTimeout(() => {
-            const allWrappers = document.querySelectorAll('[data-block-wrapper]')
-            for (const w of allWrappers) {
-              const editorEl = w.querySelector('[contenteditable]') as HTMLElement | null
-              if (!editorEl) continue
-              if (editorEl.dataset.blockId === result!.targetBlockId) {
-                editorEl.focus()
-                const sel = window.getSelection()
-                if (!sel) return
-                sel.removeAllRanges()
-                const r = document.createRange()
-                const node = editorEl.firstChild
-                if (node && node.nodeType === Node.TEXT_NODE) {
-                  r.setStart(node, Math.min(result!.cursorOffset, node.textContent?.length || 0))
-                } else {
-                  r.setStart(editorEl, 0)
-                }
-                r.collapse(true)
-                sel.addRange(r)
-                return
-              }
-            }
-          }, 0)
+          __mergeCursor = { blockId: result.targetBlockId, offset: result.cursorOffset }
         }
         return
       }
     }
 
-    // D. Delete at end → merge with next block
     if (e.key === 'Delete') {
       const selection = window.getSelection()
       if (!selection || !selection.rangeCount) return
       const range = selection.getRangeAt(0)
-      
-      // Check if cursor is at the very end of the text content
       const totalTextLen = editor.textContent?.length || 0
       const cursorOffset = range.startOffset
-      
-      // If cursor is at the end of the last text node (end of content)
       const isAtEnd = totalTextLen > 0 && cursorOffset >= totalTextLen
       
       if (isAtEnd) {
@@ -577,7 +524,6 @@ export function ParagraphBlock({ block }: { block: TParagraphBlock }) {
             updateBlock(block.id, { content: mergedContent })
             removeBlock(nextId)
             
-            // Keep cursor at the end of current block's content
             requestAnimationFrame(() => {
               const sel = window.getSelection()
               if (!sel) return
@@ -598,13 +544,10 @@ export function ParagraphBlock({ block }: { block: TParagraphBlock }) {
       }
     }
 
-    // E. Arrow Up at start → move to end of previous block
     if (e.key === 'ArrowUp') {
       const selection = window.getSelection()
       if (!selection || !selection.rangeCount) return
       const range = selection.getRangeAt(0)
-      
-      // Check if cursor is in the first line visually OR at the very top of the text content
       const totalTextLen = editor.textContent?.length || 0
       const cursorOffset = range.startOffset
       const isAtAbsoluteStart = totalTextLen === 0 || (cursorOffset === 0 && (range.startContainer === editor.firstChild || range.startContainer === editor))
@@ -618,7 +561,6 @@ export function ParagraphBlock({ block }: { block: TParagraphBlock }) {
         return
       }
       
-      // Also use rect-based detection for multi-line paragraphs
       const rects = range.getClientRects()
       if (rects.length > 0 && rects[0].top >= editor.getBoundingClientRect().top && cursorOffset === 0) {
         const prevId = getAdjacentBlockId(block.id, 'up')
@@ -629,13 +571,10 @@ export function ParagraphBlock({ block }: { block: TParagraphBlock }) {
       }
     }
 
-    // E. Arrow Down at end → move to start of next block
     if (e.key === 'ArrowDown') {
       const selection = window.getSelection()
       if (!selection || !selection.rangeCount) return
       const range = selection.getRangeAt(0)
-      
-      // Check if cursor is at the very end of the text content
       const totalTextLen = editor.textContent?.length || 0
       const cursorOffset = range.startOffset
       const isAtAbsoluteEnd = totalTextLen > 0 && cursorOffset >= totalTextLen
@@ -649,7 +588,6 @@ export function ParagraphBlock({ block }: { block: TParagraphBlock }) {
         return
       }
       
-      // Also use rect-based detection for multi-line paragraphs
       const rects = range.getClientRects()
       if (rects.length > 0) {
         const editorRect = editor.getBoundingClientRect()
@@ -664,7 +602,6 @@ export function ParagraphBlock({ block }: { block: TParagraphBlock }) {
       }
     }
 
-    // F. Tab → insert indentation (4 spaces)
     if (e.key === 'Tab') {
       e.preventDefault()
       document.execCommand('insertHTML', false, '&nbsp;&nbsp;&nbsp;&nbsp;')
