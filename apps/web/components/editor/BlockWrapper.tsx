@@ -1,5 +1,5 @@
 'use client'
-import { type ReactNode } from 'react'
+import { type ReactNode, useEffect, useRef } from 'react'
 import { useEditorStore } from '../../store/editorStore'
 import type { Block } from '@beritakarya/types'
 import { ChevronUp, ChevronDown, Plus, Trash2 } from 'lucide-react'
@@ -36,24 +36,15 @@ export function BlockWrapper({ block, index, children }: Props) {
     }
 
     return (
-      <div
-        data-block-wrapper
-        className="group relative py-0.5"
+      <WordPressBlockWrapperEl
+        blockId={block.id}
+        isActive={isActive}
+        isTextBlock={isTextBlock}
+        children={children}
+        onKeyDown={handleKeyDown}
         onClick={() => setActiveBlockId(block.id)}
         onFocusCapture={() => setActiveBlockId(block.id)}
-        onKeyDown={handleKeyDown}
-      >
-        <div className={cn(
-          "relative rounded-lg transition-all duration-200",
-          isActive
-            ? "border-2 border-brand-red/10 bg-brand-red/[0.01] dark:border-brand-red/20"
-            : "border-0 bg-transparent"
-        )}>
-          <div className="px-0.5 py-0">
-            {children}
-          </div>
-        </div>
-      </div>
+      />
     )
   }
 
@@ -141,6 +132,67 @@ export function BlockWrapper({ block, index, children }: Props) {
           <AddBlockMenu afterId={block.id} isOpen={showAddMenu} onClose={() => setShowAddMenu(false)} />
         </div>
       )}
+    </div>
+  )
+}
+
+// Separate component for WordPress mode to enable auto-focus hook
+function WordPressBlockWrapperEl({ blockId, isActive, isTextBlock, children, onKeyDown, onClick, onFocusCapture }: {
+  blockId: string
+  isActive: boolean
+  isTextBlock: boolean
+  children: ReactNode
+  onKeyDown: (e: React.KeyboardEvent) => void
+  onClick: () => void
+  onFocusCapture: () => void
+}) {
+  const wrapperRef = useRef<HTMLDivElement>(null)
+
+  // Auto-focus paragraph block when it becomes active (after Enter on non-text block)
+  useEffect(() => {
+    if (isActive && !isTextBlock) {
+      // For non-text blocks that become active, they don't have contenteditable
+      // This handles the case where the new paragraph block becomes active
+      return
+    }
+    if (isActive && isTextBlock) {
+      // New paragraph block was added — focus its contenteditable
+      requestAnimationFrame(() => {
+        const el = wrapperRef.current?.querySelector('[contenteditable]') as HTMLElement | null
+        if (el) {
+          el.focus()
+          const sel = window.getSelection()
+          if (sel) {
+            sel.removeAllRanges()
+            const r = document.createRange()
+            r.setStart(el.firstChild || el, 0)
+            r.collapse(true)
+            sel.addRange(r)
+          }
+        }
+      })
+    }
+  }, [isActive, isTextBlock])
+
+  return (
+    <div
+      ref={wrapperRef}
+      data-block-wrapper
+      className="group relative py-0.5"
+      onClick={onClick}
+      onFocusCapture={onFocusCapture}
+      onKeyDown={onKeyDown}
+    >
+      <div className={cn(
+        "relative rounded-lg transition-all duration-200",
+        isActive
+          ? "border-2 border-brand-red/10 bg-brand-red/[0.01] dark:border-brand-red/20"
+          : "border-0 bg-transparent"
+      )}>
+        <div className="px-0.5 py-0">
+          {children}
+        </div>
+      </div>
     </div>
   )
 }
