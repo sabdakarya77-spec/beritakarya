@@ -14,7 +14,7 @@ interface Props {
 }
 
 export function BlockWrapper({ block, index, children }: Props) {
-  const { moveBlock, removeBlock, blocks, isFocusMode, activeBlockId, setActiveBlockId, editorMode } = useEditorStore()
+  const { moveBlock, removeBlock, blocks, isFocusMode, activeBlockId, setActiveBlockId, editorMode, addBlock } = useEditorStore()
   const [showAddMenu, setShowAddMenu] = useState(false)
   const isActive = activeBlockId === block.id
 
@@ -24,12 +24,24 @@ export function BlockWrapper({ block, index, children }: Props) {
 
   // WordPress mode: seamless writing experience, no block controls
   if (editorMode === 'wordpress') {
+    const isTextBlock = block.type === 'paragraph' || block.type === 'heading' || block.type === 'quote' || block.type === 'list'
+    
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+      // Enter on non-text blocks → add paragraph below and focus it
+      if (e.key === 'Enter' && !e.shiftKey && !isTextBlock) {
+        e.preventDefault()
+        e.stopPropagation()
+        addBlock('paragraph', block.id)
+      }
+    }
+
     return (
       <div
         data-block-wrapper
         className="group relative py-0.5"
         onClick={() => setActiveBlockId(block.id)}
         onFocusCapture={() => setActiveBlockId(block.id)}
+        onKeyDown={handleKeyDown}
       >
         <div className={cn(
           "relative rounded-lg transition-all duration-200",
