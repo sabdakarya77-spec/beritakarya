@@ -1,12 +1,19 @@
 ﻿'use client'
 
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import { useEditorStore } from '../../../../store/editorStore'
 import { GridBlockList } from './GridBlockList'
 import { handleGridBlockShortcut } from './gridblock.shortcuts'
 
+/**
+ * GridBlockEditor — Container mode untuk GridBlock.
+ *
+ * Shortcut scoped ke editor container (ref), bukan global window,
+ * untuk menghindari konflik shortcut dengan mode lain.
+ */
 export function GridBlockEditor() {
   const { blocks, activeBlockId, moveBlock, removeBlock, addBlock, undo } = useEditorStore()
+  const containerRef = useRef<HTMLDivElement>(null)
 
   const handleKeyDown = useCallback((event: KeyboardEvent) => {
     const action = handleGridBlockShortcut(event, { activeBlockId, blocks })
@@ -33,9 +40,17 @@ export function GridBlockEditor() {
   }, [activeBlockId, blocks, moveBlock, removeBlock, addBlock, undo])
 
   useEffect(() => {
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
+    const el = containerRef.current
+    if (!el) return
+
+    // Scoped to editor container instead of global window
+    el.addEventListener('keydown', handleKeyDown)
+    return () => el.removeEventListener('keydown', handleKeyDown)
   }, [handleKeyDown])
 
-  return <GridBlockList />
+  return (
+    <div ref={containerRef} tabIndex={0} className="outline-none">
+      <GridBlockList />
+    </div>
+  )
 }

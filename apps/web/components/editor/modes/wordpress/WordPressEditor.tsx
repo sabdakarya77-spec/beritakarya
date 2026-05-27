@@ -1,172 +1,40 @@
 ﻿'use client'
-import { useCallback, useEffect, useRef, useState } from 'react'
+
+import { useCallback } from 'react'
 import { useEditorStore } from '../../../../store/editorStore'
 import { InlineToolbar } from '../../blocks/InlineToolbar'
 import { cn } from '../../../../lib/utils'
-import { WordPressWarnings, type WordPressWarning } from './WordPressWarnings'
-import { syncWordPressEditor, buildEditorHtml, isStructureSafe } from './WordPressSync'
-import { projectBlocksToWordPressFlow } from './WordPressProjection'
+import { WordPressWarnings } from './WordPressWarnings'
+import { useWordPressSync } from './hooks/useWordPressSync'
+import { useWordPressSelection } from './hooks/useWordPressSelection'
+import { useWordPressCompatibility } from './hooks/useWordPressCompatibility'
 import { isTextBlock } from '../../core/blockGuards'
+import { projectBlocksToWordPressFlow } from './adapter/WordPressProjection'
 
 /**
- * WordPressEditor — Modular WordPress mode adapter.
+ * WordPressEditor — Thin container/orchestrator for WordPress mode.
  *
- * Renders text blocks as a single continuous contentEditable,
- * with non-text blocks rendered below. All changes go through
- * the command layer via WordPressSync.
+ * Delegates logic to hooks:
+ * - useWordPressSync: bidirectional store ↔ DOM sync
+ * - useWordPressSelection: cursor position → active block
+ * - useWordPressCompatibility: article structure evaluation
  *
- * Features:
- * - Continuous writing experience for text-dominant articles
- * - Non-text blocks rendered separately with position markers
- * - Warnings for mixed/unsupported article structures
- * - Fallback to GridBlock for complex layouts
+ * Renders:
+ * - Warnings/CTA
+ * - Inline toolbar
+ * - Continuous contentEditable
+ * - Non-text blocks section
  */
 export function WordPressEditor() {
   const {
     blocks,
-    updateBlock,
-    setActiveBlockId,
     setEditorMode,
     removeBlock,
-    addBlock,
   } = useEditorStore()
 
-  const editorRef = useRef<HTMLDivElement>(null)
-  const syncingRef = useRef(false)
-  const [warnings, setWarnings] = useState<WordPressWarning[]>([])
-  const lastHtmlRef = useRef<string>('')
-
-  // Build initial HTML from blocks
-  const currentHtml = buildEditorHtml(blocks)
-
-  // Set innerHTML from blocks (store → DOM), preserving cursor
-  useEffect(() => {
-    const el = editorRef.current
-    if (!el || syncingRef.current) return
-    if (el.innerHTML === currentHtml) return
-    if (document.activeElement === el) return
-
-    // Save cursor offset if editor has focus
-    const sel = window.getSelection()
-    let savedOffset = -1
-    if (sel && sel.rangeCount > 0 && el.contains(sel.getRangeAt(0).commonAncestorContainer)) {
-      const range = sel.getRangeAt(0).cloneRange()
-      range.selectNodeContents(el)
-      range.setEnd(sel.getRangeAt(0).endContainer, sel.getRangeAt(0).endOffset)
-      savedOffset = range.toString().length
-    }
-
-    el.innerHTML = currentHtml
-    lastHtmlRef.current = currentHtml
-
-    // Restore cursor
-    if (savedOffset >= 0) {
-      requestAnimationFrame(() => {
-        el.focus()
-        const newSel = window.getSelection()
-        if (!newSel) return
-        const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT)
-        let currentLen = 0
-        while (walker.nextNode()) {
-          const node = walker.currentNode as Text
-          const nodeLen = node.textContent?.length || 0
-          if (currentLen + nodeLen >= savedOffset) {
-            const offsetInNode = Math.min(savedOffset - currentLen, nodeLen)
-            newSel.removeAllRanges()
-            const r = document.createRange()
-            r.setStart(node, offsetInNode)
-            r.collapse(true)
-            newSel.addRange(r)
-            break
-          }
-          currentLen += nodeLen
-        }
-      })
-    }
-  }, [currentHtml])
-
-  // Sync editor HTML → blocks via command layer
-  const syncToBlocks = useCallback(() => {
-    const el = editorRef.current
-    if (!el || syncingRef.current) return
-    syncingRef.current = true
-
-    try {
-      const editorHtml = el.innerHTML
-      if (editorHtml === lastHtmlRef.current) return
-
-      const result = syncWordPressEditor({
-        editorHtml,
-        currentBlocks: blocks,
-        allowBlockCreation: true,
-      })
-
-      // Apply block updates
-      result.blocks.forEach((updatedBlock) => {
-        const currentBlock = blocks.find((b) => b.id === updatedBlock.id)
-        if (currentBlock) {
-          // Only update if something changed
-          for (const key of Object.keys(updatedBlock) as (keyof typeof updatedBlock)[]) {
-            if (key !== 'id' && key !== 'type' && JSON.stringify(updatedBlock[key]) !== JSON.stringify(currentBlock[key as keyof typeof currentBlock])) {
-              updateBlock(updatedBlock.id, updatedBlock as any)
-              break
-            }
-          }
-        }
-      })
-
-      // Handle newly created blocks (from extra paragraphs)
-      if (result.blocks.length > blocks.length) {
-        const newBlocks = result.blocks.filter(
-          (nb) => !blocks.some((ob) => ob.id === nb.id)
-        )
-        for (const newBlock of newBlocks) {
-          if (isTextBlock(newBlock.type)) {
-            addBlock(newBlock.type, undefined)
-          }
-        }
-      }
-
-      // Update warnings
-      const wpWarnings: WordPressWarning[] = []
-      for (const msg of result.warnings) {
-        wpWarnings.push({
-          type: 'warning',
-          message: msg,
-        })
-      }
-      if (!result.isSafe) {
-        wpWarnings.push({
-          type: 'info',
-          message: 'Artikel ini mungkin lebih cocok diedit di mode GridBlock untuk tata letak yang lebih presisi.',
-        })
-      }
-      setWarnings(wpWarnings)
-      lastHtmlRef.current = editorHtml
-    } finally {
-      syncingRef.current = false
-    }
-  }, [blocks, updateBlock, addBlock])
-
-  // Detect active block from cursor position
-  const handleCursorMove = useCallback(() => {
-    const el = editorRef.current
-    if (!el) return
-    const sel = window.getSelection()
-    if (!sel || !sel.rangeCount) return
-    const node = sel.getRangeAt(0).startContainer
-    const htmlEl: HTMLElement | null =
-      node.nodeType === Node.ELEMENT_NODE
-        ? (node as HTMLElement)
-        : (node.parentElement as HTMLElement)
-    if (!htmlEl) return
-    const blockEl: HTMLElement | null = htmlEl.dataset.blockId
-      ? htmlEl
-      : htmlEl.closest('[data-block-id]') as HTMLElement | null
-    if (blockEl && blockEl.dataset.blockId) {
-      setActiveBlockId(blockEl.dataset.blockId)
-    }
-  }, [setActiveBlockId])
+  const { editorRef, warnings, syncToBlocks } = useWordPressSync()
+  const { handleCursorMove } = useWordPressSelection()
+  const compatibility = useWordPressCompatibility()
 
   const handleInput = useCallback(() => {
     syncToBlocks()
@@ -177,8 +45,6 @@ export function WordPressEditor() {
   }, [syncToBlocks])
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    // Let Enter work normally — contentEditable creates <p> or <div>.
-    // We handle sync in onInput.
     // Ctrl+Shift+Enter → switch to GridBlock mode
     if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'Enter') {
       e.preventDefault()
@@ -188,12 +54,11 @@ export function WordPressEditor() {
 
   // Non-text blocks
   const nonTextBlocks = blocks.filter((b) => !isTextBlock(b.type))
-  const flow = projectBlocksToWordPressFlow(blocks)
 
   return (
     <div className="relative space-y-4">
       {/* Warnings */}
-      {flow.warnings.length > 0 && (
+      {warnings.length > 0 && (
         <WordPressWarnings
           warnings={warnings}
           onSwitchToGridBlock={() => setEditorMode('gridblok' as any)}
@@ -241,7 +106,7 @@ export function WordPressEditor() {
         <div className="mt-6 space-y-3">
           <div className="flex items-center gap-2">
             <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">
-              Blok Media &amp; Lainnya
+              Blok Media & Lainnya
             </span>
             <div className="h-px flex-1 bg-gray-100 dark:bg-white/5" />
           </div>

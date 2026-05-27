@@ -1,11 +1,11 @@
 ﻿'use client'
-import { type ReactNode, useRef } from 'react'
+import { type ReactNode, useRef, useState } from 'react'
 import { useEditorStore } from '../../../../store/editorStore'
 import type { Block } from '@beritakarya/types'
-import { ChevronUp, ChevronDown, Plus, Trash2 } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { cn } from '../../../../lib/utils'
 import { AddBlockMenu } from '../../AddBlockMenu'
-import { useState } from 'react'
+import { BlockActionRail } from '../gridblock/shared/BlockActionRail'
 
 interface Props {
   block: Block
@@ -13,8 +13,17 @@ interface Props {
   children: ReactNode
 }
 
+/**
+ * GridBlockWrapper — Shell untuk setiap block di GridBlock mode.
+ *
+ * Sisakan:
+ * - selected state (active border)
+ * - block shell (container + styling)
+ *
+ * Toolbar action dipindahkan ke BlockActionRail (shared component).
+ */
 export function GridBlockWrapper({ block, index, children }: Props) {
-  const { moveBlock, removeBlock, blocks, isFocusMode, activeBlockId, setActiveBlockId, addBlock } = useEditorStore()
+  const { blocks, isFocusMode, activeBlockId, setActiveBlockId, addBlock } = useEditorStore()
   const [showAddMenu, setShowAddMenu] = useState(false)
   const isActive = activeBlockId === block.id
 
@@ -28,7 +37,7 @@ export function GridBlockWrapper({ block, index, children }: Props) {
       onClick={() => setActiveBlockId(block.id)}
       onFocusCapture={() => setActiveBlockId(block.id)}
     >
-      {/* Block Actions Toolbar */}
+      {/* Block Actions Toolbar — dipisahkan ke shared component */}
       <div
         className={cn(
           "absolute -top-4 right-0 z-30 transition-all duration-300 ease-out",
@@ -37,40 +46,7 @@ export function GridBlockWrapper({ block, index, children }: Props) {
             : "pointer-events-none translate-y-2 scale-95 opacity-0 group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:scale-100 group-hover:opacity-100"
         )}
       >
-        <div className="flex items-center gap-0.5 rounded-full border border-gray-200/50 bg-white/95 p-0.5 shadow-lg backdrop-blur-xl dark:border-white/10 dark:bg-slate-900/90">
-          <button
-            onClick={(e) => { e.stopPropagation(); moveBlock(block.id, 'up'); }}
-            disabled={index === 0}
-            className="flex h-7 w-7 items-center justify-center rounded-full text-gray-400 transition-all hover:bg-gray-100 hover:text-brand-black disabled:opacity-10 dark:hover:bg-white/5 dark:hover:text-white"
-            title="Naik"
-          >
-            <ChevronUp size={12} strokeWidth={3} />
-          </button>
-
-          <button
-            onClick={(e) => { e.stopPropagation(); moveBlock(block.id, 'down'); }}
-            disabled={index === blocks.length - 1}
-            className="flex h-7 w-7 items-center justify-center rounded-full text-gray-400 transition-all hover:bg-gray-100 hover:text-brand-black disabled:opacity-10 dark:hover:bg-white/5 dark:hover:text-white"
-            title="Turun"
-          >
-            <ChevronDown size={12} strokeWidth={3} />
-          </button>
-
-          <div className="mx-0.5 h-3 w-px bg-gray-200/60 dark:bg-white/10" />
-
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              if (confirm('Hapus blok ini?')) {
-                removeBlock(block.id)
-              }
-            }}
-            className="flex h-7 w-7 items-center justify-center rounded-full text-gray-400 transition-all hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-500/10"
-            title="Hapus"
-          >
-            <Trash2 size={11} strokeWidth={3} />
-          </button>
-        </div>
+        <BlockActionRail blockId={block.id} index={index} totalBlocks={blocks.length} />
       </div>
 
       {/* Block Content */}
@@ -93,7 +69,7 @@ export function GridBlockWrapper({ block, index, children }: Props) {
         )}
       >
         <button
-          onClick={(e) => { e.stopPropagation(); setShowAddMenu(!showAddMenu); }}
+          onClick={(e) => { e.stopPropagation(); setShowAddMenu(!showAddMenu) }}
           className={cn(
             "flex h-5 w-5 items-center justify-center rounded text-gray-400 transition-all hover:text-gray-900 dark:hover:text-white",
             showAddMenu && "rotate-45 text-gray-900 dark:text-white"

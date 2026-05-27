@@ -1,53 +1,14 @@
 ﻿'use client'
 import { useRef } from 'react'
 import { useEditorStore } from '../../../../../store/editorStore'
+import { useGridBlockNavigation } from '../shared/useGridBlockNavigation'
 import type { QuoteBlock as TQuoteBlock } from '@beritakarya/types'
 
 export function QuoteBlock({ block }: { block: TQuoteBlock }) {
   const { updateBlock, addBlock, replaceBlock, setActiveBlockId, getAdjacentBlockId } = useEditorStore()
   const editorRef = useRef<HTMLDivElement>(null)
   const attributionRef = useRef<HTMLDivElement>(null)
-
-  const focusNextBlock = () => {
-    const editor = editorRef.current
-    if (!editor) return
-    const wrapper = editor.closest('[data-block-wrapper]') as HTMLElement | null
-    if (!wrapper) return
-    const target = wrapper.nextElementSibling as HTMLElement | null
-    if (!target) return
-    const targetEditor = target.querySelector('[contenteditable]') as HTMLElement | null
-    if (!targetEditor) return
-    targetEditor.focus()
-    const sel = window.getSelection()
-    if (!sel) return
-    sel.removeAllRanges()
-    const range = document.createRange()
-    range.setStart(targetEditor.firstChild || targetEditor, 0)
-    range.collapse(true)
-    sel.addRange(range)
-  }
-
-  const focusPrevBlock = () => {
-    const editor = editorRef.current
-    if (!editor) return
-    const wrapper = editor.closest('[data-block-wrapper]') as HTMLElement | null
-    if (!wrapper) return
-    const target = wrapper.previousElementSibling as HTMLElement | null
-    if (!target) return
-    const targetEditor = target.querySelector('[contenteditable]') as HTMLElement | null
-    if (!targetEditor) return
-    targetEditor.focus()
-    const sel = window.getSelection()
-    if (!sel) return
-    sel.removeAllRanges()
-    const range = document.createRange()
-    if (targetEditor.textContent) {
-      const len = targetEditor.textContent.length
-      range.setStart(targetEditor.firstChild!, len)
-      range.collapse(true)
-    }
-    sel.addRange(range)
-  }
+  const { focusNextBlock, focusPrevBlock } = useGridBlockNavigation(editorRef)
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     const editor = editorRef.current
@@ -69,7 +30,7 @@ export function QuoteBlock({ block }: { block: TQuoteBlock }) {
       updateBlock(block.id, { content: editor.innerText })
       addBlock('paragraph', block.id)
       requestAnimationFrame(() => {
-        focusNextBlock()
+        focusNextBlock(block.id)
       })
       return
     }
@@ -117,7 +78,7 @@ export function QuoteBlock({ block }: { block: TQuoteBlock }) {
         const prevId = getAdjacentBlockId(block.id, 'up')
         if (prevId) {
           e.preventDefault()
-          focusPrevBlock()
+          focusPrevBlock(block.id)
         }
         return
       }
@@ -136,7 +97,7 @@ export function QuoteBlock({ block }: { block: TQuoteBlock }) {
         const nextId = getAdjacentBlockId(block.id, 'down')
         if (nextId) {
           e.preventDefault()
-          focusNextBlock()
+          focusNextBlock(block.id)
         }
         return
       }

@@ -23,6 +23,8 @@ export interface BlockCatalogItem {
   category: string
   aliases: string[]
   family: BlockFamily
+  isText: boolean
+  isMedia: boolean
   icon: LucideIcon
   supportedModes: EditorMode[]
 }
@@ -35,6 +37,8 @@ export const BLOCK_CATALOG: BlockCatalogItem[] = [
     category: 'Teks',
     aliases: ['paragraph', 'paragraf', 'body', 'text'],
     family: 'text',
+    isText: true,
+    isMedia: false,
     icon: Type,
     supportedModes: ['gridblock', 'wordpress'],
   },
@@ -45,6 +49,8 @@ export const BLOCK_CATALOG: BlockCatalogItem[] = [
     category: 'Teks',
     aliases: ['heading', 'subjudul', 'h2', 'h3'],
     family: 'text',
+    isText: true,
+    isMedia: false,
     icon: Heading1,
     supportedModes: ['gridblock', 'wordpress'],
   },
@@ -55,6 +61,8 @@ export const BLOCK_CATALOG: BlockCatalogItem[] = [
     category: 'Teks',
     aliases: ['list', 'daftar', 'bullet'],
     family: 'text',
+    isText: true,
+    isMedia: false,
     icon: List,
     supportedModes: ['gridblock', 'wordpress'],
   },
@@ -65,6 +73,8 @@ export const BLOCK_CATALOG: BlockCatalogItem[] = [
     category: 'Sorotan',
     aliases: ['quote', 'kutipan'],
     family: 'text',
+    isText: true,
+    isMedia: false,
     icon: Quote,
     supportedModes: ['gridblock', 'wordpress'],
   },
@@ -75,6 +85,8 @@ export const BLOCK_CATALOG: BlockCatalogItem[] = [
     category: 'Sorotan',
     aliases: ['callout', 'highlight'],
     family: 'callout',
+    isText: false,
+    isMedia: false,
     icon: Sparkles,
     supportedModes: ['gridblock'],
   },
@@ -85,6 +97,8 @@ export const BLOCK_CATALOG: BlockCatalogItem[] = [
     category: 'Media',
     aliases: ['image', 'foto', 'gambar'],
     family: 'media',
+    isText: false,
+    isMedia: true,
     icon: Image,
     supportedModes: ['gridblock'],
   },
@@ -95,6 +109,8 @@ export const BLOCK_CATALOG: BlockCatalogItem[] = [
     category: 'Media',
     aliases: ['grid', 'imagegrid', 'galeri'],
     family: 'media',
+    isText: false,
+    isMedia: true,
     icon: Grid2X2,
     supportedModes: ['gridblock'],
   },
@@ -105,6 +121,8 @@ export const BLOCK_CATALOG: BlockCatalogItem[] = [
     category: 'Media',
     aliases: ['gallery', 'galeri', 'slideshow'],
     family: 'media',
+    isText: false,
+    isMedia: true,
     icon: GalleryVertical,
     supportedModes: ['gridblock'],
   },
@@ -115,6 +133,8 @@ export const BLOCK_CATALOG: BlockCatalogItem[] = [
     category: 'Sisipan',
     aliases: ['embed', 'youtube', 'video'],
     family: 'media',
+    isText: false,
+    isMedia: true,
     icon: PlaySquare,
     supportedModes: ['gridblock'],
   },
@@ -125,6 +145,8 @@ export const BLOCK_CATALOG: BlockCatalogItem[] = [
     category: 'Media',
     aliases: ['mediatext', 'media text', 'kolom'],
     family: 'layout',
+    isText: false,
+    isMedia: true,
     icon: Newspaper,
     supportedModes: ['gridblock'],
   },
@@ -132,4 +154,8 @@ export const BLOCK_CATALOG: BlockCatalogItem[] = [
 
 export function getBlockCatalogItem(type: Block['type']) {
   return BLOCK_CATALOG.find((item) => item.type === type)
+}
+
+export function getSupportedModesForBlock(type: Block['type']): EditorMode[] {
+  return getBlockCatalogItem(type)?.supportedModes ?? []
 }

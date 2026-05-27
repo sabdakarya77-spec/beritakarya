@@ -5,26 +5,22 @@ import { GridBlockEditor } from '../modes/gridblock/GridBlockEditor'
 import { WordPressEditor } from '../modes/wordpress/WordPressEditor'
 import { FileText } from 'lucide-react'
 import { cn } from '../../../lib/utils'
-import { EditorHelpHint } from '../EditorHelpHint'
-import { AddBlockMenu } from '../AddBlockMenu'
-import type { Block } from '@beritakarya/types'
 
 interface EditorCanvasProps {
   isFocusMode: boolean
 }
 
 /**
- * Entry point canvas that selects the correct mode adapter.
+ * Shell canvas — hanya route mode adapter.
  *
  * GridBlock mode → GridBlockEditor
  * WordPress mode → WordPressEditor
  *
- * No branching logic for block types lives here — that's delegated
- * to the mode-specific adapters.
+ * Tidak ada branching logic untuk block types di sini.
+ * Semua block logic didelegasikan ke mode-specific adapters.
  */
 export function EditorCanvas({ isFocusMode }: EditorCanvasProps) {
-  const { editorMode, blocks } = useEditorStore()
-  const isCanvasEmpty = blocks.every(isBlockEmpty)
+  const { editorMode } = useEditorStore()
 
   return (
     <section
@@ -41,7 +37,6 @@ export function EditorCanvas({ isFocusMode }: EditorCanvasProps) {
             </p>
             <p className="mt-1 inline-flex flex-wrap items-center gap-2 text-xs leading-5 text-gray-500 dark:text-gray-400">
               Susun isi berita, tambahkan blok, dan rapikan alur baca sebelum dikirim ke redaksi.
-              <EditorHelpHint text="Blok adalah unit penyusun artikel, misalnya paragraf, subjudul, kutipan, gambar, atau embed." />
             </p>
           </div>
           <div className="inline-flex w-fit items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-[11px] font-medium text-gray-500 dark:border-white/10 dark:bg-slate-950/60 dark:text-gray-300 md:flex">
@@ -60,35 +55,7 @@ export function EditorCanvas({ isFocusMode }: EditorCanvasProps) {
         ) : (
           <GridBlockEditor />
         )}
-        
-        {!isFocusMode && isCanvasEmpty && (
-          <div className="mt-12 flex justify-center border-t border-gray-100 pt-8 dark:border-white/5 sm:mt-16 sm:pt-12">
-            <AddBlockMenu afterId={undefined} />
-          </div>
-        )}
       </div>
     </section>
   )
-}
-
-function isBlockEmpty(block: Block) {
-  switch (block.type) {
-    case 'paragraph':
-    case 'heading':
-    case 'quote':
-    case 'callout':
-      return !(block as { content?: string }).content?.trim()
-    case 'list':
-      return !(block as { items?: string[] }).items?.some((item) => item?.trim())
-    case 'image':
-    case 'embed':
-      return !(block as { url?: string }).url?.trim()
-    case 'imageGrid':
-    case 'gallery':
-      return !(block as { images?: unknown[] }).images?.length
-    case 'mediaText':
-      return !(block as { content?: string; url?: string }).content?.trim() && !(block as { url?: string }).url?.trim()
-    default:
-      return false
-  }
 }

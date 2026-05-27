@@ -7,6 +7,7 @@ import { useEditorDocumentStore } from './editorDocumentStore'
 import { useEditorUiStore } from './editorUiStore'
 import { useEditorWorkflowStore } from './editorWorkflowStore'
 import { useEditorSessionStore } from './editorSessionStore'
+import { createDefaultBlock } from '../components/editor/core/editorCommands'
 
 export interface EditorState {
   articleId: string | null
@@ -75,27 +76,8 @@ export interface EditorState {
   getCompletionScore: () => number
 }
 
-export function createDefaultBlock(type: Block['type'], existingId?: string): Block {
-  const block = defaultBlock(type)
-  if (existingId) block.id = existingId
-  return block
-}
-
-function defaultBlock(type: Block['type']): Block {
-  const id = uuidv4()
-  switch (type) {
-    case 'paragraph': return { id, type, content: '' }
-    case 'heading': return { id, type, level: 2, content: '' }
-    case 'quote': return { id, type, content: '', attribution: '' }
-    case 'image': return { id, type, url: '', alt: '', caption: '', credit: '' } as any
-    case 'imageGrid': return { id, type, columns: 2, images: [] }
-    case 'gallery': return { id, type, images: [] }
-    case 'list': return { id, type, items: [''], ordered: false }
-    case 'callout': return { id, type, content: '', variant: 'editorial', icon: 'zap' }
-    case 'embed': return { id, type, url: '', embedType: 'youtube' }
-    case 'mediaText': return { id, type, url: '', alt: '', caption: '', content: '', align: 'left' }
-    default: return { id, type: 'paragraph', content: '' }
-  }
+function createInitialParagraphBlock() {
+  return createDefaultBlock('paragraph') as Extract<Block, { type: 'paragraph' }>
 }
 
 let saveTimer: ReturnType<typeof setTimeout> | null = null
@@ -111,7 +93,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   siteId: null,
   title: '',
   excerpt: '',
-  blocks: [{ id: uuidv4(), type: 'paragraph', content: '' }],
+  blocks: [createInitialParagraphBlock()],
   status: 'draft',
   saving: false,
   saveError: null,
@@ -151,7 +133,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   },
 
   addBlock: (type, afterId) => {
-    const newBlock = defaultBlock(type)
+    const newBlock = createDefaultBlock(type)
     set((s) => {
       const idx = afterId ? s.blocks.findIndex(b => b.id === afterId) : s.blocks.length - 1
       const next = [...s.blocks]
@@ -189,7 +171,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   removeBlock: (id) => {
     set((s) => {
       const nextBlocks = s.blocks.filter(b => b.id !== id)
-      const fallbackBlock = { id: uuidv4(), type: 'paragraph' as const, content: '' }
+      const fallbackBlock = createInitialParagraphBlock()
       const resolvedBlocks = nextBlocks.length ? nextBlocks : [fallbackBlock]
       return {
         undoStack: [...s.undoStack.slice(-20), s.blocks],
@@ -337,7 +319,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       const rawBlocks = article.blocks
       const blocks: Block[] = Array.isArray(rawBlocks) && rawBlocks.length > 0
         ? rawBlocks
-        : [{ id: uuidv4(), type: 'paragraph' as const, content: '' }]
+        : [createInitialParagraphBlock()]
       set({
         articleId: article.id,
         title: article.title || '',
@@ -461,7 +443,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
 
   reset: (siteId?: string) => set({
     ...(function () {
-      const initialBlock = { id: uuidv4(), type: 'paragraph' as const, content: '' }
+      const initialBlock = createInitialParagraphBlock()
       return {
         blocks: [initialBlock],
         activeBlockId: initialBlock.id

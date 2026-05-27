@@ -1,10 +1,38 @@
-﻿import { createDefaultBlock } from '../../../store/editorStore'
+﻿import { v4 as uuidv4 } from 'uuid'
 import type { Block } from '@beritakarya/types'
 
 export interface EditorDocumentSnapshot {
   title: string
   excerpt: string
   blocks: Block[]
+}
+
+/**
+ * Buat default block object berdasarkan type.
+ * Fungsi ini adalah satu-satunya factory block — semua entry point harus lewat sini.
+ * Tidak berisi parser / DOM logic, murni factory.
+ */
+export function createDefaultBlock(type: Block['type'], existingId?: string): Block {
+  const block = defaultBlock(type)
+  if (existingId) block.id = existingId
+  return block
+}
+
+function defaultBlock(type: Block['type']): Block {
+  const id = uuidv4()
+  switch (type) {
+    case 'paragraph': return { id, type, content: '' }
+    case 'heading': return { id, type, level: 2, content: '' }
+    case 'quote': return { id, type, content: '', attribution: '' }
+    case 'image': return { id, type, url: '', alt: '', caption: '', credit: '' } as any
+    case 'imageGrid': return { id, type, columns: 2, images: [] }
+    case 'gallery': return { id, type, images: [] }
+    case 'list': return { id, type, items: [''], ordered: false }
+    case 'callout': return { id, type, content: '', variant: 'editorial', icon: 'zap' }
+    case 'embed': return { id, type, url: '', embedType: 'youtube' }
+    case 'mediaText': return { id, type, url: '', alt: '', caption: '', content: '', align: 'left' }
+    default: return { id, type: 'paragraph', content: '' }
+  }
 }
 
 export function insertBlock(blocks: Block[], type: Block['type'], afterId?: string): Block[] {

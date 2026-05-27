@@ -1,6 +1,7 @@
 ﻿'use client'
 import { useRef } from 'react'
 import { useEditorStore } from '../../../../../store/editorStore'
+import { useGridBlockNavigation } from '../shared/useGridBlockNavigation'
 import type { HeadingBlock as THeadingBlock } from '@beritakarya/types'
 
 const SIZE: Record<number, string> = {
@@ -21,50 +22,10 @@ const LABELS: Record<number, string> = {
 export function HeadingBlock({ block }: { block: THeadingBlock }) {
   const { updateBlock, replaceBlock, addBlock, setActiveBlockId, getAdjacentBlockId } = useEditorStore()
   const editorRef = useRef<HTMLDivElement>(null)
+  const { focusNextBlock, focusPrevBlock } = useGridBlockNavigation(editorRef)
 
   // Ensure level is within editorial bounds (2-4)
   const safeLevel = Math.max(2, Math.min(4, block.level))
-
-  const focusNextBlock = () => {
-    const editor = editorRef.current
-    if (!editor) return
-    const wrapper = editor.closest('[data-block-wrapper]') as HTMLElement | null
-    if (!wrapper) return
-    const target = wrapper.nextElementSibling as HTMLElement | null
-    if (!target) return
-    const targetEditor = target.querySelector('[contenteditable]') as HTMLElement | null
-    if (!targetEditor) return
-    targetEditor.focus()
-    const sel = window.getSelection()
-    if (!sel) return
-    sel.removeAllRanges()
-    const range = document.createRange()
-    range.setStart(targetEditor.firstChild || targetEditor, 0)
-    range.collapse(true)
-    sel.addRange(range)
-  }
-
-  const focusPrevBlock = () => {
-    const editor = editorRef.current
-    if (!editor) return
-    const wrapper = editor.closest('[data-block-wrapper]') as HTMLElement | null
-    if (!wrapper) return
-    const target = wrapper.previousElementSibling as HTMLElement | null
-    if (!target) return
-    const targetEditor = target.querySelector('[contenteditable]') as HTMLElement | null
-    if (!targetEditor) return
-    targetEditor.focus()
-    const sel = window.getSelection()
-    if (!sel) return
-    sel.removeAllRanges()
-    const range = document.createRange()
-    if (targetEditor.textContent) {
-      const len = targetEditor.textContent.length
-      range.setStart(targetEditor.firstChild!, len)
-      range.collapse(true)
-    }
-    sel.addRange(range)
-  }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     const editor = editorRef.current
@@ -78,7 +39,7 @@ export function HeadingBlock({ block }: { block: THeadingBlock }) {
       addBlock('paragraph', block.id)
       // Focus the new paragraph block (it will have activeBlockId set by store)
       requestAnimationFrame(() => {
-        focusNextBlock()
+        focusNextBlock(block.id)
       })
       return
     }
@@ -126,7 +87,7 @@ export function HeadingBlock({ block }: { block: THeadingBlock }) {
         const prevId = getAdjacentBlockId(block.id, 'up')
         if (prevId) {
           e.preventDefault()
-          focusPrevBlock()
+          focusPrevBlock(block.id)
         }
         return
       }
@@ -145,7 +106,7 @@ export function HeadingBlock({ block }: { block: THeadingBlock }) {
         const nextId = getAdjacentBlockId(block.id, 'down')
         if (nextId) {
           e.preventDefault()
-          focusNextBlock()
+          focusNextBlock(block.id)
         }
         return
       }
