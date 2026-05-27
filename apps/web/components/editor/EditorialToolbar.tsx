@@ -1,6 +1,6 @@
 'use client'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Bold, Italic, Underline, Strikethrough, AlignLeft, AlignCenter, AlignRight, AlignJustify, Heading1, Heading2, Heading3, Type, Highlighter, Palette, Eraser } from 'lucide-react'
+import { Bold, Italic, Underline, Strikethrough, AlignLeft, AlignCenter, AlignRight, AlignJustify, Heading1, Heading2, Heading3, Type, Highlighter, Palette, Eraser, LetterText } from 'lucide-react'
 import { useEditorStore } from '../../store/editorStore'
 import type { Block } from '@beritakarya/types'
 import { cn } from '../../lib/utils'
@@ -267,6 +267,27 @@ export function EditorialToolbar() {
         </div>
 
         <div className="mx-1 h-5 w-px bg-gray-200 dark:bg-white/10" />
+
+        {/* Drop Cap Toggle */}
+        {blockType === 'paragraph' && (
+          <button
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => {
+              if (!activeBlockId) return
+              const current = (activeBlock as any)?.dropCap
+              updateBlock(activeBlockId, { dropCap: !current } as any)
+            }}
+            className={cn(
+              "flex h-7 w-7 items-center justify-center rounded-lg transition-all",
+              (activeBlock as any)?.dropCap
+                ? "bg-brand-red/10 text-brand-red"
+                : "text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-white/10 dark:hover:text-white active:bg-gray-200"
+            )}
+            title="Drop Cap (huruf pertama besar)"
+          >
+            <LetterText size={13} />
+          </button>
+        )}
 
         {/* Alignment Buttons */}
         {ALIGNMENTS.map(({ value, icon: Icon, label }) => (

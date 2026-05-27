@@ -14,12 +14,34 @@ interface Props {
 }
 
 export function BlockWrapper({ block, index, children }: Props) {
-  const { moveBlock, removeBlock, blocks, isFocusMode, activeBlockId, setActiveBlockId } = useEditorStore()
+  const { moveBlock, removeBlock, blocks, isFocusMode, activeBlockId, setActiveBlockId, editorMode } = useEditorStore()
   const [showAddMenu, setShowAddMenu] = useState(false)
   const isActive = activeBlockId === block.id
 
   if (isFocusMode) {
     return <div className="py-1">{children}</div>
+  }
+
+  // WordPress mode: seamless writing experience, no block controls
+  if (editorMode === 'wordpress') {
+    return (
+      <div
+        className="group relative py-0.5"
+        onClick={() => setActiveBlockId(block.id)}
+        onFocusCapture={() => setActiveBlockId(block.id)}
+      >
+        <div className={cn(
+          "relative rounded-lg transition-all duration-200",
+          isActive
+            ? "border-2 border-brand-red/10 bg-brand-red/[0.01] dark:border-brand-red/20"
+            : "border-0 bg-transparent"
+        )}>
+          <div className="px-0.5 py-0">
+            {children}
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (

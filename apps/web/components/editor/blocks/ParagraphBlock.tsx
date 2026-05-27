@@ -659,7 +659,8 @@ export function ParagraphBlock({ block }: { block: TParagraphBlock }) {
           "[&_i]:italic [&_em]:italic",
           "[&_u]:underline",
           "[&_s]:line-through [&_strike]:line-through",
-          "[&_a]:text-brand-red [&_a]:underline"
+          "[&_a]:text-brand-red [&_a]:underline",
+          block.dropCap && "[&::first-letter]:float-left [&::first-letter]:text-5xl [&::first-letter]:font-black [&::first-letter]:text-brand-red [&::first-letter]:leading-none [&::first-letter]:mr-2 [&::first-letter]:mt-1"
         )}
       />
 

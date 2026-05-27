@@ -12,7 +12,9 @@ import {
   Maximize2,
   Minimize2,
   AlertCircle,
-  Sparkles
+  Sparkles,
+  LayoutGrid,
+  FileText
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useParams, useRouter } from 'next/navigation';
@@ -142,7 +144,8 @@ export function EditorTopbar() {
   const { 
     status, saving, saveError, saveArticle, publishArticle, 
     submitForReview, lastSaved, toggleSidebar, isFocusMode, 
-    toggleFocusMode, getMissingRequirements, setActiveTab
+    toggleFocusMode, getMissingRequirements, setActiveTab,
+    editorMode, setEditorMode
   } = useEditorStore();
   const { user } = useAuthStore();
   const { site } = useParams<{ site: string }>();
@@ -280,6 +283,21 @@ export function EditorTopbar() {
 
         <div className="flex items-center gap-1.5 md:ml-auto">
         {!isFocusMode && <div className="hidden h-5 w-px bg-gray-100 dark:bg-white/5 md:block" />}
+
+          {!isFocusMode && (
+            <button
+              onClick={() => setEditorMode(editorMode === 'gridblok' ? 'wordpress' : 'gridblok')}
+              className={cn(
+                "rounded-lg border border-transparent p-2 transition-all",
+                editorMode === 'wordpress'
+                  ? "bg-brand-red text-white shadow-lg shadow-brand-red/20"
+                  : "bg-gray-50 dark:bg-white/5 text-gray-500 dark:text-gray-400 hover:text-brand-red hover:border-brand-red/20"
+              )}
+              title={editorMode === 'gridblok' ? "Beralih ke Mode WordPress" : "Beralih ke Mode Grid Blok"}
+            >
+              {editorMode === 'gridblok' ? <FileText size={18} /> : <LayoutGrid size={18} />}
+            </button>
+          )}
 
           <button
             onClick={() => toggleFocusMode()}

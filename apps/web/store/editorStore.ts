@@ -31,6 +31,7 @@ export interface EditorState {
   // UI State
   isSidebarOpen: boolean
   isFocusMode: boolean
+  editorMode: 'gridblok' | 'wordpress'
   activeTab: 'content' | 'settings' | 'seo' | 'history' | 'assist'
   activeBlockId: string | null
   
@@ -58,6 +59,7 @@ export interface EditorState {
   
   toggleSidebar: (isOpen?: boolean) => void
   toggleFocusMode: (isFocus?: boolean) => void
+  setEditorMode: (mode: 'gridblok' | 'wordpress') => void
   setActiveTab: (tab: EditorState['activeTab']) => void
   setActiveBlockId: (blockId: string | null) => void
   publishArticle: () => Promise<void>
@@ -125,6 +127,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   
   isSidebarOpen: false,
   isFocusMode: false,
+  editorMode: 'gridblok',
   activeTab: 'content',
   activeBlockId: null,
 
@@ -420,6 +423,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     scheduleAutoSave(get)
   },
 
+  setEditorMode: (editorMode) => set({ editorMode }),
   toggleSidebar: (isOpen) => set((s) => ({ isSidebarOpen: isOpen ?? !s.isSidebarOpen })),
   toggleFocusMode: (isFocus) => set((s) => ({ 
     isFocusMode: isFocus ?? !s.isFocusMode,
