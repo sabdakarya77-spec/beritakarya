@@ -40,11 +40,12 @@ export function BlockWrapper({ block, index, children }: Props) {
         blockId={block.id}
         isActive={isActive}
         isTextBlock={isTextBlock}
-        children={children}
         onKeyDown={handleKeyDown}
         onClick={() => setActiveBlockId(block.id)}
         onFocusCapture={() => setActiveBlockId(block.id)}
-      />
+      >
+        {children}
+      </WordPressBlockWrapperEl>
     )
   }
 
@@ -172,12 +173,13 @@ function WordPressBlockWrapperEl({ blockId, isActive, isTextBlock, children, onK
         }
       })
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isActive, isTextBlock])
 
   return (
     <div
       ref={wrapperRef}
-      data-block-wrapper
+      data-block-wrapper={`block-${blockId}`}
       className="group relative py-0.5"
       onClick={onClick}
       onFocusCapture={onFocusCapture}
