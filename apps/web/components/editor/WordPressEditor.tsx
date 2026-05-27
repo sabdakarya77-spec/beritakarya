@@ -85,6 +85,9 @@ export function WordPressEditor() {
     const newHTML = getEditorHTML()
     if (el.innerHTML === newHTML) return
 
+    // Check if the editor has focus — if so, user is actively typing, skip DOM reset
+    if (document.activeElement === el) return
+
     // Save cursor offset
     const sel = window.getSelection()
     let savedOffset = -1
