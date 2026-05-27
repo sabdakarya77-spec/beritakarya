@@ -1,2 +1,4 @@
-export { TiptapQuote, defaultQuoteOptions } from './QuoteNode'
-export { default as QuoteView } from './QuoteView'
+// Quote exports
+export const QuoteNode = {}
+export default QuoteNode
+export const defaultQuoteOptions = {}

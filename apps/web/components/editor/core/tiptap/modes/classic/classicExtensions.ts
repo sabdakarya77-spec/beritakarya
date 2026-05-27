@@ -48,8 +48,8 @@ export const classicExtensions = [
     heading: {
       levels: [1, 2, 3],
     },
-    bold: true,
-    italic: true,
+    bold: {},
+    italic: {},
     underline: false, // We use custom Underline
     link: false, // We use custom Link
   }),
