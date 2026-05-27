@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diagram Alur Pembuatan Berita — BeritaKarya</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f8fafc;
+    color: #1e293b;
+    padding: 40px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  h1 {
+    font-size: 22px;
+    margin-bottom: 6px;
+    letter-spacing: -0.02em;
+  }
+  .subtitle {
+    color: #64748b;
+    font-size: 14px;
+    margin-bottom: 32px;
+  }
+  .diagram { max-width: 1100px; width: 100%; }
+
+  /* ── Kanban / Swimlane Layout ── */
+  .swimlane {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .lane {
+    flex: 1;
+    background: #fff;
+    border-radius: 14px;
+    border: 1px solid #e2e8f0;
+    padding: 16px;
+    position: relative;
+  }
+  .lane-header {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #94a3b8;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .lane-header .badge {
+    background: #e2e8f0;
+    border-radius: 20px;
+    padding: 0 8px;
+    font-size: 10px;
+    color: #475569;
+  }
+
+  /* ── Card ── */
+  .card {
+    background: #f1f5f9;
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    border-left: 3px solid #cbd5e1;
+    position: relative;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .card:last-child { margin-bottom: 0; }
+  .card strong { display: block; font-size: 13px; margin-bottom: 3px; }
+  .card .meta {
+    font-size: 11px;
+    color: #64748b;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 4px;
+  }
+  .card .meta .tag {
+    background: #e2e8f0;
+    padding: 1px 7px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 600;
+    color: #475569;
+  }
+  .tag-red   { background: #fecaca !important; color: #b91c1c !important; }
+  .tag-blue  { background: #bfdbfe !important; color: #1e40af !important; }
+  .tag-green { background: #bbf7d0 !important; color: #166534 !important; }
+  .tag-purple{ background: #e9d5ff !important; color: #6b21a8 !important; }
+  .tag-amber { background: #fde68a !important; color: #92400e !important; }
+
+  .card.border-red    { border-left-color: #ef4444; }
+  .card.border-blue   { border-left-color: #3b82f6; }
+  .card.border-green  { border-left-color: #22c55e; }
+  .card.border-purple { border-left-color: #a855f7; }
+  .card.border-amber  { border-left-color: #f59e0b; }
+  .card.border-sky    { border-left-color: #06b6d4; }
+
+  /* ── Arrow connector ── */
+  .arrow-down {
+    text-align: center;
+    color: #94a3b8;
+    font-size: 18px;
+    padding: 4px 0;
+    line-height: 1;
+  }
+
+  /* ── Split row ── */
+  .split-row {
+    display: flex;
+    gap: 16px;
+    margin: 0 0 16px 0;
+  }
+  .split-row .half {
+    flex: 1;
+  }
+
+  .mode-box {
+    border-radius: 12px;
+    padding: 16px;
+    border: 1px solid #e2e8f0;
+    background: #fff;
+  }
+  .mode-box h3 {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .mode-box h3 .icon { font-size: 18px; }
+  .mode-box p {
+    font-size: 12px;
+    color: #64748b;
+    line-height: 1.6;
+    margin-bottom: 10px;
+  }
+  .mode-box .comp-list {
+    list-style: none;
+    font-size: 12px;
+  }
+  .mode-box .comp-list li {
+    padding: 4px 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #334155;
+  }
+  .mode-box .comp-list li::before {
+    content: '→';
+    color: #94a3b8;
+    font-weight: 700;
+  }
+
+  /* ── Footer ── */
+  .footer-note {
+    text-align: center;
+    font-size: 12px;
+    color: #94a3b8;
+    margin-top: 24px;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 16px;
+  }
+
+  @media (max-width: 720px) {
+    .swimlane { flex-direction: column; }
+    .split-row { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<h1>📰 Alur Pembuatan Berita / Artikel</h1>
+<p class="subtitle">BeritaKarya — Dua Mode Editor: WordPress &bull; GridBlock</p>
+
+<div class="diagram">
+
+  <!-- ────────────── ROW 1: START ────────────── -->
+  <div class="swimlane">
+    <div class="lane">
+      <div class="lane-header">📍 Awal <span class="badge">User</span></div>
+      <div class="card border-red">
+        <strong>➕ Buat Artikel Baru</strong>
+        Dashboard → Klik "Tulis Baru"
+        <div class="meta"><span class="tag tag-red">/dashboard/articles/new</span></div>
+      </div>
+      <div class="arrow-down">↓</div>
+      <div class="card border-red">
+        <strong>✏️ Isi Judul & Deck</strong>
+        <span class="meta">EditorTitleStage → setTitle() / setExcerpt()</span>
+      </div>
+    </div>
+
+    <div class="lane">
+      <div class="lane-header">⚙️ Store <span class="badge">Zustand</span></div>
+      <div class="card border-purple">
+        <strong>useEditorStore</strong>
+        State pusat: blocks[], title, excerpt, editorMode, activeBlockId …
+        <div class="meta">
+          <span class="tag tag-purple">editorStore.ts</span>
+        </div>
+      </div>
+      <div class="arrow-down">↓</div>
+      <div class="card border-purple">
+        <strong>actions:</strong> addBlock, updateBlock, removeBlock, saveArticle …
+      </div>
+    </div>
+
+    <div class="lane">
+      <div class="lane-header">🧭 Pemilihan Mode <span class="badge">Editor</span></div>
+      <div class="card border-amber">
+        <strong>Editor.tsx</strong>
+        Membaca editorMode dari store
+        <div class="meta"><span class="tag tag-amber">editorMode === 'wordpress'</span></div>
+      </div>
+      <div class="arrow-down">↓</div>
+      <div class="card border-sky">
+        <strong>EditorCanvas.tsx</strong>
+        {/* Jika wordpress → WordPressEditor, jika gridblok → BlockList */}
+      </div>
+    </div>
+  </div>
+
+  <!-- ────────────── ROW 2: PERCABANGAN ────────────── -->
+  <div class="split-row">
+    <!-- ─── WordPress Mode ─── -->
+    <div class="half mode-box" style="border-top: 4px solid #06b6d4;">
+      <h3><span class="icon">✍️</span> Mode WordPress</h3>
+      <p>Editor seamless satu kontainer <code>contentEditable</code> — mirip WordPress klasik. Cocok untuk penulisan cepat dan panjang.</p>
+      <div class="card border-sky">
+        <strong>WordPressEditor.tsx</strong>
+        Satu div contentEditable merender SEMUA blok teks sebagai HTML kontinu.
+        <div class="meta">
+          <span class="tag tag-blue">contentEditable</span>
+          <span class="tag tag-blue">data-block-id</span>
+        </div>
+      </div>
+      <div class="card border-sky">
+        <strong>🎯 Fitur:</strong>
+        <ul class="comp-list">
+          <li>Enter = <p> baru (tanpa split block)</li>
+          <li>Backspace normal (tanpa merge block)</li>
+          <li>Inline toolbar (bold, italic, dll)</li>
+          <li>Formatting via document.execCommand</li>
+          <li>Blok non-teks (gambar, embed) di-render terpisah di bawah</li>
+        </ul>
+      </div>
+      <div class="card border-sky">
+        <strong>Komponen pendukung:</strong>
+        <ul class="comp-list">
+          <li>EditorialToolbar — toolbar format, alignment, color</li>
+          <li>InlineToolbar — toolbar inline (bold/italic)</li>
+          <li>Sync: onInput → syncToBlocks() → updateBlock()</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ─── GridBlock Mode ─── -->
+    <div class="half mode-box" style="border-top: 4px solid #a855f7;">
+      <h3><span class="icon">🧱</span> Mode GridBlock</h3>
+      <p>Setiap blok adalah unit terpisah. Bisa di- drag, edit, ganti tipe, dan punya kontrol sendiri. Cocok untuk layout kompleks.</p>
+      <div class="card border-purple">
+        <strong>BlockList.tsx</strong>
+        Loop blocks[] → render BlockWrapper → BlockRenderer
+      </div>
+      <div class="card border-purple">
+        <strong>🎯 Fitur:</strong>
+        <ul class="comp-list">
+          <li>Setiap blok punya kontrol: naik, turun, hapus, tambah</li>
+          <li>Split/merge block (Enter/Backspace)</li>
+          <li>AddBlockMenu — tambah blok di antara blok</li>
+          <li>Focus mode — sembunyikan kontrol</li>
+          <li>Drag & Reorder (coming soon)</li>
+        </ul>
+      </div>
+      <div class="card border-purple">
+        <strong>Komponen pendukung:</strong>
+        <ul class="comp-list">
+          <li>BlockWrapper — wrapper dengan kontrol + border aktif</li>
+          <li>BlockRenderer → BlockRegistry → masing-masing block</li>
+          <li>ParagraphBlock, HeadingBlock, QuoteBlock, ImageBlock …</li>
+          <li>InlineToolbar, SlashCommand, AddBlockMenu</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ────────────── ROW 3: KOMPONEN BERSAMA ────────────── -->
+  <div class="lane" style="margin-bottom: 16px;">
+    <div class="lane-header">🔁 Komponen & Mekanisme Bersama</div>
+    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+      <div class="card border-green" style="flex: 1; min-width: 200px;">
+        <strong>💾 Auto-Save</strong>
+        scheduleAutoSave → saveArticle() → API PUT/POST
+        <div class="meta"><span class="tag tag-green">15 detik debounce</span></div>
+      </div>
+      <div class="card border-green" style="flex: 1; min-width: 200px;">
+        <strong>↩️ Undo</strong>
+        undoStack (max 20) — setiap aksi push snapshot blocks[]
+      </div>
+      <div class="card border-green" style="flex: 1; min-width: 200px;">
+        <strong>🎨 AI Assist</strong>
+        WriteTab, OptimizeTab, ValidateTab, ImageTab
+      </div>
+      <div class="card border-green" style="flex: 1; min-width: 200px;">
+        <strong>📎 Media Library</strong>
+        useMediaLibrary hook → upload, pilih gambar
+      </div>
+    </div>
+  </div>
+
+  <!-- ────────────── ROW 4: SAVE → PUBLISH ────────────── -->
+  <div class="swimlane">
+    <div class="lane">
+      <div class="lane-header">📤 Publikasi</div>
+      <div class="card border-amber">
+        <strong>Simpan & Kirim</strong>
+        <div class="meta">
+          <span class="tag tag-amber">submitForReview()</span>
+          <span class="tag tag-amber">publishArticle()</span>
+        </div>
+      </div>
+      <div class="arrow-down">↓</div>
+      <div class="card border-amber">
+        <strong>Status: draft → submitted → published</strong>
+      </div>
+    </div>
+
+    <div class="lane">
+      <div class="lane-header">📋 Review</div>
+      <div class="card border-red">
+        <strong>Review KYC</strong> (jika penulis baru)
+      </div>
+      <div class="card border-red">
+        <strong>Review Artikel</strong> (oleh redaksi)
+      </div>
+    </div>
+
+    <div class="lane">
+      <div class="lane-header">🌐 Publik</div>
+      <div class="card border-green">
+        <strong>Artikel live!</strong>
+        <div class="meta">
+          <span class="tag tag-green">/[site]/p/[slug]</span>
+        </div>
+      </div>
+      <div class="arrow-down">↓</div>
+      <div class="card border-green">
+        <strong>Ditampilkan di:</strong>
+        <div class="meta">
+          <span class="tag tag-green">SiteHomePage</span>
+          <span class="tag tag-green">CategoryPage</span>
+          <span class="tag tag-green">AuthorPage</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ────────────── FOOTER ────────────── -->
+  <div class="footer-note">
+    Diagram alur pembuatan berita — BeritaKarya &bull; WordPress mode untuk penulisan cepat, GridBlock mode untuk layout kompleks
+  </div>
+
+</div>
+
+</body>
+</html>
