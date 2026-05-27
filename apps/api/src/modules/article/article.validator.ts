@@ -2,31 +2,51 @@ import { z } from 'zod'
 import { normalizeArticleBlocks } from '@beritakarya/utils'
 
 const baseBlock = z.object({ id: z.string() })
+const textAlignSchema = z.enum(['left', 'center', 'right', 'justify'])
+const imageItemSchema = z.object({
+  url: z.string(),
+  alt: z.string(),
+  caption: z.string().optional(),
+  width: z.number().optional(),
+  height: z.number().optional()
+})
 
 export const blockSchema = z.discriminatedUnion('type', [
-  baseBlock.extend({ type: z.literal('paragraph'), content: z.string() }),
+  baseBlock.extend({
+    type: z.literal('paragraph'),
+    content: z.string(),
+    dropCap: z.boolean().optional(),
+    textAlign: textAlignSchema.optional()
+  }),
   baseBlock.extend({
     type: z.literal('heading'),
     level: z.union([z.literal(1),z.literal(2),z.literal(3),z.literal(4),z.literal(5),z.literal(6)]),
-    content: z.string()
+    content: z.string(),
+    textAlign: textAlignSchema.optional()
   }),
-  baseBlock.extend({ type: z.literal('quote'), content: z.string(), attribution: z.string().optional() }),
+  baseBlock.extend({
+    type: z.literal('quote'),
+    content: z.string(),
+    attribution: z.string().optional(),
+    textAlign: textAlignSchema.optional()
+  }),
   baseBlock.extend({
     type: z.literal('image'),
     url: z.string(),
     alt: z.string(),
     caption: z.string().optional(),
+    credit: z.string().optional(),
     width: z.number().optional(),
     height: z.number().optional()
   }),
   baseBlock.extend({
     type: z.literal('imageGrid'),
     columns: z.union([z.literal(2), z.literal(3)]),
-    images: z.array(z.object({ url: z.string(), alt: z.string(), caption: z.string().optional() }))
+    images: z.array(imageItemSchema)
   }),
   baseBlock.extend({
     type: z.literal('gallery'),
-    images: z.array(z.object({ url: z.string(), alt: z.string(), caption: z.string().optional() }))
+    images: z.array(imageItemSchema)
   }),
   baseBlock.extend({
     type: z.literal('embed'),
@@ -43,16 +63,16 @@ export const blockSchema = z.discriminatedUnion('type', [
   baseBlock.extend({
     type: z.literal('callout'),
     content: z.string(),
-    variant: z.string().optional(),
+    variant: z.enum(['info', 'warning', 'error', 'success', 'editorial']).optional(),
     icon: z.string().optional()
   }),
   baseBlock.extend({
     type: z.literal('mediaText'),
     url: z.string(),
-    alt: z.string().optional(),
+    alt: z.string(),
     caption: z.string().optional(),
     content: z.string(),
-    align: z.enum(['left', 'right']).optional()
+    align: z.enum(['left', 'right'])
   }),
 ])
 

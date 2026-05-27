@@ -1,12 +1,12 @@
-'use client'
+﻿'use client'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Search } from 'lucide-react'
-import { useEditorStore } from '../../../store/editorStore'
-import { cn } from '../../../lib/utils'
-import { InlineToolbar } from './InlineToolbar'
+import { useEditorStore } from '../../../../../store/editorStore'
+import { cn } from '../../../../../lib/utils'
+import { InlineToolbar } from '../../../blocks/InlineToolbar'
 import type { ParagraphBlock as TParagraphBlock, Block } from '@beritakarya/types'
-import { BLOCK_CATALOG } from '../core/blockCatalog'
-import { supportsMode } from '../core/blockGuards'
+import { BLOCK_CATALOG } from '../../../core/blockCatalog'
+import { supportsMode } from '../../../core/blockGuards'
 
 // Module-level ref for restoring cursor after mergeWithPrevious
 let __mergeCursor: { blockId: string; offset: number } | null = null

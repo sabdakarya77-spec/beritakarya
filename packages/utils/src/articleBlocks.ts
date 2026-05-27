@@ -6,13 +6,28 @@ export function normalizeArticleBlocks(blocks: unknown): Record<string, unknown>
     .filter((b): b is Record<string, unknown> => b !== null)
 }
 
-function normalizeImageItem(img: unknown): { url: string; alt: string; caption?: string } {
+function normalizeTextAlign(value: unknown): 'left' | 'center' | 'right' | 'justify' | undefined {
+  if (['left', 'center', 'right', 'justify'].includes(String(value))) {
+    return String(value) as 'left' | 'center' | 'right' | 'justify'
+  }
+  return undefined
+}
+
+function normalizeImageItem(img: unknown): {
+  url: string
+  alt: string
+  caption?: string
+  width?: number
+  height?: number
+} {
   if (!img || typeof img !== 'object') return { url: '', alt: '' }
   const o = img as Record<string, unknown>
   return {
     url: String(o.url ?? ''),
     alt: String(o.alt ?? ''),
-    ...(o.caption ? { caption: String(o.caption) } : {})
+    ...(o.caption ? { caption: String(o.caption) } : {}),
+    ...(typeof o.width === 'number' ? { width: o.width } : {}),
+    ...(typeof o.height === 'number' ? { height: o.height } : {}),
   }
 }
 
@@ -25,22 +40,40 @@ function normalizeBlock(raw: unknown): Record<string, unknown> | null {
   const type = String(b.type)
 
   switch (type) {
-    case 'paragraph':
-      return { id, type, content: String(b.content ?? '') }
+    case 'paragraph': {
+      const textAlign = normalizeTextAlign(b.textAlign)
+      return {
+        id,
+        type,
+        content: String(b.content ?? ''),
+        ...(typeof b.dropCap === 'boolean' ? { dropCap: b.dropCap } : {}),
+        ...(textAlign ? { textAlign } : {})
+      }
+    }
     case 'heading': {
       let level = Number(b.level)
       if (![1, 2, 3, 4, 5, 6].includes(level)) level = 2
-      return { id, type, level, content: String(b.content ?? '') }
+      const textAlign = normalizeTextAlign(b.textAlign)
+      return {
+        id,
+        type,
+        level,
+        content: String(b.content ?? ''),
+        ...(textAlign ? { textAlign } : {})
+      }
     }
-    case 'quote':
+    case 'quote': {
+      const textAlign = normalizeTextAlign(b.textAlign)
       return {
         id,
         type,
         content: String(b.content ?? ''),
         ...(b.attribution != null && b.attribution !== ''
           ? { attribution: String(b.attribution) }
-          : {})
+          : {}),
+        ...(textAlign ? { textAlign } : {})
       }
+    }
     case 'image':
       return {
         id,
@@ -48,6 +81,7 @@ function normalizeBlock(raw: unknown): Record<string, unknown> | null {
         url: String(b.url ?? ''),
         alt: String(b.alt ?? ''),
         ...(b.caption ? { caption: String(b.caption) } : {}),
+        ...(b.credit ? { credit: String(b.credit) } : {}),
         ...(typeof b.width === 'number' ? { width: b.width } : {}),
         ...(typeof b.height === 'number' ? { height: b.height } : {})
       }

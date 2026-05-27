@@ -3,6 +3,10 @@ import { v4 as uuidv4 } from 'uuid'
 import { normalizeArticleBlocks } from '@beritakarya/utils'
 import { api } from '../lib/api'
 import type { Block, ArticleStatus } from '@beritakarya/types'
+import { useEditorDocumentStore } from './editorDocumentStore'
+import { useEditorUiStore } from './editorUiStore'
+import { useEditorWorkflowStore } from './editorWorkflowStore'
+import { useEditorSessionStore } from './editorSessionStore'
 
 export interface EditorState {
   articleId: string | null
@@ -499,6 +503,40 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     return score
   }
 }))
+
+function syncLegacyEditorStateToSlices(state: EditorState) {
+  useEditorDocumentStore.setState({
+    articleId: state.articleId,
+    title: state.title,
+    excerpt: state.excerpt,
+    blocks: state.blocks,
+    isDirty: state.isDirty,
+  })
+
+  useEditorUiStore.setState({
+    editorMode: state.editorMode === 'gridblok' ? 'gridblock' : 'wordpress',
+    isSidebarOpen: state.isSidebarOpen,
+    isFocusMode: state.isFocusMode,
+    activeTab: state.activeTab,
+    activeBlockId: state.activeBlockId,
+  })
+
+  useEditorWorkflowStore.setState({
+    status: state.status,
+    saving: state.saving,
+    saveError: state.saveError,
+    lastSaved: state.lastSaved,
+  })
+
+  useEditorSessionStore.setState({
+    warningMessages: state.saveError ? [state.saveError] : [],
+  })
+}
+
+syncLegacyEditorStateToSlices(useEditorStore.getState())
+useEditorStore.subscribe((state) => {
+  syncLegacyEditorStateToSlices(state)
+})
 
 function scheduleAutoSave(get: () => EditorState) {
   if (saveTimer) clearTimeout(saveTimer)

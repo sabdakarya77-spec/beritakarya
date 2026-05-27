@@ -1,29 +1,10 @@
 'use client'
 import { useMemo, useState } from 'react'
-import { Search, Type, Heading1, List, Quote, Sparkles, Image, Grid2X2, GalleryVertical, PlaySquare, Columns2, X, Plus } from 'lucide-react'
+import { Search, X, Plus } from 'lucide-react'
 import { useEditorStore } from '../../store/editorStore'
 import type { Block } from '@beritakarya/types'
-
-interface BlockTypeOption {
-  type: Block['type']
-  label: string
-  category: string
-  keywords: string[]
-  icon: typeof Type
-}
-
-const BLOCK_TYPES: BlockTypeOption[] = [
-  { type: 'paragraph', label: 'Paragraf', category: 'Teks', keywords: ['teks', 'isi', 'body'], icon: Type },
-  { type: 'heading', label: 'Subjudul', category: 'Teks', keywords: ['heading', 'judul', 'h2', 'h3'], icon: Heading1 },
-  { type: 'list', label: 'Daftar', category: 'Teks', keywords: ['list', 'bullet', 'poin'], icon: List },
-  { type: 'quote', label: 'Kutipan', category: 'Sorotan', keywords: ['quote', 'kutipan', 'statement'], icon: Quote },
-  { type: 'callout', label: 'Highlight', category: 'Sorotan', keywords: ['callout', 'highlight', 'sorot'], icon: Sparkles },
-  { type: 'image', label: 'Gambar', category: 'Media', keywords: ['foto', 'image', 'gambar'], icon: Image },
-  { type: 'imageGrid', label: 'Grid Gambar', category: 'Media', keywords: ['grid', 'galeri', 'foto'], icon: Grid2X2 },
-  { type: 'gallery', label: 'Galeri', category: 'Media', keywords: ['gallery', 'slideshow', 'galeri'], icon: GalleryVertical },
-  { type: 'mediaText', label: 'Media & Teks', category: 'Media', keywords: ['media', 'teks', 'kolom'], icon: Columns2 },
-  { type: 'embed', label: 'Embed', category: 'Sisipan', keywords: ['youtube', 'embed', 'video'], icon: PlaySquare },
-]
+import { BLOCK_CATALOG } from './core/blockCatalog'
+import { supportsMode } from './core/blockGuards'
 
 interface Props {
   afterId?: string
@@ -42,11 +23,12 @@ export function AddBlockMenu({ afterId, isOpen = false, onClose }: Props) {
   }
 
   const filteredBlocks = useMemo(() => {
+    const availableBlocks = BLOCK_CATALOG.filter((item) => supportsMode(item.type, 'gridblock'))
     const normalizedQuery = query.trim().toLowerCase()
-    if (!normalizedQuery) return BLOCK_TYPES
+    if (!normalizedQuery) return availableBlocks
 
-    return BLOCK_TYPES.filter(({ label, keywords }) =>
-      [label, ...keywords].some((value) => value.toLowerCase().includes(normalizedQuery))
+    return availableBlocks.filter(({ label, description, aliases, category }) =>
+      [label, description, category, ...aliases].some((value) => value.toLowerCase().includes(normalizedQuery))
     )
   }, [query])
 
