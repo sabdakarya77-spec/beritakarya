@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
 import { 
   BarChart,
   Bar,
@@ -23,7 +22,7 @@ import {
   RefreshCw,
   Clock
 } from 'lucide-react'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams } from 'next/navigation'
 import Link from 'next/link'
 // [A-5d] Fix: use api (axios with auth interceptor + auto token refresh) instead of raw axios with manual token
 import { api } from '../../../../../lib/api'
@@ -53,8 +52,6 @@ interface KYCStats {
 export default function KYCReviewPage() {
   const params = useParams()
   const siteId = params.site as string
-  const router = useRouter()
-
   const [users, setUsers] = useState<KYCUser[]>([])
   const [stats, setStats] = useState<KYCStats>({ totalPending: 0, approvedThisWeek: 0, rejectedThisWeek: 0, avgApprovalTime: 0, conversionRate: 0 })
   const [loading, setLoading] = useState(true)
