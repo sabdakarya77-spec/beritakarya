@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Search, Type, Heading1, List, Quote, Sparkles, Image, Grid2X2, GalleryVertical, PlaySquare } from 'lucide-react'
+import { Search, Type, Heading1, List, Quote, Sparkles, Image, Grid2X2, GalleryVertical, PlaySquare, Newspaper } from 'lucide-react'
 import { useEditorStore } from '../../../store/editorStore'
 import { cn } from '../../../lib/utils'
 import { InlineToolbar } from './InlineToolbar'
@@ -15,6 +15,7 @@ const BLOCK_TYPES: { type: Block['type']; label: string; desc: string; aliases: 
   { type: 'imageGrid', label: 'Grid Gambar', desc: 'Tampilkan dua atau tiga visual sejajar', aliases: ['grid', 'galeri', 'foto'], icon: Grid2X2 },
   { type: 'gallery', label: 'Galeri', desc: 'Kumpulkan foto dalam satu blok', aliases: ['gallery', 'galeri', 'slideshow'], icon: GalleryVertical },
   { type: 'embed', label: 'Embed', desc: 'Sisipkan YouTube atau konten eksternal', aliases: ['embed', 'youtube', 'video'], icon: PlaySquare },
+  { type: 'mediaText', label: 'Media + Teks', desc: 'Gambar bersanding dengan paragraf', aliases: ['media', 'gambar', 'teks', 'media text', 'mediatext'], icon: Newspaper },
 ]
 
 export function ParagraphBlock({ block }: { block: TParagraphBlock }) {
