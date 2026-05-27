@@ -46,6 +46,10 @@ export interface EditorState {
   reorderBlocks: (fromIdx: number, toIdx: number) => void
   undo: () => void
   setSiteId: (siteId: string) => void
+  splitBlock: (id: string, contentBefore: string, contentAfter: string) => string | null
+  mergeWithPrevious: (id: string) => { targetBlockId: string; cursorOffset: number } | null
+  getBlockIndex: (id: string) => number
+  getAdjacentBlockId: (id: string, direction: 'up' | 'down') => string | null
   
   // Data Sync
   loadArticle: (id: string, siteId: string) => Promise<void>
@@ -220,6 +224,99 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       return { blocks: prev, undoStack: s.undoStack.slice(0, -1), isDirty: true }
     })
     scheduleAutoSave(get)
+  },
+
+  splitBlock: (id, contentBefore, contentAfter) => {
+    const newId = uuidv4()
+    set((s) => {
+      const idx = s.blocks.findIndex(b => b.id === id)
+      if (idx === -1) return s
+      const currentBlock = s.blocks[idx]
+      const updatedBlock = { ...currentBlock, content: contentBefore } as Block
+      
+      const textAlign = ('textAlign' in currentBlock) ? currentBlock.textAlign : undefined
+      const newBlock: Block = { 
+        id: newId, 
+        type: 'paragraph', 
+        content: contentAfter,
+        ...(textAlign ? { textAlign } : {})
+      }
+      
+      const next = [...s.blocks]
+      next[idx] = updatedBlock
+      next.splice(idx + 1, 0, newBlock)
+      
+      return {
+        undoStack: [...s.undoStack.slice(-20), s.blocks],
+        blocks: next,
+        isDirty: true,
+        activeBlockId: newId
+      }
+    })
+    scheduleAutoSave(get)
+    return newId
+  },
+
+  mergeWithPrevious: (id) => {
+    let result: { targetBlockId: string; cursorOffset: number } | null = null
+    set((s) => {
+      const idx = s.blocks.findIndex(b => b.id === id)
+      if (idx <= 0) return s
+      
+      const prevBlock = s.blocks[idx - 1]
+      const currentBlock = s.blocks[idx]
+      
+      const isPrevText = prevBlock.type === 'paragraph' || prevBlock.type === 'heading' || prevBlock.type === 'quote'
+      const isCurrText = currentBlock.type === 'paragraph' || currentBlock.type === 'heading' || currentBlock.type === 'quote'
+      
+      if (isPrevText && isCurrText) {
+        const prevContent = (prevBlock as any).content || ''
+        const currContent = (currentBlock as any).content || ''
+        const mergedContent = prevContent + currContent
+        
+        const stripHtml = (html: string) => {
+          if (typeof window !== 'undefined') {
+            const doc = new DOMParser().parseFromString(html, 'text/html')
+            return doc.body.textContent || ''
+          }
+          return html.replace(/<[^>]*>/g, '')
+        }
+        
+        const cursorOffset = stripHtml(prevContent).length
+        const updatedPrevBlock = { ...prevBlock, content: mergedContent } as Block
+        const next = s.blocks.filter(b => b.id !== id)
+        const prevIdx = next.findIndex(b => b.id === prevBlock.id)
+        next[prevIdx] = updatedPrevBlock
+        
+        result = {
+          targetBlockId: prevBlock.id,
+          cursorOffset
+        }
+        
+        return {
+          undoStack: [...s.undoStack.slice(-20), s.blocks],
+          blocks: next,
+          isDirty: true,
+          activeBlockId: prevBlock.id
+        }
+      }
+      return s
+    })
+    scheduleAutoSave(get)
+    return result
+  },
+
+  getBlockIndex: (id) => {
+    return get().blocks.findIndex(b => b.id === id)
+  },
+
+  getAdjacentBlockId: (id, direction) => {
+    const blocks = get().blocks
+    const idx = blocks.findIndex(b => b.id === id)
+    if (idx === -1) return null
+    const targetIdx = direction === 'up' ? idx - 1 : idx + 1
+    if (targetIdx < 0 || targetIdx >= blocks.length) return null
+    return blocks[targetIdx].id
   },
 
   loadArticle: async (id, siteId) => {

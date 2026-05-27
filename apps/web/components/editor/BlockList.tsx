@@ -24,7 +24,7 @@ export function BlockList() {
   }
 
   return (
-    <div className="space-y-1 pb-32">
+    <div className="space-y-0 pb-32">
       {blocks.map((block, idx) => (
         <BlockWrapper key={block.id} block={block} index={idx}>
           <BlockRenderer block={block} />

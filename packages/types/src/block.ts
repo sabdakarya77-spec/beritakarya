@@ -7,18 +7,21 @@ export interface ParagraphBlock extends BaseBlock {
   type: 'paragraph'
   content: string
   dropCap?: boolean
+  textAlign?: 'left' | 'center' | 'right' | 'justify'
 }
 
 export interface HeadingBlock extends BaseBlock {
   type: 'heading'
   level: 1 | 2 | 3 | 4 | 5 | 6
   content: string
+  textAlign?: 'left' | 'center' | 'right' | 'justify'
 }
 
 export interface QuoteBlock extends BaseBlock {
   type: 'quote'
   content: string
   attribution?: string
+  textAlign?: 'left' | 'center' | 'right' | 'justify'
 }
 
 export interface ListBlock extends BaseBlock {

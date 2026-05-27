@@ -5,6 +5,7 @@ import type { Block } from '@beritakarya/types'
 import { useEditorStore } from '../../store/editorStore'
 import { BlockList } from './BlockList'
 import { AddBlockMenu } from './AddBlockMenu'
+import { EditorialToolbar } from './EditorialToolbar'
 import { cn } from '../../lib/utils'
 import { EditorHelpHint } from './EditorHelpHint'
 
@@ -45,6 +46,7 @@ export function EditorCanvas({ isFocusMode }: EditorCanvasProps) {
         "relative article-content", // article-content triggers our global editorial styles
         isFocusMode ? "prose-premium" : "px-4 py-6 sm:px-6 sm:py-8 md:px-8 md:py-10 lg:px-10 xl:px-12"
       )}>
+        <EditorialToolbar />
         <BlockList />
         
         {!isFocusMode && isCanvasEmpty && (

@@ -24,7 +24,7 @@ export function BlockWrapper({ block, index, children }: Props) {
 
   return (
     <div
-      className="group relative mb-1"
+      className="group relative"
       onClick={() => setActiveBlockId(block.id)}
       onFocusCapture={() => setActiveBlockId(block.id)}
     >
@@ -73,12 +73,12 @@ export function BlockWrapper({ block, index, children }: Props) {
       </div>
 
       <div className={cn(
-        "relative rounded-lg border-2 transition-all duration-200",
+        "relative rounded-lg transition-all duration-200",
         isActive
-          ? "border-brand-red/10 bg-brand-red/[0.01] dark:border-brand-red/20 dark:bg-brand-red/[0.02]"
-          : "border-transparent bg-transparent"
+          ? "border-2 border-brand-red/10 bg-brand-red/[0.01] dark:border-brand-red/20 dark:bg-brand-red/[0.02]"
+          : "border-0 bg-transparent group-hover:border group-hover:border-gray-100 dark:group-hover:border-white/5"
       )}>
-        <div className="px-2 py-1 lg:px-3 lg:py-1.5">
+        <div className="px-1 py-0.5 lg:px-2 lg:py-0.5">
           {children}
         </div>
       </div>
