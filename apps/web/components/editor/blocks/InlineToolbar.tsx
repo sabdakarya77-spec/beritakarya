@@ -62,7 +62,7 @@ export function InlineToolbar({ editorRef, onFormat, active = false }: InlineToo
     const rect = range.getBoundingClientRect()
     const editorRect = editor.getBoundingClientRect()
 
-    const top = rect.top - editorRect.top - 48
+    const top = rect.bottom - editorRect.top + 8
     const left = rect.left - editorRect.left + (rect.width / 2) - 90
 
     setPosition({
