@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
 import { useEditorStore } from '../../../store/editorStore'
-import { useRewrite, useExpand } from '../../../hooks/useAI'
+import { useRewrite, useExpand, useTranscriptToQuote } from '../../../hooks/useAI'
 import { AIResultCard } from './AIResultCard'
 import { useKeyboardShortcuts } from '../../../hooks/useKeyboardShortcuts'
 
@@ -25,12 +25,14 @@ interface Props {
 }
 
 export function WriteTab({ model = 'gpt-4o', onTrigger }: Props) {
-  const { blocks, updateBlock, activeBlockId } = useEditorStore()
+  const { blocks, updateBlock, activeBlockId, addBlock } = useEditorStore()
   const [selectedId, setSelectedId] = useState('')
   const [tone, setTone] = useState<Tone>('berita')
   const [length, setLength] = useState<Length>('sama')
   const [rewriteState, doRewrite] = useRewrite(model)
   const [expandState, doExpand] = useExpand(model)
+  const [transcriptState, doTranscript] = useTranscriptToQuote(model)
+  const [transcriptText, setTranscriptText] = useState('')
   
   const paragraphBlocks = blocks.filter(b => b.type === 'paragraph' || b.type === 'quote')
   const selected = blocks.find(b => b.id === selectedId)
@@ -224,6 +226,84 @@ export function WriteTab({ model = 'gpt-4o', onTrigger }: Props) {
           />
         </div>
       )}
+      {/* ── Transcript to Quote ────────────────────────────────────────── */}
+      <div className="border-t border-gray-150 dark:border-white/5 pt-4 mt-6">
+        <div className="flex flex-col mb-2">
+          <span className="text-xs font-black uppercase tracking-wider text-gray-700 dark:text-gray-300">🎙️ Voice/Transkrip ke Kutipan</span>
+          <span className="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mt-0.5">Ekstrak kutipan langsung dari transkrip wawancara</span>
+        </div>
+
+        <textarea
+          value={transcriptText}
+          onChange={e => setTranscriptText(e.target.value)}
+          placeholder="Tempel transkrip wawancara di sini... minimal 20 karakter"
+          rows={4}
+          className="w-full text-xs border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 outline-none focus:border-brand-red/50 resize-vertical bg-white dark:bg-slate-900/60 text-gray-800 dark:text-gray-200"
+        />
+
+        <button
+          onClick={() => doTranscript({ transcript: transcriptText })}
+          disabled={transcriptState.loading || transcriptText.trim().length < 20}
+          className="w-full text-xs py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 font-medium flex items-center justify-between px-3 mt-2"
+        >
+          <span>{transcriptState.loading ? 'Mengekstrak...' : '🎯 Ekstrak Kutipan'}</span>
+          <span className="text-[10px] opacity-80">~$0.003</span>
+        </button>
+
+        {transcriptState.loading && (
+          <div className="bg-slate-50 dark:bg-[#070b13] border border-gray-100 dark:border-white/5 rounded-xl p-4 text-center space-y-2 mt-3">
+            <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto" />
+            <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider animate-pulse">Menganalisis transkrip & mengekstrak kutipan...</p>
+          </div>
+        )}
+
+        {transcriptState.result && (
+          <div className="space-y-3 mt-3">
+            {/* Quote card */}
+            <div className="bg-white dark:bg-[#0c121e]/40 border border-blue-200 dark:border-blue-900/30 rounded-xl p-3.5 shadow-sm">
+              <div className="border-l-4 border-blue-400 pl-3 mb-2">
+                <p className="text-sm font-serif italic leading-relaxed text-gray-800 dark:text-gray-200">
+                  &ldquo;{transcriptState.result.quote}&rdquo;
+                </p>
+              </div>
+              <p className="text-[11px] text-gray-500 dark:text-gray-400 font-medium">
+                — {transcriptState.result.attribution}
+              </p>
+            </div>
+
+            {/* Context */}
+            <div className="bg-[#0f172a]/20 border border-blue-200/50 dark:border-blue-900/20 rounded-xl p-3 text-xs leading-relaxed text-gray-600 dark:text-gray-300">
+              <span className="font-extrabold text-blue-600 dark:text-blue-400 text-[9px] uppercase tracking-widest block mb-1">Konteks:</span>
+              {transcriptState.result.context}
+            </div>
+
+            {/* Apply button */}
+            <button
+              onClick={() => {
+                const result = transcriptState.result!
+                addBlock('quote')
+                // Find the newly added quote block and update it
+                const blocks = useEditorStore.getState().blocks
+                const newQuote = blocks.find(b => b.type === 'quote' && !b.content)
+                if (newQuote) {
+                  updateBlock(newQuote.id, {
+                    content: result.quote,
+                    attribution: result.attribution
+                  } as any)
+                }
+              }}
+              className="w-full text-xs py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 font-bold flex items-center justify-center gap-1.5"
+            >
+              <span>+ Terapkan Sebagai Blok Kutipan Baru</span>
+            </button>
+          </div>
+        )}
+
+        {transcriptState.error && (
+          <p className="text-xs text-red-500 bg-red-50 dark:bg-red-950/20 p-2.5 rounded-xl border border-red-200 dark:border-red-900/20 mt-3">{transcriptState.error}</p>
+        )}
+      </div>
+
       {(rewriteState.error || expandState.error) && (
         <p className="text-xs text-red-500 bg-red-50 p-2 rounded-lg">
           {rewriteState.error || expandState.error}

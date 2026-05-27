@@ -82,6 +82,59 @@ export interface FactCheckResult {
   trustScore: number
 }
 
+export interface BiasIssue {
+  original: string
+  suggested: string
+  reason: string
+  severity: 'low' | 'medium' | 'high'
+}
+
+export interface ObjectivityResult {
+  score: number
+  issues: BiasIssue[]
+  ethicalCompliance: string
+  suggestions: string[]
+}
+
+export async function auditObjectivity(
+  text: string
+): Promise<AIResult<ObjectivityResult>> {
+  return callAI(async () => {
+    const raw = await chatComplete(
+      `Kamu adalah Dewan Pers Indonesia dan Ombudsman media profesional.
+Tugasmu adalah menganalisis draf berita dari segi objektivitas, netralitas, dan kepatuhan Kode Etik Jurnalistik (KEJ).
+- Cari kata-kata bias, opini menghakimi, klaim tanpa atribusi, atau istilah emosional yang melanggar objektivitas.
+- Berikan skor objektivitas (0-100).
+- Berikan rekomendasi perbaikan kalimat alternatif.
+Kembalikan HANYA JSON:
+{
+  "score": 85,
+  "issues": [
+    {
+      "original": "kata/kalimat bias",
+      "suggested": "kalimat objektif pengganti",
+      "reason": "mengapa ini bias/melanggar aturan",
+      "severity": "low"|"medium"|"high"
+    }
+  ],
+  "ethicalCompliance": "Analisis singkat kepatuhan terhadap Kode Etik Jurnalistik (misal Pasal 1 atau Pasal 3).",
+  "suggestions": ["Saran umum 1", "Saran umum 2"]
+}`,
+      `Teks berita:
+"${text.slice(0, 3000)}"`,
+      { temperature: 0.2 }
+    )
+    const result = extractJSON<ObjectivityResult>(raw)
+    if (typeof result.score !== 'number') throw new Error('Format hasil audit objektivitas tidak valid')
+    return {
+      score: result.score,
+      issues: Array.isArray(result.issues) ? result.issues : [],
+      ethicalCompliance: result.ethicalCompliance || '',
+      suggestions: Array.isArray(result.suggestions) ? result.suggestions : []
+    }
+  })
+}
+
 export async function checkFact(
   text: string
 ): Promise<AIResult<FactCheckResult>> {

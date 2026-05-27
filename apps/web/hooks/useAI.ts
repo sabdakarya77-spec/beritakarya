@@ -61,6 +61,13 @@ export function useExpand(model?: string) {
   return useAIAction<{ content: string; prevContent?: string }, string>('expand', { model })
 }
 
+export function useTranscriptToQuote(model?: string) {
+  return useAIAction<
+    { transcript: string },
+    { quote: string; attribution: string; context: string }
+  >('transcript-to-quote', { model })
+}
+
 // ── Optimize ──────────────────────────────────────────────────
 export function useHeadlines(model?: string) {
   return useAIAction<
@@ -89,6 +96,18 @@ export function useReadability(model?: string) {
     { text: string },
     { score: number; level: string; summary: string; suggestions: string[] }
   >('readability', { model })
+}
+
+export function useObjectivity(model?: string) {
+  return useAIAction<
+    { text: string },
+    {
+      score: number
+      issues: { original: string; suggested: string; reason: string; severity: 'low' | 'medium' | 'high' }[]
+      ethicalCompliance: string
+      suggestions: string[]
+    }
+  >('objectivity', { model })
 }
 
 export function useFactCheck(model?: string) {

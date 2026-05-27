@@ -75,6 +75,14 @@ aiRouter.post('/expand', asyncHandler(async (req: Request, res: Response) => {
   res.json(result)
 }))
 
+aiRouter.post('/transcript-to-quote', asyncHandler(async (req: Request, res: Response) => {
+  const { transcript } = z.object({ transcript: z.string().min(20).max(10000) }).parse(req.body)
+  const result = await withQuotaAndTracking(req, 'transcript-to-quote', () =>
+    writeService.extractQuoteFromTranscript(transcript)
+  )
+  res.json(result)
+}))
+
 // ── OPTIMIZE ──────────────────────────────────────────────────
 aiRouter.post('/headline', asyncHandler(async (req: Request, res: Response) => {
   const { title, contentExcerpt } = z.object({
@@ -121,6 +129,14 @@ aiRouter.post('/fact-check', asyncHandler(async (req: Request, res: Response) =>
   const { text } = z.object({ text: z.string().min(50).max(10000) }).parse(req.body)
   const result = await withQuotaAndTracking(req, 'fact-check', () =>
     validateService.checkFact(text)
+  )
+  res.json(result)
+}))
+
+aiRouter.post('/objectivity', asyncHandler(async (req: Request, res: Response) => {
+  const { text } = z.object({ text: z.string().min(50).max(10000) }).parse(req.body)
+  const result = await withQuotaAndTracking(req, 'objectivity', () =>
+    validateService.auditObjectivity(text)
   )
   res.json(result)
 }))

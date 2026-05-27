@@ -41,6 +41,40 @@ Konteks setelahnya: "${context.next.slice(0, 200)}"` : ''}`
   })
 }
 
+export interface ExtractedQuoteResult {
+  quote: string
+  attribution: string
+  context: string
+}
+
+export async function extractQuoteFromTranscript(
+  transcript: string
+): Promise<AIResult<ExtractedQuoteResult>> {
+  return callAI(async () => {
+    const raw = await chatComplete(
+      `Kamu adalah editor berita senior Indonesia.
+Tugasmu adalah menganalisis transkrip wawancara kasar berikut dan mengekstrak SATU kutipan langsung (direct quote) paling menarik, bernilai berita tinggi, dan kuat secara emosi/fakta.
+PENTING:
+- Ekstrak nama narasumber dan jabatannya sebagai atribusi (misalnya: "Budi, Kepala Dinas Kesehatan"). Jika tidak ditemukan nama, gunakan "Narasumber".
+- Tuliskan alasan/konteks mengapa kutipan ini penting dalam bagian 'context'.
+Kembalikan HANYA JSON:
+{
+  "quote": "teks kutipan langsung tanpa tanda kutip",
+  "attribution": "Nama Narasumber, Jabatan",
+  "context": "konteks kutipan"
+}`,
+      `Transkrip wawancara:
+"${transcript.slice(0, 8000)}"`
+    )
+    const result = JSON.parse(raw.replace(/```json|```/g, '').trim())
+    return {
+      quote: result.quote || '',
+      attribution: result.attribution || 'Narasumber',
+      context: result.context || ''
+    }
+  })
+}
+
 export async function expandBlock(
   content: string,
   context: { prev?: string; next?: string } = {}

@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react'
-import { useGrammar, useReadability, useFactCheck } from '../../../hooks/useAI'
+import { useGrammar, useReadability, useFactCheck, useObjectivity } from '../../../hooks/useAI'
 import { useEditorStore } from '../../../store/editorStore'
 import { useKeyboardShortcuts } from '../../../hooks/useKeyboardShortcuts'
 import { CheckCircle2, HelpCircle, XCircle, AlertCircle } from 'lucide-react'
@@ -26,6 +26,7 @@ export function ValidateTab({ model = 'gpt-4o', onTrigger }: Props) {
   const [grammarState, doGrammar] = useGrammar(model)
   const [readState, doRead] = useReadability(model)
   const [factState, doFactCheck] = useFactCheck(model)
+  const [objState, doObjectivity] = useObjectivity(model)
   const allText = getAllText(blocks)
   const [selectedCorrections, setSelectedCorrections] = useState<Set<number>>(new Set())
 
@@ -215,6 +216,124 @@ export function ValidateTab({ model = 'gpt-4o', onTrigger }: Props) {
         )}
         {readState.error && (
           <p className="text-xs text-red-500 bg-red-50 dark:bg-red-950/20 p-2 rounded-lg">{readState.error}</p>
+        )}
+      </div>
+
+      {/* Objectivity & Ethics Audit */}
+      <div className="border-t border-gray-150 dark:border-white/5 pt-4">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex flex-col">
+            <span className="text-xs font-black uppercase tracking-wider text-gray-700 dark:text-gray-300">⚖️ Audit Objektivitas & Kode Etik</span>
+            <span className="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mt-0.5">Bias, Opini, dan Kepatuhan KEJ</span>
+          </div>
+          <button
+            onClick={() => doObjectivity({ text: allText })}
+            disabled={objState.loading || !allText}
+            className="text-xs px-3 py-1.5 bg-brand-red hover:bg-red-600 text-white rounded-lg disabled:opacity-50 font-black uppercase tracking-wider transition-all"
+          >
+            {objState.loading ? 'Menganalisis...' : 'Audit'}
+          </button>
+        </div>
+
+        {objState.loading && (
+          <div className="bg-slate-50 dark:bg-[#070b13] border border-gray-100 dark:border-white/5 rounded-xl p-4 text-center space-y-2">
+            <div className="w-5 h-5 border-2 border-brand-red border-t-transparent rounded-full animate-spin mx-auto" />
+            <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider animate-pulse">Memindai bias, opini, dan kepatuhan Kode Etik Jurnalistik...</p>
+          </div>
+        )}
+
+        {objState.result && (
+          <div className="space-y-4">
+            {/* Score + Status */}
+            <div className="bg-slate-50 dark:bg-[#070b13] border border-gray-100 dark:border-white/5 rounded-xl p-4 flex items-center justify-between shadow-sm">
+              <div className="flex items-center gap-3">
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-black text-lg ${
+                  objState.result.score >= 80 
+                    ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
+                    : objState.result.score >= 50
+                    ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                    : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                }`}>
+                  {objState.result.score}%
+                </div>
+                <div>
+                  <h4 className="text-xs font-black uppercase tracking-wider text-gray-700 dark:text-gray-300">Skor Objektivitas</h4>
+                  <p className="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase mt-0.5 tracking-wider">Netralitas & Kode Etik</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <span className={`text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-md border ${
+                  objState.result.score >= 80
+                    ? 'bg-emerald-950/40 text-emerald-400 border-emerald-900/20'
+                    : objState.result.score >= 50
+                    ? 'bg-amber-950/40 text-amber-400 border-amber-900/20'
+                    : 'bg-red-950/40 text-red-400 border-red-900/20'
+                }`}>
+                  {objState.result.score >= 80 ? 'Objektif' : objState.result.score >= 50 ? 'Netral' : 'Butuh Revisi'}
+                </span>
+              </div>
+            </div>
+
+            {/* Ethical Compliance */}
+            <div className="bg-[#0f172a]/20 border border-brand-red/10 rounded-xl p-3 text-xs leading-relaxed text-gray-600 dark:text-gray-300">
+              <span className="font-extrabold text-brand-red text-[9px] uppercase tracking-widest block mb-1">Kepatuhan Kode Etik Jurnalistik:</span>
+              {objState.result.ethicalCompliance}
+            </div>
+
+            {/* Issues list */}
+            {objState.result.issues.length > 0 && (
+              <div className="space-y-3">
+                <p className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">Masalah Terdeteksi ({objState.result.issues.length}):</p>
+                {objState.result.issues.map((issue, idx) => (
+                  <div key={idx} className="bg-white dark:bg-[#0c121e]/40 border border-gray-100 dark:border-white/5 rounded-xl p-3.5 space-y-2.5 shadow-sm">
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="text-xs font-extrabold text-gray-800 dark:text-gray-200 leading-snug">
+                        &ldquo;{issue.original}&rdquo;
+                      </p>
+                      <span className={`shrink-0 inline-flex items-center px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider border ${
+                        issue.severity === 'high'
+                          ? 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                          : issue.severity === 'medium'
+                          ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                          : 'bg-slate-500/10 text-slate-400 border-slate-500/20'
+                      }`}>
+                        {issue.severity === 'high' ? 'KRITIS' : issue.severity === 'medium' ? 'SEDANG' : 'RINGAN'}
+                      </span>
+                    </div>
+
+                    <div className="bg-emerald-50 dark:bg-emerald-950/10 border border-emerald-200 dark:border-emerald-900/20 rounded-lg p-2.5 text-[11px] leading-relaxed">
+                      <span className="font-extrabold text-[9px] uppercase tracking-wider text-emerald-600 dark:text-emerald-400 block mb-1">Saran Perbaikan:</span>
+                      <span className="text-emerald-700 dark:text-emerald-300">{issue.suggested}</span>
+                    </div>
+
+                    <div className="text-[11px] text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-[#070b13]/60 p-2.5 rounded-lg leading-relaxed border border-gray-100 dark:border-white/5">
+                      <span className="font-extrabold text-[9px] uppercase tracking-wider text-gray-400 dark:text-gray-500 block mb-1">Alasan:</span>
+                      {issue.reason}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Suggestions */}
+            {objState.result.suggestions.length > 0 && (
+              <div className="bg-amber-50 dark:bg-amber-950/10 border border-amber-200 dark:border-amber-900/20 rounded-xl p-3">
+                <span className="font-extrabold text-amber-600 dark:text-amber-400 text-[9px] uppercase tracking-widest block mb-1.5">💡 Saran Umum:</span>
+                <ul className="space-y-1">
+                  {objState.result.suggestions.map((s, i) => (
+                    <li key={i} className="text-[11px] text-amber-800 dark:text-amber-300 flex gap-2">
+                      <span className="shrink-0">•</span>
+                      <span>{s}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
+
+        {objState.error && (
+          <p className="text-xs text-red-500 bg-red-50 dark:bg-red-950/20 p-2.5 rounded-xl border border-red-200 dark:border-red-900/20 mt-3">{objState.error}</p>
         )}
       </div>
 
