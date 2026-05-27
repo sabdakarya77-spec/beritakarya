@@ -201,23 +201,23 @@ pnpm add @tiptap/extension-character-count
 | 2.10 | `nodes/image/ImageView.tsx` | Image NodeView | ✅ |
 | 2.11 | `nodes/image/ImageToolbar.tsx` | Image-specific toolbar | ✅ |
 
-### Phase 3: Mode System (2-3 hari)
+### Phase 3: Mode System (2-3 hari) ✅ SELESAI
 
-| Step | File | Deskripsi |
-|------|------|-----------|
-| 3.1 | `modes/gridblock/gridblockExtensions.ts` | Komposisi extension untuk GridBlock mode |
-| 3.2 | `modes/gridblock/GridBlockEditor.tsx` | Editor shell GridBlock |
-| 3.3 | `modes/gridblock/GridBlockToolbar.tsx` | Toolbar GridBlock |
-| 3.4 | `modes/gridblock/GridBlockSlashMenu.tsx` | Slash command GridBlock |
-| 3.5 | `modes/classic/classicExtensions.ts` | Komposisi extension untuk Classic mode |
-| 3.6 | `modes/classic/ClassicEditor.tsx` | Editor shell Classic |
-| 3.7 | `modes/classic/ClassicToolbar.tsx` | Toolbar minimal Classic |
-| 3.8 | `hooks/useEditorMode.ts` | Hook akses mode aktif |
-| 3.9 | `menus/SlashMenu/SlashMenuExtension.ts` | Extension definition slash command |
-| 3.10 | `menus/SlashMenu/SlashMenuComponent.tsx` | UI komponen slash menu |
-| 3.11 | `menus/BubbleMenu.tsx` | Bubble menu component |
-| 3.12 | `extensions/DragHandleExtension.ts` | Drag handle extension |
-| 3.13 | `extensions/PlaceholderExtension.ts` | Custom placeholder |
+| Step | File | Deskripsi | Status |
+|------|------|-----------|--------|
+| 3.1 | `modes/gridblock/gridblockExtensions.ts` | Komposisi extension untuk GridBlock mode | ✅ |
+| 3.2 | `modes/gridblock/GridBlockEditor.tsx` | Editor shell GridBlock | ✅ |
+| 3.3 | `modes/gridblock/GridBlockToolbar.tsx` | Toolbar GridBlock | ✅ |
+| 3.4 | `modes/gridblock/GridBlockSlashMenu.tsx` | Slash command GridBlock | ✅ |
+| 3.5 | `modes/classic/classicExtensions.ts` | Komposisi extension untuk Classic mode | ✅ |
+| 3.6 | `modes/classic/ClassicEditor.tsx` | Editor shell Classic | ✅ |
+| 3.7 | `modes/classic/ClassicToolbar.tsx` | Toolbar minimal Classic | ✅ |
+| 3.8 | `hooks/useEditorMode.ts` | Hook akses mode aktif | ✅ |
+| 3.9 | `menus/SlashMenu/SlashMenuExtension.ts` | Extension definition slash command | ✅ |
+| 3.10 | `menus/SlashMenu/SlashMenuComponent.tsx` | UI komponen slash menu | ✅ |
+| 3.11 | `menus/BubbleMenu.tsx` | Bubble menu component | ✅ |
+| 3.12 | `extensions/DragHandleExtension.ts` | Drag handle extension | ⏳ |
+| 3.13 | `extensions/PlaceholderExtension.ts` | Custom placeholder | ⏳ |
 
 ### Phase 4: Bridging & Testing (2-3 hari)
 
