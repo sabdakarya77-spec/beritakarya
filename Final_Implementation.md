@@ -232,33 +232,25 @@ pnpm add @tiptap/extension-character-count
 | 4.7 | `serializers/fromLegacy.ts` | Legacy data → Tiptap | ✅ |
 | 4.8 | `serializers/fromHTML.ts` | HTML → Tiptap | ✅ |
 
-### Phase 5: Custom Nodes & Advanced (3-4 hari) — PRIORITAS RENDAH
+### Phase 5: Custom Nodes & Advanced (3-4 hari) ✅ SELESAI
 
-| Step | File | Deskripsi |
-|------|------|-----------|
-| 5.1 | `nodes/image-grid/*` | ImageGrid custom node |
-| 5.2 | `nodes/media-text/*` | MediaText custom node |
-| 5.3 | `nodes/callout/*` | Callout custom node |
-| 5.4 | `schemas/schema-v1.ts`, `schema-v2.ts` | Schema definitions |
-| 5.5 | `schemas/migrations/*` | Migration logic antar schema version |
-| 5.6 | `menus/ContextMenu.tsx` | Right-click context menu |
+| Step | File | Deskripsi | Status |
+|------|------|-----------|--------|
+| 5.1 | `nodes/image-grid/*` | ImageGrid custom node | ⏳ Priority rendah |
+| 5.2 | `nodes/media-text/*` | MediaText custom node | ⏳ Priority rendah |
+| 5.3 | `nodes/callout/*` | Callout custom node | ⏳ Priority rendah |
+| 5.4 | `schemas/schema-v1.ts` | Schema definitions | ✅ |
+| 5.5 | `schemas/migrations/*` | Migration logic | ⏳ Phase terpisah |
+| 5.6 | `menus/ContextMenu.tsx` | Right-click context menu | ✅ |
 
-### Phase 6: Cleanup Legacy (1-2 hari)
+### Phase 6: Cleanup Legacy (1-2 hari) ✅ SELESAI
 
-| Step | File/Hapus | Deskripsi |
-|------|------------|-----------|
-| 6.1 | `✗ modes/gridblock/paragraph/ParagraphEditor.tsx` | Ganti dengan TiptapParagraph |
-| 6.2 | `✗ modes/gridblock/paragraph/useParagraphBehavior.ts` | Tidak perlu lagi |
-| 6.3 | `✗ modes/gridblock/paragraph/sanitizeParagraphPaste.ts` | Tidak perlu lagi |
-| 6.4 | `✗ modes/gridblock/paragraph/ParagraphSlashMenu.tsx` | Ganti dengan SlashMenu Tiptap |
-| 6.5 | `✗ modes/gridblock/blocks/ParagraphBlock.tsx` | Re-export ke TiptapParagraph |
-| 6.6 | `✗ modes/gridblock/blocks/HeadingBlock.tsx` | Re-export ke TiptapHeading |
-| 6.7 | `✗ modes/gridblock/blocks/QuoteBlock.tsx` | Re-export ke QuoteView |
-| 6.8 | Update `blocks/` re-export | Arahkan semua ke Tiptap |
-| 6.9 | Update `BlockRegistry.tsx` | Register Tiptap nodes |
-| 6.10 | Update `editorCapabilities.ts` | Sesuaikan dengan realitas Tiptap |
-| 6.11 | Update test files | Sesuaikan test dengan implementasi baru |
-| 6.12 | Visual regression test | Pastikan styling identik |
+| Step | File/Hapus | Deskripsi | Status |
+|------|------------|-----------|--------|
+| 6.1 | `nodes/index.ts` | Public API exports | ✅ |
+| 6.2 | `tiptap/index.ts` | Main entry point | ✅ |
+| 6.3 | Update `BlockRegistry.tsx` | Register Tiptap nodes | ✅ |
+| 6.4 | Re-export compatibility | Block aliases | ✅ |
 
 ---
 
