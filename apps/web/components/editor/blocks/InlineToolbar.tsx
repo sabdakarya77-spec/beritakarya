@@ -45,18 +45,7 @@ export function InlineToolbar({ editorRef, onFormat, active = false }: InlineToo
     const editor = editorRef.current
     const selection = window.getSelection()
 
-    if (!editor) {
-      hideToolbar()
-      return
-    }
-
-    if (!selection || !selection.rangeCount) {
-      if (active) {
-        const editorRect = editor.getBoundingClientRect()
-        setPosition({ top: -40, left: 8 })
-        setVisible(true)
-        return
-      }
+    if (!editor || !selection || !selection.rangeCount) {
       hideToolbar()
       return
     }
@@ -65,35 +54,7 @@ export function InlineToolbar({ editorRef, onFormat, active = false }: InlineToo
     const text = selection.toString().trim()
     const selectionInsideEditor = editor.contains(range.commonAncestorContainer)
 
-    if (!selectionInsideEditor) {
-      if (active) {
-        setPosition({ top: -40, left: 8 })
-        setVisible(true)
-        return
-      }
-      hideToolbar()
-      return
-    }
-
-    if (!text || selection.isCollapsed) {
-      if (active) {
-        const rect = range.getBoundingClientRect()
-        const editorRect = editor.getBoundingClientRect()
-        
-        // If we have a valid caret position, use it
-        if (rect.top !== 0 || rect.left !== 0) {
-          const top = rect.top - editorRect.top - 48
-          const left = rect.left - editorRect.left - 45 // Center roughly over caret
-          setPosition({
-            top: top,
-            left: Math.max(8, Math.min(left, editorRect.width - 200))
-          })
-        } else {
-          setPosition({ top: -40, left: 8 })
-        }
-        setVisible(true)
-        return
-      }
+    if (!selectionInsideEditor || !text || selection.isCollapsed) {
       hideToolbar()
       return
     }
@@ -109,7 +70,7 @@ export function InlineToolbar({ editorRef, onFormat, active = false }: InlineToo
       left: Math.max(8, Math.min(left, editorRect.width - 200))
     })
     setVisible(true)
-  }, [active, editorRef, hideToolbar])
+  }, [editorRef, hideToolbar])
 
   useEffect(() => {
     document.addEventListener('mouseup', handleSelectionChange)

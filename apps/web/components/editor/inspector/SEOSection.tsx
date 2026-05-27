@@ -1,5 +1,6 @@
 import { Globe } from 'lucide-react'
 import { InspectorSection, FieldLabel } from './InspectorSection'
+import { cn } from '../../../lib/utils'
 
 interface SEOSectionProps {
   metaTitle: string
@@ -55,9 +56,49 @@ export function SEOSection({
               value={metaTitle}
               onChange={(event) => updateArticleData({ metaTitle: event.target.value })}
               placeholder="Kustomisasi judul untuk SEO..."
-              className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm text-brand-black outline-none transition-colors focus:border-brand-red dark:border-white/10 dark:bg-slate-900 dark:text-white"
+              className={cn(
+                "w-full rounded-2xl border bg-white px-4 py-3 text-sm text-brand-black outline-none transition-colors dark:bg-slate-900 dark:text-white",
+                metaTitle.length > 60
+                  ? "border-red-300 focus:border-red-500 dark:border-red-500/30 dark:focus:border-red-500"
+                  : metaTitle.length >= 40
+                    ? "border-emerald-300 focus:border-emerald-500 dark:border-emerald-500/20 dark:focus:border-emerald-500"
+                    : metaTitle.length > 0
+                      ? "border-amber-200 focus:border-amber-500 dark:border-amber-500/20 dark:focus:border-amber-500"
+                      : "border-gray-200 focus:border-brand-red dark:border-white/10"
+              )}
             />
-            <p className="text-right text-[11px] text-gray-400">{metaTitle.length} / 60</p>
+            <div className="flex items-center justify-between px-1 text-[11px]">
+              <span className={cn(
+                "font-medium transition-colors",
+                metaTitle.length > 60 
+                  ? "text-red-500" 
+                  : metaTitle.length >= 40 
+                    ? "text-emerald-600 dark:text-emerald-400" 
+                    : metaTitle.length > 0 
+                      ? "text-amber-600 dark:text-amber-400" 
+                      : "text-gray-400"
+              )}>
+                {metaTitle.length === 0 
+                  ? 'Kosong' 
+                  : metaTitle.length > 60 
+                    ? 'Terlalu panjang (melebihi batas Google)' 
+                    : metaTitle.length >= 40 
+                      ? 'Panjang optimal' 
+                      : 'Terlalu pendek (kurang optimal)'}
+              </span>
+              <span className={cn(
+                "font-mono transition-colors",
+                metaTitle.length > 60 
+                  ? "text-red-500 font-bold" 
+                  : metaTitle.length >= 40 
+                    ? "text-emerald-600 dark:text-emerald-400 font-bold" 
+                    : metaTitle.length > 0
+                      ? "text-amber-600 dark:text-amber-400 font-semibold"
+                      : "text-gray-400"
+              )}>
+                {metaTitle.length} / 60
+              </span>
+            </div>
           </div>
 
           <div className="space-y-2">
@@ -67,9 +108,49 @@ export function SEOSection({
               value={metaDescription}
               onChange={(event) => updateArticleData({ metaDescription: event.target.value })}
               placeholder="Deskripsi singkat untuk cuplikan pencarian..."
-              className="w-full resize-none rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm text-brand-black outline-none transition-colors focus:border-brand-red dark:border-white/10 dark:bg-slate-900 dark:text-white"
+              className={cn(
+                "w-full resize-none rounded-2xl border bg-white px-4 py-3 text-sm text-brand-black outline-none transition-colors dark:bg-slate-900 dark:text-white",
+                metaDescription.length > 160
+                  ? "border-red-300 focus:border-red-500 dark:border-red-500/30 dark:focus:border-red-500"
+                  : metaDescription.length >= 120
+                    ? "border-emerald-300 focus:border-emerald-500 dark:border-emerald-500/20 dark:focus:border-emerald-500"
+                    : metaDescription.length > 0
+                      ? "border-amber-200 focus:border-amber-500 dark:border-amber-500/20 dark:focus:border-amber-500"
+                      : "border-gray-200 focus:border-brand-red dark:border-white/10"
+              )}
             />
-            <p className="text-right text-[11px] text-gray-400">{metaDescription.length} / 160</p>
+            <div className="flex items-center justify-between px-1 text-[11px]">
+              <span className={cn(
+                "font-medium transition-colors",
+                metaDescription.length > 160 
+                  ? "text-red-500" 
+                  : metaDescription.length >= 120 
+                    ? "text-emerald-600 dark:text-emerald-400" 
+                    : metaDescription.length > 0 
+                      ? "text-amber-600 dark:text-amber-400" 
+                      : "text-gray-400"
+              )}>
+                {metaDescription.length === 0 
+                  ? 'Kosong' 
+                  : metaDescription.length > 160 
+                    ? 'Terlalu panjang (melebihi batas Google)' 
+                    : metaDescription.length >= 120 
+                      ? 'Panjang optimal' 
+                      : 'Terlalu pendek (kurang optimal)'}
+              </span>
+              <span className={cn(
+                "font-mono transition-colors",
+                metaDescription.length > 160 
+                  ? "text-red-500 font-bold" 
+                  : metaDescription.length >= 120 
+                    ? "text-emerald-600 dark:text-emerald-400 font-bold" 
+                    : metaDescription.length > 0
+                      ? "text-amber-600 dark:text-amber-400 font-semibold"
+                      : "text-gray-400"
+              )}>
+                {metaDescription.length} / 160
+              </span>
+            </div>
           </div>
         </div>
       </InspectorSection>
