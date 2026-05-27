@@ -7,6 +7,8 @@ import { ImageIcon, RotateCcw, AlignLeft, AlignRight } from 'lucide-react'
 import { useToastStore } from '../../../store/toastStore'
 import { api } from '../../../lib/api'
 import { SmartImage } from '../../ui/SmartImage'
+import { MediaLibraryModal } from '../MediaLibraryModal'
+import type { MediaItem } from '../../../hooks/useMediaLibrary'
 
 interface Props {
   block: TMediaTextBlock
@@ -16,6 +18,7 @@ export function MediaTextBlock({ block }: Props) {
   const { updateBlock } = useEditorStore()
   const { addToast } = useToastStore()
   const [uploading, setUploading] = useState(false)
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const textRef = useRef<HTMLDivElement>(null)
 
@@ -47,6 +50,18 @@ export function MediaTextBlock({ block }: Props) {
   const handleRemoveImage = () => {
     updateBlock(block.id, { url: '', alt: '', caption: '' })
     addToast('Gambar dihapus dari blok.', 'info')
+  }
+
+  const handleSelectFromGallery = (media: MediaItem | MediaItem[]) => {
+    const item = Array.isArray(media) ? media[0] : media
+    if (!item) return
+
+    updateBlock(block.id, {
+      url: item.url,
+      alt: item.altText || '',
+      caption: item.caption || ''
+    })
+    addToast('Gambar berhasil dipilih dari galeri!', 'success')
   }
 
   const handleTextChange = (e: React.FormEvent<HTMLDivElement>) => {
@@ -103,6 +118,12 @@ export function MediaTextBlock({ block }: Props) {
                 {/* Image Controls Hover Layer */}
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center gap-2">
                   <button
+                    onClick={() => setIsGalleryOpen(true)}
+                    className="bg-white text-slate-800 text-xs font-black px-3 py-2 rounded-lg hover:bg-brand-red hover:text-white transition-all shadow-md uppercase tracking-wider"
+                  >
+                    Galeri
+                  </button>
+                  <button
                     onClick={() => fileInputRef.current?.click()}
                     className="bg-white text-slate-800 text-xs font-black px-3 py-2 rounded-lg hover:bg-brand-red hover:text-white transition-all shadow-md uppercase tracking-wider"
                   >
@@ -137,8 +158,7 @@ export function MediaTextBlock({ block }: Props) {
             </div>
           ) : (
             <div
-              onClick={() => fileInputRef.current?.click()}
-              className="w-full aspect-[4/3] border-2 border-dashed border-gray-200 dark:border-white/10 rounded-xl hover:border-brand-red dark:hover:border-brand-red/50 hover:bg-gray-50/50 dark:hover:bg-white/[0.01] transition-all flex flex-col items-center justify-center p-6 text-center cursor-pointer relative"
+              className="w-full aspect-[4/3] border-2 border-dashed border-gray-200 dark:border-white/10 rounded-xl hover:border-brand-red dark:hover:border-brand-red/50 hover:bg-gray-50/50 dark:hover:bg-white/[0.01] transition-all flex flex-col items-center justify-center p-6 text-center relative"
             >
               <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-white/5 flex items-center justify-center mb-3">
                 {uploading ? (
@@ -153,6 +173,22 @@ export function MediaTextBlock({ block }: Props) {
               <p className="text-[10px] text-gray-400 mt-1 max-w-[200px]">
                 Format WebP, JPG, PNG bersanding dengan paragraf editorial
               </p>
+              <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="px-3 py-2 bg-gray-900 dark:bg-white/10 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-brand-black transition-all shadow"
+                >
+                  Upload Baru
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsGalleryOpen(true)}
+                  className="px-3 py-2 bg-brand-red text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-red-700 transition-all shadow shadow-brand-red/10"
+                >
+                  Pilih dari Galeri
+                </button>
+              </div>
             </div>
           )}
 
@@ -180,6 +216,13 @@ export function MediaTextBlock({ block }: Props) {
             dangerouslySetInnerHTML={{ __html: block.content }}
           />
         </div>
+
+        <MediaLibraryModal
+          isOpen={isGalleryOpen}
+          onClose={() => setIsGalleryOpen(false)}
+          onSelect={handleSelectFromGallery}
+          allowMultiple={false}
+        />
       </div>
     </div>
   )

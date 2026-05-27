@@ -1,9 +1,11 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import Image from 'next/image'
 import { Image as ImageIcon, RotateCcw } from 'lucide-react'
 import { api } from '../../../lib/api'
 import { useToastStore } from '../../../store/toastStore'
 import { InspectorSection, FieldLabel } from './InspectorSection'
+import { MediaLibraryModal } from '../MediaLibraryModal'
+import { MediaItem } from '../../../hooks/useMediaLibrary'
 
 interface FeaturedImageSectionProps {
   featuredImage: string
@@ -20,6 +22,7 @@ export function FeaturedImageSection({
 }: FeaturedImageSectionProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { addToast } = useToastStore()
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false)
 
   const handleFeaturedImageUpload = async (file: File) => {
     const form = new FormData()
@@ -39,6 +42,13 @@ export function FeaturedImageSection({
     } finally {
       setUploadingFeatured(false)
     }
+  }
+
+  const handleSelectFromGallery = (media: MediaItem | MediaItem[]) => {
+    const item = Array.isArray(media) ? media[0] : media
+    if (!item) return
+    updateArticleData({ featuredImage: item.url })
+    addToast('Gambar utama berhasil dipilih dari galeri', 'success')
   }
 
   return (
@@ -62,7 +72,7 @@ export function FeaturedImageSection({
             </>
           ) : (
             <button
-              onClick={() => fileInputRef.current?.click()}
+              onClick={() => setIsGalleryOpen(true)}
               className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center transition-colors hover:bg-brand-red/[0.03]"
             >
               <span className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-sm dark:bg-slate-900">
@@ -73,10 +83,10 @@ export function FeaturedImageSection({
                 )}
               </span>
               <p className="text-sm font-semibold text-brand-black dark:text-white">
-                {uploadingFeatured ? 'Mengunggah gambar...' : 'Unggah gambar utama'}
+                {uploadingFeatured ? 'Mengunggah gambar...' : 'Atur Gambar Utama'}
               </p>
               <p className="mt-1 text-xs leading-5 text-gray-500 dark:text-gray-400">
-                Bisa dari upload langsung atau isi URL fallback di bawah.
+                Pilih dari galeri media atau unggah berkas baru.
               </p>
             </button>
           )}
@@ -104,21 +114,38 @@ export function FeaturedImageSection({
           />
         </div>
 
-        <div className="flex gap-2">
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="flex-1 rounded-2xl border border-gray-200 px-4 py-3 text-xs font-black uppercase tracking-[0.2em] text-brand-black transition-colors hover:border-brand-red/30 hover:text-brand-red dark:border-white/10 dark:text-white"
-          >
-            {featuredImage ? 'Ganti Gambar' : 'Upload'}
-          </button>
-          <button
-            onClick={() => updateArticleData({ featuredImage: '' })}
-            className="rounded-2xl border border-red-200 px-4 py-3 text-xs font-black uppercase tracking-[0.2em] text-red-500 transition-colors hover:bg-red-50 dark:border-red-500/20 dark:hover:bg-red-500/10"
-          >
-            Hapus
-          </button>
+        <div className="flex flex-col gap-2">
+          <div className="flex gap-2">
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="flex-1 rounded-2xl border border-gray-200 px-4 py-3 text-[10px] font-black uppercase tracking-[0.15em] text-brand-black transition-colors hover:border-brand-red/30 hover:text-brand-red dark:border-white/10 dark:text-white"
+            >
+              Upload
+            </button>
+            <button
+              onClick={() => setIsGalleryOpen(true)}
+              className="flex-1 rounded-2xl border border-brand-red/30 bg-brand-red/[0.03] px-4 py-3 text-[10px] font-black uppercase tracking-[0.15em] text-brand-red transition-colors hover:bg-brand-red hover:text-white dark:border-brand-red/40 dark:text-brand-red dark:hover:bg-brand-red dark:hover:text-white"
+            >
+              📁 Galeri
+            </button>
+          </div>
+          {featuredImage && (
+            <button
+              onClick={() => updateArticleData({ featuredImage: '' })}
+              className="w-full rounded-2xl border border-red-200 px-4 py-3 text-[10px] font-black uppercase tracking-[0.15em] text-red-500 transition-colors hover:bg-red-50 dark:border-red-500/20 dark:hover:bg-red-500/10"
+            >
+              Hapus Gambar Utama
+            </button>
+          )}
         </div>
       </div>
+
+      <MediaLibraryModal 
+        isOpen={isGalleryOpen}
+        onClose={() => setIsGalleryOpen(false)}
+        onSelect={handleSelectFromGallery}
+        allowMultiple={false}
+      />
     </InspectorSection>
   )
 }

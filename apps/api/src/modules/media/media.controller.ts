@@ -291,7 +291,14 @@ mediaRouter.get(
   asyncHandler(async (req: Request, res: Response) => {
     const page = parseInt(req.query.page as string) || 1
     const limit = Math.min(parseInt(req.query.limit as string) || 30, 100)
-    const result = await repo.findMediaBySite(req.site!, page, limit)
+    
+    // Role-based isolation: reporter/kontributor only see their own media
+    const restrictedRoles = ['reporter', 'kontributor']
+    const userId = restrictedRoles.includes(req.user!.role)
+      ? req.user!.userId
+      : undefined
+
+    const result = await repo.findMediaBySite(req.site!, page, limit, userId)
     res.json({ success: true, data: result })
   })
 )

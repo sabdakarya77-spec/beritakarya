@@ -18,15 +18,24 @@ export async function createMedia(data: {
   return prisma.media.create({ data })
 }
 
-export async function findMediaBySite(siteId: string, page: number = 1, limit: number = 30) {
+export async function findMediaBySite(
+  siteId: string, 
+  page: number = 1, 
+  limit: number = 30,
+  userId?: string
+) {
+  const where: any = { siteId }
+  if (userId) {
+    where.userId = userId
+  }
   const [items, total] = await Promise.all([
     prisma.media.findMany({
-      where: { siteId },
+      where,
       orderBy: { createdAt: 'desc' },
       skip: (page - 1) * limit,
       take: limit
     }),
-    prisma.media.count({ where: { siteId } })
+    prisma.media.count({ where })
   ])
   
   return { items, total, page, limit, totalPages: Math.ceil(total / limit) }

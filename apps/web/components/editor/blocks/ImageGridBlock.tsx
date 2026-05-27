@@ -5,6 +5,8 @@ import { useEditorStore } from '../../../store/editorStore'
 import { api } from '../../../lib/api'
 import type { ImageGridBlock as TImageGridBlock, ImageItem } from '@beritakarya/types'
 import { useToastStore } from '../../../store/toastStore'
+import { MediaLibraryModal } from '../MediaLibraryModal'
+import type { MediaItem } from '../../../hooks/useMediaLibrary'
 
 interface Props { block: TImageGridBlock }
 
@@ -12,6 +14,7 @@ export function ImageGridBlock({ block }: Props) {
   const { updateBlock } = useEditorStore()
   const { addToast } = useToastStore()
   const [dragIdx, setDragIdx] = useState<number | null>(null)
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false)
 
   const setColumns = (columns: 2 | 3) => updateBlock(block.id, { columns })
 
@@ -34,6 +37,25 @@ export function ImageGridBlock({ block }: Props) {
     }
     updateBlock(block.id, { images: [...block.images, item] })
     addToast('Gambar berhasil ditambahkan ke grid!', 'success')
+  }
+
+  const handleSelectFromGallery = (selected: MediaItem | MediaItem[]) => {
+    const item = Array.isArray(selected) ? selected[0] : selected
+    if (!item) return
+
+    updateBlock(block.id, {
+      images: [
+        ...block.images,
+        {
+          url: item.url,
+          alt: item.altText || '',
+          caption: item.caption || '',
+          width: item.width,
+          height: item.height
+        }
+      ]
+    })
+    addToast('Gambar berhasil ditambahkan dari galeri!', 'success')
   }
 
   const handleRemove = (idx: number) => {
@@ -112,14 +134,30 @@ export function ImageGridBlock({ block }: Props) {
 
         {/* Add slot */}
         {block.images.length < block.columns && (
-          <UploadSlot onFile={handleAddImage} />
+          <UploadSlot
+            onFile={handleAddImage}
+            onSelectFromGallery={() => setIsGalleryOpen(true)}
+          />
         )}
       </div>
+
+      <MediaLibraryModal
+        isOpen={isGalleryOpen}
+        onClose={() => setIsGalleryOpen(false)}
+        onSelect={handleSelectFromGallery}
+        allowMultiple={false}
+      />
     </div>
   )
 }
 
-function UploadSlot({ onFile }: { onFile: (f: File) => void }) {
+function UploadSlot({
+  onFile,
+  onSelectFromGallery
+}: {
+  onFile: (f: File) => void
+  onSelectFromGallery: () => void
+}) {
   const ref = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
 
@@ -131,16 +169,31 @@ function UploadSlot({ onFile }: { onFile: (f: File) => void }) {
 
   return (
     <div
-      onClick={() => ref.current?.click()}
       onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files[0]; if(f) handle(f) }}
       onDragOver={e => e.preventDefault()}
-      className="aspect-square border-2 border-dashed border-gray-200 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-blue-300 hover:bg-blue-50/30 transition-colors"
+      className="aspect-square border-2 border-dashed border-gray-200 rounded-lg flex flex-col items-center justify-center hover:border-blue-300 hover:bg-blue-50/30 transition-colors p-3"
     >
       {uploading
         ? <span className="text-xs text-gray-400">Uploading...</span>
         : <>
             <span className="text-xl text-gray-300">+</span>
             <span className="text-xs text-gray-300 mt-1">Tambah</span>
+            <div className="mt-3 flex flex-col gap-2 w-full">
+              <button
+                type="button"
+                onClick={() => ref.current?.click()}
+                className="w-full text-[10px] px-2 py-1.5 border border-gray-200 rounded-md text-gray-500 hover:text-blue-600 hover:border-blue-300 transition-colors"
+              >
+                Upload Baru
+              </button>
+              <button
+                type="button"
+                onClick={onSelectFromGallery}
+                className="w-full text-[10px] px-2 py-1.5 border border-gray-200 rounded-md text-gray-500 hover:text-blue-600 hover:border-blue-300 transition-colors"
+              >
+                Pilih dari Galeri
+              </button>
+            </div>
           </>
       }
       <input ref={ref} type="file" accept="image/*" className="hidden"

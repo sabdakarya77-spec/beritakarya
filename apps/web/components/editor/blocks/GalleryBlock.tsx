@@ -5,6 +5,8 @@ import { useEditorStore } from '../../../store/editorStore'
 import { api } from '../../../lib/api'
 import type { GalleryBlock as TGalleryBlock } from '@beritakarya/types'
 import { useToastStore } from '../../../store/toastStore'
+import { MediaLibraryModal } from '../MediaLibraryModal'
+import type { MediaItem } from '../../../hooks/useMediaLibrary'
 
 export function GalleryBlock({ block }: { block: TGalleryBlock }) {
   const { updateBlock } = useEditorStore()
@@ -12,6 +14,7 @@ export function GalleryBlock({ block }: { block: TGalleryBlock }) {
   const [lightbox, setLightbox] = useState<number | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false)
 
   const handleUpload = async (files: FileList) => {
     setUploading(true)
@@ -53,6 +56,20 @@ export function GalleryBlock({ block }: { block: TGalleryBlock }) {
     updateBlock(block.id, { images })
   }
 
+  const handleSelectFromLibrary = (selected: MediaItem | MediaItem[]) => {
+    const selectedItems = Array.isArray(selected) ? selected : [selected]
+    const newItems = selectedItems.map((item) => ({
+      url: item.url,
+      alt: item.altText || '',
+      caption: item.caption || '',
+      width: item.width,
+      height: item.height
+    }))
+
+    updateBlock(block.id, { images: [...block.images, ...newItems] })
+    addToast(`${newItems.length} gambar ditambahkan dari galeri.`, 'success')
+  }
+
   // Keyboard nav in lightbox
   useEffect(() => {
     if (lightbox === null) return
@@ -69,21 +86,43 @@ export function GalleryBlock({ block }: { block: TGalleryBlock }) {
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <span className="text-xs text-gray-500 font-medium">Galeri ({block.images.length} foto)</span>
-        <button onClick={() => inputRef.current?.click()}
-          disabled={uploading}
-          className="text-xs px-2.5 py-1 border border-gray-200 rounded-lg hover:border-blue-300 text-gray-500 hover:text-blue-600 transition-colors disabled:opacity-50">
-          {uploading ? 'Uploading...' : '+ Tambah Foto'}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setIsGalleryOpen(true)}
+            className="text-xs px-2.5 py-1 border border-gray-200 rounded-lg hover:border-blue-300 text-gray-500 hover:text-blue-600 transition-colors"
+          >
+            + Pilih dari Galeri
+          </button>
+          <button onClick={() => inputRef.current?.click()}
+            disabled={uploading}
+            className="text-xs px-2.5 py-1 border border-gray-200 rounded-lg hover:border-blue-300 text-gray-500 hover:text-blue-600 transition-colors disabled:opacity-50">
+            {uploading ? 'Uploading...' : '+ Tambah Foto'}
+          </button>
+        </div>
         <input ref={inputRef} type="file" accept="image/*" multiple className="hidden"
           onChange={e => { if(e.target.files) handleUpload(e.target.files) }} />
       </div>
 
       {block.images.length === 0 ? (
         <div
-          onClick={() => inputRef.current?.click()}
-          className="border-2 border-dashed border-gray-200 rounded-xl p-8 text-center cursor-pointer hover:border-blue-300"
+          className="border-2 border-dashed border-gray-200 rounded-xl p-8 text-center hover:border-blue-300"
         >
-          <p className="text-gray-300 text-sm">Klik atau drag foto untuk galeri</p>
+          <p className="text-gray-300 text-sm">Tambahkan foto ke galeri dari upload baru atau pustaka media</p>
+          <div className="mt-4 flex items-center justify-center gap-2">
+            <button
+              onClick={() => setIsGalleryOpen(true)}
+              className="text-xs px-3 py-1.5 border border-gray-200 rounded-lg hover:border-blue-300 text-gray-500 hover:text-blue-600 transition-colors"
+            >
+              Pilih dari Galeri
+            </button>
+            <button
+              onClick={() => inputRef.current?.click()}
+              disabled={uploading}
+              className="text-xs px-3 py-1.5 border border-gray-200 rounded-lg hover:border-blue-300 text-gray-500 hover:text-blue-600 transition-colors disabled:opacity-50"
+            >
+              {uploading ? 'Uploading...' : 'Upload Baru'}
+            </button>
+          </div>
         </div>
       ) : (
         <div className="flex gap-2 overflow-x-auto pb-2">
@@ -160,6 +199,13 @@ export function GalleryBlock({ block }: { block: TGalleryBlock }) {
             className="absolute top-4 right-4 text-white text-2xl opacity-70 hover:opacity-100">×</button>
         </div>
       )}
+
+      <MediaLibraryModal
+        isOpen={isGalleryOpen}
+        onClose={() => setIsGalleryOpen(false)}
+        onSelect={handleSelectFromLibrary}
+        allowMultiple
+      />
     </div>
   )
 }

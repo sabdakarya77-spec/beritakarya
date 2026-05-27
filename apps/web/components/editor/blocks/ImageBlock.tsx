@@ -1,11 +1,14 @@
 'use client'
+
 import { useRef, useState } from 'react'
 import { SmartImage } from '../../ui/SmartImage'
 import { useEditorStore } from '../../../store/editorStore'
 import { api } from '../../../lib/api'
 import type { ImageBlock as TImageBlock } from '@beritakarya/types'
-import { useCaption } from '../../../hooks/useAI'; // Import AI caption hook
+import { useCaption } from '../../../hooks/useAI' // Import AI caption hook
 import { useToastStore } from '../../../store/toastStore'
+import { MediaLibraryModal } from '../MediaLibraryModal'
+import { MediaItem } from '../../../hooks/useMediaLibrary'
 
 import { ImageIcon, X, Sparkles, RefreshCcw, Trash2 } from 'lucide-react'
 
@@ -13,9 +16,11 @@ export function ImageBlock({ block }: { block: TImageBlock }) {
   const { updateBlock, removeBlock } = useEditorStore()
   const { addToast } = useToastStore()
   const inputRef = useRef<HTMLInputElement>(null)
+  
   const [uploading, setUploading] = useState(false)
   const [progress, setProgress] = useState(0)
-  const [captionState, doCaption] = useCaption();
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false)
+  const [captionState, doCaption] = useCaption()
 
   const handleUpload = async (file: File) => {
     const form = new FormData()
@@ -49,28 +54,57 @@ export function ImageBlock({ block }: { block: TImageBlock }) {
     }
   }
 
+  const handleSelectFromGallery = (media: MediaItem | MediaItem[]) => {
+    const item = Array.isArray(media) ? media[0] : media
+    if (!item) return
+    updateBlock(block.id, {
+      url: item.url,
+      alt: item.altText || '',
+      width: item.width,
+      height: item.height,
+      caption: item.caption || '',
+      credit: item.credit || ''
+    })
+    addToast('Gambar berhasil dipilih dari galeri!', 'success')
+  }
+
   const handleGenerateCaption = async () => {
-    if (!block.url) return;
-    const result = await doCaption({ imageUrl: block.url });
+    if (!block.url) return
+    const result = await doCaption({ imageUrl: block.url })
     if (result) {
-      updateBlock(block.id, { caption: result.caption, alt: result.altText });
+      updateBlock(block.id, { caption: result.caption, alt: result.altText })
     }
-  };
+  }
 
   if (!block.url) {
     return (
       <div
-        onClick={() => inputRef.current?.click()}
         onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files[0]; if(f) handleUpload(f) }}
         onDragOver={e => e.preventDefault()}
-        className="group border-2 border-dashed border-gray-200 dark:border-white/10 rounded-2xl p-12 text-center cursor-pointer hover:border-brand-red/30 hover:bg-brand-red/[0.02] transition-all duration-300"
+        className="group border-2 border-dashed border-gray-200 dark:border-white/10 rounded-2xl p-12 text-center hover:border-brand-red/30 hover:bg-brand-red/[0.01] transition-all duration-300"
       >
         <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-gray-50 text-gray-400 group-hover:bg-brand-red/10 group-hover:text-brand-red transition-colors dark:bg-white/5">
           <ImageIcon size={24} />
         </div>
-        <p className="text-sm font-bold text-slate-900 dark:text-white">Klik atau jatuhkan gambar</p>
-        <p className="text-xs text-gray-400 mt-2">Format JPG, PNG, WebP — Maksimum 10MB</p>
+        <p className="text-sm font-bold text-slate-900 dark:text-white">Tambahkan gambar ke artikel</p>
+        <p className="text-xs text-gray-400 mt-1 uppercase tracking-wider font-semibold">Format JPG, PNG, WebP — Maksimum 10MB</p>
         
+        <div className="mt-6 flex flex-wrap justify-center gap-3">
+          <button
+            onClick={() => inputRef.current?.click()}
+            className="px-4 py-2 bg-gray-900 dark:bg-white/10 text-white text-[11px] font-black uppercase tracking-widest rounded-xl hover:bg-brand-black transition-all shadow"
+          >
+            Unggah Berkas
+          </button>
+          
+          <button
+            onClick={() => setIsGalleryOpen(true)}
+            className="px-4 py-2 bg-brand-red text-white text-[11px] font-black uppercase tracking-widest rounded-xl hover:bg-red-700 transition-all shadow shadow-brand-red/10"
+          >
+            📁 Pilih dari Galeri
+          </button>
+        </div>
+
         {uploading && (
           <div className="mt-6 mx-auto max-w-[200px]">
             <div className="overflow-hidden bg-gray-100 dark:bg-white/5 rounded-full h-1.5">
@@ -84,8 +118,21 @@ export function ImageBlock({ block }: { block: TImageBlock }) {
             </p>
           </div>
         )}
-        <input ref={inputRef} type="file" accept="image/*" className="hidden"
-          onChange={e => { const f = e.target.files?.[0]; if(f) handleUpload(f) }} />
+        
+        <input 
+          ref={inputRef} 
+          type="file" 
+          accept="image/*" 
+          className="hidden"
+          onChange={e => { const f = e.target.files?.[0]; if(f) handleUpload(f) }} 
+        />
+
+        <MediaLibraryModal 
+          isOpen={isGalleryOpen}
+          onClose={() => setIsGalleryOpen(false)}
+          onSelect={handleSelectFromGallery}
+          allowMultiple={false}
+        />
       </div>
     )
   }
@@ -95,11 +142,18 @@ export function ImageBlock({ block }: { block: TImageBlock }) {
       {/* Action Overlay */}
       <div className="absolute top-3 right-3 z-10 flex items-center gap-2 opacity-0 group-hover/block:opacity-100 transition-all duration-300 translate-y-1 group-hover/block:translate-y-0">
         <button
+          onClick={() => setIsGalleryOpen(true)}
+          className="flex items-center gap-1.5 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md text-slate-900 dark:text-white text-[10px] font-black uppercase tracking-wider px-3 py-2 rounded-xl shadow-xl hover:bg-brand-red hover:text-white transition-all border border-gray-100 dark:border-white/10"
+        >
+          <ImageIcon size={12} />
+          Galeri Media
+        </button>
+        <button
           onClick={() => inputRef.current?.click()}
           className="flex items-center gap-1.5 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md text-slate-900 dark:text-white text-[10px] font-black uppercase tracking-wider px-3 py-2 rounded-xl shadow-xl hover:bg-brand-red hover:text-white transition-all border border-gray-100 dark:border-white/10"
         >
           <RefreshCcw size={12} />
-          Ganti Gambar
+          Ganti Upload
         </button>
         <button
           onClick={() => removeBlock(block.id)}
@@ -161,8 +215,20 @@ export function ImageBlock({ block }: { block: TImageBlock }) {
         </p>
       )}
 
-      <input ref={inputRef} type="file" accept="image/*" className="hidden"
-        onChange={e => { const f = e.target.files?.[0]; if(f) handleUpload(f) }} />
+      <input 
+        ref={inputRef} 
+        type="file" 
+        accept="image/*" 
+        className="hidden"
+        onChange={e => { const f = e.target.files?.[0]; if(f) handleUpload(f) }} 
+      />
+
+      <MediaLibraryModal 
+        isOpen={isGalleryOpen}
+        onClose={() => setIsGalleryOpen(false)}
+        onSelect={handleSelectFromGallery}
+        allowMultiple={false}
+      />
     </div>
   )
 }

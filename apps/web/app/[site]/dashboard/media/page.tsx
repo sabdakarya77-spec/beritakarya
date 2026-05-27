@@ -1,61 +1,37 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { useParams } from 'next/navigation';
+import { useMemo, useState } from 'react';
 import { 
   Image as ImageIcon, Upload, Search, Filter, 
   Trash2, X, Check, Copy,
   Maximize2, RefreshCw
 } from 'lucide-react';
-import ReactCrop, { Crop, PixelCrop } from 'react-image-crop';
-import 'react-image-crop/dist/ReactCrop.css';
 import { api } from '../../../../lib/api';
 import { cn } from '../../../../lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
-
-// ─── Types ───────────────────────────────────────────────────────
-interface Media {
-  id: string;
-  url: string;
-  thumbUrl: string;
-  width: number;
-  height: number;
-  originalFormat: string;
-  size: number;
-  altText: string | null;
-  caption: string | null;
-  credit: string | null;
-  createdAt: string;
-}
+import { useMediaLibrary, type MediaItem } from '../../../../hooks/useMediaLibrary';
+import { useAuthStore } from '../../../../store/authStore';
 
 // ─── Component ───────────────────────────────────────────────────
 export default function MediaManagerPage() {
-  const { site } = useParams() as { site: string };
-  const [media, setMedia] = useState<Media[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { user } = useAuthStore();
+  const { items, setItems, loading, hasMore, loadMore, refresh, total } = useMediaLibrary();
   const [uploading, setUploading] = useState(false);
-  const [selectedMedia, setSelectedMedia] = useState<Media | null>(null);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedMedia, setSelectedMedia] = useState<MediaItem | null>(null);
   const [search, setSearch] = useState('');
-  
-  // Crop state
-  const [crop, setCrop] = useState<Crop>();
-  const [completedCrop, setCompletedCrop] = useState<PixelCrop>();
-  const imgRef = useRef<HTMLImageElement>(null);
+  const restrictedToOwnMedia = user?.role === 'reporter' || user?.role === 'kontributor';
 
-  const fetchMedia = async () => {
-    setLoading(true);
-    try {
-      const { data } = await api.get('/media', { params: { limit: 50 } });
-      setMedia(data.data.items);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const filteredMedia = useMemo(() => {
+    const keyword = search.trim().toLowerCase();
+    if (!keyword) return items;
 
-  useEffect(() => { fetchMedia(); }, [site]);
+    return items.filter((item) =>
+      (item.altText || '').toLowerCase().includes(keyword) ||
+      (item.caption || '').toLowerCase().includes(keyword) ||
+      (item.credit || '').toLowerCase().includes(keyword) ||
+      (item.url.split('/').pop() || '').toLowerCase().includes(keyword)
+    );
+  }, [items, search]);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -64,13 +40,12 @@ export default function MediaManagerPage() {
     setUploading(true);
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('siteId', site);
 
     try {
-      await api.post('/media/upload', formData, {
+      const { data } = await api.post('/media/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
-      fetchMedia();
+      setItems((prev) => [data.data, ...prev.filter((item) => item.id !== data.data.id)]);
     } catch (e) {
       alert('Upload gagal');
     } finally {
@@ -82,7 +57,7 @@ export default function MediaManagerPage() {
     if (!confirm('Hapus media ini secara permanen?')) return;
     try {
       await api.delete(`/media/${id}`);
-      setMedia(prev => prev.filter(m => m.id !== id));
+      setItems(prev => prev.filter(m => m.id !== id));
       setSelectedMedia(null);
     } catch (e) {
       alert('Gagal menghapus');
@@ -97,8 +72,8 @@ export default function MediaManagerPage() {
         caption: selectedMedia.caption,
         credit: selectedMedia.credit
       });
-      setMedia(prev => prev.map(m => m.id === data.data.id ? data.data : m));
-      setIsEditModalOpen(false);
+      setItems(prev => prev.map(m => m.id === data.data.id ? data.data : m));
+      setSelectedMedia(data.data);
     } catch (e) {
       alert('Gagal update');
     }
@@ -115,6 +90,11 @@ export default function MediaManagerPage() {
           <div>
             <h1 className="text-2xl font-black text-brand-black dark:text-white tracking-tight">Media Manager</h1>
             <p className="text-[11px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">Asset & Galeri Berita</p>
+            {restrictedToOwnMedia && (
+              <div className="mt-2 inline-flex items-center rounded-full bg-amber-50 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-amber-700 ring-1 ring-amber-200 dark:bg-amber-950/30 dark:text-amber-300 dark:ring-amber-900/30">
+                Mode: hanya media milik Anda
+              </div>
+            )}
           </div>
         </div>
 
@@ -146,10 +126,15 @@ export default function MediaManagerPage() {
            <button className="p-2.5 text-gray-400 hover:text-brand-black dark:hover:text-white transition-colors">
               <Filter size={18} />
            </button>
-           <button onClick={fetchMedia} className="p-2.5 text-gray-400 hover:text-brand-red transition-colors">
+           <button onClick={refresh} className="p-2.5 text-gray-400 hover:text-brand-red transition-colors">
               <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
            </button>
         </div>
+      </div>
+
+      <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-gray-400">
+        <span>{filteredMedia.length} media tampil</span>
+        <span>Total tersinkron: {total}</span>
       </div>
 
       {/* Grid */}
@@ -158,13 +143,15 @@ export default function MediaManagerPage() {
           Array(15).fill(0).map((_, i) => (
             <div key={i} className="aspect-square rounded-2xl bg-gray-100 dark:bg-white/5 animate-pulse" />
           ))
-        ) : media.length === 0 ? (
+        ) : filteredMedia.length === 0 ? (
           <div className="col-span-full py-32 text-center">
             <ImageIcon size={48} className="mx-auto mb-4 text-gray-200 dark:text-white/5" />
-            <p className="text-xs font-black text-gray-400 uppercase tracking-widest">Belum ada media diunggah</p>
+            <p className="text-xs font-black text-gray-400 uppercase tracking-widest">
+              {items.length === 0 ? 'Belum ada media diunggah' : 'Tidak ada media yang cocok'}
+            </p>
           </div>
         ) : (
-          media.map((m) => (
+          filteredMedia.map((m) => (
             <motion.div
               layoutId={m.id}
               key={m.id}
@@ -193,6 +180,25 @@ export default function MediaManagerPage() {
           ))
         )}
       </div>
+
+      {hasMore && (
+        <div className="flex justify-center">
+          <button
+            onClick={loadMore}
+            disabled={loading}
+            className="px-6 py-3 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-gray-600 dark:text-gray-300 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-50 flex items-center gap-2"
+          >
+            {loading ? (
+              <>
+                <RefreshCw size={12} className="animate-spin" />
+                Memuat...
+              </>
+            ) : (
+              'Tampilkan Lebih Banyak'
+            )}
+          </button>
+        </div>
+      )}
 
       {/* Detail Sidebar / Modal Overlay */}
       <AnimatePresence>
