@@ -62,7 +62,6 @@ export function ImageView({ node, selected, deleteNode }: NodeViewProps) {
               height={height}
               loading={loading}
               className={`max-w-full h-auto rounded-lg ${className || ''}`}
-              onLoadStart={handleLoadStart}
               onLoad={handleLoadComplete}
               onError={handleError}
             />
