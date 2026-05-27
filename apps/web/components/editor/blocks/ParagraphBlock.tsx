@@ -6,9 +6,6 @@ import { cn } from '../../../lib/utils'
 import { InlineToolbar } from './InlineToolbar'
 import type { ParagraphBlock as TParagraphBlock, Block } from '@beritakarya/types'
 
-// Module-level cursor restore — used when merging blocks
-let globalPendingCursor: { blockId: string; offset: number } | null = null
-
 const BLOCK_TYPES: { type: Block['type']; label: string; desc: string; aliases: string[]; icon: typeof Type }[] = [
   { type: 'heading', label: 'Subjudul', desc: 'Bagi artikel jadi bagian yang jelas', aliases: ['judul', 'heading', 'h2', 'subjudul'], icon: Heading1 },
   { type: 'list', label: 'Daftar', desc: 'Poin fakta, kronologi, atau rangkuman', aliases: ['list', 'bullet', 'daftar', 'poin'], icon: List },
@@ -35,31 +32,9 @@ export function ParagraphBlock({ block }: { block: TParagraphBlock }) {
     const el = editorRef.current
     if (!el) return
 
-    const blockId = el.dataset.blockId
     const nextValue = block.content || ''
     if (el.innerHTML !== nextValue) {
       el.innerHTML = nextValue
-    }
-
-    // Restore cursor after innerHTML sync (used by mergeWithPrevious)
-    if (globalPendingCursor && globalPendingCursor.blockId === blockId) {
-      const { offset } = globalPendingCursor
-      globalPendingCursor = null
-      requestAnimationFrame(() => {
-        el.focus()
-        const sel = window.getSelection()
-        if (!sel) return
-        sel.removeAllRanges()
-        const r = document.createRange()
-        const node = el.firstChild
-        if (node && node.nodeType === Node.TEXT_NODE) {
-          r.setStart(node, Math.min(offset, node.textContent?.length || 0))
-        } else {
-          r.setStart(el, 0)
-        }
-        r.collapse(true)
-        sel.addRange(r)
-      })
     }
   }, [block.content])
 
@@ -524,8 +499,14 @@ export function ParagraphBlock({ block }: { block: TParagraphBlock }) {
         e.preventDefault()
         const result = mergeWithPrevious(block.id)
         if (result) {
-          // Store cursor offset globally — target block's useEffect will read this after innerHTML sync
-          globalPendingCursor = { blockId: result.targetBlockId, offset: result.cursorOffset }
+          // Wait for React render → useEffect sets innerHTML, then restore cursor
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              requestAnimationFrame(() => {
+                focusAtOffset(result!.targetBlockId, result!.cursorOffset)
+              })
+            })
+          })
         }
         return
       }
