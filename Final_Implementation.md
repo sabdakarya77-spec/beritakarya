@@ -219,18 +219,18 @@ pnpm add @tiptap/extension-character-count
 | 3.12 | `extensions/DragHandleExtension.ts` | Drag handle extension | ⏳ |
 | 3.13 | `extensions/PlaceholderExtension.ts` | Custom placeholder | ⏳ |
 
-### Phase 4: Bridging & Testing (2-3 hari)
+### Phase 4: Bridging & Testing (2-3 hari) ✅ SELESAI
 
-| Step | File | Deskripsi |
-|------|------|-----------|
-| 4.1 | `bridges/autosaveBridge.ts` | Autosave integration |
-| 4.2 | `hooks/useBlockNavigation.ts` | Navigasi antar block (prev/next) |
-| 4.3 | `hooks/useSelection.ts` | Selection management |
-| 4.4 | `serializers/toHTML.ts` | Tiptap → HTML serialization |
-| 4.5 | `serializers/toClassic.ts` | Tiptap → continuous writing format |
-| 4.6 | `serializers/toJSON.ts` | Tiptap → JSON |
-| 4.7 | `serializers/fromLegacy.ts` | Legacy data → Tiptap |
-| 4.8 | `serializers/fromHTML.ts` | HTML → Tiptap |
+| Step | File | Deskripsi | Status |
+|------|------|-----------|--------|
+| 4.1 | `bridges/autosaveBridge.ts` | Autosave integration | ✅ |
+| 4.2 | `hooks/useBlockNavigation.ts` | Navigasi antar block (prev/next) | ✅ |
+| 4.3 | `hooks/useSelection.ts` | Selection management | ✅ |
+| 4.4 | `serializers/toHTML.ts` | Tiptap → HTML serialization | ✅ |
+| 4.5 | `serializers/toClassic.ts` | Tiptap → continuous writing format | ✅ |
+| 4.6 | `serializers/toJSON.ts` | Tiptap → JSON | ✅ |
+| 4.7 | `serializers/fromLegacy.ts` | Legacy data → Tiptap | ✅ |
+| 4.8 | `serializers/fromHTML.ts` | HTML → Tiptap | ✅ |
 
 ### Phase 5: Custom Nodes & Advanced (3-4 hari) — PRIORITAS RENDAH
 
