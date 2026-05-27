@@ -28,6 +28,8 @@ export function ParagraphBlock({ block }: { block: TParagraphBlock }) {
   const [slashMenuPosition, setSlashMenuPosition] = useState({ top: 40, left: 0 })
   const isActive = activeBlockId === block.id
 
+  const pendingCursorRef = useRef<{ offset: number } | null>(null)
+
   useEffect(() => {
     const el = editorRef.current
     if (!el) return
@@ -35,6 +37,26 @@ export function ParagraphBlock({ block }: { block: TParagraphBlock }) {
     const nextValue = block.content || ''
     if (el.innerHTML !== nextValue) {
       el.innerHTML = nextValue
+    }
+
+    // Restore cursor if this block was the merge target
+    if (pendingCursorRef.current) {
+      const offset = pendingCursorRef.current.offset
+      pendingCursorRef.current = null
+      el.focus()
+      const sel = window.getSelection()
+      if (sel) {
+        sel.removeAllRanges()
+        const r = document.createRange()
+        const node = el.firstChild
+        if (node && node.nodeType === Node.TEXT_NODE) {
+          r.setStart(node, Math.min(offset, node.textContent?.length || 0))
+        } else {
+          r.setStart(el, 0)
+        }
+        r.collapse(true)
+        sel.addRange(r)
+      }
     }
   }, [block.content])
 
@@ -499,14 +521,31 @@ export function ParagraphBlock({ block }: { block: TParagraphBlock }) {
         e.preventDefault()
         const result = mergeWithPrevious(block.id)
         if (result) {
-          // Wait for React render → useEffect sets innerHTML, then restore cursor
-          requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-              requestAnimationFrame(() => {
-                focusAtOffset(result!.targetBlockId, result!.cursorOffset)
-              })
-            })
-          })
+          // Set cursor offset for the target block's useEffect to read after innerHTML sync
+          // Wait one frame for the target block's component to mount/receive new block.content
+          setTimeout(() => {
+            const allWrappers = document.querySelectorAll('[data-block-wrapper]')
+            for (const w of allWrappers) {
+              const editorEl = w.querySelector('[contenteditable]') as HTMLElement | null
+              if (!editorEl) continue
+              if (editorEl.dataset.blockId === result!.targetBlockId) {
+                editorEl.focus()
+                const sel = window.getSelection()
+                if (!sel) return
+                sel.removeAllRanges()
+                const r = document.createRange()
+                const node = editorEl.firstChild
+                if (node && node.nodeType === Node.TEXT_NODE) {
+                  r.setStart(node, Math.min(result!.cursorOffset, node.textContent?.length || 0))
+                } else {
+                  r.setStart(editorEl, 0)
+                }
+                r.collapse(true)
+                sel.addRange(r)
+                return
+              }
+            }
+          }, 0)
         }
         return
       }
