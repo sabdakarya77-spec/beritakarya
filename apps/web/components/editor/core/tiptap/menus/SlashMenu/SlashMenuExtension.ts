@@ -94,11 +94,10 @@ export const SlashMenuExtension = Extension.create({
   name: 'slashMenu',
 
   addProseMirrorPlugins() {
-    const extensionThis = this
-    
+    // Use arrow function to capture editor reference properly
     return [
       Suggestion({
-        editor: extensionThis.editor,
+        editor: this.editor,
         char: '/',
         startOfLine: false,
         allowSpaces: false,
@@ -107,76 +106,89 @@ export const SlashMenuExtension = Extension.create({
         },
         render: () => {
           // These will be set when the menu opens
-          let component: any = null
-          let popup: any = null
+          let component: unknown = null
+          let popup: unknown = null
           
           return {
-            onStart: (props: any) => {
+            onStart: (props: { clientRect?: (() => DOMRect | null) | null; editor: Editor; items: SlashMenuItem[] }) => {
               // Import tippy dynamically to avoid SSR issues
-              import('tippy.js').then((tippy) => {
+              import('tippy.js').then((tippyModule) => {
+                const tippy = tippyModule.default
                 const { SlashMenuComponent } = require('./SlashMenuComponent')
                 
                 // Create React renderer
                 const ReactRenderer = require('@tiptap/react').ReactRenderer
                 component = new ReactRenderer(SlashMenuComponent, {
                   props: {
-                    ...props,
+                    editor: props.editor,
                     items: props.items,
+                    command: (item: SlashMenuItem) => {
+                      item.command(props.editor)
+                      props.editor.chain().focus().deleteRange({
+                        from: props.editor.state.selection.from,
+                        to: props.editor.state.selection.to,
+                      }).run()
+                    },
                   },
                   editor: props.editor,
                 })
                 
                 // Position popup
-                popup = tippy.default('body', {
-                  getReferenceClientRect: props.clientRect,
+                popup = tippy(document.body, {
+                  getReferenceClientRect: props.clientRect ?? null,
                   appendTo: () => document.body,
-                  content: component.element,
+                  content: (component as { element: HTMLElement }).element,
                   showOnCreate: true,
                   interactive: true,
                   trigger: 'manual',
                   placement: 'bottom-start',
-                  theme: 'slash-menu',
                 })
               })
             },
             
-            onUpdate: (props: any) => {
-              if (popup && popup[0]) {
-                popup[0].setProps({
-                  getReferenceClientRect: props.clientRect,
+            onUpdate: (props: { clientRect?: (() => DOMRect | null) | null }) => {
+              const popupInstance = popup as { setProps: (args: object) => void } | undefined
+              if (popupInstance) {
+                popupInstance.setProps({
+                  getReferenceClientRect: props.clientRect ?? null,
                 })
               }
               
-              if (component && component.ref) {
-                component.ref.updateProps(props)
+              const comp = component as { ref?: { updateProps: (props: object) => void } } | undefined
+              if (comp?.ref) {
+                comp.ref.updateProps(props)
               }
             },
             
-            onKeyDown: (props: any) => {
+            onKeyDown: (props: { event: KeyboardEvent }) => {
               if (props.event.key === 'Escape') {
-                popup?.[0]?.hide()
+                const popupInstance = popup as { hide: () => void } | undefined
+                popupInstance?.hide()
                 return true
               }
               
-              if (component?.ref?.onKeyDown) {
-                return component.ref.onKeyDown(props)
+              const comp = component as { ref?: { onKeyDown: (props: { event: KeyboardEvent }) => boolean } } | undefined
+              if (comp?.ref?.onKeyDown) {
+                return comp.ref.onKeyDown(props)
               }
               
               return false
             },
             
             onExit: () => {
-              if (popup && popup[0]) {
-                popup[0].destroy()
+              const popupInstance = popup as { destroy: () => void } | undefined
+              if (popupInstance) {
+                popupInstance.destroy()
               }
-              if (component) {
-                component.destroy()
+              const comp = component as { destroy: () => void } | undefined
+              if (comp) {
+                comp.destroy()
               }
             },
           }
         },
         
-        command: ({ editor, range, props }: any) => {
+        command: ({ editor, range, props }: { editor: Editor; range: { from: number; to: number }; props: SlashMenuItem }) => {
           props.command(editor)
           editor.chain().focus().deleteRange(range).run()
         },

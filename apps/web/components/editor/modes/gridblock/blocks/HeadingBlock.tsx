@@ -22,6 +22,11 @@ const LABELS: Record<number, string> = {
 }
 
 export function HeadingBlock({ block }: { block: THeadingBlock }) {
+  // Always call hooks at the top level
+  const editorRef = useRef<HTMLDivElement>(null)
+  const { updateBlock, replaceBlock, addBlock, setActiveBlockId, getAdjacentBlockId } = useEditorStore()
+  const { focusNextBlock, focusPrevBlock } = useGridBlockNavigation(editorRef)
+
   // Use TiptapHeading for the new implementation
   if (block.type === 'heading') {
     return <TiptapHeading 
@@ -31,11 +36,6 @@ export function HeadingBlock({ block }: { block: THeadingBlock }) {
     />
   }
   
-  // Fallback to legacy implementation
-  const { updateBlock, replaceBlock, addBlock, setActiveBlockId, getAdjacentBlockId } = useEditorStore()
-  const editorRef = useRef<HTMLDivElement>(null)
-  const { focusNextBlock, focusPrevBlock } = useGridBlockNavigation(editorRef)
-
   // Ensure level is within editorial bounds (2-4)
   const safeLevel = Math.max(2, Math.min(4, block.level))
 
