@@ -311,7 +311,15 @@ export default function ArticlesPage() {
             return (
               <button 
                 key={s}
-                onClick={() => setFilter(s)}
+                onClick={() => {
+                  setFilter(s);
+                  // Update URL to reflect filter state
+                  const params = new URLSearchParams();
+                  params.set('view', viewMode);
+                  if (s) params.set('status', s);
+                  if (searchQuery) params.set('search', searchQuery);
+                  router.push(`/${site}/dashboard/articles?${params.toString()}`);
+                }}
                 className={cn(
                   'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all whitespace-nowrap',
                   filter === s
