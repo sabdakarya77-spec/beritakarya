@@ -3,10 +3,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useEditor, EditorContent, type Editor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
-import Placeholder from '@tiptap/extension-placeholder'
-import Link from '@tiptap/extension-link'
-import Underline from '@tiptap/extension-underline'
-import TextAlign from '@tiptap/extension-text-align'
 import { useEditorStore } from '../../../../../store/editorStore'
 import { sharedExtensions } from '../extensions/editorExtensions'
 import type { EditorMode } from '../types'
@@ -27,7 +23,8 @@ export interface UseTiptapBridgeConfig {
 /**
  * Hook that bridges Tiptap editor with the existing editor store
  * 
- * This hook creates a Tiptap editor instance and syncs content with the Zustand store.
+ * Note: sharedExtensions already includes Placeholder, Link, Underline, TextAlign
+ * so we don't need to add them again to avoid duplicate extension errors.
  */
 export function useTiptapBridge({
   blockId,
@@ -54,18 +51,6 @@ export function useTiptapBridge({
         },
       }),
       ...sharedExtensions,
-      Placeholder.configure({
-        placeholder: placeholder || 'Tulis paragraf...',
-        showOnlyCurrent: true,
-      }),
-      Link.configure({
-        openOnClick: false,
-        autolink: true,
-      }),
-      Underline,
-      TextAlign.configure({
-        types: ['heading', 'paragraph', 'blockquote'],
-      }),
     ],
     content: initialContent,
     editorProps: {
