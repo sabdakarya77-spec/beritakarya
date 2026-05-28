@@ -3,11 +3,13 @@
 import React, { useMemo } from 'react'
 import { EditorContent, type Editor } from '@tiptap/react'
 import { useTiptapBridge } from '../../bridges/useTiptapBridge'
+import { BubbleMenuToolbar } from '../../menus/TiptapBubbleMenu'
 
 /**
  * TiptapParagraph Component
- 
+ * 
  * React component wrapper for Tiptap paragraph node.
+ * Integrated into the GridBlock editor system.
  */
 export interface TiptapParagraphProps {
   blockId: string
@@ -19,6 +21,15 @@ export interface TiptapParagraphProps {
 
 /**
  * TiptapParagraph Component
+ * 
+ * @example
+ * ```tsx
+ * <TiptapParagraph 
+ *   blockId="block-123" 
+ *   initialContent="<p>Hello world</p>"
+ *   placeholder="Tulis paragraf..."
+ * />
+ * ```
  */
 export function TiptapParagraph({
   blockId,
@@ -49,12 +60,20 @@ export function TiptapParagraph({
   }, [className])
 
   if (!editor) {
-    return <div className={wrapperClasses}><div className="text-gray-400">{placeholder}</div></div>
+    return (
+      <div className={wrapperClasses} data-block-id={blockId} data-block-type="paragraph">
+        <div className="text-gray-400 min-h-[1.75em]">{placeholder}</div>
+      </div>
+    )
   }
 
   return (
     <div className={wrapperClasses} data-block-id={blockId} data-block-type="paragraph">
-      <EditorContent editor={editor} />
+      <BubbleMenuToolbar editor={editor} />
+      <EditorContent 
+        editor={editor} 
+        className="min-h-[1.75em] outline-none font-serif text-[1.05rem] leading-[1.85] text-slate-800 dark:text-slate-100"
+      />
     </div>
   )
 }

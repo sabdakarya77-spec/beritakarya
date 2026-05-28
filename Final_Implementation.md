@@ -245,6 +245,12 @@ pnpm add @tiptap/extension-character-count
 
 ### Phase 6: Cleanup Legacy (1-2 hari) ✅ SELESAI
 
+### Phase 7: Integrasi ke Page/Article Editor ✅ SELESAI
+[Lihat Final_Implementation_2.md]
+
+### Phase 8: Mode Switching Implementation ✅ SELESAI
+[Lihat Final_Implementation_2.md]
+
 | Step | File/Hapus | Deskripsi | Status |
 |------|------------|-----------|--------|
 | 6.1 | `nodes/index.ts` | Public API exports | ✅ |

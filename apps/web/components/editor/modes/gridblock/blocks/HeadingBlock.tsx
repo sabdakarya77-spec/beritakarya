@@ -3,6 +3,8 @@ import { useRef } from 'react'
 import { useEditorStore } from '../../../../../store/editorStore'
 import { useGridBlockNavigation } from '../shared/useGridBlockNavigation'
 import type { HeadingBlock as THeadingBlock } from '@beritakarya/types'
+// Import Tiptap components
+import { TiptapHeading } from '../../../core/tiptap'
 
 const SIZE: Record<number, string> = {
   1: 'font-serif text-3xl font-black tracking-tight md:text-4xl',
@@ -20,6 +22,16 @@ const LABELS: Record<number, string> = {
 }
 
 export function HeadingBlock({ block }: { block: THeadingBlock }) {
+  // Use TiptapHeading for the new implementation
+  if (block.type === 'heading') {
+    return <TiptapHeading 
+      blockId={block.id} 
+      initialContent={block.content || ''} 
+      level={block.level}
+    />
+  }
+  
+  // Fallback to legacy implementation
   const { updateBlock, replaceBlock, addBlock, setActiveBlockId, getAdjacentBlockId } = useEditorStore()
   const editorRef = useRef<HTMLDivElement>(null)
   const { focusNextBlock, focusPrevBlock } = useGridBlockNavigation(editorRef)

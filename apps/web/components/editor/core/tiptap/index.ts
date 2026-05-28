@@ -5,13 +5,14 @@
  * It re-exports all public components and utilities.
  */
 
-// Editor Modes
-export { GridBlockEditor } from './modes/gridblock/GridBlockEditor'
-export { ClassicEditor } from './modes/classic/ClassicEditor'
+// Note: GridBlockEditor and ClassicEditor are the main mode containers
+// located in modes/gridblock and modes/classic respectively
+// They are NOT in the tiptap folder - they use tiptap components internally
 
 // Nodes
 export { TiptapParagraph } from './nodes/section/TiptapParagraph'
 export { TiptapHeading } from './nodes/heading/TiptapHeading'
+export { TiptapQuote } from './nodes/quote/TiptapQuote'
 
 // Hooks
 export { useEditorMode } from './hooks/useEditorMode'
@@ -30,7 +31,6 @@ export { fromLegacy } from './serializers/fromLegacy'
 
 // Extensions
 export { gridblockExtensions } from './modes/gridblock/gridblockExtensions'
-export { classicExtensions } from './modes/classic/classicExtensions'
 
 // Constants & Types
 export * from './schemas/schema-v1'
@@ -38,6 +38,5 @@ export * from './schemas/schema-v1'
 // Menus
 export { GridBlockSlashMenu } from './modes/gridblock/GridBlockSlashMenu'
 export { GridBlockToolbar } from './modes/gridblock/GridBlockToolbar'
-export { ClassicToolbar } from './modes/classic/ClassicToolbar'
 export { ContextMenu } from './menus/ContextMenu'
 export { BubbleMenuToolbar } from './menus/TiptapBubbleMenu'

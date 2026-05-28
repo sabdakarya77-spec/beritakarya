@@ -1,133 +1,19 @@
 ﻿'use client'
-import { useRef } from 'react'
-import { useEditorStore } from '../../../../../store/editorStore'
-import { useGridBlockNavigation } from '../shared/useGridBlockNavigation'
+
+import { TiptapQuote } from '../../../core/tiptap'
 import type { QuoteBlock as TQuoteBlock } from '@beritakarya/types'
 
+/**
+ * QuoteBlock — Thin wrapper using TiptapQuote for the new implementation.
+ * 
+ * Phase 7: Integrated with Tiptap for rich text editing.
+ */
 export function QuoteBlock({ block }: { block: TQuoteBlock }) {
-  const { updateBlock, addBlock, replaceBlock, setActiveBlockId, getAdjacentBlockId } = useEditorStore()
-  const editorRef = useRef<HTMLDivElement>(null)
-  const attributionRef = useRef<HTMLDivElement>(null)
-  const { focusNextBlock, focusPrevBlock } = useGridBlockNavigation(editorRef)
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    const editor = editorRef.current
-    if (!editor) return
-
-    // Enter → exit quote mode (convert to paragraph) or create paragraph below
-    if (e.key === 'Enter' && !e.shiftKey) {
-      const isEditorEmpty = !editor.textContent?.trim().length
-      
-      if (isEditorEmpty) {
-        // Empty quote → convert to paragraph (exit quote mode like Word)
-        e.preventDefault()
-        replaceBlock(block.id, 'paragraph')
-        return
-      }
-      
-      // Non-empty quote: flush content and create new paragraph below
-      e.preventDefault()
-      updateBlock(block.id, { content: editor.innerText })
-      addBlock('paragraph', block.id)
-      requestAnimationFrame(() => {
-        focusNextBlock(block.id)
-      })
-      return
-    }
-
-    // Shift+Enter → soft line break within quote
-    if (e.key === 'Enter' && e.shiftKey) {
-      e.preventDefault()
-      document.execCommand('insertHTML', false, '<br>')
-      return
-    }
-
-    // Backspace at start of empty quote → convert to paragraph
-    if (e.key === 'Backspace') {
-      const selection = window.getSelection()
-      if (!selection || !selection.rangeCount) return
-      const range = selection.getRangeAt(0)
-      
-      const isEditorEmpty = !editor.textContent?.trim().length
-      const cursorAtStart = isEditorEmpty || (
-        range.startOffset === 0 &&
-        (range.startContainer === editor || 
-         (range.startContainer.nodeType === Node.TEXT_NODE && range.startContainer === editor.firstChild && range.startOffset === 0))
-      )
-      
-      if (cursorAtStart) {
-        e.preventDefault()
-        replaceBlock(block.id, 'paragraph')
-        return
-      }
-    }
-
-    // Arrow Up at start → move to previous block
-    if (e.key === 'ArrowUp') {
-      const selection = window.getSelection()
-      if (!selection || !selection.rangeCount) return
-      const range = selection.getRangeAt(0)
-      
-      const totalTextLen = editor.textContent?.length || 0
-      const cursorAtStart = totalTextLen === 0 || (
-        range.startOffset === 0 &&
-        (range.startContainer === editor.firstChild || range.startContainer === editor)
-      )
-      
-      if (cursorAtStart) {
-        const prevId = getAdjacentBlockId(block.id, 'up')
-        if (prevId) {
-          e.preventDefault()
-          focusPrevBlock(block.id)
-        }
-        return
-      }
-    }
-
-    // Arrow Down at end → move to next block
-    if (e.key === 'ArrowDown') {
-      const selection = window.getSelection()
-      if (!selection || !selection.rangeCount) return
-      const range = selection.getRangeAt(0)
-      
-      const totalTextLen = editor.textContent?.length || 0
-      const cursorAtEnd = totalTextLen > 0 && range.startOffset >= totalTextLen
-      
-      if (cursorAtEnd) {
-        const nextId = getAdjacentBlockId(block.id, 'down')
-        if (nextId) {
-          e.preventDefault()
-          focusNextBlock(block.id)
-        }
-        return
-      }
-    }
-  }
-
   return (
-    <div className="border-l-4 border-blue-400 py-2 pl-5 lg:pl-6">
-      <div
-        ref={editorRef}
-        contentEditable
-        suppressContentEditableWarning
-        data-block-id={block.id}
-        onFocus={() => setActiveBlockId(block.id)}
-        onBlur={e => updateBlock(block.id, { content: e.currentTarget.innerHTML })}
-        onKeyDown={handleKeyDown}
-        data-placeholder="Tulis kutipan..."
-        className="font-serif text-[1.15rem] italic leading-8 text-gray-700 outline-none empty:before:content-[attr(data-placeholder)] empty:before:text-gray-300 empty:before:not-italic dark:text-gray-100 lg:text-[1.25rem] lg:leading-[2.2rem]"
-        dangerouslySetInnerHTML={{ __html: block.content }}
-      />
-      <div
-        ref={attributionRef}
-        contentEditable
-        suppressContentEditableWarning
-        data-block-id={block.id}
-        onBlur={e => updateBlock(block.id, { attribution: e.currentTarget.innerText })}
-        data-placeholder="— Nama narasumber"
-        className="mt-3 text-sm uppercase tracking-[0.14em] text-gray-400 outline-none empty:before:content-[attr(data-placeholder)] empty:before:text-gray-300"
-        dangerouslySetInnerHTML={{ __html: block.attribution || '' }}
-      />
-    </div>
+    <TiptapQuote 
+      blockId={block.id} 
+      initialContent={block.content || ''} 
+      attribution={block.attribution || ''}
+    />
   )
 }

@@ -1,60 +1,32 @@
-'use client'
-
-import { NodeViewWrapper, NodeViewContent, type NodeViewProps } from '@tiptap/react'
-import { useCallback, useMemo } from 'react'
+import { NodeViewWrapper, type NodeViewProps } from '@tiptap/react'
+import React from 'react'
 
 /**
- * Custom Paragraph NodeView
+ * ParagraphView - Custom NodeView for paragraph blocks
  * 
- * React component wrapper for the Paragraph node.
- * Provides consistent styling and behavior.
+ * This provides a React wrapper for the paragraph node with editorial styling.
  */
-export function ParagraphView({ node, updateAttributes, selected }: NodeViewProps) {
-  const { textAlign, class: className, 'data-block-id': blockId } = node.attrs
+export function ParagraphView({ node, selected }: NodeViewProps) {
+  const { textAlign, class: className } = node.attrs
 
-  const style = useMemo(() => {
-    const styles: React.CSSProperties = {}
-    if (textAlign) {
-      styles.textAlign = textAlign
-    }
-    return styles
-  }, [textAlign])
-
-  const classNames = useMemo(() => {
-    const classes = ['paragraph-node', 'font-serif', 'text-base', 'leading-relaxed', 'my-4']
-    if (className) {
-      classes.push(className)
-    }
-    if (selected) {
-      classes.push('ring-2', 'ring-blue-500', 'rounded')
-    }
-    return classes.join(' ')
-  }, [className, selected])
-
-  const handleClick = useCallback(() => {
-    // Focus the editor when clicking on the paragraph
-    const editor = document.querySelector(`[data-block-id="${blockId}"]`)
-    if (editor instanceof HTMLElement) {
-      editor.focus()
-    }
-  }, [blockId])
+  const classNames = [
+    'paragraph-node',
+    'my-4',
+    'font-serif',
+    'text-[1.05rem]',
+    'leading-[1.85]',
+    'text-slate-800',
+    'dark:text-slate-100',
+    className,
+  ].filter(Boolean).join(' ')
 
   return (
     <NodeViewWrapper>
-      <div
+      <p
         className={classNames}
-        style={style}
-        data-block-id={blockId}
-        onClick={handleClick}
-      >
-        <p className="relative group">
-          <NodeViewContent className="block" />
-          {/* Slash command indicator */}
-          <span className="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-400">
-            +
-          </span>
-        </p>
-      </div>
+        style={textAlign ? { textAlign } : undefined}
+        data-selected={selected}
+      />
     </NodeViewWrapper>
   )
 }
