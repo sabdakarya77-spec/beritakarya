@@ -1,28 +1,31 @@
-﻿import type { Block } from '@beritakarya/types'
-import { isTextBlock } from './blockGuards'
+/**
+ * Stub file - akan diimplementasi nanti
+ */
+import type { Block } from '@beritakarya/types'
 
-export function getActiveBlock(blocks: Block[], activeBlockId: string | null) {
+export function getActiveBlock(blocks: Block[], activeBlockId: string | null): Block | null {
   return blocks.find((block) => block.id === activeBlockId) ?? null
 }
 
-export function getTextBlocks(blocks: Block[]) {
-  return blocks.filter((block) => isTextBlock(block.type))
+export function getTextBlocks(blocks: Block[]): Block[] {
+  return blocks.filter((block) => 
+    block.type === 'paragraph' || block.type === 'heading' || block.type === 'quote'
+  )
 }
 
-export function getNonTextBlocks(blocks: Block[]) {
-  return blocks.filter((block) => !isTextBlock(block.type))
+export function getNonTextBlocks(blocks: Block[]): Block[] {
+  return blocks.filter((block) => 
+    block.type !== 'paragraph' && block.type !== 'heading' && block.type !== 'quote'
+  )
 }
 
-export function isDocumentEmpty(blocks: Block[]) {
+export function isDocumentEmpty(blocks: Block[]): boolean {
   return blocks.every((block) => {
     if ('content' in block && typeof block.content === 'string') {
       return !block.content.trim()
     }
-    if ('items' in block && Array.isArray(block.items)) {
-      return !block.items.some((item) => item.trim())
-    }
-    if ('images' in block && Array.isArray(block.images)) {
-      return block.images.length === 0
+    if ('items' in block && Array.isArray((block as any).items)) {
+      return !(block as any).items.some((item: string) => item.trim())
     }
     if ('url' in block && typeof block.url === 'string') {
       return !block.url.trim()

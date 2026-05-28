@@ -1,0 +1,338 @@
+'use client'
+
+import { useEffect, useRef } from 'react'
+import { useEditor, EditorContent } from '@tiptap/react'
+import StarterKit from '@tiptap/starter-kit'
+import Placeholder from '@tiptap/extension-placeholder'
+import Link from '@tiptap/extension-link'
+import Image from '@tiptap/extension-image'
+import TextAlign from '@tiptap/extension-text-align'
+import Underline from '@tiptap/extension-underline'
+import Highlight from '@tiptap/extension-highlight'
+import { TiptapEditorToolbar } from './TiptapEditorToolbar'
+import { BubbleMenuBar } from './menus/BubbleMenuBar'
+import { FloatingMenuBar } from './menus/FloatingMenu'
+import { useEditorStore } from '../../store/editorStore'
+
+interface TiptapEditorProps {
+  initialContent?: string
+  editable?: boolean
+}
+
+/**
+ * Main Tiptap Editor Component with Store Integration
+ * 
+ * Features:
+ * - StarterKit (paragraphs, headings, lists, bold, italic, etc.)
+ * - Link insertion
+ * - Image support
+ * - Text alignment
+ * - Underline & Highlight
+ * - Placeholder text
+ * - Bubble Menu (text formatting on selection)
+ * - Floating Menu (insert blocks)
+ * - Store sync via useTiptapSync
+ */
+export function TiptapEditor({
+  initialContent = '',
+  editable = true
+}: TiptapEditorProps) {
+  const {
+    blocks,
+    setBlocks,
+    saveArticle,
+    isLoading,
+  } = useEditorStore()
+  
+  const isInitializedRef = useRef(false)
+  const contentFromStoreRef = useRef<string | null>(null)
+
+  const editor = useEditor({
+    extensions: [
+      StarterKit.configure({
+        heading: {
+          levels: [1, 2, 3, 4, 5, 6],
+        },
+      }),
+      Placeholder.configure({
+        placeholder: ({ node }) => {
+          if (node.type.name === 'heading') {
+            return 'Ketik judul...'
+          }
+          return 'Tulis paragraf...'
+        },
+        showOnlyCurrent: true,
+      }),
+      Link.configure({
+        openOnClick: false,
+        autolink: true,
+        linkOnPaste: true,
+        HTMLAttributes: {
+          rel: 'noopener noreferrer',
+          target: '_blank',
+        },
+      }),
+      Image.configure({
+        inline: false,
+        allowBase64: true,
+        HTMLAttributes: {
+          class: 'max-w-full h-auto rounded-lg',
+        },
+      }),
+      TextAlign.configure({
+        types: ['heading', 'paragraph', 'blockquote'],
+        alignments: ['left', 'center', 'right', 'justify'],
+      }),
+      Underline,
+      Highlight.configure({
+        multicolor: false,
+      }),
+    ],
+    content: initialContent,
+    editable,
+    onUpdate: ({ editor }) => {
+      // Convert Tiptap content to blocks and sync to store
+      const blocks = convertTiptapToBlocks(editor)
+      setBlocks(blocks)
+    },
+    editorProps: {
+      attributes: {
+        class: 'tiptap-editor-content prose prose-lg max-w-none focus:outline-none min-h-[200px] py-4',
+      },
+    },
+  })
+
+  // Load initial content from store when blocks change (e.g., after loadArticle)
+  useEffect(() => {
+    if (!editor || isLoading) return
+    
+    // Only load from store if editor is empty and we have blocks
+    const currentContent = editor.getJSON()
+    const hasContent = currentContent.content && currentContent.content.length > 0
+    
+    // If editor is empty and store has content, load it
+    if (!hasContent && blocks && blocks.length > 0) {
+      const html = convertBlocksToHTML(blocks)
+      
+      // Avoid infinite loop by checking if content is different
+      if (html !== contentFromStoreRef.current) {
+        contentFromStoreRef.current = html
+        editor.commands.setContent(html)
+      }
+    }
+  }, [editor, blocks, isLoading])
+
+  // Mark as initialized after first content set
+  useEffect(() => {
+    if (editor && !isInitializedRef.current) {
+      const content = editor.getJSON()
+      if (content.content && content.content.length > 0) {
+        isInitializedRef.current = true
+      }
+    }
+  }, [editor])
+
+  if (!editor) {
+    return (
+      <div className="animate-pulse">
+        <div className="h-8 bg-gray-200 rounded w-3/4 mb-4" />
+        <div className="h-4 bg-gray-200 rounded w-full mb-2" />
+        <div className="h-4 bg-gray-200 rounded w-5/6" />
+      </div>
+    )
+  }
+
+  return (
+    <div className="tiptap-editor-wrapper">
+      {/* Bubble Menu (appears on text selection) */}
+      <BubbleMenuBar editor={editor} />
+      
+      {/* Toolbar */}
+      <TiptapEditorToolbar editor={editor} />
+      
+      {/* Floating Menu (appears on empty lines) */}
+      <FloatingMenuBar editor={editor} />
+      
+      {/* Editor Content */}
+      <EditorContent editor={editor} />
+    </div>
+  )
+}
+
+/**
+ * Convert Tiptap JSON content to Block[]
+ */
+function convertTiptapToBlocks(editor: any): any[] {
+  const doc = editor.getJSON()
+  const content = doc.content || []
+  
+  return content.map((node: any, index: number) => {
+    const baseBlock = {
+      id: `block-${Date.now()}-${index}`,
+    }
+
+    switch (node.type) {
+      case 'paragraph':
+        return {
+          ...baseBlock,
+          type: 'paragraph',
+          content: extractTextContent(node),
+        }
+      case 'heading':
+        return {
+          ...baseBlock,
+          type: 'heading',
+          level: node.attrs?.level || 2,
+          content: extractTextContent(node),
+          textAlign: node.attrs?.textAlign,
+        }
+      case 'blockquote':
+        return {
+          ...baseBlock,
+          type: 'quote',
+          content: extractTextContent(node),
+        }
+      case 'image':
+        return {
+          ...baseBlock,
+          type: 'image',
+          url: node.attrs?.src || '',
+          alt: node.attrs?.alt || '',
+          caption: node.attrs?.title || '',
+        }
+      case 'bulletList':
+        return {
+          ...baseBlock,
+          type: 'list',
+          ordered: false,
+          items: extractListItems(node),
+        }
+      case 'orderedList':
+        return {
+          ...baseBlock,
+          type: 'list',
+          ordered: true,
+          items: extractListItems(node),
+        }
+      case 'codeBlock':
+        return {
+          ...baseBlock,
+          type: 'paragraph',
+          content: extractTextContent(node),
+        }
+      default:
+        return {
+          ...baseBlock,
+          type: 'paragraph',
+          content: extractTextContent(node),
+        }
+    }
+  })
+}
+
+/**
+ * Extract text content from Tiptap node with marks
+ */
+function extractTextContent(node: any): string {
+  if (!node.content) return ''
+  
+  return node.content
+    .map((child: any) => {
+      if (child.type === 'text') {
+        let text = child.text || ''
+        if (child.marks) {
+          child.marks.forEach((mark: any) => {
+            switch (mark.type) {
+              case 'bold':
+                text = `<strong>${text}</strong>`
+                break
+              case 'italic':
+                text = `<em>${text}</em>`
+                break
+              case 'underline':
+                text = `<u>${text}</u>`
+                break
+              case 'link':
+                text = `<a href="${mark.attrs?.href || '#'}">${text}</a>`
+                break
+              case 'highlight':
+                text = `<mark>${text}</mark>`
+                break
+              case 'code':
+                text = `<code>${text}</code>`
+                break
+              case 'strike':
+                text = `<s>${text}</s>`
+                break
+            }
+          })
+        }
+        return text
+      }
+      if (child.type === 'hardBreak') return '<br>'
+      if (child.type === 'taskList') {
+        // Handle task list items
+        const items = child.content?.map((item: any) => {
+          const text = extractTextContent(item)
+          const checked = item.attrs?.checked
+          return `<li>${checked ? '☑' : '☐'} ${text}</li>`
+        }).join('') || ''
+        return `<ul>${items}</ul>`
+      }
+      return ''
+    })
+    .join('')
+}
+
+/**
+ * Extract list items from list node
+ */
+function extractListItems(node: any): string[] {
+  if (!node.content) return []
+  
+  return node.content.map((item: any) => extractTextContent(item))
+}
+
+/**
+ * Convert Block[] to HTML for Tiptap
+ */
+function convertBlocksToHTML(blocks: any[]): string {
+  if (!blocks || blocks.length === 0) return ''
+  
+  return blocks
+    .map((block) => {
+      const content = block.content || ''
+      
+      switch (block.type) {
+        case 'paragraph':
+          return content ? `<p>${content}</p>` : '<p></p>'
+        case 'heading':
+          const level = block.level || 2
+          return content ? `<h${level}>${content}</h${level}>` : `<h${level}></h${level}>`
+        case 'quote':
+          const cite = block.attribution ? `<cite>${block.attribution}</cite>` : ''
+          return content ? `<blockquote><p>${content}</p>${cite}</blockquote>` : '<blockquote><p></p></blockquote>'
+        case 'image':
+          const alt = block.alt || ''
+          const caption = block.caption ? `<p>${block.caption}</p>` : ''
+          return block.url ? `<img src="${block.url}" alt="${alt}" />${caption}` : ''
+        case 'list':
+          const tag = block.ordered ? 'ol' : 'ul'
+          const items = (block.items || []).map((item: string) => `<li>${item}</li>`).join('')
+          return items ? `<${tag}>${items}</${tag}>` : `<${tag}></${tag}>`
+        case 'callout':
+          const calloutType = block.calloutType || 'info'
+          const calloutIcon = block.calloutIcon || '💡'
+          return `<div data-callout="${calloutType}">${calloutIcon} ${content}</div>`
+        case 'embed':
+          const embedUrl = block.url || ''
+          const embedType = block.embedType || 'other'
+          return `<div data-embed-type="${embedType}">${embedUrl}</div>`
+        default:
+          return content ? `<p>${content}</p>` : '<p></p>'
+      }
+    })
+    .join('')
+}
+
+export default TiptapEditor

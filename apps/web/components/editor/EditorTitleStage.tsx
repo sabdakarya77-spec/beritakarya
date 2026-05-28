@@ -1,112 +1,105 @@
 'use client'
 
-import { useLayoutEffect, useRef } from 'react'
-import { motion } from 'framer-motion'
+import { useState, useEffect } from 'react'
 import { useEditorStore } from '../../store/editorStore'
-import { cn } from '../../lib/utils'
-import { EditorHelpHint } from './EditorHelpHint'
+import { generateSlug } from '@beritakarya/utils'
 
 interface EditorTitleStageProps {
-  isFocusMode: boolean
+  isFocusMode?: boolean
 }
 
-export function EditorTitleStage({ isFocusMode }: EditorTitleStageProps) {
-  const { excerpt, setExcerpt } = useEditorStore()
-
-  if (isFocusMode) {
-    return (
-      <div className="mb-8 sm:mb-10">
-        <TitleInput compact />
-        <div className="mt-3 sm:mt-4">
-          <ExcerptInput compact value={excerpt} onChange={setExcerpt} />
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <motion.section
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="mb-6 rounded-2xl border border-gray-200/70 bg-white/95 px-4 py-5 shadow-xl dark:border-white/10 dark:bg-slate-900/90 sm:mb-8 sm:px-6 sm:py-6"
-    >
-      <div className="mb-5 border-b border-gray-100 pb-5 dark:border-white/5 sm:mb-6 sm:pb-6">
-        <div className="max-w-6xl">
-          <TitleInput />
-          <div className="mt-4 sm:mt-5">
-            <ExcerptInput value={excerpt} onChange={setExcerpt} />
-          </div>
-        </div>
-      </div>
-    </motion.section>
-  )
-}
-
-function TitleInput({ compact = false }: { compact?: boolean }) {
-  const { title, setTitle } = useEditorStore()
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
-
-  useLayoutEffect(() => {
-    const element = textareaRef.current
-    if (!element) return
-
-    element.style.height = '0px'
-    element.style.height = `${element.scrollHeight}px`
+export function EditorTitleStage({ isFocusMode = false }: EditorTitleStageProps) {
+  const { title, setTitle, excerpt, setExcerpt } = useEditorStore()
+  const [localTitle, setLocalTitle] = useState(title)
+  const [localExcerpt, setLocalExcerpt] = useState(excerpt)
+  
+  // Debounce title changes to store
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (localTitle !== title) {
+        setTitle(localTitle)
+      }
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [localTitle, title, setTitle])
+  
+  // Debounce excerpt changes
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (localExcerpt !== excerpt) {
+        setExcerpt(localExcerpt)
+      }
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [localExcerpt, excerpt, setExcerpt])
+  
+  // Sync with store on mount
+  useEffect(() => {
+    setLocalTitle(title)
   }, [title])
-
+  
+  useEffect(() => {
+    setLocalExcerpt(excerpt)
+  }, [excerpt])
+  
+  const charCount = localTitle.length
+  const isTitleValid = charCount > 0 && charCount <= 200
+  
   return (
-    <div>
-      <label className="block text-[9px] font-black uppercase tracking-[0.18em] text-gray-400 dark:text-gray-500 mb-2">
-        Judul
-      </label>
-      <textarea
-        ref={textareaRef}
-        value={title}
-        onChange={e => setTitle(e.target.value)}
-        placeholder="Tulis Judul Berita..."
-        rows={compact ? 2 : 3}
-        className={cn(
-          "w-full overflow-hidden border-none bg-transparent font-serif font-black leading-[1.1] tracking-tight text-slate-950 outline-none resize-none dark:text-white",
-          "placeholder:text-gray-300 dark:placeholder:text-white/15",
-          compact
-            ? "min-h-[60px] text-xl sm:min-h-[72px] sm:text-2xl md:text-3xl"
-            : "min-h-[72px] text-2xl sm:min-h-[96px] sm:text-3xl md:text-4xl lg:text-[2.75rem]"
-        )}
-      />
-    </div>
-  )
-}
-
-function ExcerptInput({
-  value,
-  onChange,
-  compact = false
-}: {
-  value: string
-  onChange: (value: string) => void
-  compact?: boolean
-}) {
-  return (
-    <div className="rounded-xl border border-gray-200/70 bg-gray-50/50 p-3 dark:border-white/10 dark:bg-slate-950/30 sm:rounded-xl sm:p-3.5">
-      <label className="block text-[9px] font-black uppercase tracking-[0.18em] text-gray-500 dark:text-gray-400">
-        Deck / Excerpt
-      </label>
-      <textarea
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder="Ringkas inti berita..."
-        rows={compact ? 2 : 3}
-        className={cn(
-          "mt-2 w-full resize-none border-none bg-transparent text-[13px] leading-6 text-brand-black outline-none dark:text-white",
-          "placeholder:text-gray-400 dark:placeholder:text-white/20",
-          compact ? "min-h-[56px]" : "min-h-[68px] sm:min-h-[72px]"
-        )}
-      />
-      <div className="mt-2 flex items-center justify-end">
-        <span className="text-[10px] font-medium text-gray-400 dark:text-gray-500">
-          {value.trim().length} / 280
-        </span>
+    <div className={`
+      editor-title-stage
+      ${isFocusMode ? 'max-w-3xl mx-auto' : ''}
+    `}>
+      {/* Title Input */}
+      <div className="relative">
+        <input
+          type="text"
+          value={localTitle}
+          onChange={(e) => setLocalTitle(e.target.value)}
+          placeholder="Ketik judul di sini..."
+          className={`
+            w-full text-4xl md:text-5xl font-black tracking-tight
+            bg-transparent border-none outline-none
+            text-gray-900 dark:text-white
+            placeholder:text-gray-300 dark:placeholder:text-gray-600
+            ${isFocusMode ? 'text-center' : ''}
+          `}
+          style={{ lineHeight: '1.2' }}
+        />
+        
+        {/* Character Count */}
+        <div className="flex items-center justify-between mt-2 text-xs text-gray-400">
+          <span className={isTitleValid ? 'text-green-500' : 'text-gray-400'}>
+            {charCount} characters
+          </span>
+          <span>Slug: /{generateSlug(localTitle || 'untitled')}</span>
+        </div>
+      </div>
+      
+      {/* Excerpt / Deck Input */}
+      <div className="mt-6">
+        <textarea
+          value={localExcerpt}
+          onChange={(e) => setLocalExcerpt(e.target.value)}
+          placeholder="Tambahkan ringkasan singkat artikel (deck)..."
+          rows={2}
+          maxLength={300}
+          className={`
+            w-full text-lg text-gray-600 dark:text-gray-400
+            bg-transparent border-none outline-none resize-none
+            placeholder:text-gray-400 dark:placeholder:text-gray-500
+            leading-relaxed
+            ${isFocusMode ? 'text-center' : ''}
+          `}
+        />
+        
+        {/* Excerpt Character Count */}
+        <div className="mt-1 text-xs text-gray-400">
+          {localExcerpt.length}/300 characters
+        </div>
       </div>
     </div>
   )
 }
+
+export default EditorTitleStage

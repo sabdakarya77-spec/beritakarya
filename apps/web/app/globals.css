@@ -191,6 +191,113 @@
   .status-scheduled   { @apply bg-cyan-50 text-cyan-700 dark:bg-cyan-900/20 dark:text-cyan-400; }
   .status-published   { @apply bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400; }
   .status-archived    { @apply bg-gray-50 text-gray-500 dark:bg-gray-800 dark:text-gray-400; }
+
+  /* ==================== TIPTAP EDITOR STYLES ==================== */
+  .tiptap-editor-wrapper {
+    @apply rounded-lg border border-gray-200 dark:border-slate-700 overflow-hidden;
+    @apply bg-white dark:bg-slate-900;
+  }
+
+  .tiptap-editor-content {
+    @apply px-4 py-4 min-h-[300px];
+  }
+
+  .tiptap-editor-content:focus {
+    @apply outline-none;
+  }
+
+  /* Prose styling for editor content */
+  .tiptap-editor-content p {
+    @apply mb-4 leading-relaxed text-gray-800 dark:text-gray-200;
+  }
+
+  .tiptap-editor-content h1 {
+    @apply text-3xl font-bold mb-4 mt-6 text-gray-900 dark:text-white;
+  }
+
+  .tiptap-editor-content h2 {
+    @apply text-2xl font-bold mb-3 mt-5 text-gray-900 dark:text-white;
+  }
+
+  .tiptap-editor-content h3 {
+    @apply text-xl font-semibold mb-2 mt-4 text-gray-900 dark:text-white;
+  }
+
+  .tiptap-editor-content h4,
+  .tiptap-editor-content h5,
+  .tiptap-editor-content h6 {
+    @apply text-lg font-semibold mb-2 mt-3 text-gray-900 dark:text-white;
+  }
+
+  .tiptap-editor-content ul,
+  .tiptap-editor-content ol {
+    @apply mb-4 pl-6;
+  }
+
+  .tiptap-editor-content ul {
+    @apply list-disc;
+  }
+
+  .tiptap-editor-content ol {
+    @apply list-decimal;
+  }
+
+  .tiptap-editor-content li {
+    @apply mb-1;
+  }
+
+  .tiptap-editor-content blockquote {
+    @apply border-l-4 border-brand-red pl-4 my-4 italic text-gray-600 dark:text-gray-400;
+  }
+
+  .tiptap-editor-content code {
+    @apply font-mono bg-gray-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-sm;
+  }
+
+  .tiptap-editor-content pre {
+    @apply bg-gray-900 text-gray-100 p-4 rounded-lg my-4 overflow-x-auto;
+  }
+
+  .tiptap-editor-content pre code {
+    @apply bg-transparent p-0 text-inherit;
+  }
+
+  .tiptap-editor-content a {
+    @apply text-brand-red underline hover:text-brand-red/80;
+  }
+
+  .tiptap-editor-content img {
+    @apply max-w-full h-auto rounded-lg my-4;
+  }
+
+  .tiptap-editor-content hr {
+    @apply my-8 border-gray-200 dark:border-slate-700;
+  }
+
+  /* Placeholder styling */
+  .tiptap-editor-content p.is-editor-empty:first-child::before {
+    @apply text-gray-400 dark:text-gray-500;
+    content: attr(data-placeholder);
+    float: left;
+    height: 0;
+    pointer-events: none;
+  }
+
+  /* Selection styling */
+  .tiptap-editor-content ::selection {
+    @apply bg-brand-red/20;
+  }
+
+  /* Placeholder for headings */
+  .tiptap-editor-content h1.is-empty::before,
+  .tiptap-editor-content h2.is-empty::before,
+  .tiptap-editor-content h3.is-empty::before {
+    @apply text-gray-400 dark:text-gray-500;
+    content: attr(data-placeholder);
+    float: left;
+    height: 0;
+    pointer-events: none;
+  }
 }
 
 /* Animations */
