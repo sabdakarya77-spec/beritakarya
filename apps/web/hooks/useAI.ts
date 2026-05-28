@@ -404,7 +404,7 @@ export function useReadability(model = 'gpt-4o') {
     setState({ loading: true, result: null, error: null })
     
     try {
-      const prompt = `Analisis readability teks berikut (skala 0-100):\n\nTeks: ${options.text}\n\nKembalikan dalam format JSON:\n{\n  "score": [0-100],\n  "level": "tingkat keterbacaan (sangat mudah/mudah/sedang/sulit/sangat sulit)\",\n  "suggestions": ["saran 1", "saran 2"]\n}\n\nHanya kembalikan JSON valid.`
+      const prompt = `Analisis readability teks berikut (skala 0-100):\n\nTeks: ${options.text}\n\nKembalikan dalam format JSON:\n{\n  "score": [0-100],\n  "level": "tingkat keterbacaan (sangat mudah/mudah/sedang/sulit/sangat sulit)",\n  "suggestions": ["saran 1", "saran 2"]\n}\n\nHanya kembalikan JSON valid.`
       
       const result = await callOpenAI(model, [
         { role: 'user', content: prompt }
@@ -476,7 +476,7 @@ export function useObjectivity(model = 'gpt-4o') {
     setState({ loading: true, result: null, error: null })
     
     try {
-      const prompt = `Analisis objectivity dan potential bias dalam teks berita berikut:\n\nTeks: ${options.text}\n\nKembalikan dalam format JSON:\n{\n  "score": [0-100],\n  "biased_phrases": [\n    {"phrase": "frasa yang bias", "suggestion": "alternatif netral"}\n  ],\n  "overall_verdict": "verdict keseluruhan\"\n}\n\nHanya kembalikan JSON valid.`
+      const prompt = `Analisis objectivity dan potential bias dalam teks berita berikut:\n\nTeks: ${options.text}\n\nKembalikan dalam format JSON:\n{\n  "score": [0-100],\n  "biased_phrases": [\n    {"phrase": "frasa yang bias", "suggestion": "alternatif netral"}\n  ],\n  "overall_verdict": "verdict keseluruhan"\n}\n\nHanya kembalikan JSON valid.`
       
       const result = await callOpenAI(model, [
         { role: 'user', content: prompt }
