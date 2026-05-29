@@ -317,6 +317,9 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       const blocks: Block[] = Array.isArray(rawBlocks) && rawBlocks.length > 0
         ? rawBlocks
         : [createInitialParagraphBlock()]
+      // Use category slug for frontend compatibility (frontend uses slug, not UUID)
+      const resolvedCategoryId = article.category?.slug || article.categoryId || null
+      
       set({
         articleId: article.id,
         title: article.title || '',
@@ -325,7 +328,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
         status: article.status,
         metaTitle: article.metaTitle || '',
         metaDescription: article.metaDescription || '',
-        categoryId: article.categoryId || article.category?.id || null,
+        categoryId: resolvedCategoryId,
         tags: article.tags || [],
         featuredImage: article.featuredImage || '',
         isBreaking: article.isBreaking || false,
