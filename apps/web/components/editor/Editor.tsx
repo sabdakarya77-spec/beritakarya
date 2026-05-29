@@ -34,6 +34,7 @@ export function Editor({ articleId, siteId }: EditorProps) {
     setActiveTab,
     toggleSidebar,
     saving,
+    isDirty,
     lastSaved,
     status,
     title,
@@ -109,6 +110,7 @@ export function Editor({ articleId, siteId }: EditorProps) {
         isLoading={isLoading}
         saveError={saveError}
         saving={saving}
+        isDirty={isDirty}
         lastSaved={lastSavedText}
         status={status}
         wordCount={wordCount}

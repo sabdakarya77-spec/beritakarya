@@ -10,6 +10,7 @@ import {
   AlertCircle,
   Loader2,
   Clock,
+  Edit3,
   MoreHorizontal
 } from 'lucide-react'
 import { cn } from '../../lib/utils'
@@ -19,6 +20,7 @@ interface EditorTopbarProps {
   isLoading?: boolean
   saveError?: string | null
   saving?: boolean
+  isDirty?: boolean
   lastSaved?: string
   status?: ArticleStatus
   wordCount?: number
@@ -42,6 +44,7 @@ export function EditorTopbar({
   isLoading,
   saveError,
   saving,
+  isDirty,
   lastSaved,
   status = 'draft',
   wordCount = 0,
@@ -109,6 +112,11 @@ export function EditorTopbar({
             <>
               <AlertCircle size={12} className="text-red-500" />
               <span className="text-red-500">{saveError}</span>
+            </>
+          ) : isDirty ? (
+            <>
+              <Edit3 size={12} className="text-amber-500" />
+              <span className="text-amber-600 font-medium">Unsaved</span>
             </>
           ) : lastSaved ? (
             <>
