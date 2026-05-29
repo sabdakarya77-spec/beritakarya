@@ -54,12 +54,11 @@ api.interceptors.request.use(async (config) => {
       }
     }
     
-    // CSRF Injection
+    // CSRF Injection — selalu fetch token terbaru untuk method yang membutuhkan
     const methodsRequiringCsrf = ['post', 'put', 'delete', 'patch'];
     if (methodsRequiringCsrf.includes(config.method?.toLowerCase() || '')) {
-      if (!csrfToken) {
-        await fetchCsrfToken();
-      }
+      // Selalu refresh CSRF token sebelum request mutasi untuk memastikan fresh
+      await fetchCsrfToken();
       if (csrfToken) {
         config.headers['X-CSRF-Token'] = csrfToken;
       }
