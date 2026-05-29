@@ -10,7 +10,8 @@ vi.mock('../../modules/notification/notification.controller', () => ({
 vi.mock('../../db/client', () => ({
   prisma: {
     user: { findUnique: vi.fn(), findMany: vi.fn() },
-    site: { findUnique: vi.fn().mockResolvedValue({ id: 'bandung', domain: 'bandung.beritakarya.co' }) }
+    site: { findUnique: vi.fn().mockResolvedValue({ id: 'bandung', domain: 'bandung.beritakarya.co' }) },
+    category: { findUnique: vi.fn(), findFirst: vi.fn() }
   }
 }))
 vi.mock('../../services/google-indexing.service', () => ({
@@ -161,6 +162,27 @@ describe('updateArticle — ownership', () => {
     await expect(
       updateArticle('art-1', 'bandung', { title: 'baru' }, editorPusat)
     ).resolves.not.toThrow()
+  })
+
+  it('resolve category slug to UUID when updating article category', async () => {
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({ role: 'wapimred', kycStatus: 'APPROVED' } as any)
+    vi.mocked(repo.findArticleById).mockResolvedValue(mockArticle({ authorId: 'user-lain' }) as any)
+    vi.mocked(prisma.category.findUnique).mockResolvedValue(null)
+    vi.mocked(prisma.category.findFirst).mockResolvedValue({ id: 'cat-1' } as any)
+    vi.mocked(repo.updateArticle).mockResolvedValue(mockArticle({ categoryId: 'cat-1' }) as any)
+
+    await updateArticle('art-1', 'bandung', { categoryId: 'nasional' }, editorPusat)
+
+    expect(prisma.category.findFirst).toHaveBeenCalledWith({
+      where: {
+        slug: { equals: 'nasional', mode: 'insensitive' },
+        OR: [
+          { siteId: 'bandung' },
+          { isGlobal: true }
+        ]
+      }
+    })
+    expect(repo.updateArticle).toHaveBeenCalledWith('art-1', 'bandung', expect.objectContaining({ categoryId: 'cat-1' }))
   })
 })
 

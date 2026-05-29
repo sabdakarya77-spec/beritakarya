@@ -203,6 +203,7 @@ export async function createArticle(
       metaDescription: input.metaDescription
     })
 
+    const resolvedCategoryId = await resolveCategoryId(input.categoryId, siteId)
     const slug = await resolveUniqueSlug(input.title, siteId)
     const article = await createArticleWithSlugRetry({
       title: input.title,
@@ -210,7 +211,7 @@ export async function createArticle(
       excerpt: input.excerpt?.trim() || undefined,
       siteId,
       authorId: user.userId,
-      categoryId: input.categoryId,
+      categoryId: resolvedCategoryId,
       tags: input.tags ?? [],
       blocks: withSeo.blocks ?? [],
       metaTitle: input.metaTitle,
@@ -370,6 +371,10 @@ export async function updateArticle(
     const words = textContent.trim().split(/\s+/).length
     data.wordCount = words
     data.readingTimeMin = Math.max(1, Math.ceil(words / 200))
+  }
+
+  if ('categoryId' in input) {
+    data.categoryId = await resolveCategoryId(input.categoryId, siteId)
   }
 
   const updated = data.slug
@@ -635,3 +640,33 @@ export async function indexGoogleArticle(id: string, siteId: string) {
   const result = await googleIndexingService.submitUrl(siteId, articleUrl, 'URL_UPDATED')
   return result
 }
+
+async function resolveCategoryId(categoryId: string | null | undefined, siteId: string): Promise<string | null> {
+  if (!categoryId) return null
+
+  // Check if it's a UUID
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(categoryId)
+
+  if (isUuid) {
+    const cat = await prisma.category.findUnique({
+      where: { id: categoryId }
+    })
+    if (cat) return cat.id
+  }
+
+  // Otherwise, try to find by slug (case-insensitive)
+  const catBySlug = await prisma.category.findFirst({
+    where: {
+      slug: { equals: categoryId, mode: 'insensitive' },
+      OR: [
+        { siteId },
+        { isGlobal: true }
+      ]
+    }
+  })
+
+  if (catBySlug) return catBySlug.id
+
+  return null
+}
+
