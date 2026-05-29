@@ -1,5 +1,8 @@
+'use client'
+
+import { useEffect, useRef, useCallback } from 'react'
 import type { Editor } from '@tiptap/react'
-import { FloatingMenu } from '@tiptap/react'
+import { FloatingMenuPlugin } from '@tiptap/extension-floating-menu'
 import { 
   Plus,
   Heading1,
@@ -19,73 +22,107 @@ interface FloatingMenuBarProps {
 }
 
 /**
- * Custom Floating Menu - appears on empty lines using official Tiptap FloatingMenu
+ * Custom Floating Menu - appears on empty lines using Tiptap FloatingMenuPlugin
  * Shows quick insert options: Heading, List, Quote, Code, Divider, Image
  */
 export function FloatingMenuBar({ editor }: FloatingMenuBarProps) {
-  const insertImage = () => {
+  const elementRef = useRef<HTMLDivElement>(null)
+  const pluginRef = useRef<ReturnType<typeof FloatingMenuPlugin> | null>(null)
+
+  useEffect(() => {
+    if (!editor || !elementRef.current) return
+
+    pluginRef.current = FloatingMenuPlugin({
+      editor,
+      element: elementRef.current,
+      pluginKey: 'floatingMenuBar',
+      shouldShow: ({ editor: ed, view }) => {
+        const { selection } = view.state
+        const { $anchor, empty } = selection
+        
+        // Only show when selection is empty (cursor) and at the start of a paragraph
+        if (!empty) return false
+        
+        // Check if cursor is at the start of an empty paragraph
+        const isAtStart = $anchor.parent.type.name === 'paragraph' && 
+          $anchor.parent.content.size === 0
+        
+        return isAtStart
+      },
+    })
+
+    editor.registerPlugin(pluginRef.current)
+
+    return () => {
+      if (pluginRef.current) {
+        editor.unregisterPlugin('floatingMenuBar')
+      }
+    }
+  }, [editor])
+
+  const insertImage = useCallback(() => {
     const url = window.prompt('Enter image URL')
-    if (url) {
+    if (url && editor) {
       editor.chain().focus().setImage({ src: url }).run()
     }
-  }
+  }, [editor])
 
   const menuItems = [
     {
       icon: <Heading1 size={16} />,
       title: 'Heading 1',
-      action: () => editor.chain().focus().toggleHeading({ level: 1 }).run(),
-      isActive: () => editor.isActive('heading', { level: 1 }),
+      action: () => editor?.chain().focus().toggleHeading({ level: 1 }).run(),
+      isActive: () => editor?.isActive('heading', { level: 1 }),
     },
     {
       icon: <Heading2 size={16} />,
       title: 'Heading 2',
-      action: () => editor.chain().focus().toggleHeading({ level: 2 }).run(),
-      isActive: () => editor.isActive('heading', { level: 2 }),
+      action: () => editor?.chain().focus().toggleHeading({ level: 2 }).run(),
+      isActive: () => editor?.isActive('heading', { level: 2 }),
     },
     {
       icon: <Heading3 size={16} />,
       title: 'Heading 3',
-      action: () => editor.chain().focus().toggleHeading({ level: 3 }).run(),
-      isActive: () => editor.isActive('heading', { level: 3 }),
+      action: () => editor?.chain().focus().toggleHeading({ level: 3 }).run(),
+      isActive: () => editor?.isActive('heading', { level: 3 }),
     },
     {
       icon: <List size={16} />,
       title: 'Bullet List',
-      action: () => editor.chain().focus().toggleBulletList().run(),
-      isActive: () => editor.isActive('bulletList'),
+      action: () => editor?.chain().focus().toggleBulletList().run(),
+      isActive: () => editor?.isActive('bulletList'),
     },
     {
       icon: <ListOrdered size={16} />,
       title: 'Numbered List',
-      action: () => editor.chain().focus().toggleOrderedList().run(),
-      isActive: () => editor.isActive('orderedList'),
+      action: () => editor?.chain().focus().toggleOrderedList().run(),
+      isActive: () => editor?.isActive('orderedList'),
     },
     {
       icon: <Quote size={16} />,
       title: 'Quote',
-      action: () => editor.chain().focus().toggleBlockquote().run(),
-      isActive: () => editor.isActive('blockquote'),
+      action: () => editor?.chain().focus().toggleBlockquote().run(),
+      isActive: () => editor?.isActive('blockquote'),
     },
     {
       icon: <Code size={16} />,
       title: 'Code Block',
-      action: () => editor.chain().focus().toggleCodeBlock().run(),
-      isActive: () => editor.isActive('codeBlock'),
+      action: () => editor?.chain().focus().toggleCodeBlock().run(),
+      isActive: () => editor?.isActive('codeBlock'),
     },
     {
       icon: <Minus size={16} />,
       title: 'Divider',
-      action: () => editor.chain().focus().setHorizontalRule().run(),
+      action: () => editor?.chain().focus().setHorizontalRule().run(),
       isActive: () => false,
     },
   ]
 
   return (
-    <FloatingMenu 
-      editor={editor} 
-      tippyOptions={{ duration: 100 }}
+    <div
+      ref={elementRef}
       className="flex items-center gap-1 p-1.5 bg-slate-900 dark:bg-slate-800 rounded-xl shadow-xl border border-slate-700"
+      style={{ display: 'none' }}
     >
       <button
         onClick={insertImage}
@@ -112,7 +149,7 @@ export function FloatingMenuBar({ editor }: FloatingMenuBarProps) {
           {item.icon}
         </button>
       ))}
-    </FloatingMenu>
+    </div>
   )
 }
 

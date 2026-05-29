@@ -1,7 +1,8 @@
 'use client'
 
+import { useEffect, useRef } from 'react'
 import type { Editor } from '@tiptap/react'
-import { BubbleMenu } from '@tiptap/react'
+import { BubbleMenuPlugin } from '@tiptap/extension-bubble-menu'
 import { 
   Bold, 
   Italic, 
@@ -18,10 +19,34 @@ interface BubbleMenuBarProps {
 }
 
 /**
- * Bubble Menu - appears on text selection using official Tiptap BubbleMenu
+ * Bubble Menu - appears on text selection using Tiptap BubbleMenuPlugin
  * Shows formatting options: Bold, Italic, Underline, Strike, Code, Link, Highlight
  */
 export function BubbleMenuBar({ editor }: BubbleMenuBarProps) {
+  const elementRef = useRef<HTMLDivElement>(null)
+  const pluginRef = useRef<ReturnType<typeof BubbleMenuPlugin> | null>(null)
+
+  useEffect(() => {
+    if (!editor || !elementRef.current) return
+
+    pluginRef.current = BubbleMenuPlugin({
+      editor,
+      element: elementRef.current,
+      pluginKey: 'bubbleMenuBar',
+      shouldShow: ({ editor: ed }) => {
+        return !ed.state.selection.empty
+      },
+    })
+
+    editor.registerPlugin(pluginRef.current)
+
+    return () => {
+      if (pluginRef.current) {
+        editor.unregisterPlugin('bubbleMenuBar')
+      }
+    }
+  }, [editor])
+
   const setLink = () => {
     const previousUrl = editor.getAttributes('link').href
     const url = window.prompt('Enter URL', previousUrl)
@@ -37,10 +62,10 @@ export function BubbleMenuBar({ editor }: BubbleMenuBarProps) {
   }
 
   return (
-    <BubbleMenu 
-      editor={editor} 
-      tippyOptions={{ duration: 100 }}
+    <div
+      ref={elementRef}
       className="flex items-center gap-1 p-1 bg-slate-900 dark:bg-slate-800 rounded-xl shadow-xl border border-slate-700"
+      style={{ display: 'none' }}
     >
       <BubbleButton
         onClick={() => editor.chain().focus().toggleBold().run()}
@@ -99,7 +124,7 @@ export function BubbleMenuBar({ editor }: BubbleMenuBarProps) {
       >
         <Highlighter size={16} />
       </BubbleButton>
-    </BubbleMenu>
+    </div>
   )
 }
 

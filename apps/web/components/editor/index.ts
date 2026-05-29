@@ -14,9 +14,6 @@ export { TiptapEditorToolbar } from './TiptapEditorToolbar'
 export { TabContent } from './tabs/TabContent'
 export { TabSettings } from './tabs/TabSettings'
 
-// Hooks
-export { useTiptapSync } from './hooks/useTiptapSync'
-
 // SEO Panel
 export { SEOPanel } from './seo/SEOPanel'
 
