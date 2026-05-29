@@ -160,79 +160,84 @@ export async function createArticle(
   },
   user: JWTPayload, siteId: string
 ) {
-  // Fetch fresh user data to check KYC status and current role
-  const dbUser = await prisma.user.findUnique({
-    where: { id: user.userId },
-    select: { role: true, kycStatus: true }
-  })
+  try {
+    // Fetch fresh user data to check KYC status and current role
+    const dbUser = await prisma.user.findUnique({
+      where: { id: user.userId },
+      select: { role: true, kycStatus: true }
+    })
 
-  if (!dbUser) {
-    throw Object.assign(new Error('User tidak ditemukan'), { statusCode: 404 })
-  }
-
-  // Role validation: Readers cannot create articles
-  if (dbUser.role === 'reader') {
-    throw Object.assign(new Error('Akses ditolak: Pembaca tidak dapat membuat artikel'), { statusCode: 403 })
-  }
-
-  // KYC validation: Reporters and kontributors must be APPROVED to create articles
-  if ((dbUser.role === 'reporter' || dbUser.role === 'kontributor') && dbUser.kycStatus !== 'APPROVED') {
-    throw Object.assign(new Error('Akses ditolak: Verifikasi identitas (KYC) Anda belum disetujui'), { statusCode: 403 })
-  }
-
-  if (input.blocks) {
-    try {
-      input.blocks = parseArticleBlocks(input.blocks) as typeof input.blocks
-    } catch (err) {
-      if (err instanceof Error) {
-        throw Object.assign(
-          new Error(`Struktur blok tidak valid: ${err.message}`),
-          { statusCode: 400, code: 'INVALID_BLOCKS' }
-        )
-      }
-      throw err
+    if (!dbUser) {
+      throw Object.assign(new Error('User tidak ditemukan'), { statusCode: 404 })
     }
-    validateArticleContentLimits(input.blocks)
+
+    // Role validation: Readers cannot create articles
+    if (dbUser.role === 'reader') {
+      throw Object.assign(new Error('Akses ditolak: Pembaca tidak dapat membuat artikel'), { statusCode: 403 })
+    }
+
+    // KYC validation: Reporters and kontributors must be APPROVED to create articles
+    if ((dbUser.role === 'reporter' || dbUser.role === 'kontributor') && dbUser.kycStatus !== 'APPROVED') {
+      throw Object.assign(new Error('Akses ditolak: Verifikasi identitas (KYC) Anda belum disetujui'), { statusCode: 403 })
+    }
+
+    if (input.blocks) {
+      try {
+        input.blocks = parseArticleBlocks(input.blocks) as typeof input.blocks
+      } catch (err) {
+        if (err instanceof Error) {
+          throw Object.assign(
+            new Error(`Struktur blok tidak valid: ${err.message}`),
+            { statusCode: 400, code: 'INVALID_BLOCKS' }
+          )
+        }
+        throw err
+      }
+      validateArticleContentLimits(input.blocks)
+    }
+
+    const withSeo = applySeoDefaults({
+      title: input.title,
+      blocks: input.blocks,
+      excerpt: input.excerpt,
+      metaDescription: input.metaDescription
+    })
+
+    const slug = await resolveUniqueSlug(input.title, siteId)
+    const article = await createArticleWithSlugRetry({
+      title: input.title,
+      slug,
+      excerpt: input.excerpt?.trim() || undefined,
+      siteId,
+      authorId: user.userId,
+      categoryId: input.categoryId,
+      tags: input.tags ?? [],
+      blocks: withSeo.blocks ?? [],
+      metaTitle: input.metaTitle,
+      metaDescription: withSeo.metaDescription,
+      isBreaking: input.isBreaking ?? false,
+      isExclusive: input.isExclusive ?? false,
+      isFeatured: input.isFeatured ?? false,
+      featuredImage: input.featuredImage ?? ''
+    })
+
+    await repo.createAuditLog({
+      userId: user.userId,
+      siteId,
+      action: 'post.create',
+      entityType: 'post',
+      entityId: article.id,
+      newValue: article
+    })
+
+    // Indexing
+    searchService.indexArticle(article).catch(err => console.error('Failed to index article:', err))
+
+    return article
+  } catch (err: any) {
+    console.error('[createArticle] Error:', err?.message || err, err?.stack ? `\nStack: ${err.stack}` : '')
+    throw err
   }
-
-  const withSeo = applySeoDefaults({
-    title: input.title,
-    blocks: input.blocks,
-    excerpt: input.excerpt,
-    metaDescription: input.metaDescription
-  })
-
-  const slug = await resolveUniqueSlug(input.title, siteId)
-  const article = await createArticleWithSlugRetry({
-    title: input.title,
-    slug,
-    excerpt: input.excerpt?.trim() || undefined,
-    siteId,
-    authorId: user.userId,
-    categoryId: input.categoryId,
-    tags: input.tags ?? [],
-    blocks: withSeo.blocks ?? [],
-    metaTitle: input.metaTitle,
-    metaDescription: withSeo.metaDescription,
-    isBreaking: input.isBreaking ?? false,
-    isExclusive: input.isExclusive ?? false,
-    isFeatured: input.isFeatured ?? false,
-    featuredImage: input.featuredImage ?? ''
-  })
-
-  await repo.createAuditLog({
-    userId: user.userId,
-    siteId,
-    action: 'post.create',
-    entityType: 'post',
-    entityId: article.id,
-    newValue: article
-  })
-
-  // Indexing
-  searchService.indexArticle(article).catch(err => console.error('Failed to index article:', err))
-
-  return article
 }
 
 export async function updateArticle(
