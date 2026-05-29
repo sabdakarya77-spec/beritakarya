@@ -147,17 +147,32 @@ const CSRF_SECRET = env.NODE_ENV === 'production'
 const csrfCookieOptions: any = {
   httpOnly: true,
   secure: env.NODE_ENV === 'production',
-  sameSite: env.NODE_ENV === 'production' ? 'none' : 'lax',
+  sameSite: env.NODE_ENV === 'production' ? 'lax' : 'lax', // Changed from 'none' to 'lax' for better cross-origin support
   path: '/',
 }
 
+// Only set domain in production if explicitly configured
+// Using domain=.beritakarya.co allows cookie to work on all subdomains
 if (env.NODE_ENV === 'production' && env.COOKIE_DOMAIN) {
   csrfCookieOptions.domain = env.COOKIE_DOMAIN
 }
 
 const { generateCsrfToken, doubleCsrfProtection } = doubleCsrf({
   getSecret: () => CSRF_SECRET,
-  getSessionIdentifier: (req) => req.cookies?.accessToken || req.ip || 'anonymous',
+  // Use accessToken cookie as session identifier - more stable than IP
+  // If no accessToken, fall back to a combination that won't change often
+  getSessionIdentifier: (req) => {
+    // Try to get accessToken first
+    const accessToken = req.cookies?.accessToken
+    if (accessToken) return accessToken
+    
+    // Fallback to user ID from JWT if authenticated (set by jwtVerify middleware)
+    const userId = (req as any).user?.id
+    if (userId) return `user-${userId}`
+    
+    // Last resort: use a combination of IP + user agent (but note IP can change)
+    return `${req.ip || 'anonymous'}-${req.headers['user-agent']?.slice(0, 50) || 'unknown'}`
+  },
   cookieName: 'x-csrf-token',
   cookieOptions: csrfCookieOptions,
   ignoredMethods: ['GET', 'HEAD', 'OPTIONS'],
@@ -168,12 +183,13 @@ const { generateCsrfToken, doubleCsrfProtection } = doubleCsrf({
 
 app.get('/api/v1/csrf-token', (req, res) => {
   const csrfToken = generateCsrfToken(req, res)
+  const actualSameSite = csrfCookieOptions.sameSite
   const csrfDebugInfo = {
     cookieName: 'x-csrf-token',
-    cookiePath: '/',
-    cookieDomain: env.COOKIE_DOMAIN || null,
-    secure: env.NODE_ENV === 'production',
-    sameSite: env.NODE_ENV === 'production' ? 'none' : 'lax'
+    cookiePath: csrfCookieOptions.path,
+    cookieDomain: csrfCookieOptions.domain || null,
+    secure: csrfCookieOptions.secure,
+    sameSite: actualSameSite
   }
 
   res.setHeader('X-Debug-Csrf-Cookie-Name', csrfDebugInfo.cookieName)
@@ -182,7 +198,7 @@ app.get('/api/v1/csrf-token', (req, res) => {
     res.setHeader('X-Debug-Csrf-Cookie-Domain', csrfDebugInfo.cookieDomain)
   }
   res.setHeader('X-Debug-Csrf-Cookie-Secure', String(csrfDebugInfo.secure))
-  res.setHeader('X-Debug-Csrf-Cookie-SameSite', csrfDebugInfo.sameSite)
+  res.setHeader('X-Debug-Csrf-SameSite', csrfDebugInfo.sameSite)
 
   res.json({ success: true, data: { csrfToken } })
 })
