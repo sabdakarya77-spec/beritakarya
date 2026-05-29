@@ -82,10 +82,11 @@ function createInitialParagraphBlock() {
 
 let saveTimer: ReturnType<typeof setTimeout> | null = null
 
-function hasMeaningfulContent(state: Pick<EditorState, 'title' | 'blocks'>) {
+function hasMeaningfulContent(state: Pick<EditorState, 'title' | 'blocks' | 'categoryId' | 'tags' | 'featuredImage' | 'isBreaking' | 'isExclusive' | 'isFeatured'>) {
   const firstBlock = state.blocks[0] as { content?: string } | undefined
   const firstBlockContent = typeof firstBlock?.content === 'string' ? firstBlock.content.trim() : ''
-  return Boolean(state.title.trim() || firstBlockContent || state.blocks.length > 1)
+  const hasEditorialData = Boolean(state.categoryId || (state.tags && state.tags.length > 0) || state.featuredImage || state.isBreaking || state.isExclusive || state.isFeatured)
+  return Boolean(state.title.trim() || firstBlockContent || state.blocks.length > 1 || hasEditorialData)
 }
 
 export const useEditorStore = create<EditorState>((set, get) => ({
@@ -348,9 +349,10 @@ export const useEditorStore = create<EditorState>((set, get) => ({
 
   saveArticle: async () => {
     const s = get()
-    // Don't save if it's a new article with no title and no content in the first block
+    // Don't save if it's a new article with no data at all
     const firstBlock = s.blocks[0] as any
-    if (!s.articleId && !s.title.trim() && s.blocks.length <= 1 && (!firstBlock || !firstBlock.content)) return
+    const hasEditorialData = Boolean(s.categoryId || (s.tags && s.tags.length > 0) || s.featuredImage || s.isBreaking || s.isExclusive || s.isFeatured)
+    if (!s.articleId && !s.title.trim() && !hasEditorialData && s.blocks.length <= 1 && (!firstBlock || !firstBlock.content)) return
 
     set({ saving: true, saveError: null })
     try {
