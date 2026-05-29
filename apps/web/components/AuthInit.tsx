@@ -24,8 +24,13 @@ export function AuthInit() {
     const sendHeartbeat = async () => {
       try {
         await api.post('/users/heartbeat');
-      } catch (e) {
-        // Silently ignore heartbeat errors
+      } catch (e: any) {
+        // Jika 401, stop heartbeat dan trigger re-auth check
+        if (e.response?.status === 401) {
+          console.warn('[AUTH] Heartbeat received 401, checking session...')
+          checkAuth();
+        }
+        // Silently ignore other errors (network issues, etc)
       }
     };
 
@@ -35,8 +40,23 @@ export function AuthInit() {
     // Then every 30 seconds
     const interval = setInterval(sendHeartbeat, 30000);
 
-    return () => clearInterval(interval);
-  }, [user, isLoading]);
+    // Listen for session expired event from api.ts
+    const handleSessionExpired = () => {
+      clearInterval(interval);
+      checkAuth();
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('auth:session-expired', handleSessionExpired);
+    }
+
+    return () => {
+      clearInterval(interval);
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('auth:session-expired', handleSessionExpired);
+      }
+    };
+  }, [user, isLoading, checkAuth]);
 
   return null;
 }

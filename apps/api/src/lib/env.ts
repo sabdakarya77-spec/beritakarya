@@ -6,7 +6,7 @@ const envSchema = z.object({
   DATABASE_URL: z.string(),
   DIRECT_URL: z.string().url().optional(),
   JWT_SECRET: z.string(),
-  JWT_ACCESS_EXPIRES: z.string().default('15m'),
+  JWT_ACCESS_EXPIRES: z.string().default('1h'), // Extended from 15m to 1h for better UX
   OPENAI_API_KEY: z.string().optional(),
   AI_MODEL: z.string().default('gpt-4o'),
   API_URL: z.string().default('http://localhost:3001'),
