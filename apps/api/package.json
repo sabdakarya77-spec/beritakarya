@@ -28,7 +28,6 @@
     "connect-timeout": "^1.9.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
-    "csrf-csrf": "^4.0.3",
     "dompurify": "^3.0.9",
     "dotenv": "^16.4.5",
     "express": "^4.19.0",

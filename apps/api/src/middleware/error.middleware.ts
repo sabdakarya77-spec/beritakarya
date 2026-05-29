@@ -60,14 +60,6 @@ export function errorMiddleware(
     })
   }
 
-  // CSRF token errors (from csrf-csrf via double-submit cookie pattern)
-  if (err?.code === 'EBADCSRFTOKEN' || err?.message?.includes('csrf')) {
-    return res.status(403).json({
-      success: false,
-      error: { code: 'EBADCSRFTOKEN', message: 'invalid csrf token' }
-    })
-  }
-
   if (err instanceof AppError) {
     return res.status(err.statusCode).json({
       success: false,

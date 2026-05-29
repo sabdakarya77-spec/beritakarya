@@ -40,7 +40,6 @@ import { logger, httpLogger } from './lib/logger'
 import { metrics } from './lib/monitoring'
 import { asyncHandler } from './utils/asyncHandler'
 import cookieParser from 'cookie-parser'
-import { doubleCsrf } from 'csrf-csrf'
 import { getMeilisearchCircuitStatus } from './modules/article/search.service'
 import { processDueScheduledArticles } from './modules/article/article.service'
 
@@ -125,8 +124,6 @@ const corsOptions: CorsOptions = {
     'x-site-id',
     'X-API-Key',
     'x-api-key',
-    'X-CSRF-Token',
-    'x-csrf-token'
   ],
   exposedHeaders: ['X-Request-ID'],
   maxAge: 86400
@@ -138,87 +135,6 @@ app.use(cors(corsOptions))
 app.use(securityHeadersMiddleware)
 app.use(cookieParser())
 app.use(jwtVerify)
-
-// [M-005] CSRF Protection setup (replaces deprecated csurf)
-const CSRF_SECRET = env.NODE_ENV === 'production'
-  ? (env.CSRF_SECRET || (() => { throw new Error('CSRF_SECRET env var must be set in production') })())
-  : (env.CSRF_SECRET || 'dev-csrf-secret-change-in-production')
-
-const csrfCookieOptions: any = {
-  httpOnly: true,
-  secure: env.NODE_ENV === 'production',
-  sameSite: env.NODE_ENV === 'production' ? 'lax' : 'lax', // Changed from 'none' to 'lax' for better cross-origin support
-  path: '/',
-}
-
-// Only set domain in production if explicitly configured
-// Using domain=.beritakarya.co allows cookie to work on all subdomains
-if (env.NODE_ENV === 'production' && env.COOKIE_DOMAIN) {
-  csrfCookieOptions.domain = env.COOKIE_DOMAIN
-}
-
-const { generateCsrfToken, doubleCsrfProtection } = doubleCsrf({
-  getSecret: () => CSRF_SECRET,
-  // Use accessToken cookie as session identifier - more stable than IP
-  // If no accessToken, fall back to a combination that won't change often
- getSessionIdentifier: (req) => {
- // Use userId from JWT as primary identifier — it's stable across token rotations.
- // accessToken cookie value changes on every refresh (every 15 min), which invalidates CSRF tokens.
- const jwtUserId = (req as any).user?.userId
- if (jwtUserId) return `user-${jwtUserId}`
-
- // Fallback to accessToken cookie (stable within a single session between refreshes)
- const accessToken = req.cookies?.accessToken
- if (accessToken) return accessToken
-
- // Last resort: use IP address (least stable, but better than failing)
- return `${req.ip || 'anonymous'}`
- },
-  cookieName: 'x-csrf-token',
-  cookieOptions: csrfCookieOptions,
-  ignoredMethods: ['GET', 'HEAD', 'OPTIONS'],
-  getCsrfTokenFromRequest: (req) =>
-    req.headers['x-csrf-token'] as string ||
-    req.headers['x-xsrf-token'] as string,
-})
-
-app.get('/api/v1/csrf-token', (req, res) => {
-  const csrfToken = generateCsrfToken(req, res)
-  const actualSameSite = csrfCookieOptions.sameSite
-  const csrfDebugInfo = {
-    cookieName: 'x-csrf-token',
-    cookiePath: csrfCookieOptions.path,
-    cookieDomain: csrfCookieOptions.domain || null,
-    secure: csrfCookieOptions.secure,
-    sameSite: actualSameSite
-  }
-
-  res.setHeader('X-Debug-Csrf-Cookie-Name', csrfDebugInfo.cookieName)
-  res.setHeader('X-Debug-Csrf-Cookie-Path', csrfDebugInfo.cookiePath)
-  if (csrfDebugInfo.cookieDomain) {
-    res.setHeader('X-Debug-Csrf-Cookie-Domain', csrfDebugInfo.cookieDomain)
-  }
-  res.setHeader('X-Debug-Csrf-Cookie-Secure', String(csrfDebugInfo.secure))
-  res.setHeader('X-Debug-Csrf-SameSite', csrfDebugInfo.sameSite)
-
-  res.json({ success: true, data: { csrfToken } })
-})
-
-app.get('/api/v1/debug/csrf-cookie', (req, res) => {
-  res.json({
-    success: true,
-    data: {
-      cookieName: 'x-csrf-token',
-      cookiePath: '/',
-      cookieDomain: env.COOKIE_DOMAIN || null,
-      secure: env.NODE_ENV === 'production',
-      sameSite: env.NODE_ENV === 'production' ? 'none' : 'lax',
-      requestOrigin: req.headers.origin || null,
-      requestHost: req.headers.host || null,
-      requestSecure: req.secure
-    }
-  })
-})
 
 app.use(express.json({ limit: '10mb' }))
 app.use(sanitizeMiddleware)
@@ -232,19 +148,11 @@ app.use('/api/v1', (req, res, next) => {
   return apiLimiter(req, res, next)
 })
 
-const csrfProtectionWithBypass = (req: any, res: any, next: any) => {
-  // Bypass CSRF for background heartbeat pings as they carry no CSRF vulnerability
-  if (req.originalUrl.split('?')[0] === '/api/v1/users/heartbeat') {
-    return next()
-  }
-  return doubleCsrfProtection(req, res, next)
-}
-
 app.use('/api/v1/auth', authLimiter, authRouter)
-app.use('/api/v1/users', csrfProtectionWithBypass, userRouter)
-app.use('/api/v1/articles', doubleCsrfProtection, articleRouter)
-app.use('/api/v1/media', doubleCsrfProtection, mediaRouter)
-app.use('/api/v1/ai', doubleCsrfProtection, aiRouter)
+app.use('/api/v1/users', userRouter)
+app.use('/api/v1/articles', articleRouter)
+app.use('/api/v1/media', mediaRouter)
+app.use('/api/v1/ai', aiRouter)
 
 // Category routes - using functions directly (not routers)
 // GET: public (anyone can read categories)
@@ -252,15 +160,15 @@ app.get('/api/v1/categories/tree', siteMiddleware, asyncHandler(categoryControll
 app.get('/api/v1/categories', siteMiddleware, asyncHandler(categoryController.getCategories))
 // POST/PUT/DELETE: requires auth + site scope + role wapimred/superadmin
 app.post('/api/v1/categories',
-  requireAuth, doubleCsrfProtection, siteMiddleware, requireSiteAccess,
+  requireAuth, siteMiddleware, requireSiteAccess,
   requireRole(['superadmin', 'wapimred']),
   asyncHandler(categoryController.createCategory))
 app.put('/api/v1/categories/:id',
-  requireAuth, doubleCsrfProtection, siteMiddleware, requireSiteAccess,
+  requireAuth, siteMiddleware, requireSiteAccess,
   requireRole(['superadmin', 'wapimred']),
   asyncHandler(categoryController.updateCategory))
 app.delete('/api/v1/categories/:id',
-  requireAuth, doubleCsrfProtection, siteMiddleware, requireSiteAccess,
+  requireAuth, siteMiddleware, requireSiteAccess,
   requireRole(['superadmin', 'wapimred']),
   asyncHandler(categoryController.deleteCategory))
 
@@ -271,32 +179,32 @@ app.get('/api/v1/sites/settings', asyncHandler(siteController.getSiteSettings))
 app.get('/api/v1/sites/:id', asyncHandler(siteController.getSiteById))
 // PATCH settings: requires auth + site scope + role wapimred/superadmin
 app.patch('/api/v1/sites/settings',
-  requireAuth, doubleCsrfProtection, siteMiddleware, requireSiteAccess,
+  requireAuth, siteMiddleware, requireSiteAccess,
   requireRole(['superadmin', 'wapimred']),
   asyncHandler(siteController.updateSiteSettings))
 // POST/PUT/DELETE/assignWapimred: superadmin only
 app.post('/api/v1/sites',
-  requireAuth, doubleCsrfProtection, requireRole(['superadmin']),
+  requireAuth, requireRole(['superadmin']),
   asyncHandler(siteController.createSite))
 app.put('/api/v1/sites/:id',
-  requireAuth, doubleCsrfProtection, requireRole(['superadmin']),
+  requireAuth, requireRole(['superadmin']),
   asyncHandler(siteController.updateSite))
 app.delete('/api/v1/sites/:id',
-  requireAuth, doubleCsrfProtection, requireRole(['superadmin']),
+  requireAuth, requireRole(['superadmin']),
   asyncHandler(siteController.deleteSite))
 app.post('/api/v1/sites/:id/wapimred',
-  requireAuth, doubleCsrfProtection, requireRole(['superadmin']),
+  requireAuth, requireRole(['superadmin']),
   asyncHandler(siteController.assignWapimred))
 
-app.use('/api/v1/ads', doubleCsrfProtection, adRouter)
-app.use('/api/v1/newsletter', doubleCsrfProtection, newsletterRouter)
-app.use('/api/v1/audit', doubleCsrfProtection, auditRouter)
-app.use('/api/v1/analytics', doubleCsrfProtection, analyticsRouter)
-app.use('/api/v1/notifications', doubleCsrfProtection, notificationRouter)
-app.use('/api/v1/comments', doubleCsrfProtection, commentRouter)
-app.use('/api/v1/kyc', doubleCsrfProtection, kycRouter)
-app.use('/api/v1/invitations', doubleCsrfProtection, invitationRouter)
-app.use('/api/v1/admin', doubleCsrfProtection, adminRouter)
+app.use('/api/v1/ads', adRouter)
+app.use('/api/v1/newsletter', newsletterRouter)
+app.use('/api/v1/audit', auditRouter)
+app.use('/api/v1/analytics', analyticsRouter)
+app.use('/api/v1/notifications', notificationRouter)
+app.use('/api/v1/comments', commentRouter)
+app.use('/api/v1/kyc', kycRouter)
+app.use('/api/v1/invitations', invitationRouter)
+app.use('/api/v1/admin', adminRouter)
 
 app.get('/health', asyncHandler(async (_, res) => {
   let databaseHealth = false

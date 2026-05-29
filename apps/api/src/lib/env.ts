@@ -22,7 +22,6 @@ const envSchema = z.object({
   // Trust proxy settings (for Nginx/Load Balancer)
   TRUST_PROXY: z.string().optional(),
   RESET_SECRET: z.string().min(32).optional(),
-  CSRF_SECRET: z.string().min(16).optional(),
   COOKIE_DOMAIN: z.string().optional(),
 })
 
