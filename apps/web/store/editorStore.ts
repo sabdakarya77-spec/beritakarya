@@ -401,7 +401,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
         err?.response?.data?.message ||
         err?.message ||
         'Gagal menyimpan artikel'
-      set({ saving: false, saveError: message })
+      set({ saving: false, saveError: message, lastSaved: null, isDirty: true })
     }
   },
 

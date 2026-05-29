@@ -161,18 +161,19 @@ const { generateCsrfToken, doubleCsrfProtection } = doubleCsrf({
   getSecret: () => CSRF_SECRET,
   // Use accessToken cookie as session identifier - more stable than IP
   // If no accessToken, fall back to a combination that won't change often
-  getSessionIdentifier: (req) => {
-    // Try to get accessToken first (most stable)
-    const accessToken = req.cookies?.accessToken
-    if (accessToken) return accessToken
-    
-    // Fallback to userId from JWT (note: JWT payload uses 'userId', not 'id')
-    const jwtUserId = (req as any).user?.userId
-    if (jwtUserId) return `user-${jwtUserId}`
-    
-    // Last resort: use a combination that won't change between requests
-    return `${req.ip || 'anonymous'}`
-  },
+ getSessionIdentifier: (req) => {
+ // Use userId from JWT as primary identifier — it's stable across token rotations.
+ // accessToken cookie value changes on every refresh (every 15 min), which invalidates CSRF tokens.
+ const jwtUserId = (req as any).user?.userId
+ if (jwtUserId) return `user-${jwtUserId}`
+
+ // Fallback to accessToken cookie (stable within a single session between refreshes)
+ const accessToken = req.cookies?.accessToken
+ if (accessToken) return accessToken
+
+ // Last resort: use IP address (least stable, but better than failing)
+ return `${req.ip || 'anonymous'}`
+ },
   cookieName: 'x-csrf-token',
   cookieOptions: csrfCookieOptions,
   ignoredMethods: ['GET', 'HEAD', 'OPTIONS'],

@@ -17,12 +17,12 @@ const CSRF_TOKEN_TTL = 60 * 60 * 1000; // 1 hour in ms
 
 export const fetchCsrfToken = async () => {
   if (typeof window === 'undefined') return;
-  
+
   // Jika token masih valid, tidak perlu fetch ulang
   if (csrfToken && csrfTokenExpiry && Date.now() < csrfTokenExpiry) {
     return Promise.resolve();
   }
-  
+
   // Jika sedang dalam proses fetch, wait untuk proses tersebut selesai
   if (csrfTokenPromise) return csrfTokenPromise;
 
@@ -71,7 +71,7 @@ api.interceptors.request.use(async (config) => {
         config.params.site = siteId
       }
     }
-    
+
     // CSRF Injection — selalu fetch token terbaru untuk method yang membutuhkan
     const methodsRequiringCsrf = ['post', 'put', 'delete', 'patch'];
     if (methodsRequiringCsrf.includes(config.method?.toLowerCase() || '')) {
@@ -160,7 +160,7 @@ api.interceptors.response.use(
 
     // Jangan auto-refresh untuk auth endpoints — biarkan callernya yang handle
     const isAuthEndpoint = AUTH_SKIP_REFRESH_URLS.some(url => original.url?.includes(url))
-    
+
     if (error.response?.status === 401 && !original._retry && !isAuthEndpoint) {
       // Check retry limit untuk mencegah infinite loops
       if (refreshRetryCount >= MAX_REFRESH_RETRIES) {
@@ -187,6 +187,17 @@ api.interceptors.response.use(
       try {
         await axios.post(`${API_URL}/api/v1/auth/refresh`, {}, { withCredentials: true })
         refreshRetryCount = 0 // Reset on success
+
+        // After accessToken cookie rotates, the old CSRF token may be invalidated
+        // because the server's getSessionIdentifier can use accessToken as fallback.
+        // Refresh CSRF token proactively to prevent subsequent EBADCSRFTOKEN errors.
+        try {
+          await refreshCsrfToken()
+        } catch (e) {
+          // Non-critical: CSRF retry logic will handle this if needed
+          console.warn('[AUTH] CSRF token refresh after auth refresh failed:', e)
+        }
+
         processQueue(null)
         return api(original)
       } catch (refreshError) {
