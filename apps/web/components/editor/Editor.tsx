@@ -43,6 +43,7 @@ export function Editor({ articleId, siteId }: EditorProps) {
     metaDescription,
     submitForReview,
     publishArticle,
+    updateArticleData,
   } = useEditorStore()
 
   // Load article on mount
