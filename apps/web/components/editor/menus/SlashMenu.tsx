@@ -262,7 +262,8 @@ export const defaultSlashMenuItems: SlashMenuItem[] = [
     command: (editor) => {
       editor.chain().focus().insertContent({
         type: 'mediaText',
-        attrs: { layout: 'left', imageUrl: '', text: '' },
+        attrs: { layout: 'left', imageUrl: '' },
+        content: [{ type: 'paragraph' }],
       }).run()
     },
   },
@@ -274,6 +275,7 @@ export const defaultSlashMenuItems: SlashMenuItem[] = [
       editor.chain().focus().insertContent({
         type: 'callout',
         attrs: { variant: 'info', icon: '💡' },
+        content: [{ type: 'paragraph' }],
       }).run()
     },
   },

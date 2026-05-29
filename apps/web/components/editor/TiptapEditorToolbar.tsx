@@ -276,7 +276,7 @@ export function TiptapEditorToolbar({ editor }: TiptapEditorToolbarProps) {
           <Grid className="w-4 h-4" />
         </ToolbarButton>
         <ToolbarButton
-          onClick={() => editor.chain().focus().insertContent({ type: 'mediaText', attrs: { layout: 'left', imageUrl: '', text: '' } }).run()}
+          onClick={() => editor.chain().focus().insertContent({ type: 'mediaText', attrs: { layout: 'left', imageUrl: '' }, content: [{ type: 'paragraph' }] }).run()}
           active={editor.isActive('mediaText')}
           title="Sisipkan Media + Teks"
           className="text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-950/30"
@@ -284,7 +284,7 @@ export function TiptapEditorToolbar({ editor }: TiptapEditorToolbarProps) {
           <Columns className="w-4 h-4" />
         </ToolbarButton>
         <ToolbarButton
-          onClick={() => editor.chain().focus().insertContent({ type: 'callout', attrs: { variant: 'info', icon: '💡' } }).run()}
+          onClick={() => editor.chain().focus().insertContent({ type: 'callout', attrs: { variant: 'info', icon: '💡' }, content: [{ type: 'paragraph' }] }).run()}
           active={editor.isActive('callout')}
           title="Sisipkan Callout Box"
           className="text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-950/30"
