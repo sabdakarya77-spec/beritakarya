@@ -1,16 +1,27 @@
-'use client'
-
-import { useState } from 'react'
-import { Loader2 } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Loader2, RefreshCw } from 'lucide-react'
 import { useHeadlines, useSEO } from '../../../../hooks/useAI'
+import { useEditorStore } from '../../../../store/editorStore'
 
 interface Props {
   model?: string
 }
 
 export function OptimizeTab({ model = 'gpt-4o' }: Props) {
+  const { title: storeTitle, excerpt: storeExcerpt } = useEditorStore()
   const [title, setTitle] = useState('')
   const [excerpt, setExcerpt] = useState('')
+  
+  // Inisialisasi awal dengan data store
+  useEffect(() => {
+    if (storeTitle) setTitle(storeTitle)
+    if (storeExcerpt) setExcerpt(storeExcerpt)
+  }, [storeTitle, storeExcerpt])
+
+  const handlePullFromDocument = () => {
+    setTitle(storeTitle || '')
+    setExcerpt(storeExcerpt || '')
+  }
   
   const headlineState = useHeadlines(model)
   const seoState = useSEO(model)
@@ -27,6 +38,18 @@ export function OptimizeTab({ model = 'gpt-4o' }: Props) {
 
   return (
     <div className="p-4 space-y-4">
+      <div className="flex items-center justify-between">
+        <span className="text-[10px] font-medium text-gray-400">Input Optimasi AI</span>
+        <button
+          onClick={handlePullFromDocument}
+          className="flex items-center gap-1 text-[10px] text-purple-600 hover:text-purple-700 font-semibold"
+          title="Ambil judul dan ringkasan terbaru dari editor"
+        >
+          <RefreshCw size={10} />
+          Ambil dari Dokumen
+        </button>
+      </div>
+
       <div>
         <label className="text-[10px] text-gray-500 mb-1 block">Judul Artikel</label>
         <input

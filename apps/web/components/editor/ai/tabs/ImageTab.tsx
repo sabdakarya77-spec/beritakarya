@@ -1,6 +1,4 @@
-'use client'
-
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Loader2 } from 'lucide-react'
 import { useCaption } from '../../../../hooks/useAI'
 
@@ -19,15 +17,17 @@ export function ImageTab({ model = 'gpt-4o' }: Props) {
     await captionState.generate({ imageUrl })
   }
 
-  // Update local state when result comes
-  if (captionState.result && !captionState.loading) {
-    if (captionState.result.altText !== altText) {
-      setAltText(captionState.result.altText)
+  // Update local state when result comes using useEffect to prevent render loop
+  useEffect(() => {
+    if (captionState.result && !captionState.loading) {
+      if (captionState.result.altText !== altText) {
+        setAltText(captionState.result.altText)
+      }
+      if (captionState.result.caption !== caption) {
+        setCaption(captionState.result.caption)
+      }
     }
-    if (captionState.result.caption !== caption) {
-      setCaption(captionState.result.caption)
-    }
-  }
+  }, [captionState.result, captionState.loading, altText, caption])
 
   return (
     <div className="p-4 space-y-4">

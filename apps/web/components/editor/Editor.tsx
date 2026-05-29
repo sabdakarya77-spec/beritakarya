@@ -63,10 +63,13 @@ export function Editor({ articleId, siteId }: EditorProps) {
 
   // Keyboard shortcuts
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    // Ctrl+Z / Cmd+Z for undo
+    // Ctrl+Z / Cmd+Z for undo (HANYA jalankan jika fokus tidak di dalam editor visual Tiptap)
     if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
-      e.preventDefault()
-      undo()
+      const isInsideTiptap = document.activeElement?.closest('.tiptap') || document.activeElement?.classList.contains('tiptap-editor-content')
+      if (!isInsideTiptap) {
+        e.preventDefault()
+        undo()
+      }
     }
     // Ctrl+S / Cmd+S for save
     if ((e.ctrlKey || e.metaKey) && e.key === 's') {
@@ -79,6 +82,19 @@ export function Editor({ articleId, siteId }: EditorProps) {
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [handleKeyDown])
+
+  // Peringatan sebelum menutup halaman jika ada perubahan kotor (Unsaved Changes Guard)
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isDirty) {
+        e.preventDefault()
+        e.returnValue = '' // Menampilkan dialog bawaan browser
+        return ''
+      }
+    }
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, [isDirty])
 
   // Calculate word count from blocks
   const wordCount = blocks.reduce((count, block) => {
@@ -117,6 +133,7 @@ export function Editor({ articleId, siteId }: EditorProps) {
         onSave={saveArticle}
         onSubmit={submitForReview}
         onPublish={publishArticle}
+        onStatusChange={(newStatus) => updateArticleData({ status: newStatus })}
       />
       
       {/* Main Content Area */}

@@ -1,14 +1,18 @@
-'use client'
-
 import { useState, useEffect } from 'react'
 import { CheckCircle2, XCircle, AlertTriangle } from 'lucide-react'
 import { cn } from '../../../../lib/utils'
+import { useEditorStore } from '../../../../store/editorStore'
 
 export function SEOAuditTab() {
+  const { 
+    title, 
+    metaTitle, 
+    metaDescription,
+    setTitle,
+    updateArticleData 
+  } = useEditorStore()
+  
   const [focusKeyword, setFocusKeyword] = useState('')
-  const [title, setTitle] = useState('')
-  const [metaTitle, setMetaTitle] = useState('')
-  const [metaDescription, setMetaDescription] = useState('')
 
   useEffect(() => {
     const savedKeyword = sessionStorage.getItem('seo-focus-keyword')
@@ -21,21 +25,21 @@ export function SEOAuditTab() {
   }
 
   // Validation checks
-  const titleLength = title.length
+  const titleLength = title?.length || 0
   const isTitleValid = titleLength >= 40 && titleLength <= 70
-  const hasKeywordInTitle = focusKeyword.trim() 
+  const hasKeywordInTitle = focusKeyword.trim() && title
     ? title.toLowerCase().includes(focusKeyword.toLowerCase())
     : false
 
-  const metaTitleLen = metaTitle.length
+  const metaTitleLen = metaTitle?.length || 0
   const isMetaTitleValid = metaTitleLen >= 50 && metaTitleLen <= 60
-  const hasKeywordInMetaTitle = focusKeyword.trim()
+  const hasKeywordInMetaTitle = focusKeyword.trim() && metaTitle
     ? metaTitle.toLowerCase().includes(focusKeyword.toLowerCase())
     : false
 
-  const metaDescLen = metaDescription.length
+  const metaDescLen = metaDescription?.length || 0
   const isMetaDescValid = metaDescLen >= 120 && metaDescLen <= 160
-  const hasKeywordInMetaDesc = focusKeyword.trim()
+  const hasKeywordInMetaDesc = focusKeyword.trim() && metaDescription
     ? metaDescription.toLowerCase().includes(focusKeyword.toLowerCase())
     : false
 
@@ -58,7 +62,7 @@ export function SEOAuditTab() {
       <div>
         <label className="text-[10px] text-gray-500 mb-1 block">Judul Artikel</label>
         <input
-          value={title}
+          value={title || ''}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Judul artikel..."
           className="w-full px-3 py-2 text-xs border border-gray-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800"
@@ -80,8 +84,8 @@ export function SEOAuditTab() {
       <div>
         <label className="text-[10px] text-gray-500 mb-1 block">Meta Title</label>
         <input
-          value={metaTitle}
-          onChange={(e) => setMetaTitle(e.target.value)}
+          value={metaTitle || ''}
+          onChange={(e) => updateArticleData({ metaTitle: e.target.value })}
           placeholder="Meta title untuk SEO..."
           className="w-full px-3 py-2 text-xs border border-gray-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800"
         />
@@ -102,8 +106,8 @@ export function SEOAuditTab() {
       <div>
         <label className="text-[10px] text-gray-500 mb-1 block">Meta Description</label>
         <textarea
-          value={metaDescription}
-          onChange={(e) => setMetaDescription(e.target.value)}
+          value={metaDescription || ''}
+          onChange={(e) => updateArticleData({ metaDescription: e.target.value })}
           placeholder="Meta description untuk SEO..."
           className="w-full h-16 px-3 py-2 text-xs border border-gray-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 resize-none"
         />

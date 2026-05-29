@@ -1,7 +1,7 @@
 'use client'
 
 import { useEditorStore } from '../../../store/editorStore'
-import { FileText, Hash, Clock } from 'lucide-react'
+import { FileText, Hash, Image, Layout } from 'lucide-react'
 
 export function TabContent() {
   const { blocks } = useEditorStore()
@@ -11,11 +11,22 @@ export function TabContent() {
   const headingCount = blocks.filter(b => b.type === 'heading').length
   const imageCount = blocks.filter(b => b.type === 'image').length
   
-  // Estimate reading time (200 words per minute)
+  // Estimate reading time (200 words per minute) - accurate sync including list items
   const wordCount = blocks.reduce((count, block) => {
     const content = (block as any).content || ''
-    const text = content.replace(/<[^>]*>/g, ' ').trim()
-    return count + text.split(/\s+/).filter(w => w.length > 0).length
+    const items = (block as any).items || []
+    
+    // Count words in content
+    const textContent = content.replace(/<[^>]*>/g, ' ').trim()
+    const words = textContent.split(/\s+/).filter(w => w.length > 0)
+    
+    // Count words in list items
+    const listWords = items.reduce((acc: number, item: string) => {
+      const clean = item.replace(/<[^>]*>/g, ' ').trim()
+      return acc + clean.split(/\s+/).filter(w => w.length > 0).length
+    }, 0)
+    
+    return count + words.length + listWords
   }, 0)
   const readingTime = Math.max(1, Math.ceil(wordCount / 200))
 
@@ -59,14 +70,14 @@ export function TabContent() {
           </div>
           <div className="flex justify-between text-sm">
             <span className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-              <FileText size={14} />
+              <Image size={14} />
               Images
             </span>
             <span className="font-bold">{imageCount}</span>
           </div>
           <div className="flex justify-between text-sm">
             <span className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-              <FileText size={14} />
+              <Layout size={14} />
               Total Blocks
             </span>
             <span className="font-bold">{blocks.length}</span>

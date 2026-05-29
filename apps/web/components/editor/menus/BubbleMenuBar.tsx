@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
 import type { Editor } from '@tiptap/react'
+import { BubbleMenu } from '@tiptap/react'
 import { 
   Bold, 
   Italic, 
@@ -18,44 +18,10 @@ interface BubbleMenuBarProps {
 }
 
 /**
- * Custom Bubble Menu - appears on text selection
+ * Bubble Menu - appears on text selection using official Tiptap BubbleMenu
  * Shows formatting options: Bold, Italic, Underline, Strike, Code, Link, Highlight
  */
 export function BubbleMenuBar({ editor }: BubbleMenuBarProps) {
-  const [isVisible, setIsVisible] = useState(false)
-  const [position, setPosition] = useState({ top: 0, left: 0 })
-
-  const updatePosition = useCallback(() => {
-    const { from, to } = editor.state.selection
-    if (from === to) {
-      setIsVisible(false)
-      return
-    }
-
-    const { view } = editor
-    const start = view.coordsAtPos(from)
-    const end = view.coordsAtPos(to)
-    
-    const left = (start.left + end.left) / 2
-    const top = start.top - 50
-
-    setPosition({ top, left })
-    setIsVisible(true)
-  }, [editor])
-
-  useEffect(() => {
-    const handleSelectionChange = () => {
-      updatePosition()
-    }
-
-    editor.on('selectionUpdate', handleSelectionChange)
-    return () => {
-      editor.off('selectionUpdate', handleSelectionChange)
-    }
-  }, [editor, updatePosition])
-
-  if (!isVisible) return null
-
   const setLink = () => {
     const previousUrl = editor.getAttributes('link').href
     const url = window.prompt('Enter URL', previousUrl)
@@ -71,13 +37,10 @@ export function BubbleMenuBar({ editor }: BubbleMenuBarProps) {
   }
 
   return (
-    <div 
-      className="fixed z-50 flex items-center gap-1 p-1 bg-slate-900 dark:bg-slate-800 rounded-xl shadow-xl border border-slate-700"
-      style={{
-        top: `${position.top}px`,
-        left: `${position.left}px`,
-        transform: 'translateX(-50%)',
-      }}
+    <BubbleMenu 
+      editor={editor} 
+      tippyOptions={{ duration: 100 }}
+      className="flex items-center gap-1 p-1 bg-slate-900 dark:bg-slate-800 rounded-xl shadow-xl border border-slate-700"
     >
       <BubbleButton
         onClick={() => editor.chain().focus().toggleBold().run()}
@@ -136,7 +99,7 @@ export function BubbleMenuBar({ editor }: BubbleMenuBarProps) {
       >
         <Highlighter size={16} />
       </BubbleButton>
-    </div>
+    </BubbleMenu>
   )
 }
 

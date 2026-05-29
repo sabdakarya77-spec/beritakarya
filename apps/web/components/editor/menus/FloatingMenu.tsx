@@ -1,7 +1,5 @@
-'use client'
-
-import { useState, useEffect, useCallback } from 'react'
 import type { Editor } from '@tiptap/react'
+import { FloatingMenu } from '@tiptap/react'
 import { 
   Plus,
   Heading1,
@@ -21,50 +19,10 @@ interface FloatingMenuBarProps {
 }
 
 /**
- * Custom Floating Menu - appears on empty lines
+ * Custom Floating Menu - appears on empty lines using official Tiptap FloatingMenu
  * Shows quick insert options: Heading, List, Quote, Code, Divider, Image
  */
 export function FloatingMenuBar({ editor }: FloatingMenuBarProps) {
-  const [isVisible, setIsVisible] = useState(false)
-  const [position, setPosition] = useState({ top: 0, left: 0 })
-
-  const updatePosition = useCallback(() => {
-    const { state } = editor
-    const { selection } = state
-    const { $from } = selection
-
-    // Check if current line is empty
-    const currentLineText = $from.nodeBefore?.textContent || ''
-    const isEmptyLine = $from.parentOffset === 0 && currentLineText.trim() === ''
-
-    if (!isEmptyLine) {
-      setIsVisible(false)
-      return
-    }
-
-    const { view } = editor
-    const coords = view.coordsAtPos($from.pos)
-    
-    setPosition({ 
-      top: coords.top, 
-      left: coords.left - 60 
-    })
-    setIsVisible(true)
-  }, [editor])
-
-  useEffect(() => {
-    const handleTransaction = () => {
-      updatePosition()
-    }
-
-    editor.on('transaction', handleTransaction)
-    return () => {
-      editor.off('transaction', handleTransaction)
-    }
-  }, [editor, updatePosition])
-
-  if (!isVisible) return null
-
   const insertImage = () => {
     const url = window.prompt('Enter image URL')
     if (url) {
@@ -124,12 +82,10 @@ export function FloatingMenuBar({ editor }: FloatingMenuBarProps) {
   ]
 
   return (
-    <div 
-      className="fixed z-40 flex items-center gap-1 p-1.5 bg-slate-900 dark:bg-slate-800 rounded-xl shadow-xl border border-slate-700 opacity-0 hover:opacity-100 transition-opacity"
-      style={{
-        top: `${position.top}px`,
-        left: `${position.left}px`,
-      }}
+    <FloatingMenu 
+      editor={editor} 
+      tippyOptions={{ duration: 100 }}
+      className="flex items-center gap-1 p-1.5 bg-slate-900 dark:bg-slate-800 rounded-xl shadow-xl border border-slate-700"
     >
       <button
         onClick={insertImage}
@@ -156,7 +112,7 @@ export function FloatingMenuBar({ editor }: FloatingMenuBarProps) {
           {item.icon}
         </button>
       ))}
-    </div>
+    </FloatingMenu>
   )
 }
 

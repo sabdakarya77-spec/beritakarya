@@ -27,6 +27,7 @@ interface EditorTopbarProps {
   onSave: () => void
   onSubmit: () => void
   onPublish: () => void
+  onStatusChange?: (status: ArticleStatus) => void
 }
 
 const STATUS_CONFIG: Record<ArticleStatus, { label: string; color: string }> = {
@@ -51,6 +52,7 @@ export function EditorTopbar({
   onSave,
   onSubmit,
   onPublish,
+  onStatusChange,
 }: EditorTopbarProps) {
   const [showStatusMenu, setShowStatusMenu] = useState(false)
   
@@ -84,7 +86,9 @@ export function EditorTopbar({
                   <button
                     key={s}
                     onClick={() => {
-                      // Handle status change
+                      if (onStatusChange) {
+                        onStatusChange(s)
+                      }
                       setShowStatusMenu(false)
                     }}
                     className={cn(

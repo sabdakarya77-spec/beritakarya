@@ -1,16 +1,44 @@
-'use client'
-
-import { useState } from 'react'
-import { Loader2 } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Loader2, RefreshCw } from 'lucide-react'
 import { useGrammar } from '../../../../hooks/useAI'
+import { useEditorStore } from '../../../../store/editorStore'
 
 interface Props {
   model?: string
 }
 
 export function ValidateTab({ model = 'gpt-4o' }: Props) {
+  const { blocks } = useEditorStore()
   const [text, setText] = useState('')
   const grammarState = useGrammar(model)
+
+  // Menggabungkan seluruh teks dari blok dokumen
+  const getFullDocumentText = () => {
+    return blocks.reduce((acc, block) => {
+      const content = (block as any).content || ''
+      const items = (block as any).items || []
+      
+      const cleanText = content.replace(/<[^>]*>/g, ' ').trim()
+      const listText = items.map((item: string) => item.replace(/<[^>]*>/g, ' ').trim()).join('\n')
+      
+      let res = acc
+      if (cleanText) res += cleanText + '\n'
+      if (listText) res += listText + '\n'
+      return res
+    }, '').trim()
+  }
+
+  // Isi teks otomatis saat pertama kali dimuat
+  useEffect(() => {
+    const docText = getFullDocumentText()
+    if (docText && !text) {
+      setText(docText)
+    }
+  }, [blocks])
+
+  const handlePullText = () => {
+    setText(getFullDocumentText())
+  }
 
   const handleCheck = async () => {
     if (!text.trim()) return
@@ -19,14 +47,25 @@ export function ValidateTab({ model = 'gpt-4o' }: Props) {
 
   return (
     <div className="p-4 space-y-4">
-      <div>
-        <label className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 block">
+      <div className="flex items-center justify-between">
+        <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">
           Periksa Tata Bahasa
         </label>
+        <button
+          onClick={handlePullText}
+          className="flex items-center gap-1 text-[10px] text-purple-600 hover:text-purple-700 font-semibold"
+          title="Ambil seluruh tulisan dari editor"
+        >
+          <RefreshCw size={10} />
+          Ambil Teks Dokumen
+        </button>
+      </div>
+
+      <div>
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="Salin teks untuk diperiksa..."
+          placeholder="Salin teks atau klik tombol di atas untuk menarik tulisan..."
           className="w-full h-32 px-3 py-2 text-xs border border-gray-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 resize-none"
         />
       </div>

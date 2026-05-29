@@ -1,5 +1,4 @@
-'use client'
-
+import { useState } from 'react'
 import type { Editor } from '@tiptap/react'
 import {
   Bold,
@@ -25,6 +24,8 @@ import {
   Code2,
   Unlink
 } from 'lucide-react'
+import { MediaLibraryModal } from './MediaLibraryModal'
+import { type MediaItem } from '../../hooks/useMediaLibrary'
 
 interface TiptapEditorToolbarProps {
   editor: Editor
@@ -35,6 +36,8 @@ interface TiptapEditorToolbarProps {
  * Provides formatting controls and actions
  */
 export function TiptapEditorToolbar({ editor }: TiptapEditorToolbarProps) {
+  const [showMediaLibrary, setShowMediaLibrary] = useState(false)
+
   const addLink = () => {
     const previousUrl = editor.getAttributes('link').href
     const url = window.prompt('Masukkan URL:', previousUrl)
@@ -49,15 +52,23 @@ export function TiptapEditorToolbar({ editor }: TiptapEditorToolbarProps) {
     editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run()
   }
 
-  const addImage = () => {
-    const url = window.prompt('Masukkan URL gambar:')
-    if (url) {
-      editor.chain().focus().setImage({ src: url }).run()
+  const handleMediaSelect = (media: MediaItem) => {
+    if (media.url) {
+      editor.chain().focus().setImage({ 
+        src: media.url,
+        alt: media.altText || ''
+      }).run()
     }
+    setShowMediaLibrary(false)
+  }
+
+  const addImage = () => {
+    setShowMediaLibrary(true)
   }
 
   return (
-    <div className="tiptap-toolbar flex flex-wrap items-center gap-1 p-2 border-b border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900/50 rounded-t-lg">
+    <>
+      <div className="tiptap-toolbar flex flex-wrap items-center gap-1 p-2 border-b border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900/50 rounded-t-lg">
       {/* Undo/Redo */}
       <div className="flex items-center gap-1 pr-2 border-r border-gray-200 dark:border-slate-700">
         <ToolbarButton
@@ -238,7 +249,15 @@ export function TiptapEditorToolbar({ editor }: TiptapEditorToolbarProps) {
           </ToolbarButton>
         )}
       </div>
-    </div>
+      
+      {showMediaLibrary && (
+        <MediaLibraryModal
+          isOpen={showMediaLibrary}
+          onClose={() => setShowMediaLibrary(false)}
+          onSelect={handleMediaSelect}
+        />
+      )}
+    </>
   )
 }
 

@@ -3,10 +3,6 @@ import { v4 as uuidv4 } from 'uuid'
 import { normalizeArticleBlocks } from '@beritakarya/utils'
 import { api } from '../lib/api'
 import type { Block, ArticleStatus } from '@beritakarya/types'
-import { useEditorDocumentStore } from './editorDocumentStore'
-import { useEditorUiStore } from './editorUiStore'
-import { useEditorWorkflowStore } from './editorWorkflowStore'
-import { useEditorSessionStore } from './editorSessionStore'
 import { createDefaultBlock } from '../components/editor/core/editorCommands'
 
 export interface EditorState {
@@ -488,49 +484,30 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   }
 }))
 
-function syncLegacyEditorStateToSlices(state: EditorState) {
-  useEditorDocumentStore.setState({
-    articleId: state.articleId,
-    title: state.title,
-    excerpt: state.excerpt,
-    blocks: state.blocks,
-    isDirty: state.isDirty,
-  })
-
-  useEditorUiStore.setState({
-    editorMode: state.editorMode === 'gridblok' ? 'gridblock' : 'wordpress',
-    isSidebarOpen: state.isSidebarOpen,
-    isFocusMode: state.isFocusMode,
-    activeTab: state.activeTab,
-    activeBlockId: state.activeBlockId,
-  })
-
-  useEditorWorkflowStore.setState({
-    status: state.status,
-    saving: state.saving,
-    saveError: state.saveError,
-    lastSaved: state.lastSaved,
-  })
-
-  useEditorSessionStore.setState({
-    warningMessages: state.saveError ? [state.saveError] : [],
-  })
-}
-
-syncLegacyEditorStateToSlices(useEditorStore.getState())
-useEditorStore.subscribe((state) => {
-  syncLegacyEditorStateToSlices(state)
-})
+let lastAutoSaveTime = Date.now()
 
 function scheduleAutoSave(get: () => EditorState) {
   if (saveTimer) clearTimeout(saveTimer)
-  saveTimer = setTimeout(() => {
+  
+  const now = Date.now()
+  const timeSinceLastSave = now - lastAutoSaveTime
+  
+  // Jika pengguna mengetik terus-menerus selama lebih dari 60 detik tanpa jeda diam 15 detik,
+  // paksa auto-save sekarang juga untuk melindungi data pengguna dari potensi kehilangan data.
+  if (timeSinceLastSave >= 60000) {
     const state = get()
-    if (!state.isDirty || state.saving || !hasMeaningfulContent(state)) return
-    if (state.articleId) {
+    if (state.isDirty && !state.saving && hasMeaningfulContent(state)) {
+      lastAutoSaveTime = now
       state.saveArticle()
       return
     }
+  }
+
+  // Jika tidak, jalankan auto-save normal dengan debouncing 15 detik
+  saveTimer = setTimeout(() => {
+    const state = get()
+    if (!state.isDirty || state.saving || !hasMeaningfulContent(state)) return
+    lastAutoSaveTime = Date.now()
     state.saveArticle()
   }, 15000)
 }

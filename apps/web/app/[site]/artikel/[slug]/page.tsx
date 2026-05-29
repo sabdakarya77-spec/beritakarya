@@ -529,9 +529,10 @@ function PublicBlock({ block }: { block: Block }) {
   switch (block.type) {
     case 'paragraph':
       return (
-        <p className={bodyTextClass}>
-          {block.content}
-        </p>
+        <p 
+          className={bodyTextClass}
+          dangerouslySetInnerHTML={{ __html: block.content || '' }}
+        />
       )
     case 'heading':
       const Tag = `h${block.level}` as any
@@ -547,16 +548,15 @@ function PublicBlock({ block }: { block: Block }) {
             'mt-16 mb-8 font-serif font-black leading-tight tracking-tight text-balance text-brand-black dark:text-white md:mt-20 md:mb-10',
             headingSizeClass
           )}
-        >
-          {block.content}
-        </Tag>
+          dangerouslySetInnerHTML={{ __html: block.content || '' }}
+        />
       )
     case 'quote':
       return (
         <div className="relative my-16 rounded-r-2xl border-l-4 border-brand-red bg-gray-50 px-6 py-10 dark:bg-white/[0.03] md:px-10 md:py-12 lg:px-16">
           <span className="absolute left-5 top-5 text-7xl font-serif leading-none text-brand-red opacity-10 select-none md:left-8 md:top-6 md:text-8xl">“</span>
           <blockquote className="relative z-10 font-serif text-[calc(1.25rem*var(--article-font-scale,1))] italic leading-[calc(1.9rem*var(--article-font-scale,1))] text-brand-black dark:text-white md:text-[calc(1.65rem*var(--article-font-scale,1))] md:leading-[calc(2.5rem*var(--article-font-scale,1))]">
-            {block.content}
+            <span dangerouslySetInnerHTML={{ __html: block.content || '' }} />
             {block.attribution && (
               <footer className="text-[10px] font-black uppercase tracking-[0.3em] text-brand-red mt-6">— {block.attribution}</footer>
             )}
@@ -638,9 +638,11 @@ function PublicBlock({ block }: { block: Block }) {
           block.ordered ? "list-decimal" : "list-disc"
         )}>
           {block.items.map((item, i) => (
-            <li key={i} className={bodyTextClass}>
-              {item}
-            </li>
+            <li 
+              key={i} 
+              className={bodyTextClass}
+              dangerouslySetInnerHTML={{ __html: item || '' }}
+            />
           ))}
         </ListTag>
       )
@@ -653,12 +655,13 @@ function PublicBlock({ block }: { block: Block }) {
         editorial: 'bg-brand-surface border-gray-100 text-brand-black dark:bg-white/[0.03] dark:border-white/10 dark:text-white'
       }
       return (
-        <div className={cn(
-          "my-16 rounded-2xl border-l-4 p-7 font-serif text-[calc(1.05rem*var(--article-font-scale,1))] leading-[calc(2rem*var(--article-font-scale,1))] antialiased text-left md:p-10 md:text-[calc(1.2rem*var(--article-font-scale,1))] md:leading-[calc(2.25rem*var(--article-font-scale,1))] shadow-sm",
-          variants[block.variant as keyof typeof variants] || variants.editorial
-        )}>
-          {block.content}
-        </div>
+        <div 
+          className={cn(
+            "my-16 rounded-2xl border-l-4 p-7 font-serif text-[calc(1.05rem*var(--article-font-scale,1))] leading-[calc(2rem*var(--article-font-scale,1))] antialiased text-left md:p-10 md:text-[calc(1.2rem*var(--article-font-scale,1))] md:leading-[calc(2.25rem*var(--article-font-scale,1))] shadow-sm",
+            variants[block.variant as keyof typeof variants] || variants.editorial
+          )}
+          dangerouslySetInnerHTML={{ __html: block.content || '' }}
+        />
       )
     case 'embed':
       return (

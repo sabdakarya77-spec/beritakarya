@@ -14,6 +14,14 @@ import { BubbleMenuBar } from './menus/BubbleMenuBar'
 import { FloatingMenuBar } from './menus/FloatingMenu'
 import { useEditorStore } from '../../store/editorStore'
 
+// Custom extensions imports
+import { CalloutExtension } from './extensions/CalloutExtension'
+import { EmbedExtension } from './extensions/EmbedExtension'
+import { QuoteExtension } from './extensions/QuoteExtension'
+import { GalleryExtension } from './extensions/GalleryExtension'
+import { ImageGridExtension } from './extensions/ImageGridExtension'
+import { MediaTextExtension } from './extensions/MediaTextExtension'
+
 interface TiptapEditorProps {
   initialContent?: string
   editable?: boolean
@@ -31,7 +39,7 @@ interface TiptapEditorProps {
  * - Placeholder text
  * - Bubble Menu (text formatting on selection)
  * - Floating Menu (insert blocks)
- * - Store sync via useTiptapSync
+ * - Store sync
  */
 export function TiptapEditor({
   initialContent = '',
@@ -52,6 +60,7 @@ export function TiptapEditor({
       StarterKit.configure({
         link: false,
         underline: false,
+        blockquote: false, // Nonaktifkan blockquote default untuk memakai QuoteExtension custom kita yang hebat
         heading: {
           levels: [1, 2, 3, 4, 5, 6],
         },
@@ -82,19 +91,26 @@ export function TiptapEditor({
         },
       }),
       TextAlign.configure({
-        types: ['heading', 'paragraph', 'blockquote'],
+        types: ['heading', 'paragraph', 'quote'],
         alignments: ['left', 'center', 'right', 'justify'],
       }),
       Underline,
       Highlight.configure({
         multicolor: false,
       }),
+      CalloutExtension,
+      EmbedExtension,
+      QuoteExtension,
+      GalleryExtension,
+      ImageGridExtension,
+      MediaTextExtension,
     ],
     content: initialContent,
     editable,
     onUpdate: ({ editor }) => {
-      // Convert Tiptap content to blocks and sync to store
-      const blocks = convertTiptapToBlocks(editor)
+      // Ambil blocks lama untuk mencocokkan ID secara stabil
+      const oldBlocks = useEditorStore.getState().blocks
+      const blocks = convertTiptapToBlocks(editor, oldBlocks)
       setBlocks(blocks)
     },
     editorProps: {
@@ -134,6 +150,24 @@ export function TiptapEditor({
     }
   }, [editor])
 
+  // Listen to AI apply content event
+  useEffect(() => {
+    if (!editor) return
+    
+    const handleAIApply = (e: Event) => {
+      const customEvent = e as CustomEvent
+      const content = customEvent.detail?.content
+      if (content) {
+        editor.commands.insertContent(content)
+      }
+    }
+    
+    window.addEventListener('ai-apply-content', handleAIApply)
+    return () => {
+      window.removeEventListener('ai-apply-content', handleAIApply)
+    }
+  }, [editor])
+
   if (!editor) {
     return (
       <div className="animate-pulse">
@@ -162,15 +196,38 @@ export function TiptapEditor({
 }
 
 /**
- * Convert Tiptap JSON content to Block[]
+ * Convert Tiptap JSON content to Block[] with stable ID mapping and custom extension support
  */
-function convertTiptapToBlocks(editor: any): any[] {
+function convertTiptapToBlocks(editor: any, oldBlocks: any[] = []): any[] {
   const doc = editor.getJSON()
   const content = doc.content || []
   
   return content.map((node: any, index: number) => {
+    let blockId = ''
+    
+    // Konversi tipe tiptap ke tipe block kita demi pencocokan ID
+    let mappedType = node.type
+    if (node.type === 'blockquote') mappedType = 'quote'
+    else if (node.type === 'bulletList' || node.type === 'orderedList') mappedType = 'list'
+    else if (node.type === 'codeBlock') mappedType = 'paragraph'
+    
+    // Pencocokan 1: periksa index yang sama
+    const oldBlockAtIndex = oldBlocks[index]
+    if (oldBlockAtIndex && oldBlockAtIndex.type === mappedType) {
+      blockId = oldBlockAtIndex.id
+    } else {
+      // Pencocokan 2: cari blok lama terdekat dengan tipe yang sama yang belum diklaim
+      const foundBlock = oldBlocks.find(b => b.type === mappedType && !content.some((n: any, idx: number) => idx < index && oldBlocks[idx]?.id === b.id))
+      if (foundBlock) {
+        blockId = foundBlock.id
+      } else {
+        // Fallback: buat ID baru yang unik dan stabil
+        blockId = `block-${Date.now()}-${index}-${Math.random().toString(36).substring(2, 9)}`
+      }
+    }
+
     const baseBlock = {
-      id: `block-${Date.now()}-${index}`,
+      id: blockId,
     }
 
     switch (node.type) {
@@ -189,10 +246,49 @@ function convertTiptapToBlocks(editor: any): any[] {
           textAlign: node.attrs?.textAlign,
         }
       case 'blockquote':
+      case 'quote':
         return {
           ...baseBlock,
           type: 'quote',
           content: extractTextContent(node),
+          attribution: node.attrs?.attribution || '',
+          variant: node.attrs?.variant || 'default',
+        }
+      case 'callout':
+        return {
+          ...baseBlock,
+          type: 'callout',
+          content: extractTextContent(node),
+          variant: node.attrs?.variant || 'editorial',
+          icon: node.attrs?.icon || '💡',
+        }
+      case 'embed':
+        return {
+          ...baseBlock,
+          type: 'embed',
+          url: node.attrs?.src || '',
+          embedType: node.attrs?.embedType || 'other',
+        }
+      case 'gallery':
+        return {
+          ...baseBlock,
+          type: 'gallery',
+          images: node.attrs?.images || [],
+        }
+      case 'imageGrid':
+        return {
+          ...baseBlock,
+          type: 'imageGrid',
+          cols: node.attrs?.cols || 2,
+          images: node.attrs?.images || [],
+        }
+      case 'mediaText':
+        return {
+          ...baseBlock,
+          type: 'mediaText',
+          layout: node.attrs?.layout || 'left',
+          imageUrl: node.attrs?.imageUrl || '',
+          text: node.attrs?.text || '',
         }
       case 'image':
         return {

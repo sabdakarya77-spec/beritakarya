@@ -199,7 +199,6 @@ const MediaTextComponent = ({ node, updateAttributes, deleteNode }: any) => {
 export const MediaTextExtension = Node.create({
   name: 'mediaText',
   group: 'block',
-  atom: true,
   draggable: true,
   content: 'block+',
 
