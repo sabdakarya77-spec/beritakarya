@@ -21,6 +21,7 @@ import { QuoteExtension } from './extensions/QuoteExtension'
 import { GalleryExtension } from './extensions/GalleryExtension'
 import { ImageGridExtension } from './extensions/ImageGridExtension'
 import { MediaTextExtension } from './extensions/MediaTextExtension'
+import { SlashMenuExtension } from './extensions/SlashMenuExtension'
 
 interface TiptapEditorProps {
   initialContent?: string
@@ -104,6 +105,7 @@ export function TiptapEditor({
       GalleryExtension,
       ImageGridExtension,
       MediaTextExtension,
+      SlashMenuExtension,
     ],
     content: initialContent,
     editable,

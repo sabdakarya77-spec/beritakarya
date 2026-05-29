@@ -202,7 +202,13 @@ export const defaultSlashMenuItems: SlashMenuItem[] = [
     title: 'Quote',
     description: 'Capture a quote with attribution',
     icon: <Quote size={18} className="text-gray-600 dark:text-gray-400" />,
-    command: (editor) => editor.chain().focus().toggleBlockquote().run(),
+    command: (editor) => {
+      editor.chain().focus().insertContent({
+        type: 'quote',
+        attrs: { variant: 'default' },
+        content: [{ type: 'paragraph' }],
+      }).run()
+    },
   },
   {
     title: 'Code Block',
@@ -251,7 +257,15 @@ export const defaultSlashMenuItems: SlashMenuItem[] = [
     command: (editor) => {
       const url = window.prompt('Enter embed URL (YouTube, Twitter, etc.)')
       if (url) {
-        editor.chain().focus().setEmbed({ src: url }).run()
+        try {
+          editor.chain().focus().setEmbed({ src: url }).run()
+        } catch {
+          // Fallback if setEmbed command not available
+          editor.chain().focus().insertContent({
+            type: 'embed',
+            attrs: { url, embedType: 'other' },
+          }).run()
+        }
       }
     },
   },

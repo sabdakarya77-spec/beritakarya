@@ -1,8 +1,7 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
 import type { Editor } from '@tiptap/react'
-import { BubbleMenuPlugin } from '@tiptap/extension-bubble-menu'
+import { BubbleMenu } from '@tiptap/react/menus'
 import { 
   Bold, 
   Italic, 
@@ -19,34 +18,9 @@ interface BubbleMenuBarProps {
 }
 
 /**
- * Bubble Menu - appears on text selection using Tiptap BubbleMenuPlugin
- * Shows formatting options: Bold, Italic, Underline, Strike, Code, Link, Highlight
+ * Bubble Menu - appears on text selection using Tiptap React BubbleMenu component
  */
 export function BubbleMenuBar({ editor }: BubbleMenuBarProps) {
-  const elementRef = useRef<HTMLDivElement>(null)
-  const pluginRef = useRef<ReturnType<typeof BubbleMenuPlugin> | null>(null)
-
-  useEffect(() => {
-    if (!editor || !elementRef.current) return
-
-    pluginRef.current = BubbleMenuPlugin({
-      editor,
-      element: elementRef.current,
-      pluginKey: 'bubbleMenuBar',
-      shouldShow: ({ editor: ed }) => {
-        return !ed.state.selection.empty
-      },
-    })
-
-    editor.registerPlugin(pluginRef.current)
-
-    return () => {
-      if (pluginRef.current) {
-        editor.unregisterPlugin('bubbleMenuBar')
-      }
-    }
-  }, [editor])
-
   const setLink = () => {
     const previousUrl = editor.getAttributes('link').href
     const url = window.prompt('Enter URL', previousUrl)
@@ -62,10 +36,9 @@ export function BubbleMenuBar({ editor }: BubbleMenuBarProps) {
   }
 
   return (
-    <div
-      ref={elementRef}
-      className="flex items-center gap-1 p-1 bg-slate-900 dark:bg-slate-800 rounded-xl shadow-xl border border-slate-700"
-      style={{ display: 'none' }}
+    <BubbleMenu
+      editor={editor}
+      className="flex items-center gap-1 p-1 bg-slate-900 dark:bg-slate-800 rounded-xl shadow-xl border border-slate-700 z-50"
     >
       <BubbleButton
         onClick={() => editor.chain().focus().toggleBold().run()}
@@ -124,7 +97,7 @@ export function BubbleMenuBar({ editor }: BubbleMenuBarProps) {
       >
         <Highlighter size={16} />
       </BubbleButton>
-    </div>
+    </BubbleMenu>
   )
 }
 

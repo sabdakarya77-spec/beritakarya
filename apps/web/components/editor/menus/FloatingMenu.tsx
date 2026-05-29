@@ -1,9 +1,9 @@
 'use client'
 
-import { useEffect, useRef, useCallback } from 'react'
+import { useCallback } from 'react'
 import type { Editor } from '@tiptap/react'
-import { FloatingMenuPlugin } from '@tiptap/extension-floating-menu'
-import { 
+import { FloatingMenu } from '@tiptap/react/menus'
+import {
   Plus,
   Heading1,
   Heading2,
@@ -14,6 +14,10 @@ import {
   Code,
   Minus,
   Image,
+  AlertCircle,
+  Columns,
+  GalleryHorizontal,
+  Grid,
 } from 'lucide-react'
 import { cn } from '../../../lib/utils'
 
@@ -22,52 +26,25 @@ interface FloatingMenuBarProps {
 }
 
 /**
- * Custom Floating Menu - appears on empty lines using Tiptap FloatingMenuPlugin
- * Shows quick insert options: Heading, List, Quote, Code, Divider, Image
+ * Floating Menu — appears on empty paragraph lines.
+ * Uses Tiptap's built-in FloatingMenu component (same pattern as BubbleMenu)
+ * for reliable plugin lifecycle management.
  */
 export function FloatingMenuBar({ editor }: FloatingMenuBarProps) {
-  const elementRef = useRef<HTMLDivElement>(null)
-  const pluginRef = useRef<ReturnType<typeof FloatingMenuPlugin> | null>(null)
-
-  useEffect(() => {
-    if (!editor || !elementRef.current) return
-
-    pluginRef.current = FloatingMenuPlugin({
-      editor,
-      element: elementRef.current,
-      pluginKey: 'floatingMenuBar',
-      shouldShow: ({ editor: ed, view }) => {
-        const { selection } = view.state
-        const { $anchor, empty } = selection
-        
-        // Only show when selection is empty (cursor) and at the start of a paragraph
-        if (!empty) return false
-        
-        // Check if cursor is at the start of an empty paragraph
-        const isAtStart = $anchor.parent.type.name === 'paragraph' && 
-          $anchor.parent.content.size === 0
-        
-        return isAtStart
-      },
-    })
-
-    editor.registerPlugin(pluginRef.current)
-
-    return () => {
-      if (pluginRef.current) {
-        editor.unregisterPlugin('floatingMenuBar')
-      }
-    }
-  }, [editor])
-
   const insertImage = useCallback(() => {
-    const url = window.prompt('Enter image URL')
+    const url = window.prompt('Masukkan URL gambar')
     if (url && editor) {
       editor.chain().focus().setImage({ src: url }).run()
     }
   }, [editor])
 
   const menuItems = [
+    {
+      icon: <Image size={16} />,
+      title: 'Gambar',
+      action: () => insertImage(),
+    },
+    { divider: true },
     {
       icon: <Heading1 size={16} />,
       title: 'Heading 1',
@@ -86,6 +63,7 @@ export function FloatingMenuBar({ editor }: FloatingMenuBarProps) {
       action: () => editor?.chain().focus().toggleHeading({ level: 3 }).run(),
       isActive: () => editor?.isActive('heading', { level: 3 }),
     },
+    { divider: true },
     {
       icon: <List size={16} />,
       title: 'Bullet List',
@@ -98,12 +76,78 @@ export function FloatingMenuBar({ editor }: FloatingMenuBarProps) {
       action: () => editor?.chain().focus().toggleOrderedList().run(),
       isActive: () => editor?.isActive('orderedList'),
     },
+    { divider: true },
     {
       icon: <Quote size={16} />,
-      title: 'Quote',
-      action: () => editor?.chain().focus().toggleBlockquote().run(),
-      isActive: () => editor?.isActive('blockquote'),
+      title: 'Kutipan',
+      action: () =>
+        editor
+          ?.chain()
+          .focus()
+          .insertContent({
+            type: 'quote',
+            attrs: { variant: 'default' },
+            content: [{ type: 'paragraph' }],
+          })
+          .run(),
+      isActive: () => editor?.isActive('quote'),
     },
+    {
+      icon: <AlertCircle size={16} />,
+      title: 'Callout',
+      action: () =>
+        editor
+          ?.chain()
+          .focus()
+          .insertContent({
+            type: 'callout',
+            attrs: { variant: 'info', icon: '💡' },
+            content: [{ type: 'paragraph' }],
+          })
+          .run(),
+      isActive: () => editor?.isActive('callout'),
+    },
+    {
+      icon: <Columns size={16} />,
+      title: 'Media + Teks',
+      action: () =>
+        editor
+          ?.chain()
+          .focus()
+          .insertContent({
+            type: 'mediaText',
+            attrs: { layout: 'left', imageUrl: '' },
+            content: [{ type: 'paragraph' }],
+          })
+          .run(),
+    },
+    {
+      icon: <Grid size={16} />,
+      title: 'Image Grid',
+      action: () =>
+        editor
+          ?.chain()
+          .focus()
+          .insertContent({
+            type: 'imageGrid',
+            attrs: { cols: 2, images: [] },
+          })
+          .run(),
+    },
+    {
+      icon: <GalleryHorizontal size={16} />,
+      title: 'Galeri',
+      action: () =>
+        editor
+          ?.chain()
+          .focus()
+          .insertContent({
+            type: 'gallery',
+            attrs: { images: [] },
+          })
+          .run(),
+    },
+    { divider: true },
     {
       icon: <Code size={16} />,
       title: 'Code Block',
@@ -112,44 +156,59 @@ export function FloatingMenuBar({ editor }: FloatingMenuBarProps) {
     },
     {
       icon: <Minus size={16} />,
-      title: 'Divider',
+      title: 'Pemisah',
       action: () => editor?.chain().focus().setHorizontalRule().run(),
-      isActive: () => false,
     },
   ]
 
   return (
-    <div
-      ref={elementRef}
-      className="flex items-center gap-1 p-1.5 bg-slate-900 dark:bg-slate-800 rounded-xl shadow-xl border border-slate-700"
-      style={{ display: 'none' }}
+    <FloatingMenu
+      editor={editor}
+      options={{
+        placement: 'bottom-start',
+        offset: 8,
+      }}
+      shouldShow={({ state }) => {
+        const { $anchor, empty } = state.selection
+        if (!empty) return false
+        // Only show on truly empty paragraphs
+        return (
+          $anchor.parent.type.name === 'paragraph' &&
+          $anchor.parent.content.size === 0
+        )
+      }}
     >
-      <button
-        onClick={insertImage}
-        title="Insert Image"
-        className="p-2 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition-colors"
-      >
-        <Image size={16} />
-      </button>
+      <div className="floating-menu-bar flex items-center gap-0.5 p-1.5 bg-slate-900 dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-700/80 backdrop-blur-sm">
+        {menuItems.map((item, index) => {
+          if ('divider' in item) {
+            return (
+              <div
+                key={`divider-${index}`}
+                className="w-px h-5 bg-slate-600/60 mx-0.5"
+              />
+            )
+          }
 
-      <div className="w-px h-5 bg-slate-600" />
+          const isActive = 'isActive' in item && item.isActive?.()
 
-      {menuItems.map((item, index) => (
-        <button
-          key={index}
-          onClick={item.action}
-          title={item.title}
-          className={cn(
-            'p-2 rounded-lg transition-colors',
-            item.isActive()
-              ? 'bg-brand-red/20 text-brand-red'
-              : 'text-slate-300 hover:bg-slate-700 hover:text-white'
-          )}
-        >
-          {item.icon}
-        </button>
-      ))}
-    </div>
+          return (
+            <button
+              key={index}
+              onClick={item.action}
+              title={item.title}
+              className={cn(
+                'p-1.5 rounded-lg transition-all duration-150',
+                isActive
+                  ? 'bg-brand-red/20 text-brand-red'
+                  : 'text-slate-400 hover:bg-slate-700 hover:text-white hover:scale-110'
+              )}
+            >
+              {item.icon}
+            </button>
+          )
+        })}
+      </div>
+    </FloatingMenu>
   )
 }
 
