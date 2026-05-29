@@ -323,9 +323,9 @@ function convertBlocksToHTML(blocks: any[]): string {
           const items = (block.items || []).map((item: string) => `<li>${item}</li>`).join('')
           return items ? `<${tag}>${items}</${tag}>` : `<${tag}></${tag}>`
         case 'callout':
-          const calloutType = block.calloutType || 'info'
-          const calloutIcon = block.calloutIcon || '💡'
-          return `<div data-callout="${calloutType}">${calloutIcon} ${content}</div>`
+          const calloutVariant = block.variant || 'editorial'
+          const calloutIcon = block.icon || '💡'
+          return `<div data-callout="${calloutVariant}">${calloutIcon} ${content}</div>`
         case 'embed':
           const embedUrl = block.url || ''
           const embedType = block.embedType || 'other'
