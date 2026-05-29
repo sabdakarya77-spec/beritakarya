@@ -162,16 +162,16 @@ const { generateCsrfToken, doubleCsrfProtection } = doubleCsrf({
   // Use accessToken cookie as session identifier - more stable than IP
   // If no accessToken, fall back to a combination that won't change often
   getSessionIdentifier: (req) => {
-    // Try to get accessToken first
+    // Try to get accessToken first (most stable)
     const accessToken = req.cookies?.accessToken
     if (accessToken) return accessToken
     
-    // Fallback to user ID from JWT if authenticated (set by jwtVerify middleware)
-    const userId = (req as any).user?.id
-    if (userId) return `user-${userId}`
+    // Fallback to userId from JWT (note: JWT payload uses 'userId', not 'id')
+    const jwtUserId = (req as any).user?.userId
+    if (jwtUserId) return `user-${jwtUserId}`
     
-    // Last resort: use a combination of IP + user agent (but note IP can change)
-    return `${req.ip || 'anonymous'}-${req.headers['user-agent']?.slice(0, 50) || 'unknown'}`
+    // Last resort: use a combination that won't change between requests
+    return `${req.ip || 'anonymous'}`
   },
   cookieName: 'x-csrf-token',
   cookieOptions: csrfCookieOptions,
