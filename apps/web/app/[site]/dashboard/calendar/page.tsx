@@ -136,7 +136,7 @@ export default function EditorialCalendar() {
         </div>
         
         <div className="grid grid-cols-7 auto-rows-[140px]">
-          {calendarDays.map((day, i) => {
+          {calendarDays.map((day) => {
             const dayArticles = getArticlesForDay(day);
             const isCurrentMonth = isSameDay(startOfMonth(day), monthStart);
             

@@ -1,3 +1,5 @@
+'use client'
+
 import { useState } from 'react'
 import type { Editor } from '@tiptap/react'
 import {
@@ -67,7 +69,7 @@ export function TiptapEditorToolbar({ editor }: TiptapEditorToolbarProps) {
   }
 
   return (
-    <>
+    <div className="tiptap-editor-toolbar-container">
       <div className="tiptap-toolbar flex flex-wrap items-center gap-1 p-2 border-b border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900/50 rounded-t-lg">
       {/* Undo/Redo */}
       <div className="flex items-center gap-1 pr-2 border-r border-gray-200 dark:border-slate-700">
@@ -257,8 +259,9 @@ export function TiptapEditorToolbar({ editor }: TiptapEditorToolbarProps) {
           onSelect={handleMediaSelect}
         />
       )}
-    </>
-  )
+    </div>
+  </div>
+)
 }
 
 interface ToolbarButtonProps {
