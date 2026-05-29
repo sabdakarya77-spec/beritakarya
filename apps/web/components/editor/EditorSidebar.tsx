@@ -1,12 +1,12 @@
 'use client'
 
-import { useState } from 'react'
 import { cn } from '../../lib/utils'
 import { ChevronRight, FileText, Settings, Search, History, Sparkles } from 'lucide-react'
 import { SEOPanel } from './seo/SEOPanel'
 import { TabSettings } from './tabs/TabSettings'
 import { TabContent } from './tabs/TabContent'
 import { AIPanel } from './ai/AIPanel'
+import { useEditorStore } from '../../store/editorStore'
 
 interface EditorSidebarProps {
   isOpen: boolean
@@ -16,7 +16,7 @@ interface EditorSidebarProps {
 type TabType = 'content' | 'settings' | 'seo' | 'history' | 'assist'
 
 export function EditorSidebar({ isOpen, onToggle }: EditorSidebarProps) {
-  const [activeTab, setActiveTab] = useState<TabType>('settings')
+  const { activeTab, setActiveTab } = useEditorStore()
   
   const tabs: { id: TabType; label: string; icon: typeof FileText }[] = [
     { id: 'content', label: 'Content', icon: FileText },

@@ -96,7 +96,7 @@ export function TabSettings() {
   }
 
   const handleRemoveFeaturedImage = () => {
-    updateArticleData({ featuredImage: null })
+    updateArticleData({ featuredImage: '' })
   }
 
   return (
