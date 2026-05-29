@@ -68,9 +68,9 @@ export function TiptapEditor({
       Placeholder.configure({
         placeholder: ({ node }) => {
           if (node.type.name === 'heading') {
-            return 'Ketik judul...'
+            return 'Ketik subjudul...'
           }
-          return 'Tulis paragraf...'
+          return "Tulis paragraf baru, atau ketik '/' untuk menyisipkan galeri, gambar, callout..."
         },
         showOnlyCurrent: true,
       }),

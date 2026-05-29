@@ -194,16 +194,13 @@
 
   /* ==================== TIPTAP EDITOR STYLES ==================== */
   .tiptap-editor-wrapper {
-    @apply rounded-lg border border-gray-200 dark:border-slate-700 overflow-hidden;
-    @apply bg-white dark:bg-slate-900;
+    @apply w-full transition-all duration-300;
+    background-color: transparent !important;
   }
 
   .tiptap-editor-content {
-    @apply px-4 py-4 min-h-[300px];
-  }
-
-  .tiptap-editor-content:focus {
-    @apply outline-none;
+    @apply py-6 leading-relaxed font-sans text-brand-black dark:text-slate-100;
+    font-size: calc(1.05rem * var(--article-font-scale, 1));
   }
 
   /* Prose styling for editor content */

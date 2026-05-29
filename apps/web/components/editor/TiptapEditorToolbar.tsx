@@ -24,7 +24,12 @@ import {
   Heading3,
   Code,
   Code2,
-  Unlink
+  Unlink,
+  GalleryHorizontal,
+  Grid,
+  Columns,
+  AlertCircle,
+  Video
 } from 'lucide-react'
 import { MediaLibraryModal } from './MediaLibraryModal'
 import { type MediaItem } from '../../hooks/useMediaLibrary'
@@ -251,17 +256,66 @@ export function TiptapEditorToolbar({ editor }: TiptapEditorToolbarProps) {
           </ToolbarButton>
         )}
       </div>
+
+      {/* Premium Interactive Blocks */}
+      <div className="flex items-center gap-1 pl-2 border-l border-gray-200 dark:border-slate-700">
+        <ToolbarButton
+          onClick={() => editor.chain().focus().insertContent({ type: 'gallery', attrs: { images: [] } }).run()}
+          active={editor.isActive('gallery')}
+          title="Sisipkan Galeri Gambar"
+          className="text-purple-600 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-950/30"
+        >
+          <GalleryHorizontal className="w-4 h-4" />
+        </ToolbarButton>
+        <ToolbarButton
+          onClick={() => editor.chain().focus().insertContent({ type: 'imageGrid', attrs: { cols: 2, images: [] } }).run()}
+          active={editor.isActive('imageGrid')}
+          title="Sisipkan Grid Gambar"
+          className="text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-950/30"
+        >
+          <Grid className="w-4 h-4" />
+        </ToolbarButton>
+        <ToolbarButton
+          onClick={() => editor.chain().focus().insertContent({ type: 'mediaText', attrs: { layout: 'left', imageUrl: '', text: '' } }).run()}
+          active={editor.isActive('mediaText')}
+          title="Sisipkan Media + Teks"
+          className="text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-950/30"
+        >
+          <Columns className="w-4 h-4" />
+        </ToolbarButton>
+        <ToolbarButton
+          onClick={() => editor.chain().focus().insertContent({ type: 'callout', attrs: { variant: 'info', icon: '💡' } }).run()}
+          active={editor.isActive('callout')}
+          title="Sisipkan Callout Box"
+          className="text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-950/30"
+        >
+          <AlertCircle className="w-4 h-4" />
+        </ToolbarButton>
+        <ToolbarButton
+          onClick={() => {
+            const url = window.prompt('Masukkan URL Embed (YouTube, Twitter, dll.):')
+            if (url) {
+              editor.chain().focus().setEmbed({ src: url }).run()
+            }
+          }}
+          active={editor.isActive('embed')}
+          title="Embed Video / URL"
+          className="text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-950/30"
+        >
+          <Video className="w-4 h-4" />
+        </ToolbarButton>
+      </div>
       
       {showMediaLibrary && (
-        <MediaLibraryModal
-          isOpen={showMediaLibrary}
-          onClose={() => setShowMediaLibrary(false)}
-          onSelect={handleMediaSelect}
-        />
-      )}
+          <MediaLibraryModal
+            isOpen={showMediaLibrary}
+            onClose={() => setShowMediaLibrary(false)}
+            onSelect={handleMediaSelect}
+          />
+        )}
+      </div>
     </div>
-  </div>
-)
+  )
 }
 
 interface ToolbarButtonProps {
@@ -269,10 +323,11 @@ interface ToolbarButtonProps {
   active?: boolean
   disabled?: boolean
   title: string
+  className?: string
   children: React.ReactNode
 }
 
-function ToolbarButton({ onClick, active, disabled, title, children }: ToolbarButtonProps) {
+function ToolbarButton({ onClick, active, disabled, title, className, children }: ToolbarButtonProps) {
   return (
     <button
       onClick={onClick}
@@ -283,7 +338,7 @@ function ToolbarButton({ onClick, active, disabled, title, children }: ToolbarBu
         p-2 rounded transition-colors duration-200
         ${active
           ? 'bg-brand-red text-white'
-          : 'hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-300'
+          : className || 'hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-300'
         }
         ${disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
       `}

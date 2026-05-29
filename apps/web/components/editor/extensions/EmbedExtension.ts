@@ -2,6 +2,14 @@ import { Node, mergeAttributes } from '@tiptap/core'
 import { ReactNodeViewRenderer } from '@tiptap/react'
 import { EmbedView } from './EmbedView'
 
+declare module '@tiptap/core' {
+  interface Commands<ReturnType> {
+    embed: {
+      setEmbed: (options: { src: string }) => ReturnType
+    }
+  }
+}
+
 export type EmbedType = 'youtube' | 'twitter' | 'instagram' | 'other'
 
 interface EmbedAttributes {
@@ -74,6 +82,20 @@ export const EmbedExtension = Node.create({
   
   addNodeView() {
     return ReactNodeViewRenderer(EmbedView)
+  },
+
+  addCommands() {
+    return {
+      setEmbed: (options: { src: string }) => ({ commands }) => {
+        return commands.insertContent({
+          type: this.name,
+          attrs: {
+            url: options.src,
+            embedType: detectEmbedType(options.src)
+          },
+        })
+      },
+    }
   },
 })
 

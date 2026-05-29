@@ -267,6 +267,17 @@ export const defaultSlashMenuItems: SlashMenuItem[] = [
     },
   },
   {
+    title: 'Callout Box',
+    description: 'Add a highlighted box for notes or tips',
+    icon: <AlertCircle size={18} className="text-gray-600 dark:text-gray-400" />,
+    command: (editor) => {
+      editor.chain().focus().insertContent({
+        type: 'callout',
+        attrs: { variant: 'info', icon: '💡' },
+      }).run()
+    },
+  },
+  {
     title: 'Divider',
     description: 'Visual separator between sections',
     icon: <Minus size={18} className="text-gray-600 dark:text-gray-400" />,
