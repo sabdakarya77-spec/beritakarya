@@ -98,6 +98,13 @@ api.interceptors.response.use(
   async (error) => {
     const original = error.config
 
+    // Log 403 responses for diagnostic
+    if (error.response?.status === 403) {
+      const errorCode = error.response?.data?.error?.code
+      const errorMessage = error.response?.data?.error?.message
+      console.log(`[API] 403 on ${original.method?.toUpperCase()} ${original.url}: code=${errorCode}, message=${errorMessage}`)
+    }
+
     // [CSRF] Jika 403 dengan kode EBADCSRFTOKEN, ambil token CSRF baru secara silent lalu coba ulang
     const isCsrfError =
       error.response?.status === 403 &&
