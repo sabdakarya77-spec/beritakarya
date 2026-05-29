@@ -19,9 +19,14 @@ export const fetchCsrfToken = async () => {
     try {
       const res = await axios.get(`${API_URL}/api/v1/csrf-token`, { withCredentials: true });
       csrfToken = res.data.data.csrfToken;
+      if (!csrfToken) {
+        throw new Error('Empty CSRF token received')
+      }
     } catch (e) {
       console.error('Failed to fetch CSRF token', e);
+      csrfToken = null;
       csrfTokenPromise = null; // Allow retry on failure
+      throw e;
     }
   })();
 
@@ -59,9 +64,10 @@ api.interceptors.request.use(async (config) => {
     if (methodsRequiringCsrf.includes(config.method?.toLowerCase() || '')) {
       // Selalu refresh CSRF token sebelum request mutasi untuk memastikan fresh
       await fetchCsrfToken();
-      if (csrfToken) {
-        config.headers['X-CSRF-Token'] = csrfToken;
+      if (!csrfToken) {
+        throw new Error('Unable to obtain CSRF token before request')
       }
+      config.headers['X-CSRF-Token'] = csrfToken;
     }
   }
   return config

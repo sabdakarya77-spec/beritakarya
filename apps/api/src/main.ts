@@ -144,16 +144,22 @@ const CSRF_SECRET = env.NODE_ENV === 'production'
   ? (env.CSRF_SECRET || (() => { throw new Error('CSRF_SECRET env var must be set in production') })())
   : (env.CSRF_SECRET || 'dev-csrf-secret-change-in-production')
 
+const csrfCookieOptions: any = {
+  httpOnly: true,
+  secure: env.NODE_ENV === 'production',
+  sameSite: env.NODE_ENV === 'production' ? 'none' : 'lax',
+  path: '/',
+}
+
+if (env.NODE_ENV === 'production' && env.COOKIE_DOMAIN) {
+  csrfCookieOptions.domain = env.COOKIE_DOMAIN
+}
+
 const { generateCsrfToken, doubleCsrfProtection } = doubleCsrf({
   getSecret: () => CSRF_SECRET,
   getSessionIdentifier: (req) => req.cookies?.accessToken || req.ip || 'anonymous',
   cookieName: 'x-csrf-token',
-  cookieOptions: {
-    httpOnly: true,
-    secure: env.NODE_ENV === 'production',
-    sameSite: env.NODE_ENV === 'production' ? 'none' : 'lax',
-    path: '/',
-  },
+  cookieOptions: csrfCookieOptions,
   ignoredMethods: ['GET', 'HEAD', 'OPTIONS'],
   getCsrfTokenFromRequest: (req) =>
     req.headers['x-csrf-token'] as string ||
