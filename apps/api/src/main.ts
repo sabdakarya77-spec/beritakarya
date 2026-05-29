@@ -168,7 +168,39 @@ const { generateCsrfToken, doubleCsrfProtection } = doubleCsrf({
 
 app.get('/api/v1/csrf-token', (req, res) => {
   const csrfToken = generateCsrfToken(req, res)
+  const csrfDebugInfo = {
+    cookieName: 'x-csrf-token',
+    cookiePath: '/',
+    cookieDomain: env.COOKIE_DOMAIN || null,
+    secure: env.NODE_ENV === 'production',
+    sameSite: env.NODE_ENV === 'production' ? 'none' : 'lax'
+  }
+
+  res.setHeader('X-Debug-Csrf-Cookie-Name', csrfDebugInfo.cookieName)
+  res.setHeader('X-Debug-Csrf-Cookie-Path', csrfDebugInfo.cookiePath)
+  if (csrfDebugInfo.cookieDomain) {
+    res.setHeader('X-Debug-Csrf-Cookie-Domain', csrfDebugInfo.cookieDomain)
+  }
+  res.setHeader('X-Debug-Csrf-Cookie-Secure', String(csrfDebugInfo.secure))
+  res.setHeader('X-Debug-Csrf-Cookie-SameSite', csrfDebugInfo.sameSite)
+
   res.json({ success: true, data: { csrfToken } })
+})
+
+app.get('/api/v1/debug/csrf-cookie', (req, res) => {
+  res.json({
+    success: true,
+    data: {
+      cookieName: 'x-csrf-token',
+      cookiePath: '/',
+      cookieDomain: env.COOKIE_DOMAIN || null,
+      secure: env.NODE_ENV === 'production',
+      sameSite: env.NODE_ENV === 'production' ? 'none' : 'lax',
+      requestOrigin: req.headers.origin || null,
+      requestHost: req.headers.host || null,
+      requestSecure: req.secure
+    }
+  })
 })
 
 app.use(express.json({ limit: '10mb' }))
