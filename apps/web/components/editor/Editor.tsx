@@ -99,7 +99,7 @@ export function Editor({ articleId, siteId }: EditorProps) {
 
   // Format last saved time
   const lastSavedText = lastSaved 
-    ? `Saved ${formatDate(lastSaved, 'HH:mm')}`
+    ? `Saved ${formatDate(lastSaved, { hour: '2-digit', minute: '2-digit', hour12: false })}`
     : ''
 
   return (

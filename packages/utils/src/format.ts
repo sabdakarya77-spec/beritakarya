@@ -1,13 +1,20 @@
 export function formatDate(
   date: Date | string,
-  locale = 'id-ID'
+  optionsOrLocale?: string | Intl.DateTimeFormatOptions
 ): string {
   const d = typeof date === 'string' ? new Date(date) : date
-  return d.toLocaleDateString(locale, {
+  let locale = 'id-ID'
+  let options: Intl.DateTimeFormatOptions = {
     day: 'numeric',
     month: 'long',
     year: 'numeric'
-  })
+  }
+  if (typeof optionsOrLocale === 'string') {
+    locale = optionsOrLocale
+  } else if (optionsOrLocale) {
+    options = { ...options, ...optionsOrLocale }
+  }
+  return d.toLocaleDateString(locale, options)
 }
 
 export function formatRelativeTime(date: Date | string): string {
