@@ -3,7 +3,7 @@
 const INITIAL_TIMESTAMP = Date.now();
 
 import { useEffect, useState } from 'react';
-import { useParams, useSearchParams } from 'next/navigation';
+import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { api } from '../../../../lib/api';
 import { useAuthStore } from '../../../../store/authStore';
@@ -49,6 +49,7 @@ const getReviewTabFromQuery = (value: string | null): ReviewTab => {
 };
 
 export default function ReviewQueuePage() {
+  const router = useRouter();
   const { site } = useParams() as { site: string };
   const searchParams = useSearchParams();
   const { user } = useAuthStore();
@@ -264,7 +265,10 @@ export default function ReviewQueuePage() {
             return (
               <button
                 key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
+                onClick={() => {
+                  setActiveTab(tab.key);
+                  router.push(`/${site}/dashboard/review?tab=${tab.key}`);
+                }}
                 className={cn(
                   'flex items-center gap-2 pb-3 text-xs font-black uppercase tracking-widest border-b-2 transition-all whitespace-nowrap',
                   activeTab === tab.key
