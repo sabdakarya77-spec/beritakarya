@@ -416,7 +416,7 @@ export default function CategoriesDashboard() {
         <div className="lg:col-span-8">
           <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700/50 rounded-2xl overflow-hidden shadow-sm">
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full min-w-[700px]">
                 <thead>
                   <tr className="bg-gray-50 dark:bg-gray-900/50 border-b border-gray-150 dark:border-gray-700">
                     <th className="px-6 py-4 text-left text-xs font-black uppercase tracking-widest text-gray-400">

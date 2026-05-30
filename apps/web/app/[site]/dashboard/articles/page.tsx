@@ -354,8 +354,9 @@ export default function ArticlesPage() {
         </div>
       ) : (
         <div className="dash-card overflow-hidden animate-fade-in">
-          <table className="w-full text-left">
-            <thead className="bg-gray-50 dark:bg-white/[0.02] border-b border-gray-100 dark:border-white/5">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left min-w-[800px]">
+              <thead className="bg-gray-50 dark:bg-white/[0.02] border-b border-gray-100 dark:border-white/5">
               <tr>
                 <th className="px-6 py-3.5 dash-label">Post</th>
                 <th className="px-4 py-3.5 dash-label hidden md:table-cell">Penulis</th>
@@ -554,6 +555,7 @@ export default function ArticlesPage() {
               )}
             </tbody>
           </table>
+          </div>
 
           {/* Pagination */}
           {totalPages > 1 && (
