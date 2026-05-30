@@ -14,7 +14,7 @@ import { logger } from '../../lib/logger'
 export const mediaRouter: Router = Router()
 
 const UPLOAD_DIR = path.join(process.cwd(), 'uploads')
-const THUMB_DIR  = path.join(UPLOAD_DIR, 'thumbs')
+const THUMB_DIR = path.join(UPLOAD_DIR, 'thumbs')
 
 // [H-007] Path Traversal Protection
 function isPathSafe(baseDir: string, targetPath: string): boolean {
@@ -84,7 +84,7 @@ async function processImage(buffer: Buffer, filename: string, options: { skipWat
   // Full size → Composite Watermark (Optional) → WebP
   const fullName = `${filename}.webp`
   const fullPath = path.join(UPLOAD_DIR, fullName)
-  
+
   if (!isPathSafe(UPLOAD_DIR, fullPath)) {
     throw new Error('Path upload tidak aman')
   }
@@ -101,35 +101,15 @@ async function processImage(buffer: Buffer, filename: string, options: { skipWat
       const boxWidth = Math.max(180, fontSize * 12)
       const boxHeight = Math.max(32, fontSize * 2.2)
       const padding = fontSize * 0.6
-      
-      // Corner Badge Watermark with semi-transparent background
-      const watermarkSvg = `<svg width="${boxWidth}" height="${boxHeight}">
-        <style>
-          .watermark-bg {
-            fill: rgba(0, 0, 0, 0.65);
-            rx: 4;
-            ry: 4;
-          }
-          .watermark-text {
-            fill: rgba(255, 255, 255, 0.95);
-            font-size: ${fontSize}px;
-            font-weight: 700;
-            font-family: Arial, Helvetica, sans-serif;
-            letter-spacing: 0.5px;
-          }
-        </style>
-        <!-- Background box -->
-        <rect class="watermark-bg" width="${boxWidth}" height="${boxHeight}" />
-        <!-- Text centered in box -->
-        <text 
-          x="${boxWidth / 2}" 
-          y="${boxHeight / 2}" 
-          dominant-baseline="middle" 
-          text-anchor="middle" 
-          class="watermark-text"
-        >© BERITAKARYA 2026</text>
-      </svg>`
-      
+
+      // Corner Badge Watermark — inline SVG attributes for Sharp/librsvg compatibility
+      // Previously used CSS classes which caused rx/ry to be ignored (not valid CSS props)
+      // and fill/font properties to not render properly in Sharp's SVG renderer
+      const watermarkSvg = `<svg width="${boxWidth}" height="${boxHeight}" xmlns="http://www.w3.org/2000/svg">
+<rect width="${boxWidth}" height="${boxHeight}" rx="4" ry="4" fill="rgba(0,0,0,0.65)" />
+<text x="${boxWidth / 2}" y="${boxHeight / 2}" dominant-baseline="middle" text-anchor="middle" fill="rgba(255,255,255,0.95)" font-size="${fontSize}px" font-weight="700" font-family="Arial, Helvetica, sans-serif">© BERITAKARYA 2026</text>
+</svg>`
+
       pipeline = pipeline.composite([{ input: Buffer.from(watermarkSvg), gravity: 'southeast' }])
     }
 
@@ -204,8 +184,8 @@ mediaRouter.post(
       })
     }
 
-      const isLogo = req.query.type === 'logo'
-      const skipWatermark = isLogo || req.query.skipWatermark === 'true' || req.query.purpose === 'editorial'
+    const isLogo = req.query.type === 'logo'
+    const skipWatermark = isLogo || req.query.skipWatermark === 'true' || req.query.purpose === 'editorial'
 
     logger.info(`[Media] Uploading file: ${req.file.originalname} (${req.file.size} bytes), Type: ${req.query.type || 'standard'}`)
     const id = uuidv4()
@@ -291,7 +271,7 @@ mediaRouter.get(
   asyncHandler(async (req: Request, res: Response) => {
     const page = parseInt(req.query.page as string) || 1
     const limit = Math.min(parseInt(req.query.limit as string) || 30, 100)
-    
+
     // Role-based isolation: reporter/kontributor only see their own media
     const restrictedRoles = ['reporter', 'kontributor']
     const userId = restrictedRoles.includes(req.user!.role)
@@ -312,7 +292,7 @@ mediaRouter.patch(
   asyncHandler(async (req: Request, res: Response) => {
     const media = await repo.findMediaById(req.params.id)
     if (!media) return res.status(404).json({ success: false, error: { message: 'Media tidak ditemukan' } })
-    
+
     // Hanya pemilik atau admin/wapimred yang bisa mengupdate
     const isAdmin = ['superadmin','wapimred'].includes(req.user!.role)
     if (media.userId !== req.user!.userId && !isAdmin) {
@@ -334,7 +314,7 @@ mediaRouter.delete(
   asyncHandler(async (req: Request, res: Response) => {
     const media = await repo.findMediaById(req.params.id)
     if (!media) return res.status(404).json({ success: false, error: { message: 'Media tidak ditemukan' } })
-    
+
     // Hanya pemilik atau admin/wapimred yang bisa menghapus
     const isAdmin = ['superadmin','wapimred'].includes(req.user!.role)
     if (media.userId !== req.user!.userId && !isAdmin) {
@@ -349,4 +329,4 @@ mediaRouter.delete(
 // Serve static files
 const express = require('express')
 mediaRouter.use('/uploads/thumbs', express.static(THUMB_DIR))
-mediaRouter.use('/uploads',        express.static(UPLOAD_DIR))
+mediaRouter.use('/uploads', express.static(UPLOAD_DIR))
