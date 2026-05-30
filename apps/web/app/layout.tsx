@@ -11,6 +11,7 @@ export const metadata = constructMetadata()
 import { Toaster } from '../components/ui/Toaster'
 import { AuthInit } from '../components/AuthInit'
 import ScrollReset from '../components/layout/ScrollReset'
+import { PWAInstallPrompt } from '../components/pwa/PWAInstallPrompt'
 
 export default function RootLayout({
   children,
@@ -58,6 +59,7 @@ export default function RootLayout({
         <AuthInit />
         <ScrollReset />
         {children}
+        <PWAInstallPrompt />
         <Toaster />
       </body>
     </html>
