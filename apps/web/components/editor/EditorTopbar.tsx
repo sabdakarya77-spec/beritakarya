@@ -59,9 +59,9 @@ export function EditorTopbar({
   const statusConfig = STATUS_CONFIG[status]
   
   return (
-    <div className="editor-topbar flex items-center justify-between px-4 lg:px-6 py-3 border-b border-gray-200 dark:border-white/10 bg-white/95 dark:bg-slate-900/80 backdrop-blur-sm">
+    <div className="editor-topbar flex items-center justify-between px-3 sm:px-4 lg:px-6 py-3 border-b border-gray-200 dark:border-white/10 bg-white/95 dark:bg-slate-900/80 backdrop-blur-sm">
       {/* Left: Status & Save Info */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-1.5 sm:gap-3">
         {/* Status Badge with dropdown */}
         <div className="relative">
           <button
@@ -106,7 +106,7 @@ export function EditorTopbar({
         </div>
         
         {/* Save Status */}
-        <div className="flex items-center gap-2 text-xs">
+        <div className="flex items-center gap-1 sm:gap-2 text-[10px] sm:text-xs">
           {saving ? (
             <>
               <Loader2 size={12} className="animate-spin text-gray-400" />
@@ -143,7 +143,7 @@ export function EditorTopbar({
           onClick={onSave}
           disabled={saving}
           className={cn(
-            'inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all',
+            'inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-xs font-bold transition-all',
             saving
               ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
               : 'bg-gray-100 hover:bg-gray-200 text-gray-700 dark:bg-white/10 dark:text-white dark:hover:bg-white/20'
@@ -160,7 +160,7 @@ export function EditorTopbar({
         {/* Submit Button */}
         <button
           onClick={onSubmit}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white transition-all"
+          className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white transition-all"
         >
           <Send size={14} />
           <span className="hidden sm:inline">Submit</span>
@@ -169,7 +169,7 @@ export function EditorTopbar({
         {/* Publish Button (dropdown) */}
         <button
           onClick={onPublish}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-brand-red hover:bg-red-700 text-white transition-all"
+          className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-xs font-bold bg-brand-red hover:bg-red-700 text-white transition-all"
         >
           <Globe size={14} />
           <span className="hidden sm:inline">Publish</span>

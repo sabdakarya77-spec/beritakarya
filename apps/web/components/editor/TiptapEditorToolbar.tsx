@@ -74,10 +74,10 @@ export function TiptapEditorToolbar({ editor }: TiptapEditorToolbarProps) {
   }
 
   return (
-    <div className="tiptap-editor-toolbar-container">
-      <div className="tiptap-toolbar flex flex-wrap items-center gap-1 p-2 border-b border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900/50 rounded-t-lg">
+    <div className="tiptap-editor-toolbar-container max-w-full overflow-hidden">
+      <div className="tiptap-toolbar flex flex-nowrap lg:flex-wrap items-center gap-1 p-2 border-b border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900/50 rounded-t-lg overflow-x-auto no-scrollbar max-w-full">
       {/* Undo/Redo */}
-      <div className="flex items-center gap-1 pr-2 border-r border-gray-200 dark:border-slate-700">
+      <div className="flex shrink-0 items-center gap-1 pr-2 border-r border-gray-200 dark:border-slate-700">
         <ToolbarButton
           onClick={() => editor.chain().focus().undo().run()}
           disabled={!editor.can().undo()}
@@ -95,7 +95,7 @@ export function TiptapEditorToolbar({ editor }: TiptapEditorToolbarProps) {
       </div>
 
       {/* Text Formatting */}
-      <div className="flex items-center gap-1 pr-2 border-r border-gray-200 dark:border-slate-700">
+      <div className="flex shrink-0 items-center gap-1 pr-2 border-r border-gray-200 dark:border-slate-700">
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleBold().run()}
           active={editor.isActive('bold')}
@@ -134,7 +134,7 @@ export function TiptapEditorToolbar({ editor }: TiptapEditorToolbarProps) {
       </div>
 
       {/* Headings */}
-      <div className="flex items-center gap-1 pr-2 border-r border-gray-200 dark:border-slate-700">
+      <div className="flex shrink-0 items-center gap-1 pr-2 border-r border-gray-200 dark:border-slate-700">
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
           active={editor.isActive('heading', { level: 1 })}
@@ -159,7 +159,7 @@ export function TiptapEditorToolbar({ editor }: TiptapEditorToolbarProps) {
       </div>
 
       {/* Lists */}
-      <div className="flex items-center gap-1 pr-2 border-r border-gray-200 dark:border-slate-700">
+      <div className="flex shrink-0 items-center gap-1 pr-2 border-r border-gray-200 dark:border-slate-700">
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleBulletList().run()}
           active={editor.isActive('bulletList')}
@@ -177,7 +177,7 @@ export function TiptapEditorToolbar({ editor }: TiptapEditorToolbarProps) {
       </div>
 
       {/* Blockquote & Code Block */}
-      <div className="flex items-center gap-1 pr-2 border-r border-gray-200 dark:border-slate-700">
+      <div className="flex shrink-0 items-center gap-1 pr-2 border-r border-gray-200 dark:border-slate-700">
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleBlockquote().run()}
           active={editor.isActive('blockquote')}
@@ -201,7 +201,7 @@ export function TiptapEditorToolbar({ editor }: TiptapEditorToolbarProps) {
       </div>
 
       {/* Alignment */}
-      <div className="flex items-center gap-1 pr-2 border-r border-gray-200 dark:border-slate-700">
+      <div className="flex shrink-0 items-center gap-1 pr-2 border-r border-gray-200 dark:border-slate-700">
         <ToolbarButton
           onClick={() => editor.chain().focus().setTextAlign('left').run()}
           active={editor.isActive({ textAlign: 'left' })}
@@ -233,7 +233,7 @@ export function TiptapEditorToolbar({ editor }: TiptapEditorToolbarProps) {
       </div>
 
       {/* Link & Image */}
-      <div className="flex items-center gap-1">
+      <div className="flex shrink-0 items-center gap-1">
         <ToolbarButton
           onClick={addLink}
           active={editor.isActive('link')}
@@ -258,7 +258,7 @@ export function TiptapEditorToolbar({ editor }: TiptapEditorToolbarProps) {
       </div>
 
       {/* Premium Interactive Blocks */}
-      <div className="flex items-center gap-1 pl-2 border-l border-gray-200 dark:border-slate-700">
+      <div className="flex shrink-0 items-center gap-1 pl-2 border-l border-gray-200 dark:border-slate-700">
         <ToolbarButton
           onClick={() => editor.chain().focus().insertContent({ type: 'gallery', attrs: { images: [] } }).run()}
           active={editor.isActive('gallery')}

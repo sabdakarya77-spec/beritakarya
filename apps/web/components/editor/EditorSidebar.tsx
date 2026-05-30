@@ -30,16 +30,22 @@ export function EditorSidebar({ isOpen, onToggle }: EditorSidebarProps) {
     return (
       <button
         onClick={onToggle}
-        className="fixed right-0 top-1/2 -translate-y-1/2 z-30 p-2 bg-brand-red text-white rounded-l-lg shadow-lg hover:bg-red-700 transition-all"
+        className="fixed right-0 top-1/2 -translate-y-1/2 z-35 p-2 bg-brand-red text-white rounded-l-lg shadow-lg hover:bg-red-700 transition-all"
         title="Open sidebar"
       >
-        <ChevronRight size={16} />
+        <ChevronRight size={16} className="rotate-180" />
       </button>
     )
   }
   
   return (
-    <aside className="w-80 flex-shrink-0 border-l border-gray-200 dark:border-white/10 bg-white dark:bg-slate-900 flex flex-col overflow-hidden">
+    <>
+      {/* Backdrop for mobile */}
+      <div 
+        onClick={onToggle}
+        className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 lg:hidden cursor-pointer"
+      />
+      <aside className="fixed lg:static inset-y-0 right-0 z-50 w-80 max-w-[85%] lg:max-w-none flex-shrink-0 border-l border-gray-200 dark:border-white/10 bg-white dark:bg-slate-900 flex flex-col overflow-hidden shadow-2xl lg:shadow-none">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-white/10">
         <h3 className="text-xs font-black uppercase tracking-wider text-gray-500">
@@ -93,6 +99,7 @@ export function EditorSidebar({ isOpen, onToggle }: EditorSidebarProps) {
         {activeTab === 'assist' && <AIPanel />}
       </div>
     </aside>
+    </>
   )
 }
 
