@@ -59,7 +59,7 @@ export function EditorTopbar({
   const statusConfig = STATUS_CONFIG[status]
   
   return (
-    <div className="editor-topbar flex items-center justify-between px-3 sm:px-4 lg:px-6 py-3 border-b border-gray-200 dark:border-white/10 bg-white/95 dark:bg-slate-900/80 backdrop-blur-sm">
+    <div className="editor-topbar relative z-30 flex items-center justify-between px-3 sm:px-4 lg:px-6 py-3 border-b border-gray-200 dark:border-white/10 bg-white/95 dark:bg-slate-900/80 backdrop-blur-sm">
       {/* Left: Status & Save Info */}
       <div className="flex items-center gap-1.5 sm:gap-3">
         {/* Status Badge with dropdown */}
