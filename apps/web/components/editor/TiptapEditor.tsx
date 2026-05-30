@@ -30,7 +30,7 @@ interface TiptapEditorProps {
 
 /**
  * Main Tiptap Editor Component with Store Integration
- * 
+ *
  * Features:
  * - StarterKit (paragraphs, headings, lists, bold, italic, etc.)
  * - Link insertion
@@ -52,7 +52,7 @@ export function TiptapEditor({
     saveArticle,
     isLoading,
   } = useEditorStore()
-  
+
   const isInitializedRef = useRef(false)
   const contentFromStoreRef = useRef<string | null>(null)
 
@@ -125,15 +125,38 @@ export function TiptapEditor({
   // Load initial content from store when blocks change (e.g., after loadArticle)
   useEffect(() => {
     if (!editor || isLoading) return
-    
-    // Only load from store if editor is empty and we have blocks
+
+    // [FIX] Check if store has meaningful content different from what's in the editor
+    // Previously, the editor's initial empty paragraph was treated as "has content",
+    // preventing store content from loading after an article fetch.
     const currentContent = editor.getJSON()
     const hasContent = currentContent.content && currentContent.content.length > 0
-    
-    // If editor is empty and store has content, load it
-    if (!hasContent && blocks && blocks.length > 0) {
+
+    // Check if editor only has a single empty paragraph (Tiptap's default initial state)
+    const isOnlyEmptyParagraph =
+      currentContent.content &&
+      currentContent.content.length === 1 &&
+      currentContent.content[0]?.type === 'paragraph' &&
+      (!currentContent.content[0]?.content || currentContent.content[0].content.length === 0)
+
+    // Check if store blocks have meaningful content (not just empty paragraphs)
+    const storeHasContent =
+      blocks &&
+      blocks.length > 0 &&
+      blocks.some(b => {
+        if (b.type === 'paragraph' || b.type === 'heading' || b.type === 'quote' || b.type === 'callout')
+          return (b as any).content?.trim()
+        if (b.type === 'image' || b.type === 'embed' || b.type === 'gallery' || b.type === 'imageGrid' || b.type === 'mediaText')
+          return true
+        if (b.type === 'list') return (b as any).items?.length > 0
+        return false
+      })
+
+    // Load from store if: editor is empty OR editor only has default empty paragraph,
+    // AND store has blocks with actual content
+    if ((!hasContent || isOnlyEmptyParagraph) && storeHasContent) {
       const html = convertBlocksToHTML(blocks)
-      
+
       // Avoid infinite loop by checking if content is different
       if (html !== contentFromStoreRef.current) {
         contentFromStoreRef.current = html
@@ -155,7 +178,7 @@ export function TiptapEditor({
   // Listen to AI apply content event
   useEffect(() => {
     if (!editor) return
-    
+
     const handleAIApply = (e: Event) => {
       const customEvent = e as CustomEvent
       const content = customEvent.detail?.content
@@ -163,7 +186,7 @@ export function TiptapEditor({
         editor.commands.insertContent(content)
       }
     }
-    
+
     window.addEventListener('ai-apply-content', handleAIApply)
     return () => {
       window.removeEventListener('ai-apply-content', handleAIApply)
@@ -184,13 +207,13 @@ export function TiptapEditor({
     <div className="tiptap-editor-wrapper">
       {/* Bubble Menu (appears on text selection) */}
       <BubbleMenuBar editor={editor} />
-      
+
       {/* Toolbar */}
       <TiptapEditorToolbar editor={editor} />
-      
+
       {/* Floating Menu (appears on empty lines) */}
       <FloatingMenuBar editor={editor} />
-      
+
       {/* Editor Content */}
       <EditorContent editor={editor} />
     </div>
@@ -203,16 +226,16 @@ export function TiptapEditor({
 function convertTiptapToBlocks(editor: any, oldBlocks: any[] = []): any[] {
   const doc = editor.getJSON()
   const content = doc.content || []
-  
+
   return content.map((node: any, index: number) => {
     let blockId = ''
-    
+
     // Konversi tipe tiptap ke tipe block kita demi pencocokan ID
     let mappedType = node.type
     if (node.type === 'blockquote') mappedType = 'quote'
     else if (node.type === 'bulletList' || node.type === 'orderedList') mappedType = 'list'
     else if (node.type === 'codeBlock') mappedType = 'paragraph'
-    
+
     // Pencocokan 1: periksa index yang sama
     const oldBlockAtIndex = oldBlocks[index]
     if (oldBlockAtIndex && oldBlockAtIndex.type === mappedType) {
@@ -281,16 +304,20 @@ function convertTiptapToBlocks(editor: any, oldBlocks: any[] = []): any[] {
         return {
           ...baseBlock,
           type: 'imageGrid',
-          cols: node.attrs?.cols || 2,
+          columns: node.attrs?.cols === 3 ? 3 : 2,
           images: node.attrs?.images || [],
         }
       case 'mediaText':
+        // [FIX] Map Tiptap attrs (imageUrl, altText, text, layout, caption)
+        // to API block schema (url, alt, content, align, caption) per article.validator.ts
         return {
           ...baseBlock,
           type: 'mediaText',
-          layout: node.attrs?.layout || 'left',
-          imageUrl: node.attrs?.imageUrl || '',
-          text: node.attrs?.text || '',
+          url: node.attrs?.imageUrl || '',
+          alt: node.attrs?.altText || '',
+          content: node.attrs?.text || '',
+          align: node.attrs?.layout || 'left',
+          ...(node.attrs?.caption ? { caption: node.attrs.caption } : {}),
         }
       case 'image':
         return {
@@ -335,7 +362,7 @@ function convertTiptapToBlocks(editor: any, oldBlocks: any[] = []): any[] {
  */
 function extractTextContent(node: any): string {
   if (!node.content) return ''
-  
+
   return node.content
     .map((child: any) => {
       if (child.type === 'text') {
@@ -389,7 +416,7 @@ function extractTextContent(node: any): string {
  */
 function extractListItems(node: any): string[] {
   if (!node.content) return []
-  
+
   return node.content.map((item: any) => extractTextContent(item))
 }
 
@@ -398,36 +425,49 @@ function extractListItems(node: any): string[] {
  */
 function convertBlocksToHTML(blocks: any[]): string {
   if (!blocks || blocks.length === 0) return ''
-  
+
   return blocks
     .map((block) => {
       const content = block.content || ''
-      
+
       switch (block.type) {
         case 'paragraph':
           return content ? `<p>${content}</p>` : '<p></p>'
-        case 'heading':
+        case 'heading': {
           const level = block.level || 2
           return content ? `<h${level}>${content}</h${level}>` : `<h${level}></h${level}>`
-        case 'quote':
+        }
+        case 'quote': {
           const cite = block.attribution ? `<cite>${block.attribution}</cite>` : ''
           return content ? `<blockquote><p>${content}</p>${cite}</blockquote>` : '<blockquote><p></p></blockquote>'
-        case 'image':
+        }
+        case 'image': {
           const alt = block.alt || ''
           const caption = block.caption ? `<p>${block.caption}</p>` : ''
           return block.url ? `<img src="${block.url}" alt="${alt}" />${caption}` : ''
-        case 'list':
+        }
+        case 'list': {
           const tag = block.ordered ? 'ol' : 'ul'
           const items = (block.items || []).map((item: string) => `<li>${item}</li>`).join('')
           return items ? `<${tag}>${items}</${tag}>` : `<${tag}></${tag}>`
-        case 'callout':
+        }
+        case 'callout': {
           const calloutVariant = block.variant || 'editorial'
           const calloutIcon = block.icon || '💡'
           return `<div data-callout="${calloutVariant}">${calloutIcon} ${content}</div>`
-        case 'embed':
+        }
+        case 'embed': {
           const embedUrl = block.url || ''
           const embedType = block.embedType || 'other'
           return `<div data-embed-type="${embedType}">${embedUrl}</div>`
+        }
+        case 'mediaText': {
+          const mtUrl = block.url || ''
+          const mtAlt = block.alt || ''
+          const mtLayout = block.align || block.layout || 'left'
+          const mtCaption = block.caption || ''
+          return `<div data-media-text="" data-layout="${mtLayout}" data-image-url="${mtUrl}" data-alt-text="${mtAlt}" data-caption="${mtCaption}">${content}</div>`
+        }
         default:
           return content ? `<p>${content}</p>` : '<p></p>'
       }

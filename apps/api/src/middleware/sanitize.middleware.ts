@@ -29,9 +29,19 @@ const PURIFY_CONFIG = {
   FORCE_BODY: true
 }
 
-function sanitizeValue(value: any, key?: string): any {
+function sanitizeValue(value: any, key?: string, parentKey?: string): any {
   // Jangan sanitize field password atau email untuk mencegah kerusakan data kredensial
   if (key === 'password' || key === 'email') {
+    return value
+  }
+
+  // [FIX] Jangan sanitize field "blocks" — konten blok artikel berisi HTML rich-text
+  // yang sudah divalidasi secara ketat oleh Zod schema (article.validator.ts).
+  // DOMPurify dengan ALLOWED_TAGS terbatas akan menghapus tag valid seperti
+  // <h1>, <h4>-<h6>, <code>, <mark>, <s>, <blockquote>, <cite>, <img>, dll.,
+  // serta dapat merusak atribut data-* pada custom block types (embed, callout, dll.),
+  // menyebabkan konten paragraf / blok hilang saat disimpan ke database.
+  if (key === 'blocks' || parentKey === 'blocks') {
     return value
   }
 
@@ -39,12 +49,12 @@ function sanitizeValue(value: any, key?: string): any {
     return purify.sanitize(value, PURIFY_CONFIG)
   }
   if (Array.isArray(value)) {
-    return value.map(v => sanitizeValue(v))
+    return value.map(v => sanitizeValue(v, undefined, key))
   }
   if (value && typeof value === 'object') {
     const result: Record<string, any> = {}
     for (const [k, v] of Object.entries(value)) {
-      result[k] = sanitizeValue(v, k)
+      result[k] = sanitizeValue(v, k, parentKey)
     }
     return result
   }
