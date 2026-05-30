@@ -403,6 +403,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <NotificationBell />
           <button onClick={toggleTheme} className="p-2 text-gray-400 hover:text-white transition-colors">
             {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
           </button>
@@ -414,13 +415,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
-        <div className="md:hidden fixed inset-0 z-40 bg-slate-900 dark:bg-[#0a0f1a] pt-20 px-4 overflow-y-auto">
+        <div className="md:hidden fixed inset-0 z-40 bg-slate-900 dark:bg-[#0a0f1a] pt-20 px-4 overflow-y-auto pb-10">
           {navSections.map((section) => {
             const filteredItems = section.items.filter(item => user && item.roles.includes(user.role))
             if (filteredItems.length === 0) return null
             return (
-              <div key={section.label} className="mb-6">
-                <p className="px-3 text-[9px] font-black text-gray-600 uppercase tracking-[0.2em] mb-2">{section.label}</p>
+              <div key={section.label} className="mb-4">
+                <p className="px-3 text-[9px] font-black text-gray-600 uppercase tracking-[0.2em] mb-1.5">{section.label}</p>
                 {filteredItems.map((item) => {
                   const isActive = item.href === activeHref
                   const isKycRequired = user && ['reporter', 'kontributor', 'wapimred'].includes(user.role)
@@ -438,23 +439,23 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         }
                       }}
                       className={cn(
-                        "flex items-center gap-4 py-3.5 px-3 rounded-lg mb-0.5",
+                        "flex items-center gap-3 py-2 px-3 rounded-lg mb-0.5",
                         isActive ? "text-brand-red bg-brand-red/5" : "text-gray-400",
                         isLocked && "opacity-40 cursor-not-allowed text-gray-600"
                       )}
                     >
-                      <Icon size={20} />
-                      <span className="text-sm font-bold uppercase tracking-widest">{item.name}</span>
+                      <Icon size={16} />
+                      <span className="text-[11px] font-black uppercase tracking-wider">{item.name}</span>
                     </Link>
                   )
                 })}
               </div>
             )
           })}
-          <div className="border-t border-white/5 pt-4 mt-4">
-            <button onClick={logout} className="flex items-center gap-4 py-3 px-3 text-red-400 w-full">
-              <LogOut size={20} />
-              <span className="text-sm font-bold uppercase tracking-widest">Keluar</span>
+          <div className="border-t border-white/5 pt-3 mt-3">
+            <button onClick={logout} className="flex items-center gap-3 py-2 px-3 text-red-400 w-full">
+              <LogOut size={16} />
+              <span className="text-[11px] font-black uppercase tracking-wider">Keluar</span>
             </button>
           </div>
         </div>
@@ -463,7 +464,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col h-screen overflow-hidden">
         {/* Top Header Bar */}
-        <header className="h-16 bg-white dark:bg-slate-900/50 border-b border-gray-100 dark:border-white/5 flex items-center justify-between px-6 flex-shrink-0 backdrop-blur-sm relative z-40">
+        <header className="hidden md:flex h-16 bg-white dark:bg-slate-900/50 border-b border-gray-100 dark:border-white/5 items-center justify-between px-6 flex-shrink-0 backdrop-blur-sm relative z-40">
           <div className="flex items-center gap-4">
             <button 
               onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}

@@ -61,7 +61,7 @@ export default function MobileMenu({
             className="fixed top-0 left-0 bottom-0 w-[85%] max-w-sm bg-white dark:bg-slate-950 z-[101] md:hidden flex flex-col shadow-2xl"
           >
             {/* Header */}
-            <div className="p-6 border-b border-gray-100 dark:border-white/5 flex items-center justify-between">
+            <div className="py-4 px-6 border-b border-gray-100 dark:border-white/5 flex items-center justify-between">
               <Link href={`/${activeSite}`} onClick={onClose} className="flex flex-col">
                 <h2 className="font-serif text-xl font-black tracking-tight text-brand-black dark:text-white">
                   <span className="text-brand-red">BERITA</span>KARYA
@@ -74,15 +74,15 @@ export default function MobileMenu({
                 onClick={onClose}
                 className="p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-full transition-colors"
               >
-                <X size={24} className="text-gray-500" />
+                <X size={20} className="text-gray-500" />
               </button>
             </div>
 
             {/* Content Scroll Area */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-8 no-scrollbar">
+            <div className="flex-1 overflow-y-auto p-6 space-y-6 no-scrollbar">
               {/* Profile / Auth Section */}
               <section>
-                <h3 className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-4">Akun Saya</h3>
+                <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.18em] mb-3">Akun Saya</h3>
                 {user ? (
                   <div className="bg-gray-50 dark:bg-white/5 rounded-2xl p-4">
                     <div className="flex items-center gap-3 mb-4">
@@ -99,16 +99,16 @@ export default function MobileMenu({
                         <Link 
                           href={`/${activeSite}/dashboard`} 
                           onClick={onClose}
-                          className="flex items-center justify-center gap-2 py-2 bg-white dark:bg-slate-900 border border-gray-100 dark:border-white/10 rounded-xl text-[11px] font-semibold text-gray-600 dark:text-gray-300"
+                          className="flex items-center justify-center gap-2 py-2 bg-white dark:bg-slate-900 border border-gray-100 dark:border-white/10 rounded-xl text-[10px] font-black uppercase tracking-wider text-gray-600 dark:text-gray-300"
                         >
-                          <User size={14} /> Dashboard
+                          <User size={12} /> Dashboard
                         </Link>
                       )}
                       <button 
                         onClick={() => { logout(); onClose(); }}
-                        className="flex items-center justify-center gap-2 py-2 bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/20 rounded-xl text-[11px] font-semibold text-brand-red"
+                        className="flex items-center justify-center gap-2 py-2 bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/20 rounded-xl text-[10px] font-black uppercase tracking-wider text-brand-red"
                       >
-                        <LogOut size={14} /> Keluar
+                        <LogOut size={12} /> Keluar
                       </button>
                     </div>
                   </div>
@@ -119,18 +119,18 @@ export default function MobileMenu({
                     className="flex items-center justify-between p-4 bg-brand-red text-white rounded-2xl shadow-lg shadow-brand-red/20"
                   >
                     <div className="flex items-center gap-3">
-                      <User size={20} />
-                      <span className="text-sm font-bold uppercase tracking-wider">Masuk / Daftar</span>
+                      <User size={18} />
+                      <span className="text-[11px] font-black uppercase tracking-wider">Masuk / Daftar</span>
                     </div>
-                    <ChevronRight size={18} />
+                    <ChevronRight size={16} />
                   </Link>
                 )}
               </section>
 
               {/* Categories Section */}
               <section>
-                <h3 className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-4">Kategori Berita</h3>
-                <div className="grid grid-cols-1 gap-1">
+                <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.18em] mb-3">Kategori Berita</h3>
+                <div className="grid grid-cols-1 gap-0.5">
                   {categories.map((cat) => {
                     const isActive = selectedCategory === cat.slug;
                     return (
@@ -138,22 +138,22 @@ export default function MobileMenu({
                         key={cat.slug}
                         onClick={() => handleCategoryClick(cat.slug)}
                         className={cn(
-                          "flex items-center justify-between p-3 rounded-xl transition-all group",
+                          "flex items-center justify-between py-2.5 px-3 rounded-xl transition-all group",
                           isActive 
                             ? "bg-brand-red/10 text-brand-red" 
                             : "hover:bg-gray-50 dark:hover:bg-white/5 text-gray-600 dark:text-gray-400"
                         )}
                       >
                         <div className="flex items-center gap-3">
-                          {cat.slug === 'tersimpan' ? <Bookmark size={18} /> : <div className={cn("w-1.5 h-1.5 rounded-full", isActive ? "bg-brand-red" : "bg-gray-300")} />}
-                          <span className="text-sm font-bold uppercase tracking-wider">{cat.name}</span>
+                          {cat.slug === 'tersimpan' ? <Bookmark size={16} /> : <div className={cn("w-1 h-1 rounded-full", isActive ? "bg-brand-red" : "bg-gray-300")} />}
+                          <span className="text-[11px] font-black uppercase tracking-wider">{cat.name}</span>
                           {cat.slug === 'tersimpan' && savedArticlesCount > 0 && (
                             <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-brand-red px-1.5 py-0.5 text-[9px] font-black tracking-normal text-white">
                               {savedArticlesCount}
                             </span>
                           )}
                         </div>
-                        <ChevronRight size={16} className={cn("transition-transform", isActive ? "rotate-90" : "group-hover:translate-x-1")} />
+                        <ChevronRight size={14} className={cn("transition-transform", isActive ? "rotate-90" : "group-hover:translate-x-1")} />
                       </button>
                     );
                   })}
@@ -163,8 +163,8 @@ export default function MobileMenu({
             </div>
 
             {/* Footer */}
-            <div className="p-6 border-t border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-white/[0.02]">
-              <p className="text-[10px] text-gray-400 font-medium leading-relaxed">
+            <div className="py-4 px-6 border-t border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-white/[0.02]">
+              <p className="text-[9px] text-gray-400 font-medium leading-relaxed uppercase tracking-wider">
                 © {new Date().getFullYear()} BERITA KARYA.<br />
                 Jernih Melihat Nusantara.
               </p>
