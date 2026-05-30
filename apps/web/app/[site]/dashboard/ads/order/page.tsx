@@ -14,8 +14,7 @@ import {
   QrCode, 
   Building2, 
   Sparkles,
-  RefreshCw,
-  Play
+  RefreshCw
 } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '../../../../../lib/utils';

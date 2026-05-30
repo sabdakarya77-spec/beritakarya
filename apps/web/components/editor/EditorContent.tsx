@@ -45,7 +45,7 @@ export function EditorContent({ children, isFocusMode = false }: EditorContentPr
       {!isFocusMode && (
         <EditorSidebar 
           isOpen={isSidebarOpen} 
-          onToggle={toggleSidebar} 
+          onToggle={() => toggleSidebar()} 
         />
       )}
     </div>
