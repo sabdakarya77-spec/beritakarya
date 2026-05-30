@@ -11,7 +11,6 @@ export const metadata = constructMetadata()
 import { Toaster } from '../components/ui/Toaster'
 import { AuthInit } from '../components/AuthInit'
 import ScrollReset from '../components/layout/ScrollReset'
-import { PWAInstallPrompt } from '../components/pwa/PWAInstallPrompt'
 
 export default function RootLayout({
   children,
@@ -24,33 +23,33 @@ export default function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html: `
-              (function() {
-                try {
-                  if ('scrollRestoration' in history) {
-                    history.scrollRestoration = 'manual';
-                  }
-
-                  const theme = localStorage.getItem('theme');
-                  const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                  
-                  if (theme === 'dark' || (!theme && systemDark)) {
-                    document.documentElement.classList.add('dark');
-                  } else {
-                    document.documentElement.classList.remove('dark');
-                  }
-                  
-                  // Register Service Worker for PWA
-                  if ('serviceWorker' in navigator) {
-                    window.addEventListener('load', function() {
-                      navigator.serviceWorker.register('/sw.js').catch(function(err) {
-                        console.error('ServiceWorker registration failed: ', err);
-                      });
-                    });
-                  }
-                } catch (e) {
-                  console.error('Theme/SW initialization error:', e);
+            (function() {
+              try {
+                if ('scrollRestoration' in history) {
+                  history.scrollRestoration = 'manual';
                 }
-              })();
+
+                const theme = localStorage.getItem('theme');
+                const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+                if (theme === 'dark' || (!theme && systemDark)) {
+                  document.documentElement.classList.add('dark');
+                } else {
+                  document.documentElement.classList.remove('dark');
+                }
+
+                // Register Service Worker for PWA
+                if ('serviceWorker' in navigator) {
+                  window.addEventListener('load', function() {
+                    navigator.serviceWorker.register('/sw.js').catch(function(err) {
+                      console.error('ServiceWorker registration failed: ', err);
+                    });
+                  });
+                }
+              } catch (e) {
+                console.error('Theme/SW initialization error:', e);
+              }
+            })();
             `,
           }}
         />
@@ -59,7 +58,6 @@ export default function RootLayout({
         <AuthInit />
         <ScrollReset />
         {children}
-        <PWAInstallPrompt />
         <Toaster />
       </body>
     </html>
