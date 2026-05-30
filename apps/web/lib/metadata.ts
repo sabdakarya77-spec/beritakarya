@@ -50,6 +50,11 @@ export function constructMetadata({
       creator: '@beritakarya',
     },
     icons,
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: 'default',
+      title: 'BeritaKarya',
+    },
     metadataBase: new URL(baseUrl),
     ...(noIndex && {
       robots: {
