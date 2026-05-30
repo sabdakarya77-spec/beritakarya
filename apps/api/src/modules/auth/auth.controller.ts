@@ -13,7 +13,7 @@ const getCookieOptions = (isProd: boolean, maxAge: number) => {
   const options: any = {
     httpOnly: true,
     secure: isProd,
-    sameSite: isProd ? 'none' : 'lax',
+    sameSite: 'lax',
     maxAge
   }
   if (isProd && env.COOKIE_DOMAIN) {
@@ -26,7 +26,7 @@ const getClearCookieOptions = (isProd: boolean) => {
   const options: any = {
     httpOnly: true,
     secure: isProd,
-    sameSite: isProd ? 'none' : 'lax' as any
+    sameSite: 'lax'
   }
   if (isProd && env.COOKIE_DOMAIN) {
     options.domain = env.COOKIE_DOMAIN

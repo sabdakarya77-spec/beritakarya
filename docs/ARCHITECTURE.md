@@ -226,33 +226,13 @@ Request → helmet (security headers)
        → requireSiteAccess (REQUIRED - cek site access)
 ```
 
-### CSRF Protection
+### CSRF Protection & Cookie Security
 
-Menggunakan library `csrf-csrf` dengan double-submit cookie pattern:
+Untuk keamanan terhadap serangan CSRF (Cross-Site Request Forgery), sistem mengandalkan kebijakan cookie modern **SameSite: 'lax'**:
 
-```typescript
-const { generateCsrfToken, doubleCsrfProtection } = doubleCsrf({
-  getSecret: () => CSRF_SECRET,
-  getSessionIdentifier: (req) => {
-    // Priority: accessToken → userId → IP+UA
-    return req.cookies?.accessToken || `user-${req.user?.id}` || req.ip
-  },
-  cookieName: 'x-csrf-token',
-  cookieOptions: {
-    httpOnly: true,
-    secure: true,
-    sameSite: 'lax'  // Changed from 'none' for better compatibility
-  }
-})
-```
-
-### CSRF Token Flow
-
-```
-1. GET /csrf-token → Server generate token, set cookie
-2. POST /api       → Client send X-CSRF-Token header
-3. Server validate → Compare header vs cookie
-```
+- **SameSite: 'lax'**: Pada lingkungan produksi dan pengembangan, cookie autentikasi (`accessToken` & `refreshToken`) selalu disetel dengan atribut `sameSite: 'lax'`.
+- Atribut ini mencegah browser mengirimkan cookie autentikasi pada sub-request lintas-situs (*cross-site mutations* seperti POST/PUT/DELETE dari domain luar).
+- Dengan kebijakan ini, sistem aman dari ancaman CSRF secara default melalui perlindungan bawaan browser tanpa memerlukan overhead token CSRF tambahan.
 
 ---
 
@@ -289,9 +269,8 @@ const { generateCsrfToken, doubleCsrfProtection } = doubleCsrf({
 // Contoh route dengan full middleware chain
 app.post('/api/v1/articles',
   requireAuth,           // 1. Wajib login
-  doubleCsrfProtection,  // 2. Wajib CSRF token
-  siteMiddleware,        // 3. Wajib site ID
-  requireSiteAccess,     // 4. Cek akses site
+  siteMiddleware,        // 2. Wajib site ID
+  requireSiteAccess,     // 3. Cek akses site
   asyncHandler(articleController.create)
 )
 ```
@@ -334,11 +313,9 @@ export const api = axios.create({
 
 1. **Request Interceptor:**
    - Inject `X-Site-ID` header dari cookie
-   - Inject `X-CSRF-Token` untuk mutating requests
 
 2. **Response Interceptor:**
    - Handle 401 → Auto refresh token
-   - Handle 403 (CSRF) → Retry with new token
    - Retry limit: 3 attempts max
 
 ### Auth Initialization
@@ -480,9 +457,6 @@ Site (1) ──── (N) User
 JWT_SECRET=<64-char-random-string>
 JWT_ACCESS_EXPIRES=1h  # Access token lifetime
 
-# CSRF Configuration
-CSRF_SECRET=<32-char-random-string>
-
 # Cookie Configuration
 COOKIE_DOMAIN=.beritakarya.co  # For subdomain sharing
 
@@ -497,7 +471,6 @@ CORS_ORIGIN=https://beritakarya.co,https://www.beritakarya.co
 | NODE_ENV | development | production |
 | API_URL | localhost:3001 | api.beritakarya.co |
 | JWT Access | 1h | 1h |
-| CSRF Cookie | httpOnly, lax | httpOnly, secure, lax |
 | Cookie Domain | (empty) | .beritakarya.co |
 | CORS | localhost:3000 | beritakarya.co |
 
@@ -508,7 +481,7 @@ CORS_ORIGIN=https://beritakarya.co,https://www.beritakarya.co
 ### Implemented
 
 1. **HttpOnly Cookies** - Tokens tidak accessible via JavaScript
-2. **CSRF Protection** - Double-submit cookie pattern
+2. **CSRF Mitigation** - Cookie-level security (SameSite: 'lax')
 3. **Refresh Token Rotation** - Old tokens di-blacklist
 4. **Rate Limiting** - Prevent brute force
 5. **Input Sanitization** - Prevent XSS
@@ -531,9 +504,6 @@ CORS_ORIGIN=https://beritakarya.co,https://www.beritakarya.co
 - Token expired → Auto refresh atau login ulang
 - Token invalid → Clear cookies, login ulang
 
-#### 403 Forbidden (CSRF)
-- CSRF token expired → Retry akan auto-fetch token baru
-- SameSite cookie issue → Cek browser settings
 
 #### SITE_FORBIDDEN
 - User tidak punya akses ke site tersebut
