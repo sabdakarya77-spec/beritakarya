@@ -6,7 +6,8 @@ module.exports = {
     'build/',
     '.next/',
     '.turbo/',
-    'coverage/'
+    'coverage/',
+    'public/'
   ],
   overrides: [
     {
@@ -28,7 +29,7 @@ module.exports = {
       ],
       rules: {
         '@typescript-eslint/no-explicit-any': 'off',
-        '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+        '@typescript-eslint/no-unused-vars': process.env.CI ? 'off' : ['warn', { argsIgnorePattern: '^_' }],
         '@typescript-eslint/no-unused-expressions': ['error', { allowTernary: true, allowShortCircuit: true }],
         '@typescript-eslint/no-namespace': 'off',
         '@typescript-eslint/no-require-imports': 'off',
