@@ -5,8 +5,9 @@ import { useEditorStore } from '../../../store/editorStore'
 import { CATEGORIES_CONFIG, CategoryItem } from '../../../lib/constants'
 import { MediaLibraryModal } from '../MediaLibraryModal'
 import { type MediaItem } from '../../../hooks/useMediaLibrary'
-import { Image, Tag, Flag, Zap, Star, Sparkles, ChevronDown, Upload, ImageIcon, X, FolderOpen } from 'lucide-react'
+import { Image as ImageIconIcon, Tag, Flag, Zap, Star, Sparkles, ChevronDown, Upload, ImageIcon, X, FolderOpen, AlertCircle } from 'lucide-react'
 import { useImageUpload } from '../../../hooks/useImageUpload'
+import { cn } from '../../../lib/utils'
 
 export function TabSettings() {
   const { 
@@ -100,88 +101,99 @@ export function TabSettings() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="p-4 space-y-6 animate-fade-in">
       {/* Featured Image */}
       <div className="space-y-2">
-        <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500">
-          <Image size={14} />
+        <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-panel-text-secondary">
+          <ImageIconIcon size={12} />
           Gambar Utama
         </label>
         
         {featuredImage ? (
-          <div className="relative group">
+          <div className="relative group overflow-hidden rounded-xl border border-panel-border aspect-video">
             <img 
               src={featuredImage} 
               alt="Featured" 
-              className="w-full aspect-video object-cover rounded-xl" 
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
             />
-            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex items-center justify-center gap-2">
+            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3 backdrop-blur-[2px]">
               <button
                 onClick={() => setShowMediaLibrary(true)}
-                className="p-2 bg-white rounded-lg hover:bg-gray-100 transition-colors"
+                className="p-2.5 bg-white text-gray-800 rounded-lg hover:bg-gray-100 active:scale-95 transition-all shadow-md"
                 title="Pilih dari Galeri"
               >
-                <FolderOpen className="w-5 h-5 text-gray-700" />
+                <FolderOpen className="w-4 h-4" />
               </button>
               <button
                 onClick={handleRemoveFeaturedImage}
-                className="p-2 bg-red-500 rounded-lg hover:bg-red-600 transition-colors"
-                title="Hapus"
+                className="p-2.5 bg-red-500 text-white rounded-lg hover:bg-red-600 active:scale-95 transition-all shadow-md"
+                title="Hapus Gambar"
               >
-                <X className="w-5 h-5 text-white" />
+                <X className="w-4 h-4" />
               </button>
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3">
-            {/* Upload Button */}
-            <label className="cursor-pointer">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleFileUpload}
-                className="hidden"
-                disabled={uploadingImage}
-              />
-              <div className="aspect-video rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700 hover:border-brand-red/50 transition-colors flex flex-col items-center justify-center gap-2 text-gray-400 hover:text-brand-red bg-gray-50 dark:bg-slate-800/50">
-                {uploadingImage ? (
-                  <div className="w-6 h-6 border-2 border-brand-red/30 border-t-brand-red rounded-full animate-spin" />
-                ) : (
-                  <>
-                    <Upload size={20} />
-                    <span className="text-xs">Upload Baru</span>
-                  </>
-                )}
-              </div>
-            </label>
-            
-            {/* Gallery Button */}
-            <button
-              onClick={() => setShowMediaLibrary(true)}
-              className="aspect-video rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700 hover:border-purple-500/50 transition-colors flex flex-col items-center justify-center gap-2 text-gray-400 hover:text-purple-500 bg-gray-50 dark:bg-slate-800/50"
-            >
-              <ImageIcon size={20} />
-              <span className="text-xs">Pilih dari Galeri</span>
-            </button>
+          <div className="relative group rounded-xl border border-dashed border-panel-border bg-panel-surface hover:bg-panel-elevated hover:border-panel-accent transition-all duration-300 overflow-hidden">
+            <div className="flex flex-col items-center justify-center p-6 text-center space-y-3">
+              {uploadingImage || uploading ? (
+                <div className="flex flex-col items-center justify-center space-y-2">
+                  <div className="w-8 h-8 border-2 border-panel-accent/20 border-t-panel-accent rounded-full animate-spin" />
+                  <span className="text-[11px] text-panel-text-secondary">Mengunggah berkas...</span>
+                </div>
+              ) : (
+                <>
+                  <div className="p-3 bg-panel-elevated rounded-full text-panel-text-secondary group-hover:scale-110 transition-transform duration-300">
+                    <Upload size={18} />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-xs font-semibold text-panel-text-primary">Seret & taruh gambar utama</p>
+                    <p className="text-[10px] text-panel-text-muted">Resolusi rekomendasi 1200x675px</p>
+                  </div>
+                  
+                  <div className="flex items-center gap-2 pt-1">
+                    {/* Upload Baru */}
+                    <label className="px-3 py-1.5 bg-panel-elevated border border-panel-border rounded-lg text-[10px] font-semibold text-panel-text-primary hover:bg-panel-bg cursor-pointer hover:border-panel-accent/40 active:scale-95 transition-all">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileUpload}
+                        className="hidden"
+                        disabled={uploadingImage}
+                      />
+                      Upload Baru
+                    </label>
+
+                    {/* Pilih Galeri */}
+                    <button
+                      onClick={() => setShowMediaLibrary(true)}
+                      className="px-3 py-1.5 bg-panel-elevated border border-panel-border rounded-lg text-[10px] font-semibold text-panel-text-primary hover:bg-panel-bg hover:border-panel-purple/40 active:scale-95 transition-all"
+                    >
+                      Pilih dari Galeri
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         )}
       </div>
 
       {/* Category Dropdown */}
       <div className="space-y-2">
-        <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500">
-          <Tag size={14} />
+        <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-panel-text-secondary">
+          <Tag size={12} />
           Kategori
         </label>
         <div className="relative">
           <button
             onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
-            className="w-full flex items-center justify-between px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 text-sm text-left"
+            className="w-full flex items-center justify-between px-3 py-2 rounded-lg border border-panel-border bg-panel-surface text-xs font-medium text-panel-text-primary hover:bg-panel-elevated hover:border-panel-border-hover transition-all text-left"
           >
-            <span className={categoryId ? 'text-gray-900 dark:text-white' : 'text-gray-400'}>
+            <span className={categoryId ? 'text-panel-text-primary font-semibold' : 'text-panel-text-muted'}>
               {selectedCategoryName}
             </span>
-            <ChevronDown size={16} className="text-gray-400" />
+            <ChevronDown size={14} className="text-panel-text-secondary" />
           </button>
           
           {showCategoryDropdown && (
@@ -190,34 +202,40 @@ export function TabSettings() {
                 className="fixed inset-0 z-40" 
                 onClick={() => setShowCategoryDropdown(false)} 
               />
-              <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 shadow-xl max-h-[200px] overflow-y-auto">
+              <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-panel-surface dark:bg-panel-elevated rounded-lg border border-panel-border shadow-xl max-h-[220px] overflow-y-auto animate-fade-in py-1">
                 <button
                   onClick={() => handleCategorySelect('')}
-                  className="w-full px-3 py-2 text-left text-sm text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-700 border-b border-gray-100 dark:border-slate-700"
+                  className="w-full px-3 py-2 text-left text-[11px] font-semibold text-panel-text-muted hover:bg-panel-elevated border-b border-panel-border"
                 >
-                  Hapus pilihan
+                  Hapus Pilihan
                 </button>
                 {CATEGORIES_CONFIG.map((cat) => (
-                  <div key={cat.slug}>
+                  <div key={cat.slug} className="border-b border-panel-border/30 last:border-0">
                     {/* Parent Category */}
                     <button
                       onClick={() => handleCategorySelect(cat.slug)}
-                      className={`w-full px-3 py-2 text-left text-sm font-medium hover:bg-gray-50 dark:hover:bg-slate-700 ${
-                        categoryId === cat.slug ? 'text-brand-red bg-brand-red/5' : 'text-gray-900 dark:text-white'
-                      }`}
+                      className={cn(
+                        "w-full px-3 py-2 text-left text-xs font-semibold hover:bg-panel-elevated transition-colors flex items-center justify-between",
+                        categoryId === cat.slug ? 'text-panel-accent bg-panel-accent/5' : 'text-panel-text-primary'
+                      )}
                     >
-                      {cat.name}
+                      <span>{cat.name}</span>
+                      {categoryId === cat.slug && <span className="text-[10px]">✓</span>}
                     </button>
                     {/* Sub Categories */}
                     {cat.subCategories?.map((sub) => (
                       <button
                         key={sub.slug}
                         onClick={() => handleCategorySelect(sub.slug)}
-                        className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-slate-700 ${
-                          categoryId === sub.slug ? 'text-brand-red bg-brand-red/5' : 'text-gray-600 dark:text-gray-400'
-                        }`}
+                        className={cn(
+                          "w-full px-5 py-1.5 text-left text-[11px] hover:bg-panel-elevated transition-colors flex items-center justify-between",
+                          categoryId === sub.slug ? 'text-panel-accent bg-panel-accent/5 font-semibold' : 'text-panel-text-secondary'
+                        )}
                       >
-                        ↳ {sub.name}
+                        <span className="flex items-center gap-1">
+                          <span className="text-panel-text-muted/60">↳</span> {sub.name}
+                        </span>
+                        {categoryId === sub.slug && <span className="text-[9px]">✓</span>}
                       </button>
                     ))}
                   </div>
@@ -230,88 +248,168 @@ export function TabSettings() {
 
       {/* Tags */}
       <div className="space-y-2">
-        <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500">
-          <Tag size={14} />
+        <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-panel-text-secondary">
+          <Tag size={12} />
           Tags
         </label>
-        <div className="flex flex-wrap gap-2 mb-2">
-          {localTags.map((tag) => (
-            <span
-              key={tag}
-              className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 dark:bg-slate-800 rounded-full text-xs"
-            >
-              {tag}
-              <button
-                onClick={() => handleRemoveTag(tag)}
-                className="text-gray-400 hover:text-red-500"
+        
+        {localTags.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 p-2 bg-panel-surface border border-panel-border rounded-xl">
+            {localTags.map((tag) => (
+              <span
+                key={tag}
+                className="inline-flex items-center gap-1 px-2 py-0.5 bg-panel-elevated border border-panel-border rounded-lg text-[10px] font-semibold text-panel-text-primary group"
               >
-                ×
-              </button>
+                {tag}
+                <button
+                  onClick={() => handleRemoveTag(tag)}
+                  className="text-panel-text-muted hover:text-red-500 rounded-full hover:bg-panel-surface p-0.5 transition-colors"
+                >
+                  <X size={10} />
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
+        
+        <div className="relative">
+          <input
+            type="text"
+            value={tagInput}
+            onChange={(e) => setTagInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Tambah tag baru..."
+            className="w-full px-3 py-2 rounded-lg border border-panel-border bg-panel-surface text-xs font-medium text-panel-text-primary focus:outline-none focus:border-panel-accent transition-all placeholder-panel-text-muted"
+          />
+          {tagInput.trim() && (
+            <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[9px] text-panel-text-muted font-bold tracking-wide uppercase pointer-events-none">
+              Enter
             </span>
-          ))}
+          )}
         </div>
-        <input
-          type="text"
-          value={tagInput}
-          onChange={(e) => setTagInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="Tambah tag..."
-          className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 text-sm"
-        />
       </div>
 
       {/* Editorial Badges */}
       <div className="space-y-3">
-        <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500">
-          <Flag size={14} />
-          Badge Editorial
-        </label>
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-panel-text-secondary whitespace-nowrap">Badge Editorial</span>
+          <div className="w-full h-px bg-panel-border" />
+        </div>
         
-        <label className="flex items-center gap-3 p-3 rounded-xl border border-gray-200 dark:border-gray-700 cursor-pointer hover:border-brand-red/50 transition-colors">
-          <input
-            type="checkbox"
-            checked={isBreaking}
-            onChange={(e) => updateArticleData({ isBreaking: e.target.checked })}
-            className="rounded"
-          />
-          <div className="flex items-center gap-2">
-            <Zap className="w-4 h-4 text-red-500" />
-            <div>
-              <span className="text-sm font-medium block">Breaking News</span>
-              <span className="text-xs text-gray-500">Tampilkan badge merah</span>
+        {/* Breaking News Toggle */}
+        <label 
+          className={cn(
+            "flex items-center justify-between p-3 rounded-xl border cursor-pointer select-none transition-all duration-300",
+            isBreaking 
+              ? "border-red-500/30 bg-red-500/5 shadow-sm" 
+              : "border-panel-border bg-panel-surface hover:border-panel-border-hover"
+          )}
+        >
+          <div className="flex items-center gap-3">
+            <div className={cn(
+              "p-2 rounded-lg transition-colors", 
+              isBreaking ? "bg-red-500 text-white" : "bg-panel-elevated text-red-500"
+            )}>
+              <Zap className="w-4 h-4" />
             </div>
+            <div>
+              <span className="text-xs font-bold text-panel-text-primary block">Breaking News</span>
+              <span className="text-[10px] text-panel-text-secondary">Tampilkan badge merah menyala</span>
+            </div>
+          </div>
+          <div className="relative shrink-0">
+            <input
+              type="checkbox"
+              checked={isBreaking}
+              onChange={(e) => updateArticleData({ isBreaking: e.target.checked })}
+              className="sr-only"
+            />
+            <div className={cn(
+              "w-8 h-4 rounded-full transition-colors",
+              isBreaking ? "bg-red-500" : "bg-panel-elevated"
+            )} />
+            <div className={cn(
+              "absolute top-0.5 left-0.5 bg-white w-3 h-3 rounded-full transition-transform shadow-sm",
+              isBreaking ? "translate-x-4" : "translate-x-0"
+            )} />
           </div>
         </label>
         
-        <label className="flex items-center gap-3 p-3 rounded-xl border border-gray-200 dark:border-gray-700 cursor-pointer hover:border-purple-500/50 transition-colors">
-          <input
-            type="checkbox"
-            checked={isExclusive}
-            onChange={(e) => updateArticleData({ isExclusive: e.target.checked })}
-            className="rounded"
-          />
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-purple-500" />
-            <div>
-              <span className="text-sm font-medium block">Eksklusif</span>
-              <span className="text-xs text-gray-500">Konten eksklusif</span>
+        {/* Eksklusif Toggle */}
+        <label 
+          className={cn(
+            "flex items-center justify-between p-3 rounded-xl border cursor-pointer select-none transition-all duration-300",
+            isExclusive 
+              ? "border-purple-500/30 bg-purple-500/5 shadow-sm" 
+              : "border-panel-border bg-panel-surface hover:border-panel-border-hover"
+          )}
+        >
+          <div className="flex items-center gap-3">
+            <div className={cn(
+              "p-2 rounded-lg transition-colors", 
+              isExclusive ? "bg-purple-500 text-white" : "bg-panel-elevated text-purple-500"
+            )}>
+              <Sparkles className="w-4 h-4" />
             </div>
+            <div>
+              <span className="text-xs font-bold text-panel-text-primary block">Eksklusif</span>
+              <span className="text-[10px] text-panel-text-secondary">Tampilkan label artikel eksklusif</span>
+            </div>
+          </div>
+          <div className="relative shrink-0">
+            <input
+              type="checkbox"
+              checked={isExclusive}
+              onChange={(e) => updateArticleData({ isExclusive: e.target.checked })}
+              className="sr-only"
+            />
+            <div className={cn(
+              "w-8 h-4 rounded-full transition-colors",
+              isExclusive ? "bg-purple-500" : "bg-panel-elevated"
+            )} />
+            <div className={cn(
+              "absolute top-0.5 left-0.5 bg-white w-3 h-3 rounded-full transition-transform shadow-sm",
+              isExclusive ? "translate-x-4" : "translate-x-0"
+            )} />
           </div>
         </label>
         
-        <label className="flex items-center gap-3 p-3 rounded-xl border border-gray-200 dark:border-gray-700 cursor-pointer hover:border-amber-500/50 transition-colors">
-          <input
-            type="checkbox"
-            checked={isFeatured}
-            onChange={(e) => updateArticleData({ isFeatured: e.target.checked })}
-            className="rounded"
-          />
-          <div className="flex items-center gap-2">
-            <Star className="w-4 h-4 text-amber-500" />
-            <div>
-              <span className="text-sm font-medium block">Featured</span>
-              <span className="text-xs text-gray-500">Tampilkan di homepage</span>
+        {/* Featured Toggle */}
+        <label 
+          className={cn(
+            "flex items-center justify-between p-3 rounded-xl border cursor-pointer select-none transition-all duration-300",
+            isFeatured 
+              ? "border-amber-500/30 bg-amber-500/5 shadow-sm" 
+              : "border-panel-border bg-panel-surface hover:border-panel-border-hover"
+          )}
+        >
+          <div className="flex items-center gap-3">
+            <div className={cn(
+              "p-2 rounded-lg transition-colors", 
+              isFeatured ? "bg-amber-500 text-white" : "bg-panel-elevated text-amber-500"
+            )}>
+              <Star className="w-4 h-4" />
             </div>
+            <div>
+              <span className="text-xs font-bold text-panel-text-primary block">Featured</span>
+              <span className="text-[10px] text-panel-text-secondary">Utamakan di beranda situs</span>
+            </div>
+          </div>
+          <div className="relative shrink-0">
+            <input
+              type="checkbox"
+              checked={isFeatured}
+              onChange={(e) => updateArticleData({ isFeatured: e.target.checked })}
+              className="sr-only"
+            />
+            <div className={cn(
+              "w-8 h-4 rounded-full transition-colors",
+              isFeatured ? "bg-amber-500" : "bg-panel-elevated"
+            )} />
+            <div className={cn(
+              "absolute top-0.5 left-0.5 bg-white w-3 h-3 rounded-full transition-transform shadow-sm",
+              isFeatured ? "translate-x-4" : "translate-x-0"
+            )} />
           </div>
         </label>
       </div>
