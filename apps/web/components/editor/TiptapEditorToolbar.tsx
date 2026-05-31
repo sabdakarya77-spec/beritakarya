@@ -94,8 +94,8 @@ export function TiptapEditorToolbar({ editor }: TiptapEditorToolbarProps) {
   }
 
   return (
-    <div className="tiptap-editor-toolbar-container max-w-full overflow-hidden">
-      <div className="tiptap-toolbar flex flex-nowrap lg:flex-wrap items-center gap-1 p-2 border-b border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900/50 rounded-t-lg overflow-x-auto no-scrollbar max-w-full">
+    <div className="tiptap-editor-toolbar-container max-w-full relative z-20">
+      <div className="tiptap-toolbar flex flex-nowrap items-center gap-1 p-2 border-b border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900/50 rounded-t-lg overflow-x-auto lg:overflow-visible no-scrollbar max-w-full">
       {/* Undo/Redo */}
       <div className="flex shrink-0 items-center gap-1 pr-2 border-r border-gray-200 dark:border-slate-700">
         <ToolbarButton
