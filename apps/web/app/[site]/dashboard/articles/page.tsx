@@ -51,25 +51,6 @@ const getStatusFromQuery = (value: string | null) =>
   value && value in STATUS_LABELS ? value : '';
 const getViewModeFromQuery = (value: string | null): 'list' | 'kanban' =>
   value === 'kanban' ? 'kanban' : 'list';
-const getArticleActionHint = (status: string) => {
-  switch (status) {
-    case 'draft':
-      return 'Aksi utama: rapikan lalu kirim ke editor.';
-    case 'revision':
-      return 'Aksi utama: perbaiki sesuai catatan editor.';
-    case 'submitted':
-    case 'review':
-      return 'Aksi utama: pantau keputusan editorial.';
-    case 'approved':
-      return 'Aksi utama: siapkan ke tahap publikasi.';
-    case 'scheduled':
-      return 'Aksi utama: cek kesiapan jadwal terbit.';
-    case 'published':
-      return 'Aksi utama: buka hasil terbit dan distribusi.';
-    default:
-      return 'Aksi utama: buka detail post.';
-  }
-};
 
 export default function ArticlesPage() {
   const router = useRouter();
@@ -437,97 +418,87 @@ export default function ArticlesPage() {
 
                   {/* Actions */}
                   <td className="px-4 py-4">
-                    <div className="flex flex-col items-end gap-2">
-                      <span className="text-[9px] font-bold uppercase tracking-widest text-gray-400 text-right">
-                        {getArticleActionHint(article.status)}
-                      </span>
-                      <div className="flex justify-end items-center gap-2 flex-wrap">
-                        {canSubmitArticle(article) ? (
-                          <>
-                            <button
-                              onClick={() => handleSubmitToReview(article.id)}
-                              disabled={actionLoading === article.id}
-                              title="Kirim ke editor"
-                              className="inline-flex items-center gap-1.5 px-3.5 py-2.5 bg-brand-red text-white text-[10px] font-black uppercase tracking-wide rounded-lg hover:bg-red-700 transition-all disabled:opacity-50 shadow-sm"
-                            >
-                              {actionLoading === article.id
-                                ? <Loader2 size={12} className="animate-spin" />
-                                : <Send size={12} />
-                              }
-                              {getPrimaryActionLabel(article)}
-                            </button>
-                            <Link
-                              href={`/${site}/dashboard/articles/${article.id}`}
-                              className="inline-flex items-center gap-1.5 px-3 py-2 bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-200 text-[10px] font-black uppercase tracking-wide rounded-lg hover:bg-gray-200 dark:hover:bg-white/10 transition-all"
-                              title="Edit post"
-                            >
-                              <Edit3 size={13} />
-                              Edit
-                            </Link>
-                          </>
-                        ) : article.status === 'published' ? (
-                          <>
-                            <Link
-                              href={`/${site}/artikel/${article.slug}`}
-                              target="_blank"
-                              className="inline-flex items-center gap-1.5 px-3.5 py-2.5 bg-emerald-600 text-white text-[10px] font-black uppercase tracking-wide rounded-lg hover:bg-emerald-700 transition-all shadow-sm"
-                              title="Lihat post"
-                            >
-                              <Eye size={12} />
-                              {getPrimaryActionLabel(article)}
-                            </Link>
-                            <Link
-                              href={`/${site}/dashboard/articles/${article.id}`}
-                              className="inline-flex items-center gap-1.5 px-3 py-2 bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-200 text-[10px] font-black uppercase tracking-wide rounded-lg hover:bg-gray-200 dark:hover:bg-white/10 transition-all"
-                              title="Edit post"
-                            >
-                              <Edit3 size={13} />
-                              Edit
-                            </Link>
-                            <button
-                              onClick={() => handleGoogleIndex(article.id)}
-                              disabled={actionLoading === article.id + 'index'}
-                              className="p-2 text-gray-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 rounded-lg transition-all disabled:opacity-50"
-                              title="Kirim sinyal indeks Google"
-                            >
-                              {actionLoading === article.id + 'index' ? (
-                                <Loader2 size={14} className="animate-spin text-emerald-500" />
-                              ) : (
-                                <Globe size={14} />
-                              )}
-                            </button>
-                          </>
-                        ) : (
-                          <Link
-                            href={`/${site}/dashboard/articles/${article.id}`}
-                            className={cn(
-                              'inline-flex items-center gap-1.5 px-3.5 py-2.5 text-[10px] font-black uppercase tracking-wide rounded-lg transition-all shadow-sm',
-                              article.status === 'revision'
-                                ? 'bg-amber-500 text-white hover:bg-amber-600'
-                                : article.status === 'approved'
-                                  ? 'bg-emerald-600 text-white hover:bg-emerald-700'
-                                  : 'bg-brand-black dark:bg-white text-white dark:text-slate-900 hover:opacity-90'
-                            )}
-                            title="Buka post"
+                    <div className="flex justify-end items-center gap-1.5 flex-wrap">
+                      {canSubmitArticle(article) ? (
+                        <>
+                          <button
+                            onClick={() => handleSubmitToReview(article.id)}
+                            disabled={actionLoading === article.id}
+                            title="Kirim ke Editor"
+                            className="p-2.5 bg-brand-red/10 text-brand-red rounded-lg hover:bg-brand-red hover:text-white transition-all disabled:opacity-50"
                           >
-                            <Edit3 size={12} />
-                            {getPrimaryActionLabel(article)}
-                          </Link>
-                        )}
-                        {canDeleteArticle() && (
-                          <button 
-                            onClick={() => handleDelete(article.id)}
-                            disabled={actionLoading === article.id + 'del'}
-                            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-lg transition-all disabled:opacity-50"
-                            title="Hapus"
-                          >
-                            {actionLoading === article.id + 'del'
-                              ? <Loader2 size={15} className="animate-spin" />
-                              : <Trash2 size={15} />
+                            {actionLoading === article.id
+                              ? <Loader2 size={14} className="animate-spin" />
+                              : <Send size={14} />
                             }
                           </button>
-                        )}
-                      </div>
+                          <Link
+                            href={`/${site}/dashboard/articles/${article.id}`}
+                            className="p-2.5 bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:hover:bg-white/10 transition-all"
+                            title="Edit Post"
+                          >
+                            <Edit3 size={14} />
+                          </Link>
+                        </>
+                      ) : article.status === 'published' ? (
+                        <>
+                          <Link
+                            href={`/${site}/artikel/${article.slug}`}
+                            target="_blank"
+                            className="p-2.5 bg-emerald-600/10 text-emerald-600 rounded-lg hover:bg-emerald-600 hover:text-white transition-all"
+                            title="Lihat Terbit"
+                          >
+                            <Eye size={14} />
+                          </Link>
+                          <Link
+                            href={`/${site}/dashboard/articles/${article.id}`}
+                            className="p-2.5 bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:hover:bg-white/10 transition-all"
+                            title="Edit Post"
+                          >
+                            <Edit3 size={14} />
+                          </Link>
+                          <button
+                            onClick={() => handleGoogleIndex(article.id)}
+                            disabled={actionLoading === article.id + 'index'}
+                            className="p-2.5 bg-gray-100 dark:bg-white/5 text-gray-400 hover:text-emerald-500 hover:bg-emerald-500/10 rounded-lg transition-all disabled:opacity-50"
+                            title="Kirim sinyal indeks Google"
+                          >
+                            {actionLoading === article.id + 'index' ? (
+                              <Loader2 size={14} className="animate-spin text-emerald-500" />
+                            ) : (
+                              <Globe size={14} />
+                            )}
+                          </button>
+                        </>
+                      ) : (
+                        <Link
+                          href={`/${site}/dashboard/articles/${article.id}`}
+                          className={cn(
+                            'p-2.5 rounded-lg transition-all',
+                            article.status === 'revision'
+                              ? 'bg-amber-500/10 text-amber-500 hover:bg-amber-500 hover:text-white'
+                              : article.status === 'approved'
+                                ? 'bg-emerald-600/10 text-emerald-600 hover:bg-emerald-600 hover:text-white'
+                                : 'bg-brand-black/10 dark:bg-white/10 text-brand-black dark:text-white hover:bg-brand-black dark:hover:bg-white hover:text-white dark:hover:text-slate-900'
+                          )}
+                          title={getPrimaryActionLabel(article)}
+                        >
+                          <Edit3 size={14} />
+                        </Link>
+                      )}
+                      {canDeleteArticle() && (
+                        <button 
+                          onClick={() => handleDelete(article.id)}
+                          disabled={actionLoading === article.id + 'del'}
+                          className="p-2.5 bg-gray-100 dark:bg-white/5 text-gray-400 hover:text-red-600 hover:bg-red-500/10 rounded-lg transition-all disabled:opacity-50"
+                          title="Hapus Post"
+                        >
+                          {actionLoading === article.id + 'del'
+                            ? <Loader2 size={14} className="animate-spin" />
+                            : <Trash2 size={14} />
+                          }
+                        </button>
+                      )}
                     </div>
                   </td>
                 </motion.tr>
