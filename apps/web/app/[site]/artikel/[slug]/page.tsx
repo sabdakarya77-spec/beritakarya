@@ -17,7 +17,6 @@ import { Container } from '../../../../components/layout/Container'
 import ArticleShareActions from '../../../../components/ui/ArticleShareActions'
 import ArticleBookmarkButton from '../../../../components/ui/ArticleBookmarkButton'
 import ArticleFloatingTools from '../../../../components/ui/ArticleFloatingTools'
-import MobileArticleTools from '../../../../components/ui/MobileArticleTools'
 
 interface Props {
   params: { site: string; slug: string }
@@ -183,9 +182,8 @@ export default async function ArticlePage({ params }: Props) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <ReadingProgress />
-      <MobileArticleTools title={article.title} url={articleUrl} article={article} site={siteParam} />
       <ImageLightboxWrapper>
-        <article className="min-h-screen bg-[var(--bg-main)] pb-24 dark:bg-[#020617] xl:pb-0">
+        <article className="min-h-screen bg-[var(--bg-main)] dark:bg-[#020617]">
           {/* --- HEADER SECTION --- */}
           <header className="w-full pt-8 pb-8 md:pt-12 md:pb-12 border-b border-gray-100 dark:border-white/5">
             <Container>
@@ -318,6 +316,25 @@ export default async function ArticlePage({ params }: Props) {
                       {(article.blocks as Block[]).map((block: Block, i: number) => (
                         <PublicBlock key={i} block={block} />
                       ))}
+                    </div>
+                  </div>
+
+                  {/* Share & Save Section (Inline at the end of article) */}
+                  <div className="mt-12 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-y border-gray-100 py-6 dark:border-white/5">
+                    <div className="flex flex-wrap items-center gap-3">
+                      <span className="text-[10px] font-black uppercase tracking-[0.18em] text-gray-400">Bagikan:</span>
+                      <ArticleShareActions title={article.title} url={articleUrl} variant="inline" />
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-[10px] font-black uppercase tracking-[0.18em] text-gray-400">Simpan:</span>
+                      <ArticleBookmarkButton
+                        article={article}
+                        site={siteParam}
+                        className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-black/[0.06] bg-white shadow-[0_10px_30px_rgba(15,23,42,0.04)] transition-all hover:scale-105 active:scale-95 dark:border-white/10 dark:bg-white/[0.04] dark:shadow-none"
+                        activeClassName="border-brand-red/40 bg-brand-red/10 text-brand-red"
+                        idleClassName="text-brand-text-muted hover:text-brand-red hover:border-brand-red/30"
+                        iconSize={16}
+                      />
                     </div>
                   </div>
 
