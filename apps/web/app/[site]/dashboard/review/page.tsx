@@ -86,12 +86,12 @@ export default function ReviewQueuePage() {
 
   useEffect(() => { load(); }, [site, activeTab]);
 
+  // Sinkronisasi state dari URL — hanya depend pada searchParams, bukan activeTab
+  // (activeTab adalah OUTPUT efek ini; memasukkannya ke deps menyebabkan flicker saat klik tab)
   useEffect(() => {
-    const nextTab = getReviewTabFromQuery(searchParams.get('tab'));
-    if (nextTab !== activeTab) {
-      setActiveTab(nextTab);
-    }
-  }, [searchParams, activeTab]);
+    setActiveTab(getReviewTabFromQuery(searchParams.get('tab')));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   const getQueueHours = (article: Article) => {
     const queueDate = new Date(article.updatedAt || article.createdAt).getTime();
@@ -267,7 +267,7 @@ export default function ReviewQueuePage() {
                 key={tab.key}
                 onClick={() => {
                   setActiveTab(tab.key);
-                  router.push(`/${site}/dashboard/review?tab=${tab.key}`);
+                  router.replace(`/${site}/dashboard/review?tab=${tab.key}`);
                 }}
                 className={cn(
                   'flex items-center gap-2 pb-3 text-xs font-black uppercase tracking-widest border-b-2 transition-all whitespace-nowrap',

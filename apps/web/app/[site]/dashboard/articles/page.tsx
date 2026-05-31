@@ -110,21 +110,16 @@ export default function ArticlesPage() {
     setPage(1);
   }, [filter, searchQuery]);
 
+  // Sinkronisasi state dari URL (hanya ketika searchParams benar-benar berubah dari navigasi eksternal)
+  // PENTING: jangan tambahkan filter/searchQuery/viewMode ke deps — mereka adalah OUTPUT efek ini,
+  // bukan input. Menambahkannya menyebabkan efek terpicu saat state berubah dari klik tab,
+  // lalu membaca URL yang belum diperbarui dan me-revert state (flicker).
   useEffect(() => {
-    const nextFilter = getStatusFromQuery(searchParams.get('status'));
-    const nextSearch = searchParams.get('search') || '';
-    const nextViewMode = getViewModeFromQuery(searchParams.get('view'));
-
-    if (nextFilter !== filter) {
-      setFilter(nextFilter);
-    }
-    if (nextSearch !== searchQuery) {
-      setSearchQuery(nextSearch);
-    }
-    if (nextViewMode !== viewMode) {
-      setViewMode(nextViewMode);
-    }
-  }, [searchParams, filter, searchQuery, viewMode]);
+    setFilter(getStatusFromQuery(searchParams.get('status')));
+    setSearchQuery(searchParams.get('search') || '');
+    setViewMode(getViewModeFromQuery(searchParams.get('view')));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   const handleNew = async () => {
     setIsCreating(true);
@@ -293,13 +288,15 @@ export default function ArticlesPage() {
               <button 
                 key={s}
                 onClick={() => {
+                  // Langsung set state untuk feedback visual instan (tidak menunggu URL update)
                   setFilter(s);
-                  // Update URL to reflect filter state
+                  setPage(1);
+                  // Gunakan replace agar filter tidak menumpuk di browser history
                   const params = new URLSearchParams();
                   params.set('view', viewMode);
                   if (s) params.set('status', s);
                   if (searchQuery) params.set('search', searchQuery);
-                  router.push(`/${site}/dashboard/articles?${params.toString()}`);
+                  router.replace(`/${site}/dashboard/articles?${params.toString()}`);
                 }}
                 className={cn(
                   'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all whitespace-nowrap',
