@@ -17,6 +17,7 @@ import { Container } from '../../../../components/layout/Container'
 import ArticleShareActions from '../../../../components/ui/ArticleShareActions'
 import ArticleBookmarkButton from '../../../../components/ui/ArticleBookmarkButton'
 import ArticleFloatingTools from '../../../../components/ui/ArticleFloatingTools'
+import MobileArticleTools from '../../../../components/ui/MobileArticleTools'
 
 interface Props {
   params: { site: string; slug: string }
@@ -182,8 +183,9 @@ export default async function ArticlePage({ params }: Props) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <ReadingProgress />
+      <MobileArticleTools title={article.title} url={articleUrl} article={article} site={siteParam} />
       <ImageLightboxWrapper>
-        <article className="min-h-screen bg-[var(--bg-main)] dark:bg-[#020617]">
+        <article className="min-h-screen bg-[var(--bg-main)] pb-24 dark:bg-[#020617] xl:pb-0">
           {/* --- HEADER SECTION --- */}
           <header className="w-full pt-8 pb-8 md:pt-12 md:pb-12 border-b border-gray-100 dark:border-white/5">
             <Container>

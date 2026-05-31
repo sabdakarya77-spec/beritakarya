@@ -105,9 +105,11 @@ async function processImage(buffer: Buffer, filename: string, options: { skipWat
       // Corner Badge Watermark — inline SVG attributes for Sharp/librsvg compatibility
       // Previously used CSS classes which caused rx/ry to be ignored (not valid CSS props)
       // and fill/font properties to not render properly in Sharp's SVG renderer
+      // NOTE: font-noto + fontconfig are installed in the Docker image (api.Dockerfile),
+      // so "Noto Sans" is available to librsvg. Arial/Helvetica do NOT exist on Alpine Linux.
       const watermarkSvg = `<svg width="${boxWidth}" height="${boxHeight}" xmlns="http://www.w3.org/2000/svg">
 <rect width="${boxWidth}" height="${boxHeight}" rx="4" ry="4" fill="rgba(0,0,0,0.65)" />
-<text x="${boxWidth / 2}" y="${boxHeight / 2}" dominant-baseline="middle" text-anchor="middle" fill="rgba(255,255,255,0.95)" font-size="${fontSize}px" font-weight="700" font-family="Arial, Helvetica, sans-serif">© BERITAKARYA 2026</text>
+<text x="${boxWidth / 2}" y="${boxHeight / 2}" dominant-baseline="middle" text-anchor="middle" fill="rgba(255,255,255,0.95)" font-size="${fontSize}px" font-weight="700" font-family="Noto Sans, DejaVu Sans, Liberation Sans, sans-serif">© BERITAKARYA 2026</text>
 </svg>`
 
       pipeline = pipeline.composite([{ input: Buffer.from(watermarkSvg), gravity: 'southeast' }])
