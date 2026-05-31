@@ -20,7 +20,8 @@ RUN npm install -g pnpm && pnpm install --frozen-lockfile
 # Build semua packages (types, utils, config) lalu build API
 # ─────────────────────────────────────────────────────────────
 FROM node:20-alpine AS builder
-RUN apk add --no-cache libc6-compat python3 make g++
+RUN apk add --no-cache libc6-compat python3 make g++ font-noto font-noto-cjk fontconfig
+RUN fc-cache -f
 WORKDIR /app
 
 RUN npm install -g pnpm turbo
@@ -57,7 +58,8 @@ RUN test -f /app/apps/api/dist/main.js || \
 # Image final yang ringan, hanya berisi file yang diperlukan
 # ─────────────────────────────────────────────────────────────
 FROM node:20-alpine AS runner
-RUN apk add --no-cache openssl libc6-compat curl
+RUN apk add --no-cache openssl libc6-compat curl font-noto font-noto-cjk fontconfig
+RUN fc-cache -f
 RUN npm install -g pnpm
 
 WORKDIR /app
