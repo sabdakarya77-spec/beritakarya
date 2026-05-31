@@ -47,6 +47,8 @@ export function TiptapEditorToolbar({ editor }: TiptapEditorToolbarProps) {
   const [showMediaLibrary, setShowMediaLibrary] = useState(false)
   const [showHeadingMenu, setShowHeadingMenu] = useState(false)
   const [showAlignMenu, setShowAlignMenu] = useState(false)
+  const [headingMenuPos, setHeadingMenuPos] = useState({ top: 0, left: 0 })
+  const [alignMenuPos, setAlignMenuPos] = useState({ top: 0, left: 0 })
   const headingRef = useRef<HTMLDivElement>(null)
   const alignRef = useRef<HTMLDivElement>(null)
 
@@ -59,11 +61,43 @@ export function TiptapEditorToolbar({ editor }: TiptapEditorToolbarProps) {
         setShowAlignMenu(false)
       }
     }
+    const handleScroll = () => {
+      setShowHeadingMenu(false)
+      setShowAlignMenu(false)
+    }
     document.addEventListener('mousedown', handleClickOutside)
+    window.addEventListener('scroll', handleScroll, true)
     return () => {
       document.removeEventListener('mousedown', handleClickOutside)
+      window.removeEventListener('scroll', handleScroll, true)
     }
   }, [])
+
+  const toggleHeadingMenu = () => {
+    if (!showHeadingMenu && headingRef.current) {
+      const rect = headingRef.current.getBoundingClientRect()
+      setHeadingMenuPos({
+        top: rect.bottom + 4,
+        left: rect.left
+      })
+    }
+    setShowHeadingMenu(!showHeadingMenu)
+    setShowAlignMenu(false)
+  }
+
+  const toggleAlignMenu = () => {
+    if (!showAlignMenu && alignRef.current) {
+      const rect = alignRef.current.getBoundingClientRect()
+      const menuWidth = 145
+      const leftPos = rect.left + menuWidth > window.innerWidth ? window.innerWidth - menuWidth - 8 : rect.left
+      setAlignMenuPos({
+        top: rect.bottom + 4,
+        left: Math.max(8, leftPos)
+      })
+    }
+    setShowAlignMenu(!showAlignMenu)
+    setShowHeadingMenu(false)
+  }
 
   const addLink = () => {
     const previousUrl = editor.getAttributes('link').href
@@ -156,10 +190,7 @@ export function TiptapEditorToolbar({ editor }: TiptapEditorToolbarProps) {
       {/* Headings Dropdown */}
       <div ref={headingRef} className="relative shrink-0 pr-2 border-r border-gray-200 dark:border-slate-700">
         <ToolbarButton
-          onClick={() => {
-            setShowHeadingMenu(!showHeadingMenu)
-            setShowAlignMenu(false)
-          }}
+          onClick={toggleHeadingMenu}
           active={editor.isActive('heading')}
           title="Format Heading"
           className="flex items-center gap-1 hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-300"
@@ -171,7 +202,10 @@ export function TiptapEditorToolbar({ editor }: TiptapEditorToolbarProps) {
           <ChevronDown className="w-3 h-3 opacity-60" />
         </ToolbarButton>
         {showHeadingMenu && (
-          <div className="absolute left-0 mt-1 z-50 min-w-[130px] rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-1 shadow-lg flex flex-col gap-0.5">
+          <div 
+            style={{ top: headingMenuPos.top, left: headingMenuPos.left }}
+            className="fixed z-50 min-w-[130px] rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-1 shadow-lg flex flex-col gap-0.5"
+          >
             <button
               type="button"
               onClick={() => {
@@ -261,10 +295,7 @@ export function TiptapEditorToolbar({ editor }: TiptapEditorToolbarProps) {
       {/* Alignment Dropdown */}
       <div ref={alignRef} className="relative shrink-0 pr-2 border-r border-gray-200 dark:border-slate-700">
         <ToolbarButton
-          onClick={() => {
-            setShowAlignMenu(!showAlignMenu)
-            setShowHeadingMenu(false)
-          }}
+          onClick={toggleAlignMenu}
           active={editor.isActive({ textAlign: 'center' }) || editor.isActive({ textAlign: 'right' }) || editor.isActive({ textAlign: 'justify' })}
           title="Perataan Teks"
           className="flex items-center gap-1 hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-300"
@@ -276,7 +307,10 @@ export function TiptapEditorToolbar({ editor }: TiptapEditorToolbarProps) {
           <ChevronDown className="w-3 h-3 opacity-60" />
         </ToolbarButton>
         {showAlignMenu && (
-          <div className="absolute left-0 mt-1 z-50 min-w-[145px] rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-1 shadow-lg flex flex-col gap-0.5">
+          <div 
+            style={{ top: alignMenuPos.top, left: alignMenuPos.left }}
+            className="fixed z-50 min-w-[145px] rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-1 shadow-lg flex flex-col gap-0.5"
+          >
             <button
               type="button"
               onClick={() => {
