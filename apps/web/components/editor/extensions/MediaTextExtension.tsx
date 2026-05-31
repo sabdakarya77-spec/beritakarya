@@ -148,12 +148,12 @@ const MediaTextComponent = ({ node, updateAttributes, deleteNode }: any) => {
             </div>
           ) : (
             <div className={cn(
-              'flex flex-col items-center justify-center gap-3 p-6',
+              'flex flex-col items-center justify-center gap-3 p-6 w-full',
               layout === 'center' ? 'w-full' : 'flex-1 min-w-0',
               imageOrderClass
             )}>
-              <div className="flex gap-2">
-                <label className="flex items-center gap-2 px-4 py-2 bg-brand-red text-white rounded-lg text-sm cursor-pointer hover:bg-brand-red/90 transition-colors">
+              <div className="flex flex-wrap items-center justify-center gap-2 w-full">
+                <label className="flex items-center justify-center gap-2 px-4 py-2 bg-brand-red text-white rounded-lg text-sm cursor-pointer hover:bg-brand-red/90 transition-colors whitespace-nowrap">
                   <input
                     type="file"
                     accept="image/*"
@@ -166,7 +166,7 @@ const MediaTextComponent = ({ node, updateAttributes, deleteNode }: any) => {
                 </label>
                 <button
                   onClick={() => setShowMediaLibrary(true)}
-                  className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
+                  className="flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors whitespace-nowrap"
                 >
                   <ImageIcon className="w-4 h-4" />
                   Galeri

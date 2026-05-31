@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback } from 'react'
+import { useCallback, useState, useEffect } from 'react'
 import type { Editor } from '@tiptap/react'
 import { FloatingMenu } from '@tiptap/react/menus'
 import {
@@ -26,11 +26,24 @@ interface FloatingMenuBarProps {
 }
 
 /**
- * Floating Menu — appears on empty paragraph lines.
- * Uses Tiptap's built-in FloatingMenu component (same pattern as BubbleMenu)
- * for reliable plugin lifecycle management.
+ * Floating Menu — appears on empty paragraph lines as a single "+" button.
+ * Clicking the "+" button expands a beautiful vertical menu, preventing horizontal clutter.
  */
 export function FloatingMenuBar({ editor }: FloatingMenuBarProps) {
+  const [isOpen, setIsOpen] = useState(false)
+
+  // Reset open state when the cursor changes position (selection updates)
+  useEffect(() => {
+    if (!editor) return
+    const handleUpdate = () => {
+      setIsOpen(false)
+    }
+    editor.on('selectionUpdate', handleUpdate)
+    return () => {
+      editor.off('selectionUpdate', handleUpdate)
+    }
+  }, [editor])
+
   const insertImage = useCallback(() => {
     const url = window.prompt('Masukkan URL gambar')
     if (url && editor) {
@@ -178,35 +191,66 @@ export function FloatingMenuBar({ editor }: FloatingMenuBarProps) {
         )
       }}
     >
-      <div className="floating-menu-bar flex items-center gap-0.5 p-1.5 bg-slate-900 dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-700/80 backdrop-blur-sm">
-        {menuItems.map((item, index) => {
-          if ('divider' in item) {
-            return (
-              <div
-                key={`divider-${index}`}
-                className="w-px h-5 bg-slate-600/60 mx-0.5"
-              />
-            )
-          }
+      <div className="relative z-50">
+        {/* Toggle Button (Plus icon rotates to cross when open) */}
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          type="button"
+          className={cn(
+            "w-7 h-7 flex items-center justify-center rounded-full border shadow-md transition-all duration-200 cursor-pointer",
+            isOpen
+              ? "bg-brand-red border-brand-red text-white rotate-45"
+              : "bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-700 hover:text-gray-700 dark:hover:text-gray-200"
+          )}
+          title="Sisipkan Blok"
+        >
+          <Plus size={16} />
+        </button>
 
-          const isActive = 'isActive' in item && item.isActive?.()
+        {/* Dropdown Menu (Premium Vertical List) */}
+        {isOpen && (
+          <div className="absolute left-0 mt-2 w-60 max-h-[280px] overflow-y-auto rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-1.5 shadow-2xl flex flex-col gap-0.5 z-[9999] no-scrollbar">
+            {menuItems.map((item, index) => {
+              if ('divider' in item) {
+                return (
+                  <div
+                    key={`divider-${index}`}
+                    className="my-1 border-t border-gray-100 dark:border-slate-700/50"
+                  />
+                )
+              }
 
-          return (
-            <button
-              key={index}
-              onClick={item.action}
-              title={item.title}
-              className={cn(
-                'p-1.5 rounded-lg transition-all duration-150',
-                isActive
-                  ? 'bg-brand-red/20 text-brand-red'
-                  : 'text-slate-400 hover:bg-slate-700 hover:text-white hover:scale-110'
-              )}
-            >
-              {item.icon}
-            </button>
-          )
-        })}
+              const isActive = 'isActive' in item && item.isActive?.()
+
+              return (
+                <button
+                  key={index}
+                  type="button"
+                  onClick={() => {
+                    item.action()
+                    setIsOpen(false)
+                  }}
+                  className={cn(
+                    "flex items-center gap-3 w-full px-2.5 py-1.5 text-xs text-left rounded-lg transition-colors cursor-pointer",
+                    isActive
+                      ? "bg-brand-red/[0.08] text-brand-red font-medium"
+                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700"
+                  )}
+                >
+                  <span className={cn(
+                    "flex items-center justify-center w-6 h-6 rounded-md transition-colors",
+                    isActive
+                      ? "bg-brand-red/10 text-brand-red"
+                      : "bg-gray-100 dark:bg-slate-700/85 text-gray-500 dark:text-gray-400"
+                  )}>
+                    {item.icon}
+                  </span>
+                  <span>{item.title}</span>
+                </button>
+              )
+            })}
+          </div>
+        )}
       </div>
     </FloatingMenu>
   )
