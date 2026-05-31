@@ -713,7 +713,7 @@ function PublicBlock({ block }: { block: Block }) {
           )}
         >
           {/* Image Column */}
-          <div className="w-full md:w-1/2">
+          <div className="w-full md:w-1/2 min-w-0">
             <figure className="m-0">
               <div className="relative aspect-[4/3] rounded-xl overflow-hidden shadow-lg border border-gray-100 dark:border-white/5">
                 <SmartImage 
@@ -732,8 +732,8 @@ function PublicBlock({ block }: { block: Block }) {
             </figure>
           </div>
           {/* Text Column */}
-          <div className="w-full md:w-1/2">
-            <p className={cn(bodyTextClass, 'm-0 whitespace-pre-wrap')}>
+          <div className="w-full md:w-1/2 min-w-0 max-w-full overflow-hidden">
+            <p className={cn(bodyTextClass, 'm-0 whitespace-pre-wrap break-words break-all')}>
               {block.content}
             </p>
           </div>

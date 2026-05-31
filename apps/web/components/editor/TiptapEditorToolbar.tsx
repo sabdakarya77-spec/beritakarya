@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import type { Editor } from '@tiptap/react'
 import {
   Bold,
@@ -29,7 +29,8 @@ import {
   Grid,
   Columns,
   AlertCircle,
-  Video
+  Video,
+  ChevronDown
 } from 'lucide-react'
 import { MediaLibraryModal } from './MediaLibraryModal'
 import { type MediaItem } from '../../hooks/useMediaLibrary'
@@ -44,6 +45,25 @@ interface TiptapEditorToolbarProps {
  */
 export function TiptapEditorToolbar({ editor }: TiptapEditorToolbarProps) {
   const [showMediaLibrary, setShowMediaLibrary] = useState(false)
+  const [showHeadingMenu, setShowHeadingMenu] = useState(false)
+  const [showAlignMenu, setShowAlignMenu] = useState(false)
+  const headingRef = useRef<HTMLDivElement>(null)
+  const alignRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (headingRef.current && !headingRef.current.contains(event.target as Node)) {
+        setShowHeadingMenu(false)
+      }
+      if (alignRef.current && !alignRef.current.contains(event.target as Node)) {
+        setShowAlignMenu(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [])
 
   const addLink = () => {
     const previousUrl = editor.getAttributes('link').href
@@ -133,29 +153,67 @@ export function TiptapEditorToolbar({ editor }: TiptapEditorToolbarProps) {
         </ToolbarButton>
       </div>
 
-      {/* Headings */}
-      <div className="flex shrink-0 items-center gap-1 pr-2 border-r border-gray-200 dark:border-slate-700">
+      {/* Headings Dropdown */}
+      <div ref={headingRef} className="relative shrink-0 pr-2 border-r border-gray-200 dark:border-slate-700">
         <ToolbarButton
-          onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-          active={editor.isActive('heading', { level: 1 })}
-          title="Heading 1"
+          onClick={() => {
+            setShowHeadingMenu(!showHeadingMenu)
+            setShowAlignMenu(false)
+          }}
+          active={editor.isActive('heading')}
+          title="Format Heading"
+          className="flex items-center gap-1 hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-300"
         >
-          <Heading1 className="w-4 h-4" />
+          {editor.isActive('heading', { level: 1 }) ? <Heading1 className="w-4 h-4" /> :
+           editor.isActive('heading', { level: 2 }) ? <Heading2 className="w-4 h-4" /> :
+           editor.isActive('heading', { level: 3 }) ? <Heading3 className="w-4 h-4" /> :
+           <span className="w-4 h-4 flex items-center justify-center font-bold text-xs">H</span>}
+          <ChevronDown className="w-3 h-3 opacity-60" />
         </ToolbarButton>
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-          active={editor.isActive('heading', { level: 2 })}
-          title="Heading 2"
-        >
-          <Heading2 className="w-4 h-4" />
-        </ToolbarButton>
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-          active={editor.isActive('heading', { level: 3 })}
-          title="Heading 3"
-        >
-          <Heading3 className="w-4 h-4" />
-        </ToolbarButton>
+        {showHeadingMenu && (
+          <div className="absolute left-0 mt-1 z-50 min-w-[130px] rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-1 shadow-lg flex flex-col gap-0.5">
+            <button
+              type="button"
+              onClick={() => {
+                editor.chain().focus().setParagraph().run()
+                setShowHeadingMenu(false)
+              }}
+              className={`flex w-full items-center px-2 py-1.5 text-xs text-left rounded hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-300 ${!editor.isActive('heading') ? 'font-bold text-brand-red bg-brand-red/[0.05]' : ''}`}
+            >
+              Teks Normal
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                editor.chain().focus().toggleHeading({ level: 1 }).run()
+                setShowHeadingMenu(false)
+              }}
+              className={`flex w-full items-center gap-2 px-2 py-1.5 text-xs text-left rounded hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-300 ${editor.isActive('heading', { level: 1 }) ? 'font-bold text-brand-red bg-brand-red/[0.05]' : ''}`}
+            >
+              <Heading1 className="w-3.5 h-3.5" /> Heading 1
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                editor.chain().focus().toggleHeading({ level: 2 }).run()
+                setShowHeadingMenu(false)
+              }}
+              className={`flex w-full items-center gap-2 px-2 py-1.5 text-xs text-left rounded hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-300 ${editor.isActive('heading', { level: 2 }) ? 'font-bold text-brand-red bg-brand-red/[0.05]' : ''}`}
+            >
+              <Heading2 className="w-3.5 h-3.5" /> Heading 2
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                editor.chain().focus().toggleHeading({ level: 3 }).run()
+                setShowHeadingMenu(false)
+              }}
+              className={`flex w-full items-center gap-2 px-2 py-1.5 text-xs text-left rounded hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-300 ${editor.isActive('heading', { level: 3 }) ? 'font-bold text-brand-red bg-brand-red/[0.05]' : ''}`}
+            >
+              <Heading3 className="w-3.5 h-3.5" /> Heading 3
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Lists */}
@@ -200,36 +258,67 @@ export function TiptapEditorToolbar({ editor }: TiptapEditorToolbarProps) {
         </ToolbarButton>
       </div>
 
-      {/* Alignment */}
-      <div className="flex shrink-0 items-center gap-1 pr-2 border-r border-gray-200 dark:border-slate-700">
+      {/* Alignment Dropdown */}
+      <div ref={alignRef} className="relative shrink-0 pr-2 border-r border-gray-200 dark:border-slate-700">
         <ToolbarButton
-          onClick={() => editor.chain().focus().setTextAlign('left').run()}
-          active={editor.isActive({ textAlign: 'left' })}
-          title="Align Left"
+          onClick={() => {
+            setShowAlignMenu(!showAlignMenu)
+            setShowHeadingMenu(false)
+          }}
+          active={editor.isActive({ textAlign: 'center' }) || editor.isActive({ textAlign: 'right' }) || editor.isActive({ textAlign: 'justify' })}
+          title="Perataan Teks"
+          className="flex items-center gap-1 hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-300"
         >
-          <AlignLeft className="w-4 h-4" />
+          {editor.isActive({ textAlign: 'center' }) ? <AlignCenter className="w-4 h-4" /> :
+           editor.isActive({ textAlign: 'right' }) ? <AlignRight className="w-4 h-4" /> :
+           editor.isActive({ textAlign: 'justify' }) ? <AlignJustify className="w-4 h-4" /> :
+           <AlignLeft className="w-4 h-4" />}
+          <ChevronDown className="w-3 h-3 opacity-60" />
         </ToolbarButton>
-        <ToolbarButton
-          onClick={() => editor.chain().focus().setTextAlign('center').run()}
-          active={editor.isActive({ textAlign: 'center' })}
-          title="Align Center"
-        >
-          <AlignCenter className="w-4 h-4" />
-        </ToolbarButton>
-        <ToolbarButton
-          onClick={() => editor.chain().focus().setTextAlign('right').run()}
-          active={editor.isActive({ textAlign: 'right' })}
-          title="Align Right"
-        >
-          <AlignRight className="w-4 h-4" />
-        </ToolbarButton>
-        <ToolbarButton
-          onClick={() => editor.chain().focus().setTextAlign('justify').run()}
-          active={editor.isActive({ textAlign: 'justify' })}
-          title="Justify"
-        >
-          <AlignJustify className="w-4 h-4" />
-        </ToolbarButton>
+        {showAlignMenu && (
+          <div className="absolute left-0 mt-1 z-50 min-w-[145px] rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-1 shadow-lg flex flex-col gap-0.5">
+            <button
+              type="button"
+              onClick={() => {
+                editor.chain().focus().setTextAlign('left').run()
+                setShowAlignMenu(false)
+              }}
+              className={`flex w-full items-center gap-2 px-2 py-1.5 text-xs text-left rounded hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-300 ${editor.isActive({ textAlign: 'left' }) || (!editor.isActive({ textAlign: 'center' }) && !editor.isActive({ textAlign: 'right' }) && !editor.isActive({ textAlign: 'justify' })) ? 'font-bold text-brand-red bg-brand-red/[0.05]' : ''}`}
+            >
+              <AlignLeft className="w-3.5 h-3.5" /> Rata Kiri
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                editor.chain().focus().setTextAlign('center').run()
+                setShowAlignMenu(false)
+              }}
+              className={`flex w-full items-center gap-2 px-2 py-1.5 text-xs text-left rounded hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-300 ${editor.isActive({ textAlign: 'center' }) ? 'font-bold text-brand-red bg-brand-red/[0.05]' : ''}`}
+            >
+              <AlignCenter className="w-3.5 h-3.5" /> Rata Tengah
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                editor.chain().focus().setTextAlign('right').run()
+                setShowAlignMenu(false)
+              }}
+              className={`flex w-full items-center gap-2 px-2 py-1.5 text-xs text-left rounded hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-300 ${editor.isActive({ textAlign: 'right' }) ? 'font-bold text-brand-red bg-brand-red/[0.05]' : ''}`}
+            >
+              <AlignRight className="w-3.5 h-3.5" /> Rata Kanan
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                editor.chain().focus().setTextAlign('justify').run()
+                setShowAlignMenu(false)
+              }}
+              className={`flex w-full items-center gap-2 px-2 py-1.5 text-xs text-left rounded hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-300 ${editor.isActive({ textAlign: 'justify' }) ? 'font-bold text-brand-red bg-brand-red/[0.05]' : ''}`}
+            >
+              <AlignJustify className="w-3.5 h-3.5" /> Rata Kiri Kanan
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Link & Image */}

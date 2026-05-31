@@ -118,7 +118,7 @@ const MediaTextComponent = ({ node, updateAttributes, deleteNode }: any) => {
           {imageUrl ? (
             <div className={cn(
               'relative group',
-              layout === 'center' ? 'w-full' : 'flex-1',
+              layout === 'center' ? 'w-full' : 'flex-1 min-w-0',
               imageOrderClass
             )}>
               <img
@@ -149,7 +149,7 @@ const MediaTextComponent = ({ node, updateAttributes, deleteNode }: any) => {
           ) : (
             <div className={cn(
               'flex flex-col items-center justify-center gap-3 p-6',
-              layout === 'center' ? 'w-full' : 'flex-1',
+              layout === 'center' ? 'w-full' : 'flex-1 min-w-0',
               imageOrderClass
             )}>
               <div className="flex gap-2">
@@ -177,11 +177,11 @@ const MediaTextComponent = ({ node, updateAttributes, deleteNode }: any) => {
 
           {/* Text Section */}
           <div className={cn(
-            'flex-1 p-4 bg-white dark:bg-slate-800',
+            'flex-1 p-4 bg-white dark:bg-slate-800 min-w-0 max-w-full overflow-hidden',
             textOrderClass
           )}>
             <NodeViewContent
-              className="prose prose-sm dark:prose-invert max-w-none focus:outline-none min-h-[100px]"
+              className="prose prose-sm dark:prose-invert max-w-none break-words focus:outline-none min-h-[100px]"
             />
           </div>
         </div>
