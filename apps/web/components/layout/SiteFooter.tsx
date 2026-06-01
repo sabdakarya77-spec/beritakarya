@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { MapPin, Mail, Phone } from 'lucide-react';
 import { SiFacebook, SiInstagram, SiTelegram, SiTiktok, SiWhatsapp, SiX, SiYoutube } from 'react-icons/si';
 
@@ -31,6 +32,7 @@ function buildWhatsAppLink(phone?: string | null) {
 }
 
 export default function SiteFooter({ siteConfig, categories }: SiteFooterProps) {
+  const router = useRouter();
   const activeSite = siteConfig?.id || 'pusat';
   const resolvedSocialLinks = {
     whatsapp: siteConfig?.socialLinks?.whatsapp?.trim() || buildWhatsAppLink(siteConfig?.phone),
@@ -70,7 +72,13 @@ export default function SiteFooter({ siteConfig, categories }: SiteFooterProps) 
       <Container>
         <div className="mb-12 grid grid-cols-1 gap-8 md:grid-cols-3 md:gap-10">
           <div className="col-span-1">
-            <Link href={`/${activeSite}`} className="mb-4 flex flex-col">
+            <button 
+              onClick={() => {
+                window.scrollTo({ top: 0, behavior: 'instant' });
+                router.push(`/${activeSite}`);
+              }}
+              className="mb-4 flex flex-col cursor-pointer text-left hover:opacity-90 transition-opacity"
+            >
               <span className="font-serif text-[1.75rem] font-black tracking-tight uppercase sm:text-[2rem]">
                 {(() => {
                   const siteName = siteConfig?.name || 'BERITA KARYA';
@@ -85,7 +93,7 @@ export default function SiteFooter({ siteConfig, categories }: SiteFooterProps) 
                   );
                 })()}
               </span>
-            </Link>
+            </button>
             <p className="mb-5 max-w-xs text-[13px] leading-6 text-brand-text-muted opacity-80">
               {siteConfig?.description || "Portal berita independen yang berfokus pada kedalaman investigasi dan kejernihan melihat realitas Nusantara."}
             </p>
