@@ -1,4 +1,10 @@
 import { prisma } from '../../db/client'
+import { getSiteAssignmentFilter } from '../site/site-category.utils'
+
+const categoryInclude = {
+  site: true,
+  parent: true
+} as const
 
 export class CategoryService {
   // Helper: Convert flat list to recursive tree structure
@@ -62,22 +68,33 @@ export class CategoryService {
     })
   }
 
-  async getSiteCategories(siteId: string) {
-    const all = await prisma.category.findMany({
-      where: {
-        OR: [
-          { siteId },
-          { isGlobal: true }
-        ]
-      },
-      include: {
-        site: true,
-        parent: true
-      },
-      orderBy: {
-        order: 'asc'
-      }
+  private async findCategoriesForSite(siteId: string) {
+    const assignment = await getSiteAssignmentFilter(siteId)
+
+    const where =
+      assignment.isConfigured
+        ? {
+            OR: [
+              { siteId },
+              {
+                isGlobal: true,
+                id: { in: assignment.expandedGlobalIds }
+              }
+            ]
+          }
+        : {
+            OR: [{ siteId }, { isGlobal: true }]
+          }
+
+    return prisma.category.findMany({
+      where,
+      include: categoryInclude,
+      orderBy: { order: 'asc' }
     })
+  }
+
+  async getSiteCategories(siteId: string) {
+    const all = await this.findCategoriesForSite(siteId)
     return this.deduplicateCategories(all, siteId)
   }
 
@@ -108,22 +125,7 @@ export class CategoryService {
   }
 
   async getCategoryTree(siteId: string) {
-    const all = await prisma.category.findMany({
-      where: {
-        OR: [
-          { siteId },
-          { isGlobal: true }
-        ]
-      },
-      include: {
-        site: true,
-        parent: true
-      },
-      orderBy: {
-        order: 'asc'
-      }
-    })
-
+    const all = await this.findCategoriesForSite(siteId)
     const deduplicated = this.deduplicateCategories(all, siteId)
     return this.buildCategoryTree(deduplicated)
   }

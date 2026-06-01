@@ -1,5 +1,9 @@
 import { prisma } from '../../db/client'
 import { categoryService } from '../category/category.service'
+import {
+  expandWithAncestors,
+  loadGlobalCategoryIndex
+} from './site-category.utils'
 
 export class SiteCategoryService {
   private async ensureSiteExists(siteId: string) {
@@ -8,29 +12,6 @@ export class SiteCategoryService {
       throw Object.assign(new Error('Site not found'), { statusCode: 404, code: 'SITE_NOT_FOUND' })
     }
     return site
-  }
-
-  private async loadGlobalCategoryIndex() {
-    return prisma.category.findMany({
-      where: { isGlobal: true, deletedAt: null },
-      select: { id: true, parentId: true }
-    })
-  }
-
-  /** Include ancestor global categories so navigation trees stay intact. */
-  expandWithAncestors(categoryIds: string[], globalIndex: { id: string; parentId: string | null }[]) {
-    const byId = new Map(globalIndex.map((c) => [c.id, c]))
-    const expanded = new Set(categoryIds)
-
-    for (const id of categoryIds) {
-      let current = byId.get(id)
-      while (current?.parentId) {
-        expanded.add(current.parentId)
-        current = byId.get(current.parentId)
-      }
-    }
-
-    return Array.from(expanded)
   }
 
   private async validateGlobalCategoryIds(categoryIds: string[]) {
@@ -98,8 +79,8 @@ export class SiteCategoryService {
 
     let assignedTree: any[] = []
     if (isConfigured) {
-      const globalIndex = await this.loadGlobalCategoryIndex()
-      const expandedIds = this.expandWithAncestors(assignedCategoryIds, globalIndex)
+      const globalIndex = await loadGlobalCategoryIndex()
+      const expandedIds = expandWithAncestors(assignedCategoryIds, globalIndex)
       const assignedIdSet = new Set(expandedIds)
 
       const assignedFlat = globalCategories.filter((c) => assignedIdSet.has(c.id) && !c.deletedAt)
@@ -124,8 +105,8 @@ export class SiteCategoryService {
     await this.ensureSiteExists(siteId)
 
     const validatedIds = await this.validateGlobalCategoryIds(categoryIds)
-    const globalIndex = await this.loadGlobalCategoryIndex()
-    const expandedIds = this.expandWithAncestors(validatedIds, globalIndex)
+    const globalIndex = await loadGlobalCategoryIndex()
+    const expandedIds = expandWithAncestors(validatedIds, globalIndex)
 
     await prisma.$transaction(async (tx) => {
       await tx.siteCategory.deleteMany({ where: { siteId } })

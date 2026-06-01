@@ -420,16 +420,16 @@ Di modal **Tambahkan Portal Berita**, section collapsible:
 
 ### Fase 2 — Filter kategori (Backend) ⏱ ~½ hari
 
-- [ ] Refactor `category.service.ts` — `getSiteCategories` + `getCategoryTree`
-- [ ] Unit test: site tanpa assignment vs dengan assignment
+- [x] Refactor `category.service.ts` — `getSiteCategories` + `getCategoryTree`
+- [x] Unit test: site tanpa assignment vs dengan assignment
 - [ ] Manual test: `curl` tree untuk `bandung` sebelum/sesudah assign
 
 ### Fase 3 — UI Admin ⏱ ~1 hari
 
-- [ ] `CategoryTreePicker.tsx`
-- [ ] `SiteCategoriesDialog.tsx`
-- [ ] Integrasi ke `admin/page.tsx` — tombol per row
-- [ ] `pnpm --filter web typecheck`
+- [x] `CategoryTreePicker.tsx`
+- [x] `SiteCategoriesDialog.tsx`
+- [x] Integrasi ke `admin/page.tsx` — tombol per row
+- [x] `pnpm --filter web type-check`
 
 ### Fase 4 — Polish & validasi ⏱ ~½ hari
 
