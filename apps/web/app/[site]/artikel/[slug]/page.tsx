@@ -268,9 +268,9 @@ export default async function ArticlePage({ params }: Props) {
           {/* --- HERO IMAGE --- */}
           <div className="mb-16 md:mb-20">
             <Container>
-              <figure className="mx-auto max-w-[66rem] space-y-4 md:space-y-5">
-                <div className="rounded-[2rem] border border-black/[0.06] bg-white/95 p-3 shadow-[0_28px_90px_rgba(15,23,42,0.08)] dark:border-white/[0.08] dark:bg-white/[0.03] dark:shadow-[0_28px_90px_rgba(0,0,0,0.45)] md:p-4">
-                  <div className="relative w-full overflow-hidden rounded-[1.35rem] bg-slate-100 dark:bg-slate-900">
+              <figure className="mx-auto max-w-3xl space-y-4 md:space-y-5">
+                <div className="rounded-2xl border border-black/[0.06] bg-white/95 p-3 shadow-[0_28px_90px_rgba(15,23,42,0.08)] dark:border-white/[0.08] dark:bg-white/[0.03] dark:shadow-[0_28px_90px_rgba(0,0,0,0.45)] md:p-4">
+                  <div className="relative w-full overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-900">
                     <SmartImage 
                       src={coverImage} 
                       blur={article.featuredImageBlur}
@@ -278,9 +278,9 @@ export default async function ArticlePage({ params }: Props) {
                       context="article_cover"
                       alt={article.title}
                       fill={false}
-                      width={1200}
-                      height={800}
-                      className="w-full h-auto"
+                      width={900}
+                      height={600}
+                      className="w-full h-auto object-contain"
                       priority
                     />
                     <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-black/[0.04] dark:ring-white/[0.08]" />
