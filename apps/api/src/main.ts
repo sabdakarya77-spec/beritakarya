@@ -176,6 +176,12 @@ app.delete('/api/v1/categories/:id',
 // GET: public (anyone can read site info)
 app.get('/api/v1/sites', asyncHandler(siteController.getSites))
 app.get('/api/v1/sites/settings', asyncHandler(siteController.getSiteSettings))
+app.get('/api/v1/sites/:siteId/category-assignments',
+  requireAuth, requireRole(['superadmin']),
+  asyncHandler(siteController.getSiteCategoryAssignments))
+app.put('/api/v1/sites/:siteId/category-assignments',
+  requireAuth, requireRole(['superadmin']),
+  asyncHandler(siteController.updateSiteCategoryAssignments))
 app.get('/api/v1/sites/:id', asyncHandler(siteController.getSiteById))
 // PATCH settings: requires auth + site scope + role wapimred/superadmin
 app.patch('/api/v1/sites/settings',

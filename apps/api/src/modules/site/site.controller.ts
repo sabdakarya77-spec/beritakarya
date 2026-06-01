@@ -1,5 +1,6 @@
 import { Request, Response } from 'express'
 import { siteService } from './site.service'
+import { siteCategoryService } from './site-category.service'
 
 /**
  * Site Routes - Express Router
@@ -86,6 +87,66 @@ export async function updateSiteSettings(req: Request, res: Response) {
     res.status(statusCode).json({
       success: false,
       error: { code: 'SITE_SETTINGS_UPDATE_FAILED', message: error.message }
+    })
+  }
+}
+
+/**
+ * GET /api/v1/sites/:siteId/category-assignments
+ * Get global category allowlist for a site (superadmin only)
+ */
+export async function getSiteCategoryAssignments(req: Request, res: Response) {
+  try {
+    const { siteId } = req.params
+    const data = await siteCategoryService.getCategoryAssignments(siteId)
+    res.json({ success: true, data })
+  } catch (error: any) {
+    const statusCode = error.statusCode || 500
+    res.status(statusCode).json({
+      success: false,
+      error: {
+        code: error.code || 'SITE_CATEGORIES_FETCH_FAILED',
+        message: error.message
+      }
+    })
+  }
+}
+
+/**
+ * PUT /api/v1/sites/:siteId/category-assignments
+ * Replace global category allowlist for a site (superadmin only)
+ */
+export async function updateSiteCategoryAssignments(req: Request, res: Response) {
+  try {
+    const { siteId } = req.params
+    const { categoryIds } = req.body
+    const actorUserId = (req as any).user?.userId
+
+    if (!Array.isArray(categoryIds)) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_REQUEST',
+          message: 'categoryIds must be an array'
+        }
+      })
+    }
+
+    const data = await siteCategoryService.replaceCategoryAssignments(
+      siteId,
+      categoryIds,
+      actorUserId
+    )
+
+    res.json({ success: true, data })
+  } catch (error: any) {
+    const statusCode = error.statusCode || 500
+    res.status(statusCode).json({
+      success: false,
+      error: {
+        code: error.code || 'SITE_CATEGORIES_UPDATE_FAILED',
+        message: error.message
+      }
     })
   }
 }
