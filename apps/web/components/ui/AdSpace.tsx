@@ -149,7 +149,7 @@ export default function AdSpace({
             className
           )}
         >
-          <span className="absolute top-2 left-3 z-10 text-[8px] font-black uppercase tracking-[0.2em] text-white bg-brand-red px-2.5 py-0.5 shadow-lg">
+          <span className="absolute left-2 top-2 z-10 rounded-sm bg-brand-red px-2 py-0.5 text-[7px] font-black uppercase tracking-[0.14em] text-white shadow-lg sm:left-3 sm:text-[8px] sm:tracking-[0.2em]">
             {label}
           </span>
           
@@ -184,19 +184,19 @@ export default function AdSpace({
         className
       )}
     >
-      <span className="absolute top-2 left-3 z-10 text-[8px] font-black uppercase tracking-[0.2em] text-white bg-brand-red px-2.5 py-0.5 shadow-lg">
+      <span className="absolute left-2 top-2 z-10 rounded-sm bg-brand-red px-2 py-0.5 text-[7px] font-black uppercase tracking-[0.14em] text-white shadow-lg sm:left-3 sm:text-[8px] sm:tracking-[0.2em]">
         {label}
       </span>
 
-      <div className="flex flex-col items-center justify-center gap-3">
-        <p className="text-[10px] font-black uppercase tracking-[0.24em] text-gray-400">
+      <div className="flex flex-col items-center justify-center gap-2 pt-7 sm:gap-3 sm:pt-6">
+        <p className="text-[9px] font-black uppercase tracking-[0.14em] text-gray-400 sm:text-[10px] sm:tracking-[0.24em]">
           Slot Iklan Mandiri
         </p>
         <div className="space-y-1">
-          <h4 className="text-sm md:text-lg font-black text-brand-black dark:text-white tracking-tight">
+          <h4 className="text-[13px] font-black text-brand-black dark:text-white tracking-tight sm:text-sm md:text-lg">
             Ruang promosi tersedia
           </h4>
-          <p className="text-[10px] md:text-xs text-gray-500 dark:text-gray-400 max-w-sm">
+          <p className="mx-auto max-w-[17rem] text-[10px] leading-5 text-gray-500 dark:text-gray-400 sm:max-w-sm md:text-xs">
             Slot ini disiapkan untuk banner atau script iklan mandiri dari dashboard ads.
           </p>
         </div>
