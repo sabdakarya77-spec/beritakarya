@@ -248,9 +248,7 @@ export default function Navbar({
           "relative z-40 hidden items-center justify-center text-[10px] font-medium tracking-[0.04em] text-brand-text-muted md:flex lg:text-[11px]",
           isCollapsed
             ? "h-10 gap-3.5"
-            : isArticlePage
-              ? "h-11 gap-4.5"
-              : "h-12 gap-5"
+            : "h-12 gap-5"
         )}>
           {categories.map((cat, index) => {
           const isActive = selectedCategory === cat.slug || cat.subCategories?.some(sub => sub.slug === selectedCategory);
