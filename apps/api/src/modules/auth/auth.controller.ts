@@ -6,6 +6,7 @@ import { checkAccountLockout, recordFailedAttempt, resetFailedAttempts } from '.
 import { requireAuth } from '../../middleware/auth.middleware'
 import { prisma } from '../../db/client'
 import { env } from '../../lib/env'
+import bcrypt from 'bcryptjs'
 
 export const authRouter: Router = Router()
 
@@ -156,6 +157,60 @@ authRouter.post('/forgot-password', asyncHandler(async (req: Request, res: Respo
   const result = await authService.forgotPassword(email)
   res.json(result)
 }))
+
+// POST /api/v1/auth/change-password - Change password for authenticated user
+authRouter.post('/change-password', 
+  requireAuth, 
+  asyncHandler(async (req: any, res: Response) => {
+    const userId = req.user.userId
+    const { currentPassword, newPassword } = req.body
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'BAD_REQUEST', message: 'Password saat ini dan password baru wajib diisi' }
+      })
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'BAD_REQUEST', message: 'Password baru minimal 6 karakter' }
+      })
+    }
+
+    // Get user with password
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, passwordHash: true }
+    })
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'NOT_FOUND', message: 'User tidak ditemukan' }
+      })
+    }
+
+    // Verify current password
+    const isValid = await bcrypt.compare(currentPassword, user.passwordHash)
+    if (!isValid) {
+      return res.status(401).json({
+        success: false,
+        error: { code: 'UNAUTHORIZED', message: 'Password saat ini tidak correct' }
+      })
+    }
+
+    // Hash new password and update
+    const hashedPassword = await bcrypt.hash(newPassword, 12)
+    await prisma.user.update({
+      where: { id: userId },
+      data: { passwordHash: hashedPassword }
+    })
+
+    res.json({ success: true, message: 'Password berhasil diubah' })
+  })
+)
 
 authRouter.post('/reset-password', asyncHandler(async (req: Request, res: Response) => {
   const { email, token, newPassword } = resetPasswordSchema.parse(req.body)

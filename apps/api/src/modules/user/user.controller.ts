@@ -240,6 +240,76 @@ userRouter.get('/stats',
   })
 )
 
+// GET /api/v1/users/profile - Get current user's profile
+userRouter.get('/profile',
+  requireAuth,
+  asyncHandler(async (req: any, res: any) => {
+    const userId = req.user.userId
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        bio: true,
+        siteId: true,
+        isVerified: true,
+        createdAt: true
+      }
+    })
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'NOT_FOUND', message: 'Profil tidak ditemukan' }
+      })
+    }
+    res.json({ success: true, data: user })
+  })
+)
+
+// PUT /api/v1/users/profile - Update current user's profile
+userRouter.put('/profile',
+  requireAuth,
+  asyncHandler(async (req: any, res: any) => {
+    const userId = req.user.userId
+    const { name, bio } = req.body
+
+    const updateData: any = {}
+    
+    if (name !== undefined) {
+      updateData.name = name.trim()
+    }
+    
+    if (bio !== undefined) {
+      updateData.bio = bio ? bio.trim() : null
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'BAD_REQUEST', message: 'Tidak ada data yang diupdate' }
+      })
+    }
+
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: updateData,
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        bio: true,
+        isVerified: true,
+        updatedAt: true
+      }
+    })
+
+    res.json({ success: true, data: user })
+  })
+)
+
 userRouter.get('/:id',
   requireAuth,
   siteMiddleware,
