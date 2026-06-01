@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { useParams, useRouter } from 'next/navigation'
 import { api } from '../../../../lib/api'
 import { 
@@ -123,6 +124,163 @@ export default function AdminDashboardPage() {
       setDeleteConfirm(null)
     }
   }
+
+  const createEditDialog =
+    dialogOpen && typeof document !== 'undefined'
+      ? createPortal(
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <div
+              onClick={() => setDialogOpen(false)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+
+            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl max-w-xl w-full p-8 shadow-xl relative z-10">
+              <button
+                onClick={() => setDialogOpen(false)}
+                className="absolute top-5 right-5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-2 rounded-lg transition-all"
+              >
+                <X size={18} />
+              </button>
+
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white uppercase mb-2 flex items-center gap-2">
+                <Settings size={20} className="text-brand-red" />
+                {editingSite ? 'Edit Konfigurasi Situs' : 'Tambahkan Portal Berita'}
+              </h2>
+              <p className="text-sm text-gray-500 mb-8">
+                {editingSite
+                  ? 'Perbarui konfigurasi situs yang terdaftar'
+                  : 'Tambahkan portal berita baru ke jaringan BeritaKarya'}
+              </p>
+
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Site ID <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.id}
+                      onChange={(e) => setFormData({ ...formData, id: e.target.value })}
+                      placeholder="contoh: surabaya"
+                      className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-3 text-base text-gray-900 dark:text-white outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 transition-all"
+                      required
+                      disabled={!!editingSite}
+                    />
+                    <p className="text-xs text-gray-500">Unique identifier. Digunakan dalam URL: /[site_id]/</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Domain <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.domain}
+                      onChange={(e) => setFormData({ ...formData, domain: e.target.value })}
+                      placeholder="surabaya.beritakarya.co"
+                      className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-3 text-base text-gray-900 dark:text-white outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 transition-all"
+                      required
+                    />
+                    <p className="text-xs text-gray-500">Alamat domain lengkap untuk portal cabang.</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Nama Tampilan <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      placeholder="BeritaKarya Surabaya"
+                      className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-3 text-base text-gray-900 dark:text-white outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 transition-all"
+                      required
+                    />
+                    <p className="text-xs text-gray-500">Nama cabang yang ditampilkan ke pembaca.</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Email Kontak
+                    </label>
+                    <input
+                      type="email"
+                      value={formData.contactEmail}
+                      onChange={(e) => setFormData({ ...formData, contactEmail: e.target.value })}
+                      placeholder="admin@surabaya.beritakarya.co"
+                      className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-3 text-base text-gray-900 dark:text-white outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 transition-all"
+                    />
+                    <p className="text-xs text-gray-500">Email administrasi untuk notifikasi resmi.</p>
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-4 pt-6 border-t border-gray-200 dark:border-gray-800 mt-8">
+                  <button
+                    type="button"
+                    onClick={() => setDialogOpen(false)}
+                    className="px-6 py-3 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium transition-all border border-gray-200 dark:border-gray-700"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-6 py-3 bg-brand-red hover:bg-red-600 text-white rounded-lg text-sm font-medium transition-all"
+                  >
+                    {editingSite ? 'Perbarui' : 'Buat Situs'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>,
+          document.body
+        )
+      : null
+
+  const deleteDialog =
+    deleteConfirm && typeof document !== 'undefined'
+      ? createPortal(
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <div
+              onClick={() => setDeleteConfirm(null)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+
+            <div className="bg-white dark:bg-gray-900 border border-red-200 dark:border-red-800 rounded-xl max-w-md w-full p-8 shadow-xl relative z-10">
+              <div className="w-12 h-12 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-xl flex items-center justify-center text-red-500 mb-5">
+                <AlertTriangle size={24} />
+              </div>
+
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
+                Konfirmasi Hapus Situs
+              </h3>
+              <p className="text-sm text-gray-500 mb-6">
+                Tindakan ini permanen dan tidak dapat dibatalkan.
+              </p>
+
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-8">
+                Apakah Anda yakin ingin menghapus situs <code className="text-red-600 font-bold bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded">{deleteConfirm}</code>? Tindakan ini akan menghapus semua data terkait secara permanen.
+              </p>
+
+              <div className="flex justify-end gap-4">
+                <button
+                  onClick={() => setDeleteConfirm(null)}
+                  className="px-6 py-3 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium transition-all border border-gray-200 dark:border-gray-700"
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={confirmDelete}
+                  className="px-6 py-3 bg-red-600 hover:bg-red-500 text-white rounded-lg text-sm font-medium transition-all"
+                >
+                  Ya, Hapus
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )
+      : null
 
   return (
     <div className="max-w-7xl mx-auto space-y-8 pb-12">
@@ -280,165 +438,8 @@ export default function AdminDashboardPage() {
         </div>
       )}
 
-      {/* Create/Edit Dialog */}
-      {dialogOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          {/* Backdrop */}
-          <div 
-            onClick={() => setDialogOpen(false)}
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-          />
-          
-          {/* Dialog Content */}
-          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl max-w-xl w-full p-8 shadow-xl relative z-10">
-            <button 
-              onClick={() => setDialogOpen(false)}
-              className="absolute top-5 right-5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-2 rounded-lg transition-all"
-            >
-              <X size={18} />
-            </button>
-
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white uppercase mb-2 flex items-center gap-2">
-              <Settings size={20} className="text-brand-red" />
-              {editingSite ? 'Edit Konfigurasi Situs' : 'Tambahkan Portal Berita'}
-            </h2>
-            <p className="text-sm text-gray-500 mb-8">
-              {editingSite 
-                ? 'Perbarui konfigurasi situs yang terdaftar' 
-                : 'Tambahkan portal berita baru ke jaringan BeritaKarya'
-              }
-            </p>
-
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Site ID */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Site ID <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.id}
-                    onChange={(e) => setFormData({ ...formData, id: e.target.value })}
-                    placeholder="contoh: surabaya"
-                    className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-3 text-base text-gray-900 dark:text-white outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 transition-all"
-                    required
-                    disabled={!!editingSite}
-                  />
-                  <p className="text-xs text-gray-500">Unique identifier. Digunakan dalam URL: /[site_id]/</p>
-                </div>
-
-                {/* Domain */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Domain <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.domain}
-                    onChange={(e) => setFormData({ ...formData, domain: e.target.value })}
-                    placeholder="surabaya.beritakarya.co"
-                    className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-3 text-base text-gray-900 dark:text-white outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 transition-all"
-                    required
-                  />
-                  <p className="text-xs text-gray-500">Alamat domain lengkap untuk portal cabang.</p>
-                </div>
-
-                {/* Nama Tampilan */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Nama Tampilan <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="BeritaKarya Surabaya"
-                    className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-3 text-base text-gray-900 dark:text-white outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 transition-all"
-                    required
-                  />
-                  <p className="text-xs text-gray-500">Nama cabang yang ditampilkan ke pembaca.</p>
-                </div>
-
-                {/* Email Kontak */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Email Kontak
-                  </label>
-                  <input
-                    type="email"
-                    value={formData.contactEmail}
-                    onChange={(e) => setFormData({ ...formData, contactEmail: e.target.value })}
-                    placeholder="admin@surabaya.beritakarya.co"
-                    className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-3 text-base text-gray-900 dark:text-white outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 transition-all"
-                  />
-                  <p className="text-xs text-gray-500">Email administrasi untuk notifikasi resmi.</p>
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-4 pt-6 border-t border-gray-200 dark:border-gray-800 mt-8">
-                <button
-                  type="button"
-                  onClick={() => setDialogOpen(false)}
-                  className="px-6 py-3 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium transition-all border border-gray-200 dark:border-gray-700"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  className="px-6 py-3 bg-brand-red hover:bg-red-600 text-white rounded-lg text-sm font-medium transition-all"
-                >
-                  {editingSite ? 'Perbarui' : 'Buat Situs'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Delete Confirmation Modal */}
-      {deleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          {/* Backdrop */}
-          <div 
-            onClick={() => setDeleteConfirm(null)}
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-          />
-
-          {/* Confirmation Box */}
-          <div className="bg-white dark:bg-gray-900 border border-red-200 dark:border-red-800 rounded-xl max-w-md w-full p-8 shadow-xl relative z-10">
-            <div className="w-12 h-12 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-xl flex items-center justify-center text-red-500 mb-5">
-              <AlertTriangle size={24} />
-            </div>
-
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
-              Konfirmasi Hapus Situs
-            </h3>
-            <p className="text-sm text-gray-500 mb-6">
-              Tindakan ini permanen dan tidak dapat dibatalkan.
-            </p>
-
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-8">
-              Apakah Anda yakin ingin menghapus situs <code className="text-red-600 font-bold bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded">{deleteConfirm}</code>? Tindakan ini akan menghapus semua data terkait secara permanen.
-            </p>
-
-            <div className="flex justify-end gap-4">
-              <button
-                onClick={() => setDeleteConfirm(null)}
-                className="px-6 py-3 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium transition-all border border-gray-200 dark:border-gray-700"
-              >
-                Batal
-              </button>
-              <button
-                onClick={confirmDelete}
-                className="px-6 py-3 bg-red-600 hover:bg-red-500 text-white rounded-lg text-sm font-medium transition-all"
-              >
-                Ya, Hapus
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {createEditDialog}
+      {deleteDialog}
     </div>
   )
 }
