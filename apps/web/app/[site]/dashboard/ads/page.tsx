@@ -27,6 +27,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { cn } from '../../../../lib/utils';
+import { AD_SLOT_DEFINITIONS } from '../../../../lib/constants';
 
 // ==========================================
 // TYPES & INTERFACES
@@ -73,13 +74,6 @@ interface AdBooking {
   site: { name: string; domain: string };
   user?: { name: string; email: string };
 }
-
-const DEFAULT_SLOTS = [
-  { id: 'leaderboard', name: 'Leaderboard Atas', size: '970 x 90 px', desc: 'Muncul di bagian atas homepage sebagai billboard utama.' },
-  { id: 'rectangle', name: 'Sidebar Rectangle Utama', size: '300 x 250 px', desc: 'Muncul di sidebar homepage dan sidebar artikel sebagai slot promosi utama.' },
-  { id: 'rectangle_secondary', name: 'Sidebar Rectangle Sekunder', size: '300 x 250 px', desc: 'Muncul sebagai slot iklan tambahan di sidebar halaman detail artikel.' },
-  { id: 'in_feed', name: 'In-Feed Homepage', size: '300 x 250 px', desc: 'Disisipkan secara otomatis di area feed homepage.' }
-];
 
 export default function AdsDashboard() {
   const { site } = useParams() as { site: string };
@@ -782,7 +776,7 @@ export default function AdsDashboard() {
               {/* Tab Content A: Active static slots (existing code functionality) */}
               {activeTab === 'active_ads' && (
                 <div className="grid grid-cols-1 gap-8">
-                  {DEFAULT_SLOTS.map(slot => (
+                  {AD_SLOT_DEFINITIONS.map(slot => (
                     <AdSlotCard 
                       key={slot.id} 
                       slot={slot} 
@@ -838,10 +832,9 @@ export default function AdsDashboard() {
                             onChange={(e) => setPkgSlot(e.target.value)}
                             className="w-full px-4 py-3 bg-white dark:bg-slate-950 border border-gray-200 dark:border-white/10 rounded-xl text-xs outline-none focus:border-brand-red transition-all"
                           >
-                            <option value="leaderboard">Leaderboard Atas</option>
-                            <option value="rectangle">Sidebar Rectangle Utama</option>
-                            <option value="rectangle_secondary">Sidebar Rectangle Sekunder</option>
-                            <option value="in_feed">In-Feed Homepage</option>
+                            {AD_SLOT_DEFINITIONS.map((slot) => (
+                              <option key={slot.id} value={slot.id}>{slot.name}</option>
+                            ))}
                           </select>
                         </div>
                         <div>

@@ -93,6 +93,7 @@ export interface AdSlotDefinition {
   name: string;
   size: string;
   desc: string;
+  publicSize: string;
   publicBadge: string;
   publicTitle: string;
   publicDescription: string;
@@ -106,6 +107,7 @@ export const AD_SLOT_DEFINITIONS: AdSlotDefinition[] = [
     name: 'Leaderboard Atas',
     size: '970 x 90 px',
     desc: 'Muncul di bagian atas homepage sebagai billboard utama.',
+    publicSize: '970 x 90 px / Mobile: 320 x 50 px',
     publicBadge: 'Slot Premium',
     publicTitle: 'Leaderboard Atas',
     publicDescription: 'Slot billboard utama yang muncul di bagian atas homepage. Menjadi titik impresi pertama dan cocok untuk kampanye branding dengan visibilitas paling tinggi.',
@@ -121,6 +123,7 @@ export const AD_SLOT_DEFINITIONS: AdSlotDefinition[] = [
     name: 'Sidebar Rectangle Utama',
     size: '300 x 250 px',
     desc: 'Muncul di sidebar homepage dan sidebar artikel sebagai slot promosi utama.',
+    publicSize: '300 x 250 px',
     publicBadge: 'Slot Utama',
     publicTitle: 'Sidebar Rectangle Utama',
     publicDescription: 'Slot promosi utama berukuran rectangle yang muncul di sidebar homepage dan sidebar artikel. Cocok untuk kampanye yang ingin selalu terlihat di area pendamping konten.',
@@ -136,6 +139,7 @@ export const AD_SLOT_DEFINITIONS: AdSlotDefinition[] = [
     name: 'Sidebar Rectangle Sekunder',
     size: '300 x 250 px',
     desc: 'Muncul sebagai slot iklan tambahan di sidebar halaman detail artikel.',
+    publicSize: '300 x 250 px',
     publicBadge: 'Slot Tambahan',
     publicTitle: 'Sidebar Rectangle Sekunder',
     publicDescription: 'Slot iklan tambahan di sidebar halaman detail artikel. Ideal untuk kampanye pendamping, retargeting, atau promosi kedua tanpa mengambil posisi utama.',
@@ -151,6 +155,7 @@ export const AD_SLOT_DEFINITIONS: AdSlotDefinition[] = [
     name: 'In-Feed Homepage',
     size: '300 x 250 px',
     desc: 'Disisipkan secara otomatis di area feed homepage.',
+    publicSize: '300 x 250 px',
     publicBadge: 'Slot Feed',
     publicTitle: 'In-Feed Homepage',
     publicDescription: 'Slot sponsor yang disisipkan di area feed homepage. Cocok untuk promosi native-style karena tampil di sela alur jelajah konten utama pembaca.',
