@@ -124,7 +124,7 @@ export default function AuthorsPage() {
             </h1>
             
             <p className="mx-auto mt-4 max-w-2xl text-base text-slate-600 dark:text-slate-400 md:text-lg">
-              Kenali tim{redaksi} dan kontributor yang menghadirkan berita berkualitas untuk Anda
+              Kenali tim redaksi dan kontributor yang menghadirkan berita berkualitas untuk Anda
             </p>
           </div>
         </div>
