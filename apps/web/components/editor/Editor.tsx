@@ -124,6 +124,7 @@ export function Editor({ articleId, siteId }: EditorProps) {
     <div className="editor-wrapper h-full flex flex-col">
       {/* Topbar */}
       <EditorTopbar
+        siteId={siteId}
         isLoading={isLoading}
         saveError={saveError}
         saving={saving}

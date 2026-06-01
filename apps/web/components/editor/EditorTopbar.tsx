@@ -1,7 +1,9 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { 
+  ArrowLeft,
   Save, 
   Send, 
   Globe, 
@@ -11,14 +13,15 @@ import {
   Loader2,
   Clock,
   Edit3,
-  MoreHorizontal,
-  PanelRightOpen
+  PanelRightOpen,
+  PanelRightClose
 } from 'lucide-react'
 import { cn } from '../../lib/utils'
 import type { ArticleStatus } from '@beritakarya/types'
 import { useEditorStore } from '../../store/editorStore'
 
 interface EditorTopbarProps {
+  siteId: string
   isLoading?: boolean
   saveError?: string | null
   saving?: boolean
@@ -44,6 +47,7 @@ const STATUS_CONFIG: Record<ArticleStatus, { label: string; color: string }> = {
 }
 
 export function EditorTopbar({
+  siteId,
   isLoading,
   saveError,
   saving,
@@ -56,12 +60,14 @@ export function EditorTopbar({
   onPublish,
   onStatusChange,
 }: EditorTopbarProps) {
+  const router = useRouter()
   const [showStatusMenu, setShowStatusMenu] = useState(false)
   const { isSidebarOpen, toggleSidebar, activeTab, setActiveTab } = useEditorStore()
   
   const statusConfig = STATUS_CONFIG[status]
+  const isSettingsPanelOpen = isSidebarOpen && activeTab === 'settings'
   const handleMobilePanelToggle = () => {
-    if (isSidebarOpen && activeTab === 'settings') {
+    if (isSettingsPanelOpen) {
       toggleSidebar(false)
       return
     }
@@ -69,13 +75,27 @@ export function EditorTopbar({
     setActiveTab('settings')
     toggleSidebar(true)
   }
+
+  const handleBackToArticles = () => {
+    router.push(`/${siteId}/dashboard/articles`)
+  }
   
   return (
     <div className="editor-topbar relative z-30 flex items-center justify-between px-3 sm:px-4 lg:px-6 py-3 border-b border-gray-200 dark:border-white/10 bg-white/95 dark:bg-slate-900/80 backdrop-blur-sm">
-      {/* Left: Status & Save Info */}
-      <div className="flex items-center gap-1.5 sm:gap-3">
+      {/* Left: Back, Status, Save Info */}
+      <div className="flex min-w-0 flex-1 items-center gap-1.5 sm:gap-3">
+        <button
+          type="button"
+          onClick={handleBackToArticles}
+          className="inline-flex lg:hidden items-center justify-center rounded-lg p-2 text-gray-600 transition-all hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/10"
+          aria-label="Kembali ke daftar artikel"
+          title="Kembali ke daftar artikel"
+        >
+          <ArrowLeft size={16} />
+        </button>
+
         {/* Status Badge with dropdown */}
-        <div className="relative">
+        <div className="relative shrink-0">
           <button
             onClick={() => setShowStatusMenu(!showStatusMenu)}
             className={cn(
@@ -118,26 +138,26 @@ export function EditorTopbar({
         </div>
         
         {/* Save Status */}
-        <div className="flex items-center gap-1 sm:gap-2 text-[10px] sm:text-xs">
+        <div className="flex min-w-0 flex-1 items-center gap-1 text-[10px] sm:gap-2 sm:text-xs">
           {saving ? (
             <>
-              <Loader2 size={12} className="animate-spin text-gray-400" />
-              <span className="text-gray-500">Saving...</span>
+              <Loader2 size={12} className="shrink-0 animate-spin text-gray-400" />
+              <span className="truncate text-gray-500">Saving...</span>
             </>
           ) : saveError ? (
             <>
-              <AlertCircle size={12} className="text-red-500" />
-              <span className="text-red-500">{saveError}</span>
+              <AlertCircle size={12} className="shrink-0 text-red-500" />
+              <span className="truncate text-red-500">{saveError}</span>
             </>
           ) : isDirty ? (
             <>
-              <Edit3 size={12} className="text-amber-500" />
-              <span className="text-amber-600 font-medium">Unsaved</span>
+              <Edit3 size={12} className="shrink-0 text-amber-500" />
+              <span className="truncate font-medium text-amber-600">Unsaved</span>
             </>
           ) : lastSaved ? (
             <>
-              <Clock size={12} className="text-gray-400" />
-              <span className="text-gray-500">{lastSaved}</span>
+              <Clock size={12} className="shrink-0 text-gray-400" />
+              <span className="truncate text-gray-500">{lastSaved}</span>
             </>
           ) : null}
         </div>
@@ -149,20 +169,20 @@ export function EditorTopbar({
       </div>
       
       {/* Right: Actions */}
-      <div className="flex items-center gap-2">
+      <div className="ml-2 flex shrink-0 items-center gap-2">
         <button
           type="button"
           onClick={handleMobilePanelToggle}
           className={cn(
             'inline-flex lg:hidden items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all',
-            isSidebarOpen && activeTab === 'settings'
-              ? 'bg-brand-red text-white hover:bg-red-700'
+            isSettingsPanelOpen
+              ? 'bg-gray-200 text-gray-900 hover:bg-gray-300 dark:bg-white/20 dark:text-white dark:hover:bg-white/30'
               : 'bg-gray-100 hover:bg-gray-200 text-gray-700 dark:bg-white/10 dark:text-white dark:hover:bg-white/20'
           )}
-          aria-label={isSidebarOpen && activeTab === 'settings' ? 'Tutup panel editor' : 'Buka panel editor'}
-          title={isSidebarOpen && activeTab === 'settings' ? 'Tutup panel editor' : 'Buka panel editor'}
+          aria-label={isSettingsPanelOpen ? 'Tutup panel editor' : 'Buka panel editor'}
+          title={isSettingsPanelOpen ? 'Tutup panel editor' : 'Buka panel editor'}
         >
-          <PanelRightOpen size={14} />
+          {isSettingsPanelOpen ? <PanelRightClose size={14} /> : <PanelRightOpen size={14} />}
           <span className="hidden sm:inline">Panel</span>
         </button>
 
@@ -201,11 +221,6 @@ export function EditorTopbar({
         >
           <Globe size={14} />
           <span className="hidden sm:inline">Publish</span>
-        </button>
-        
-        {/* More Options */}
-        <button className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 text-gray-500 transition-all">
-          <MoreHorizontal size={16} />
         </button>
       </div>
     </div>
