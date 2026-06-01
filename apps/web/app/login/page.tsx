@@ -99,6 +99,12 @@ export default function LoginPage() {
                 <label className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-black dark:text-gray-300">
                   Kata Sandi
                 </label>
+                <Link 
+                  href="/auth/forgot-password"
+                  className="text-[9px] font-bold text-brand-red hover:text-brand-black dark:hover:text-white transition-colors uppercase tracking-wider"
+                >
+                  Lupa Password?
+                </Link>
               </div>
               <div className="relative">
                 <input
