@@ -11,10 +11,12 @@ import {
   Loader2,
   Clock,
   Edit3,
-  MoreHorizontal
+  MoreHorizontal,
+  PanelRightOpen
 } from 'lucide-react'
 import { cn } from '../../lib/utils'
 import type { ArticleStatus } from '@beritakarya/types'
+import { useEditorStore } from '../../store/editorStore'
 
 interface EditorTopbarProps {
   isLoading?: boolean
@@ -55,8 +57,18 @@ export function EditorTopbar({
   onStatusChange,
 }: EditorTopbarProps) {
   const [showStatusMenu, setShowStatusMenu] = useState(false)
+  const { isSidebarOpen, toggleSidebar, activeTab, setActiveTab } = useEditorStore()
   
   const statusConfig = STATUS_CONFIG[status]
+  const handleMobilePanelToggle = () => {
+    if (isSidebarOpen && activeTab === 'settings') {
+      toggleSidebar(false)
+      return
+    }
+
+    setActiveTab('settings')
+    toggleSidebar(true)
+  }
   
   return (
     <div className="editor-topbar relative z-30 flex items-center justify-between px-3 sm:px-4 lg:px-6 py-3 border-b border-gray-200 dark:border-white/10 bg-white/95 dark:bg-slate-900/80 backdrop-blur-sm">
@@ -138,6 +150,22 @@ export function EditorTopbar({
       
       {/* Right: Actions */}
       <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={handleMobilePanelToggle}
+          className={cn(
+            'inline-flex lg:hidden items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all',
+            isSidebarOpen && activeTab === 'settings'
+              ? 'bg-brand-red text-white hover:bg-red-700'
+              : 'bg-gray-100 hover:bg-gray-200 text-gray-700 dark:bg-white/10 dark:text-white dark:hover:bg-white/20'
+          )}
+          aria-label={isSidebarOpen && activeTab === 'settings' ? 'Tutup panel editor' : 'Buka panel editor'}
+          title={isSidebarOpen && activeTab === 'settings' ? 'Tutup panel editor' : 'Buka panel editor'}
+        >
+          <PanelRightOpen size={14} />
+          <span className="hidden sm:inline">Panel</span>
+        </button>
+
         {/* Save Button */}
         <button
           onClick={onSave}

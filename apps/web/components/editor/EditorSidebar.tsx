@@ -60,7 +60,7 @@ export function EditorSidebar({ isOpen, onToggle }: EditorSidebarProps) {
   
   if (!isOpen) {
     return (
-      <div className="fixed right-0 top-1/2 -translate-y-1/2 z-35 flex flex-col gap-1 p-1.5 bg-panel-bg dark:bg-panel-bg border border-panel-border dark:border-panel-border rounded-l-xl shadow-lg">
+      <div className="fixed right-0 top-1/2 -translate-y-1/2 z-35 hidden lg:flex flex-col gap-1 p-1.5 bg-panel-bg dark:bg-panel-bg border border-panel-border dark:border-panel-border rounded-l-xl shadow-lg">
         {tabs.map((tab) => {
           const Icon = tab.icon
           const isActive = activeTab === tab.id
