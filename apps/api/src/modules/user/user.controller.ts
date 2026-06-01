@@ -117,6 +117,75 @@ userRouter.get('/public/:id',
   })
 )
 
+// GET /api/v1/users/authors - Get all authors with published articles for public listing
+userRouter.get('/authors',
+  asyncHandler(async (req: any, res: any) => {
+    const siteId = req.query.site || req.site
+    const limit = parseInt(req.query.limit as string) || 50
+
+    // Get all users who have published articles on this site
+    const authors = await prisma.user.findMany({
+      where: {
+        deletedAt: null,
+        OR: [
+          { siteId },
+          { siteId: null }
+        ],
+        articles: {
+          some: {
+            siteId,
+            status: 'published',
+            deletedAt: null
+          }
+        }
+      },
+      select: {
+        id: true,
+        name: true,
+        role: true,
+        bio: true,
+        createdAt: true,
+        articles: {
+          where: {
+            siteId,
+            status: 'published',
+            deletedAt: null
+          },
+          select: {
+            viewCount: true
+          }
+        }
+      },
+      take: limit
+    })
+
+    // Transform data with article stats
+    const authorsWithStats = authors.map(author => {
+      const publishedCount = author.articles.length
+      const totalViews = author.articles.reduce((acc, art) => acc + (art.viewCount || 0), 0)
+      
+      return {
+        id: author.id,
+        name: author.name,
+        role: author.role,
+        bio: author.bio,
+        createdAt: author.createdAt,
+        publishedCount,
+        totalViews
+      }
+    })
+
+    res.json({
+      success: true,
+      data: authorsWithStats,
+      meta: {
+        total: authorsWithStats.length,
+        limit
+      }
+    })
+  })
+)
+
 userRouter.get('/',
   requireAuth,
   siteMiddleware,
