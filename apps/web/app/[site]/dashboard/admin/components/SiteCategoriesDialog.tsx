@@ -103,6 +103,35 @@ export function SiteCategoriesDialog({
   const selectAll = () => setSelectedIds(getAllTreeIds(masterTree))
   const clearAll = () => setSelectedIds([])
 
+  const handleSeedGlobal = async () => {
+    setSaving(true)
+    try {
+      const { data } = await api.post<{
+        success: boolean
+        data: { created: number; message: string; skipped?: boolean }
+      }>('/categories/seed-global', { sourceSiteId: 'pusat' })
+
+      if (data.success) {
+        onToast(data.data.message)
+        const reload = await api.get<{ success: boolean; data: AssignmentsResponse }>(
+          `/sites/${site!.id}/category-assignments`
+        )
+        if (reload.data.success) {
+          setMasterTree(reload.data.data.masterTree || [])
+          setIsConfigured(reload.data.data.isConfigured)
+          setSelectedIds(reload.data.data.assignedCategoryIds || [])
+        }
+      }
+    } catch (error: any) {
+      onToast(
+        error.response?.data?.error?.message || 'Gagal memuat kategori global',
+        'error'
+      )
+    } finally {
+      setSaving(false)
+    }
+  }
+
   if (!open || !site || typeof document === 'undefined') return null
 
   return createPortal(
@@ -153,10 +182,25 @@ export function SiteCategoriesDialog({
               ))}
             </div>
           ) : masterTree.length === 0 ? (
-            <p className="text-sm text-gray-500 text-center py-8">
-              Belum ada kategori global di sistem. Seed kategori global terlebih dahulu di
-              dashboard Kategori (view global).
-            </p>
+            <div className="text-center py-8 space-y-4">
+              <p className="text-sm text-gray-500 max-w-md mx-auto">
+                Belum ada <strong>kategori global</strong> di sistem. Kategori yang ada di statistik
+                pusat (48) kemungkinan milik situs <code className="text-brand-red">pusat</code> saja,
+                bukan master global.
+              </p>
+              <button
+                type="button"
+                onClick={handleSeedGlobal}
+                disabled={saving}
+                className="px-5 py-2.5 bg-brand-red hover:bg-red-600 text-white rounded-lg text-sm font-medium inline-flex items-center gap-2 disabled:opacity-50"
+              >
+                {saving && <Loader2 size={14} className="animate-spin" />}
+                Muat Kategori Global
+              </button>
+              <p className="text-xs text-gray-400">
+                Menyalin dari kategori situs pusat, atau template standar jika kosong.
+              </p>
+            </div>
           ) : (
             <CategoryTreePicker
               tree={masterTree}

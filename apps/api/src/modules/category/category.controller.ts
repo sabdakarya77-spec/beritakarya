@@ -197,6 +197,26 @@ export async function updateCategory(req: Request, res: Response) {
 }
 
 /**
+ * POST /api/v1/categories/seed-global
+ * Create global master categories (superadmin only)
+ */
+export async function seedGlobalCategories(req: Request, res: Response) {
+  try {
+    const { sourceSiteId } = req.body || {}
+    const result = await categoryService.seedGlobalCategories(
+      typeof sourceSiteId === 'string' && sourceSiteId ? sourceSiteId : 'pusat'
+    )
+    res.json({ success: true, data: result })
+  } catch (error: any) {
+    const statusCode = error.statusCode || 500
+    res.status(statusCode).json({
+      success: false,
+      error: { code: 'GLOBAL_CATEGORY_SEED_FAILED', message: error.message }
+    })
+  }
+}
+
+/**
  * DELETE /api/v1/categories/:id
  * Delete a category (global categories cannot be deleted)
  */

@@ -158,6 +158,10 @@ app.use('/api/v1/ai', aiRouter)
 // GET: public (anyone can read categories)
 app.get('/api/v1/categories/tree', siteMiddleware, asyncHandler(categoryController.getCategoryTree))
 app.get('/api/v1/categories', siteMiddleware, asyncHandler(categoryController.getCategories))
+app.post('/api/v1/categories/seed-global',
+  requireAuth,
+  requireRole(['superadmin']),
+  asyncHandler(categoryController.seedGlobalCategories))
 // POST/PUT/DELETE: requires auth + site scope + role wapimred/superadmin
 app.post('/api/v1/categories',
   requireAuth, siteMiddleware, requireSiteAccess,

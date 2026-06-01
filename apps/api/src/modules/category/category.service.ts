@@ -1,5 +1,6 @@
 import { prisma } from '../../db/client'
 import { getSiteAssignmentFilter } from '../site/site-category.utils'
+import { GLOBAL_CATEGORIES_SEED } from './global-categories.seed-data'
 
 const categoryInclude = {
   site: true,
@@ -278,6 +279,153 @@ export class CategoryService {
     })
 
     return { success: true, message: 'Category deleted' }
+  }
+
+  /**
+   * Create global master categories when none exist.
+   * Prefers copying from an existing site (e.g. pusat); falls back to default template.
+   */
+  async seedGlobalCategories(sourceSiteId = 'pusat') {
+    const globalCount = await prisma.category.count({
+      where: { isGlobal: true, deletedAt: null }
+    })
+
+    if (globalCount > 0) {
+      return {
+        created: 0,
+        skipped: true,
+        source: 'existing' as const,
+        message: 'Kategori global sudah ada'
+      }
+    }
+
+    const siteCats = await prisma.category.findMany({
+      where: { siteId: sourceSiteId, deletedAt: null },
+      orderBy: { order: 'asc' }
+    })
+
+    if (siteCats.length > 0) {
+      const created = await this.promoteSiteCategoriesToGlobal(siteCats)
+      return {
+        created,
+        skipped: false,
+        source: 'site' as const,
+        message: `Berhasil membuat ${created} kategori global dari situs ${sourceSiteId}`
+      }
+    }
+
+    const created = await this.seedGlobalFromTemplate()
+    return {
+      created,
+      skipped: false,
+      source: 'template' as const,
+      message: `Berhasil membuat ${created} kategori global dari template`
+    }
+  }
+
+  private async promoteSiteCategoriesToGlobal(
+    siteCats: { id: string; name: string; slug: string; parentId: string | null; description: string | null; order: number; color: string | null }[]
+  ) {
+    const idMap = new Map<string, string>()
+    let created = 0
+
+    const parents = siteCats.filter((c) => !c.parentId)
+    const children = siteCats.filter((c) => c.parentId)
+
+    for (const cat of parents) {
+      const { id: globalId, created: isNew } = await this.ensureGlobalCategory({
+        name: cat.name,
+        slug: cat.slug,
+        parentId: null,
+        description: cat.description,
+        order: cat.order,
+        color: cat.color
+      })
+      idMap.set(cat.id, globalId)
+      if (isNew) created++
+    }
+
+    for (const cat of children) {
+      const globalParentId = cat.parentId ? idMap.get(cat.parentId) : undefined
+      if (!globalParentId) continue
+
+      const { id: globalId, created: isNew } = await this.ensureGlobalCategory({
+        name: cat.name,
+        slug: cat.slug,
+        parentId: globalParentId,
+        description: cat.description,
+        order: cat.order,
+        color: cat.color
+      })
+      idMap.set(cat.id, globalId)
+      if (isNew) created++
+    }
+
+    return created
+  }
+
+  private async ensureGlobalCategory(data: {
+    name: string
+    slug: string
+    parentId: string | null
+    description: string | null
+    order: number
+    color: string | null
+  }): Promise<{ id: string; created: boolean }> {
+    const existing = await prisma.category.findFirst({
+      where: { slug: data.slug, isGlobal: true, deletedAt: null }
+    })
+    if (existing) {
+      return { id: existing.id, created: false }
+    }
+
+    const row = await prisma.category.create({
+      data: {
+        name: data.name,
+        slug: data.slug,
+        siteId: null,
+        isGlobal: true,
+        parentId: data.parentId,
+        description: data.description,
+        order: data.order,
+        color: data.color
+      }
+    })
+    return { id: row.id, created: true }
+  }
+
+  private async seedGlobalFromTemplate() {
+    let created = 0
+    let order = 1
+
+    for (const category of GLOBAL_CATEGORIES_SEED) {
+      const { id: parentId, created: parentNew } = await this.ensureGlobalCategory({
+        name: category.name,
+        slug: category.slug,
+        parentId: null,
+        description: null,
+        order: order++,
+        color: null
+      })
+      if (parentNew) created++
+
+      if (category.subCategories) {
+        let subOrder = 1
+        for (const sub of category.subCategories) {
+          const { created: subNew } = await this.ensureGlobalCategory({
+            name: sub.name,
+            slug: sub.slug,
+            parentId,
+            description: null,
+            order: subOrder++,
+            color: null
+          })
+          if (subNew) created++
+        }
+      }
+    }
+
+    return created
   }
 }
 
