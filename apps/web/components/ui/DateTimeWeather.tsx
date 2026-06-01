@@ -42,30 +42,30 @@ export default function DateTimeWeather() {
   };
 
   return (
-    <div className="flex items-center gap-4 text-[9px] font-bold uppercase tracking-wider">
+    <div className="flex items-center gap-2.5 text-[9px] font-medium tracking-[0.04em] sm:gap-3 sm:text-[10px]">
       {/* Date & Clock */}
-      <div className="flex items-center gap-4">
-        <span className="hidden md:inline text-brand-text-muted">{formatDate(time)}</span>
-        <div className="flex items-center gap-1.5 text-brand-black font-mono tracking-tighter">
-          <Clock size={11} className="text-brand-red opacity-80" />
+      <div className="flex items-center gap-2.5 sm:gap-3">
+        <span className="hidden lg:inline text-brand-text-muted/80">{formatDate(time)}</span>
+        <div className="flex items-center gap-1 text-brand-black font-mono font-semibold tracking-tight dark:text-white">
+          <Clock size={10} className="text-brand-red/90 opacity-80 sm:size-[11px]" />
           {formatTime(time)}
         </div>
       </div>
 
-      <div className="w-px h-2.5 bg-gray-200" />
+      <div className="h-2.5 w-px bg-gray-200 dark:bg-white/10" />
 
       {/* Weather */}
-      <div className="flex items-center gap-4">
-        <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-2.5 sm:gap-3">
+        <div className="flex items-center gap-1">
           {weather.icon}
-          <span className="hidden sm:inline text-brand-black">{weather.condition}</span>
+          <span className="hidden md:inline text-brand-black/90 dark:text-white/90">{weather.condition}</span>
         </div>
-        <div className="flex items-center gap-1 text-brand-text-muted">
-          <Thermometer size={12} />
+        <div className="flex items-center gap-1 text-brand-text-muted/85">
+          <Thermometer size={11} />
           <span>{weather.temp}°C</span>
         </div>
-        <div className="hidden xl:flex items-center gap-2 text-brand-text-muted font-medium lowercase italic tracking-normal">
-          <span className="w-1 h-1 bg-gray-300 rounded-full" />
+        <div className="hidden xl:flex items-center gap-1.5 text-brand-text-muted/75 font-normal lowercase italic tracking-normal">
+          <span className="h-1 w-1 rounded-full bg-gray-300" />
           Jakarta, Indonesia
         </div>
       </div>

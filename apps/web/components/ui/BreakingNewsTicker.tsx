@@ -16,14 +16,15 @@ export default function BreakingNewsTicker({
   ] 
 }: BreakingNewsTickerProps) {
   return (
-    <div className="flex h-9 max-w-full items-center overflow-hidden text-white sm:h-10 lg:h-11">
-      <div className="my-1 ml-1 flex h-[calc(100%-8px)] shrink-0 items-center gap-1 rounded-r-md bg-brand-red px-2 shadow-[4px_0_10px_rgba(0,0,0,0.12)] sm:gap-1.5 sm:px-2.5 lg:px-3">
-        <Zap size={12} className="fill-white animate-pulse sm:size-[13px]" />
-        <span className="whitespace-nowrap text-[9px] font-black uppercase tracking-[0.1em] sm:text-[10px] sm:tracking-[0.12em]">Breaking News</span>
+    <div className="flex h-8 max-w-full items-center overflow-hidden text-white sm:h-9 lg:h-10">
+      <div className="my-0.5 ml-0.5 flex h-[calc(100%-4px)] shrink-0 items-center gap-1 rounded-r-md bg-brand-red px-1.5 shadow-[4px_0_8px_rgba(0,0,0,0.1)] sm:my-1 sm:h-[calc(100%-8px)] sm:px-2 lg:px-2.5">
+        <Zap size={10} className="fill-white animate-pulse sm:size-[11px]" />
+        <span className="whitespace-nowrap text-[8px] font-black uppercase tracking-[0.08em] sm:hidden">Breaking</span>
+        <span className="hidden whitespace-nowrap text-[9px] font-black uppercase tracking-[0.1em] sm:inline lg:text-[10px]">Breaking News</span>
       </div>
       <div className="relative flex h-full min-w-0 flex-1 items-center overflow-hidden group">
-        <div className="pointer-events-none absolute bottom-0 left-0 top-0 z-10 w-8 bg-gradient-to-r from-brand-black to-transparent sm:w-12 lg:w-16 dark:from-[#020617]" />
-        <div className="pointer-events-none absolute bottom-0 right-0 top-0 z-10 w-8 bg-gradient-to-l from-brand-black to-transparent sm:w-12 lg:w-16 dark:from-[#020617]" />
+        <div className="pointer-events-none absolute bottom-0 left-0 top-0 z-10 w-6 bg-gradient-to-r from-brand-black to-transparent sm:w-10 lg:w-14 dark:from-[#020617]" />
+        <div className="pointer-events-none absolute bottom-0 right-0 top-0 z-10 w-6 bg-gradient-to-l from-brand-black to-transparent sm:w-10 lg:w-14 dark:from-[#020617]" />
 
         <motion.div 
           animate={{ x: ["0%", "-50%"] }}
@@ -32,22 +33,22 @@ export default function BreakingNewsTicker({
             repeat: Infinity, 
             ease: "linear" 
           }}
-          className="absolute inset-y-0 left-0 flex h-full min-w-max items-center gap-7 whitespace-nowrap pl-8 pr-4 will-change-transform sm:gap-9 sm:pl-12 sm:pr-5 lg:gap-12 lg:pl-16 lg:pr-6"
+          className="absolute inset-y-0 left-0 flex h-full min-w-max items-center gap-5 whitespace-nowrap pl-6 pr-3 will-change-transform sm:gap-7 sm:pl-10 sm:pr-4 lg:gap-10 lg:pl-14 lg:pr-5"
         >
           {news.map((item, i) => (
-            <div key={i} className="flex items-center gap-7 sm:gap-9 lg:gap-12">
-              <span className="cursor-pointer text-[11px] font-semibold tracking-tight text-white/90 transition-colors hover:text-brand-red sm:text-[12px] lg:text-[13px]">
+            <div key={i} className="flex items-center gap-5 sm:gap-7 lg:gap-10">
+              <span className="cursor-pointer text-[10px] font-medium tracking-tight text-white/90 transition-colors hover:text-brand-red sm:text-[11px] lg:text-[12px]">
                 {item}
               </span>
-              <span className="h-1 w-1 rounded-full bg-brand-red sm:h-1.5 sm:w-1.5" />
+              <span className="h-1 w-1 rounded-full bg-brand-red sm:h-1 sm:w-1 lg:h-1.5 lg:w-1.5" />
             </div>
           ))}
           {news.map((item, i) => (
-            <div key={`dup-${i}`} aria-hidden="true" className="flex items-center gap-7 sm:gap-9 lg:gap-12">
-              <span className="cursor-pointer text-[11px] font-semibold tracking-tight text-white/90 transition-colors hover:text-brand-red sm:text-[12px] lg:text-[13px]">
+            <div key={`dup-${i}`} aria-hidden="true" className="flex items-center gap-5 sm:gap-7 lg:gap-10">
+              <span className="cursor-pointer text-[10px] font-medium tracking-tight text-white/90 transition-colors hover:text-brand-red sm:text-[11px] lg:text-[12px]">
                 {item}
               </span>
-              <span className="h-1 w-1 rounded-full bg-brand-red sm:h-1.5 sm:w-1.5" />
+              <span className="h-1 w-1 rounded-full bg-brand-red sm:h-1 sm:w-1 lg:h-1.5 lg:w-1.5" />
             </div>
           ))}
         </motion.div>

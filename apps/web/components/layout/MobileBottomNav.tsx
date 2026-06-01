@@ -87,8 +87,8 @@ export default function MobileBottomNav({ site = 'pusat', onSearchClick, onMenuC
   ];
 
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[92%] max-w-md md:hidden">
-      <div className="bg-white/80 dark:bg-slate-900/85 backdrop-blur-xl border border-gray-200/50 dark:border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.3)] rounded-2xl px-3 py-2 flex items-center justify-around">
+    <div className="fixed bottom-4 left-1/2 z-50 w-[91%] max-w-md -translate-x-1/2 md:hidden">
+      <div className="flex items-center justify-around rounded-2xl border border-gray-200/50 bg-white/80 px-2 py-1.5 shadow-[0_8px_28px_rgba(0,0,0,0.12)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-900/85 dark:shadow-[0_8px_28px_rgba(0,0,0,0.3)]">
         {navItems.map((item, index) => {
           const Icon = item.icon;
           const isActive = item.active;
@@ -96,7 +96,7 @@ export default function MobileBottomNav({ site = 'pusat', onSearchClick, onMenuC
           const content = (
             <motion.div
               whileTap={{ scale: 0.9 }}
-              className="flex flex-col items-center justify-center gap-1 py-1.5 px-3 rounded-xl cursor-pointer relative"
+              className="relative flex cursor-pointer flex-col items-center justify-center gap-0.5 rounded-xl px-2.5 py-1"
             >
               {isActive && (
                 <motion.div
@@ -106,11 +106,11 @@ export default function MobileBottomNav({ site = 'pusat', onSearchClick, onMenuC
                 />
               )}
               <Icon
-                size={20}
+                size={18}
                 className={isActive ? 'text-brand-red stroke-[2.5]' : 'text-gray-400 dark:text-gray-500 hover:text-brand-red transition-colors'}
               />
               <span
-                className={`text-[11px] font-semibold ${
+                className={`text-[10px] font-medium ${
                   isActive ? 'text-brand-red' : 'text-gray-400 dark:text-gray-500'
                 }`}
               >

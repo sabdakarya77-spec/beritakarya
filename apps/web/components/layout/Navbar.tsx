@@ -1,6 +1,6 @@
 'use client';
 
-import { Search, Menu, User as UserIcon, Bell, Moon, Sun, Bookmark } from 'lucide-react';
+import { Search, User as UserIcon, Bell, Moon, Sun, Bookmark } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -92,14 +92,14 @@ export default function Navbar({
     )}>
       <div className={cn(
         "overflow-hidden transition-all duration-300 ease-out",
-        isCollapsed ? "max-h-0 opacity-0 pointer-events-none" : "max-h-16 opacity-100"
+        isCollapsed ? "max-h-0 opacity-0 pointer-events-none" : "max-h-12 opacity-100"
       )}>
       <div className="border-b border-black/5 dark:border-white/5">
-        <Container className="flex h-11 items-center justify-between gap-6 text-[12px] font-semibold uppercase tracking-[0.08em] text-brand-text-muted">
+        <Container className="flex h-9 items-center justify-between gap-4 text-[10px] font-medium text-brand-text-muted sm:h-10 sm:text-[11px]">
           <div className="flex min-w-0 items-center gap-4">
             <div className="min-w-0 truncate">
               {isArticlePage ? (
-                <span className="truncate text-[12px] normal-case tracking-[0.04em] text-brand-text-muted">
+                <span className="truncate text-[10px] normal-case tracking-[0.03em] text-brand-text-muted sm:text-[11px]">
                   {articleTopDate}
                 </span>
               ) : (
@@ -118,23 +118,16 @@ export default function Navbar({
           : "max-h-40 overflow-visible opacity-100"
       )}>
       <Container className={cn(
-        "grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 md:grid-cols-[1fr_auto_1fr] md:gap-4",
-        isArticlePage ? "min-h-[5.25rem] md:min-h-[5.5rem]" : "min-h-[6rem] md:min-h-[6.35rem]"
+        "grid grid-cols-[1fr_auto_1fr] items-center gap-2 md:gap-3",
+        isArticlePage ? "min-h-[4.35rem] sm:min-h-[4.65rem] md:min-h-[4.95rem]" : "min-h-[4.65rem] sm:min-h-[4.95rem] md:min-h-[5.3rem]"
       )}>
         <div className="flex min-w-0 items-center gap-3 md:gap-4">
           <button 
-            onClick={onMenuClick}
-            className="md:hidden -ml-2 rounded-full p-2.5 text-brand-black transition-colors hover:bg-black/5 dark:text-white dark:hover:bg-white/5"
-            aria-label="Menu"
-          >
-            <Menu size={24} strokeWidth={1.5} />
-          </button>
-          <button 
             onClick={onSearchClick}
-            className="rounded-full p-2.5 text-brand-black transition-colors hover:bg-black/5 dark:text-white dark:hover:bg-white/5"
+            className="hidden rounded-full p-2 text-brand-black transition-colors hover:bg-black/5 dark:text-white dark:hover:bg-white/5 md:inline-flex"
             aria-label="Cari berita"
           >
-            <Search size={20} strokeWidth={1.5} />
+            <Search size={18} strokeWidth={1.5} />
           </button>
         </div>
 
@@ -145,7 +138,7 @@ export default function Navbar({
         >
           <Link href={`/${activeSite}`} className="flex max-w-full flex-col items-center group">
             {siteConfig?.logoUrl ? (
-              <div className="relative mb-1 h-10 w-[8.75rem] sm:h-12 sm:w-[11.5rem] md:h-[3.25rem] md:w-[13rem]">
+              <div className="relative mb-0.5 h-8 w-[7.5rem] sm:h-10 sm:w-[10rem] md:h-[2.85rem] md:w-[11.5rem]">
                 <SmartImage 
                   src={siteConfig.logoUrl} 
                   alt={siteConfig.name} 
@@ -156,38 +149,38 @@ export default function Navbar({
                 />
               </div>
             ) : (
-              <h1 className="text-center font-serif text-[1.7rem] font-black leading-none tracking-[-0.05em] sm:text-[2.45rem] md:text-[3rem]">
+              <h1 className="text-center font-serif text-[1.45rem] font-black leading-none tracking-[-0.045em] sm:text-[2rem] md:text-[2.55rem]">
                 <span className="text-brand-red group-hover:text-brand-red/90 transition-colors">BERITA</span>
                 <span className="text-brand-black group-hover:opacity-90 transition-opacity">KARYA</span>
               </h1>
             )}
-            <span className="mt-1.5 max-w-[9rem] text-center text-[10px] font-medium uppercase tracking-[0.12em] text-brand-text-muted transition-all sm:max-w-[280px] sm:text-[11px] sm:tracking-[0.18em]">
+            <span className="mt-1 max-w-[8rem] text-center text-[9px] font-medium tracking-[0.05em] text-brand-text-muted transition-all sm:max-w-[240px] sm:text-[10px] sm:tracking-[0.08em]">
               Jernih Melihat Nusantara
             </span>
           </Link>
         </motion.div>
 
-        <div className={cn("flex min-w-0 items-center justify-end gap-2 md:gap-4", isArticlePage && "md:gap-3")}>
+        <div className={cn("flex min-w-0 items-center justify-end gap-1 sm:gap-2 md:gap-3", isArticlePage && "md:gap-2.5")}>
 
           {!isArticlePage && (
             <button 
               aria-label="Notifikasi"
-              className="hidden xl:flex rounded-full p-2 text-brand-text-muted transition-colors hover:bg-black/5 hover:text-brand-black"
+              className="hidden xl:flex rounded-full p-1.5 text-brand-text-muted transition-colors hover:bg-black/5 hover:text-brand-black"
             >
-              <Bell size={18} strokeWidth={1.2} />
+              <Bell size={16} strokeWidth={1.2} />
             </button>
           )}
             
           {user ? (
-            <div className="relative">
+            <div className="relative hidden sm:block">
               <button 
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
-                className="flex items-center gap-2 rounded-full p-2 text-brand-text-muted transition-colors hover:bg-black/5 hover:text-brand-black"
+                className="flex items-center gap-1.5 rounded-full p-1.5 text-brand-text-muted transition-colors hover:bg-black/5 hover:text-brand-black"
               >
-                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-red text-[11px] font-bold text-white">
+                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-brand-red text-[10px] font-bold text-white">
                   {user.name.charAt(0).toUpperCase()}
                 </div>
-                <span className="hidden max-w-[96px] truncate text-[12px] font-semibold sm:inline">
+                <span className="hidden max-w-[88px] truncate text-[11px] font-semibold md:inline">
                   {user.name.split(' ')[0]}
                 </span>
               </button>
@@ -231,20 +224,20 @@ export default function Navbar({
           ) : (
             <Link 
               href="/login"
-              className="flex items-center gap-2 rounded-full p-2 text-brand-text-muted transition-colors hover:bg-black/5 hover:text-brand-black"
+              className="hidden items-center gap-1.5 rounded-full p-1.5 text-brand-text-muted transition-colors hover:bg-black/5 hover:text-brand-black sm:flex"
             >
-              <UserIcon size={18} strokeWidth={1.2} />
-              <span className="hidden text-[12px] font-semibold sm:inline">Masuk</span>
+              <UserIcon size={16} strokeWidth={1.2} />
+              <span className="hidden text-[11px] font-semibold md:inline">Masuk</span>
             </Link>
           )}
           
-          <div className="hidden h-6 w-px bg-black/10 dark:bg-white/10 md:block" />
+          <div className="hidden h-5 w-px bg-black/10 dark:bg-white/10 md:block" />
 
           <button 
-            className="rounded-full p-2 text-brand-text-muted transition-colors hover:bg-black/5 hover:text-brand-black" 
+            className="rounded-full p-1 text-brand-text-muted/85 transition-colors hover:bg-black/5 hover:text-brand-black sm:p-2 sm:text-brand-text-muted" 
             onClick={toggleTheme}
           >
-            {theme === 'light' ? <Moon size={18} strokeWidth={1.5} /> : <Sun size={18} strokeWidth={1.5} />}
+            {theme === 'light' ? <Moon size={16} strokeWidth={1.5} /> : <Sun size={16} strokeWidth={1.5} />}
           </button>
         </div>
       </Container>
@@ -252,12 +245,12 @@ export default function Navbar({
 
       <div className="hidden border-t border-black/5 dark:border-white/5 md:block">
         <Container className={cn(
-          "relative z-40 hidden items-center justify-center text-[12px] font-bold uppercase tracking-[0.13em] text-brand-text-muted md:flex",
+          "relative z-40 hidden items-center justify-center text-[10px] font-medium tracking-[0.04em] text-brand-text-muted md:flex lg:text-[11px]",
           isCollapsed
-            ? "h-11 gap-5"
+            ? "h-10 gap-3.5"
             : isArticlePage
-              ? "h-12 gap-6"
-              : "h-14 gap-7"
+              ? "h-11 gap-4.5"
+              : "h-12 gap-5"
         )}>
           {categories.map((cat, index) => {
           const isActive = selectedCategory === cat.slug || cat.subCategories?.some(sub => sub.slug === selectedCategory);
@@ -265,7 +258,7 @@ export default function Navbar({
           return (
             <div 
               key={cat.slug}
-              className="relative py-4 flex items-center"
+              className="relative flex items-center py-2.5"
               onMouseEnter={() => setHoveredCategory(cat.name)}
               onMouseLeave={() => setHoveredCategory(null)}
             >
@@ -275,13 +268,13 @@ export default function Navbar({
                 transition={{ delay: index * 0.05 }}
                 onClick={() => handleCategoryClick(cat.slug)}
                 className={cn(
-                  "relative flex items-center gap-1 transition-all group hover:text-brand-red dark:hover:text-white",
-                  isActive ? "font-extrabold text-brand-black dark:text-white" : "text-gray-500 dark:text-gray-500"
+                  "group relative flex items-center gap-1 transition-all hover:text-brand-red dark:hover:text-white",
+                  isActive ? "font-semibold text-brand-black dark:text-white" : "text-gray-500 dark:text-gray-500"
                 )}
               >
                 {cat.slug === 'tersimpan' && (
                   <Bookmark 
-                    size={12} 
+                    size={11} 
                     className={cn(
                       "transition-colors",
                       isActive ? "text-brand-red fill-brand-red/20" : "text-gray-400 dark:text-gray-500 group-hover:text-brand-red"
@@ -297,12 +290,12 @@ export default function Navbar({
                 {isActive && (
                   <motion.span 
                     layoutId="activeCategoryLine"
-                    className="absolute -bottom-[1.05rem] left-0 h-[3px] w-full bg-brand-red"
+                    className="absolute -bottom-[0.72rem] left-0 h-0.5 w-full bg-brand-red"
                     transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                   />
                 )}
                 {!isActive && (
-                  <span className="absolute -bottom-[1.05rem] left-0 h-[3px] w-0 bg-brand-red transition-all duration-300 group-hover:w-full" />
+                  <span className="absolute -bottom-[0.72rem] left-0 h-0.5 w-0 bg-brand-red transition-all duration-300 group-hover:w-full" />
                 )}
               </motion.button>
 
@@ -326,7 +319,7 @@ export default function Navbar({
                             setHoveredCategory(null);
                           }}
                           className={cn(
-                            "group/sub flex items-center justify-between rounded-xl px-4 py-2 text-left text-[11px] font-medium transition-colors hover:bg-gray-50 dark:hover:bg-white/5",
+                            "group/sub flex items-center justify-between rounded-xl px-4 py-2 text-left text-[10px] font-medium tracking-[0.02em] transition-colors hover:bg-gray-50 dark:hover:bg-white/5 lg:text-[11px]",
                             isSubActive ? "text-brand-red bg-brand-red/5" : "text-gray-600 dark:text-gray-400 hover:text-brand-red dark:hover:text-white"
                           )}
                         >
@@ -350,8 +343,8 @@ export default function Navbar({
       <div className="border-t border-black/5 dark:border-white/5 md:hidden">
         <Container className="md:hidden">
           <nav className={cn(
-            "flex gap-2 overflow-x-auto no-scrollbar transition-all duration-300",
-            isCollapsed ? "pb-2 pt-2" : "pb-3 pt-3"
+            "flex gap-1.5 overflow-x-auto no-scrollbar transition-all duration-300",
+            isCollapsed ? "pb-1.5 pt-1.5" : "pb-2.5 pt-2"
           )}>
             {categories.map((cat) => {
           const isActive = selectedCategory === cat.slug || cat.subCategories?.some(sub => sub.slug === selectedCategory);
@@ -360,8 +353,8 @@ export default function Navbar({
               key={cat.slug}
               onClick={() => handleCategoryClick(cat.slug)}
               className={cn(
-                "flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full border px-3 py-2 text-[12px] font-semibold transition-all",
-                        isCollapsed && "py-1.5 text-[11px]",
+                "flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full border px-2.5 py-1.5 text-[11px] font-medium transition-all",
+                        isCollapsed && "px-2.5 py-1 text-[10px]",
                 isActive
                   ? "border-brand-red bg-brand-red/10 text-brand-red dark:text-white"
                   : "border-black/10 text-brand-text-muted dark:border-white/10 dark:text-gray-400"
@@ -369,7 +362,7 @@ export default function Navbar({
             >
               {cat.slug === 'tersimpan' && (
                 <Bookmark 
-                  size={10} 
+                  size={9} 
                   className={isActive ? "text-brand-red fill-brand-red/20" : "text-gray-400 dark:text-gray-400"} 
                 />
               )}
@@ -398,8 +391,8 @@ export default function Navbar({
             )}>
               <Container className="md:hidden">
                 <nav className={cn(
-                  "flex gap-2 overflow-x-auto no-scrollbar transition-all duration-300",
-                  isCollapsed ? "pb-2 pt-1.5" : "pb-3 pt-2"
+                  "flex gap-1.5 overflow-x-auto no-scrollbar transition-all duration-300",
+                  isCollapsed ? "pb-1.5 pt-1" : "pb-2.5 pt-1.5"
                 )}>
                   {activeParent.subCategories.map((sub) => {
                     const isSubActive = selectedCategory === sub.slug;
@@ -408,8 +401,8 @@ export default function Navbar({
                         key={sub.slug}
                         onClick={() => handleCategoryClick(sub.slug)}
                         className={cn(
-                          "shrink-0 whitespace-nowrap rounded-xl px-3 py-1.5 text-[11px] font-semibold transition-all",
-                          isCollapsed && "px-2.5 py-1 text-[10px]",
+                          "shrink-0 whitespace-nowrap rounded-xl px-2.5 py-1 text-[10px] font-medium transition-all",
+                          isCollapsed && "px-2 py-1 text-[9px]",
                           isSubActive
                             ? "bg-brand-red text-white"
                             : "bg-black/[0.04] text-gray-600 dark:bg-white/5 dark:text-gray-400"

@@ -66,12 +66,12 @@ export default function SiteFooter({ siteConfig, categories }: SiteFooterProps) 
   ].filter((item) => Boolean(item.href));
 
   return (
-    <footer className="mt-28 border-t border-black/5 bg-white pt-16 pb-12 text-brand-text transition-colors duration-500 dark:border-white/5 dark:bg-[#020617]">
+    <footer className="mt-20 border-t border-black/5 bg-white pb-10 pt-12 text-brand-text transition-colors duration-500 sm:mt-24 sm:pb-12 sm:pt-14 dark:border-white/5 dark:bg-[#020617]">
       <Container>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-16">
+        <div className="mb-12 grid grid-cols-1 gap-8 md:grid-cols-3 md:gap-10">
           <div className="col-span-1">
-            <Link href={`/${activeSite}`} className="flex flex-col mb-5">
-              <span className="font-serif text-3xl font-black tracking-tighter uppercase">
+            <Link href={`/${activeSite}`} className="mb-4 flex flex-col">
+              <span className="font-serif text-[1.75rem] font-black tracking-tight uppercase sm:text-[2rem]">
                 {(() => {
                   const siteName = siteConfig?.name || 'BERITA KARYA';
                   const nameParts = siteName.split(' ');
@@ -86,10 +86,10 @@ export default function SiteFooter({ siteConfig, categories }: SiteFooterProps) 
                 })()}
               </span>
             </Link>
-            <p className="mb-6 max-w-xs text-sm leading-relaxed text-brand-text-muted opacity-80">
+            <p className="mb-5 max-w-xs text-[13px] leading-6 text-brand-text-muted opacity-80">
               {siteConfig?.description || "Portal berita independen yang berfokus pada kedalaman investigasi dan kejernihan melihat realitas Nusantara."}
             </p>
-            <div className="mb-6 flex gap-2">
+            <div className="mb-5 flex gap-1.5">
               {socialLinks.map(({ href, label, Icon }, index) => (
                 <a
                   key={`${href}-${index}`}
@@ -98,22 +98,22 @@ export default function SiteFooter({ siteConfig, categories }: SiteFooterProps) 
                   rel="noopener noreferrer"
                   aria-label={label}
                   title={label}
-                  className="w-9 h-9 flex items-center justify-center bg-gray-100 dark:bg-white/5 hover:bg-brand-red transition-colors rounded-xl group"
+                  className="group flex h-[1.875rem] w-[1.875rem] items-center justify-center rounded-xl bg-gray-100 transition-colors hover:bg-brand-red dark:bg-white/5"
                 >
-                  <Icon size={14} className="text-brand-text-muted group-hover:text-white" />
+                  <Icon size={13} className="text-brand-text-muted group-hover:text-white" />
                 </a>
               ))}
             </div>
-            <div className="space-y-2">
-              <p className="flex items-start gap-2 text-sm leading-relaxed text-brand-text-muted">
+            <div className="space-y-1.5">
+              <p className="flex items-start gap-2 text-[13px] leading-6 text-brand-text-muted">
                 <MapPin size={12} className="shrink-0 mt-0.5 text-brand-red" />
                 <span>{siteConfig?.address || "Jl. Merdeka No. 123, Jakarta Pusat, Indonesia"}</span>
               </p>
-              <p className="flex items-center gap-2 text-sm text-brand-text-muted">
+              <p className="flex items-center gap-2 text-[13px] text-brand-text-muted">
                 <Phone size={12} className="text-brand-text-muted opacity-60" /> {siteConfig?.phone || "+62 815 9921 922"}
               </p>
               {siteConfig?.contactEmail && (
-                <p className="flex items-center gap-2 text-sm text-brand-text-muted">
+                <p className="flex items-center gap-2 text-[13px] text-brand-text-muted">
                   <Mail size={12} className="text-brand-text-muted opacity-60" /> {siteConfig.contactEmail}
                 </p>
               )}
@@ -121,13 +121,13 @@ export default function SiteFooter({ siteConfig, categories }: SiteFooterProps) 
           </div>
 
           <div className="md:col-span-1">
-            <h5 className="mb-5 text-[11px] font-black uppercase tracking-[0.16em] text-brand-red">KATEGORI UTAMA</h5>
-            <div className="grid grid-cols-2 gap-x-8 gap-y-3">
+            <h5 className="mb-4 text-[10px] font-medium tracking-[0.06em] text-brand-red/90">Kategori Utama</h5>
+            <div className="grid grid-cols-2 gap-x-6 gap-y-2.5">
               {mainCategories.map((cat) => (
                 <Link
                   key={cat.slug}
                   href={`/${siteConfig.id}?cat=${encodeURIComponent(cat.slug)}`}
-                  className="text-sm font-semibold text-brand-text-muted transition-all hover:text-brand-red dark:text-gray-400"
+                  className="text-[13px] font-medium text-brand-text-muted transition-all hover:text-brand-red dark:text-gray-400"
                 >
                   {cat.name}
                 </Link>
@@ -136,11 +136,11 @@ export default function SiteFooter({ siteConfig, categories }: SiteFooterProps) 
           </div>
 
           <div>
-            <h5 className="mb-5 text-[11px] font-black uppercase tracking-[0.16em] text-brand-red">KERJA SAMA</h5>
-            <ul className="space-y-3 text-sm text-brand-text-muted">
+            <h5 className="mb-4 text-[10px] font-medium tracking-[0.06em] text-brand-red/90">Kerja Sama</h5>
+            <ul className="space-y-2.5 text-[13px] text-brand-text-muted">
               {partnershipLinks.map((item, index) => (
                 <li key={`${item.href}-${index}`}>
-                  <Link href={item.href} className="hover:text-brand-red transition-colors font-semibold">
+                  <Link href={item.href} className="font-medium transition-colors hover:text-brand-red">
                     {item.label}
                   </Link>
                 </li>
@@ -149,16 +149,16 @@ export default function SiteFooter({ siteConfig, categories }: SiteFooterProps) 
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center justify-center gap-4 md:gap-8 border-t border-black/5 pt-8 dark:border-white/5 mb-6">
+        <div className="mb-5 flex flex-wrap items-center justify-center gap-3 border-t border-black/5 pt-6 md:gap-6 dark:border-white/5">
           {bottomLinks.map((item) => (
-            <Link key={item.href} href={item.href} className="text-[11px] font-bold uppercase tracking-[0.16em] text-brand-text-muted opacity-80 hover:text-brand-red transition-colors">
+            <Link key={item.href} href={item.href} className="text-[10px] font-medium tracking-[0.04em] text-brand-text-muted opacity-75 transition-colors hover:text-brand-red sm:text-[11px]">
               {item.label}
             </Link>
           ))}
         </div>
 
         <div className="text-center">
-          <span suppressHydrationWarning className="text-[11px] font-black uppercase tracking-[0.16em] text-brand-text-muted opacity-60">
+          <span suppressHydrationWarning className="text-[10px] font-normal tracking-[0.04em] text-brand-text-muted opacity-60">
             {siteConfig?.footerText || `© ${new Date().getFullYear()} PT SABDA KARYA NUSANTARA (BERITA KARYA DIGITAL GROUP). ALL RIGHTS RESERVED.`}
           </span>
         </div>
