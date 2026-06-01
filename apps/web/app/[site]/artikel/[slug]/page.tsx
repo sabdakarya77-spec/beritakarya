@@ -278,8 +278,8 @@ export default async function ArticlePage({ params }: Props) {
                       context="article_cover"
                       alt={article.title}
                       fill={false}
-                      width={1600}
-                      height={1065}
+                      width={1200}
+                      height={800}
                       className="w-full h-auto"
                       priority
                     />

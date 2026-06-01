@@ -3,17 +3,44 @@
 import React, { useState, useEffect } from 'react'
 import Image, { ImageProps } from 'next/image'
 
+/**
+ * SIZES_MAP for responsive images
+ * 
+ * Optimized responsive breakpoints based on:
+ * - Mobile: 640px and below
+ * - Tablet: 641px to 1024px  
+ * - Desktop: 1025px and above
+ * 
+ * Values are based on common container widths and content areas
+ */
 const SIZES_MAP = {
-  hero_lead: '(max-width: 768px) 100vw, 66vw',
-  hero_side: '(max-width: 768px) 100vw, 33vw',
-  card: '(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 600px',
-  card_horizontal: '(max-width: 768px) 33vw, 200px',
-  gallery_thumb: '56px',
+  // Hero images - optimized for large featured content
+  // Lead hero gets more width, side heroes get less
+  hero_lead: '(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 800px',
+  hero_side: '(max-width: 640px) 100vw, (max-width: 1024px) 45vw, 400px',
+  
+  // Card images - optimized for grid layouts
+  // Mobile: full width, Tablet: 50%, Desktop: 33% (3-column) or 400px max
+  card: '(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 400px',
+  card_horizontal: '(max-width: 640px) 40vw, 200px',
+  
+  // Article images
+  // Article cover: optimized for readability, max 800px
+  article_cover: '(max-width: 640px) 100vw, (max-width: 1024px) 85vw, 800px',
+  // Article inline blocks: slightly smaller for content flow
+  article_block: '(max-width: 640px) 100vw, (max-width: 1024px) 80vw, 600px',
+  
+  // Gallery
+  gallery_thumb: '(max-width: 640px) 80px, 56px',
   gallery_full: '100vw',
-  article_cover: '100vw',
-  article_block: '(max-width: 768px) 100vw, 760px',
-  media_text: '(max-width: 768px) 100vw, 380px',
+  
+  // Other
+  media_text: '(max-width: 640px) 100vw, (max-width: 768px) 50vw, 380px',
   logo: '200px',
+  
+  // New additions for consistency
+  avatar: '(max-width: 640px) 48px, (max-width: 768px) 56px, 64px',
+  thumbnail: '(max-width: 640px) 120px, (max-width: 768px) 160px, 200px',
 }
 
 export type SmartImageContext = keyof typeof SIZES_MAP
