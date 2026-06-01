@@ -55,9 +55,9 @@ export default function LoginPage() {
       
       <div className="w-full max-w-md relative z-10 animate-fade-in">
         {/* Logo Header */}
-        <div className="text-center mb-10">
+        <div className="text-center mb-6">
           <Link href="/" className="inline-block group">
-            <h1 className="font-serif text-4xl md:text-5xl font-black tracking-[-0.04em] leading-none text-brand-black dark:text-white">
+            <h1 className="font-serif text-3xl md:text-4xl font-black tracking-[-0.04em] leading-none text-brand-black dark:text-white">
               <span className="text-brand-red group-hover:text-brand-red/90 transition-colors">BERITA</span>
               <span className="group-hover:opacity-90 transition-opacity">KARYA</span>
             </h1>
@@ -65,7 +65,7 @@ export default function LoginPage() {
         </div>
 
         {/* Login Box */}
-        <div className="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 p-8 sm:p-10 shadow-2xl shadow-black/5 rounded-sm">
+        <div className="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 p-6 sm:p-8 shadow-2xl shadow-black/5 rounded-2xl">
           <h2 className="text-xl font-serif font-black text-brand-black dark:text-white uppercase tracking-tight mb-2">Masuk ke Portal</h2>
           <p className="text-xs text-gray-500 font-bold uppercase tracking-widest mb-8">Silakan masukkan kredensial Anda</p>
 
@@ -76,8 +76,8 @@ export default function LoginPage() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-1.5">
               <label className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-black dark:text-gray-300">
                 Email
               </label>
@@ -90,11 +90,11 @@ export default function LoginPage() {
                 }}
                 required
                 placeholder="nama@beritakarya.co"
-                className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-sm text-brand-black dark:text-white focus:outline-none focus:border-brand-red dark:focus:border-brand-red transition-colors rounded-sm"
+                className="w-full px-3 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-sm text-brand-black dark:text-white focus:outline-none focus:border-brand-red dark:focus:border-brand-red transition-colors rounded-xl"
               />
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <div className="flex justify-between items-center">
                 <label className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-black dark:text-gray-300">
                   Kata Sandi
@@ -110,7 +110,7 @@ export default function LoginPage() {
                   }}
                   required
                   placeholder="••••••••"
-                  className="w-full px-4 py-3 pr-12 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-sm text-brand-black dark:text-white focus:outline-none focus:border-brand-red dark:focus:border-brand-red transition-colors rounded-sm"
+                  className="w-full px-3 py-2.5 pr-10 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-sm text-brand-black dark:text-white focus:outline-none focus:border-brand-red dark:focus:border-brand-red transition-colors rounded-xl"
                 />
                 <button
                   type="button"
@@ -125,7 +125,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading || !email || !password}
-              className="w-full flex justify-center items-center gap-2 py-4 bg-brand-red text-white text-[11px] font-black uppercase tracking-[0.2em] hover:bg-brand-black transition-all disabled:opacity-50 disabled:cursor-not-allowed rounded-sm group shadow-lg shadow-brand-red/20"
+              className="w-full flex justify-center items-center gap-2 py-3 bg-brand-red text-white text-[11px] font-black uppercase tracking-[0.2em] hover:bg-brand-black transition-all disabled:opacity-50 disabled:cursor-not-allowed rounded-xl group shadow-lg shadow-brand-red/20"
             >
               {isLoading ? (
                 <>
@@ -141,7 +141,7 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <div className="mt-8 text-center border-t border-gray-100 dark:border-slate-800 pt-6">
+          <div className="mt-6 text-center border-t border-gray-100 dark:border-slate-800 pt-4">
             <p className="text-xs text-gray-500 font-bold uppercase tracking-widest">
               Belum punya akun?{' '}
               <Link href="/register" className="text-brand-red hover:text-brand-black dark:hover:text-white transition-colors">
@@ -151,7 +151,7 @@ export default function LoginPage() {
           </div>
         </div>
         
-        <p className="text-center text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-8">
+        <p className="text-center text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-6">
           &copy; {new Date().getFullYear()} BeritaKarya Nusantara
         </p>
       </div>

@@ -73,9 +73,9 @@ function RegisterForm() {
       
       <div className="w-full max-w-md relative z-10 animate-fade-in my-8">
         {/* Logo Header */}
-        <div className="text-center mb-10">
+        <div className="text-center mb-6">
           <Link href="/" className="inline-block group">
-            <h1 className="font-serif text-4xl md:text-5xl font-black tracking-[-0.04em] leading-none text-brand-black dark:text-white">
+            <h1 className="font-serif text-3xl md:text-4xl font-black tracking-[-0.04em] leading-none text-brand-black dark:text-white">
               <span className="text-brand-red group-hover:text-brand-red/90 transition-colors">BERITA</span>
               <span className="group-hover:opacity-90 transition-opacity">KARYA</span>
             </h1>
@@ -83,7 +83,7 @@ function RegisterForm() {
         </div>
 
         {/* Register Box */}
-        <div className="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 p-8 sm:p-10 shadow-2xl shadow-black/5 rounded-sm">
+        <div className="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 p-6 sm:p-8 shadow-2xl shadow-black/5 rounded-2xl">
           <h2 className="text-xl font-serif font-black text-brand-black dark:text-white uppercase tracking-tight mb-2">
             {isAdvertiser ? 'Pendaftaran Mitra Pengiklan' : 'Buat Akun Baru'}
           </h2>
@@ -98,8 +98,8 @@ function RegisterForm() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-1.5">
               <label className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-black dark:text-gray-300">
                 {isAdvertiser ? 'Nama Perusahaan / Brand / Personal' : 'Nama Lengkap'}
               </label>
@@ -112,11 +112,11 @@ function RegisterForm() {
                 }}
                 required
                 placeholder={isAdvertiser ? 'Contoh: PT Sukses Bersama' : 'Nama Anda'}
-                className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-sm text-brand-black dark:text-white focus:outline-none focus:border-brand-red dark:focus:border-brand-red transition-colors rounded-sm"
+                className="w-full px-3 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-sm text-brand-black dark:text-white focus:outline-none focus:border-brand-red dark:focus:border-brand-red transition-colors rounded-xl"
               />
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <label className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-black dark:text-gray-300">
                 Email
               </label>
@@ -129,11 +129,11 @@ function RegisterForm() {
                 }}
                 required
                 placeholder={isAdvertiser ? 'email@perusahaan.com' : 'nama@beritakarya.co'}
-                className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-sm text-brand-black dark:text-white focus:outline-none focus:border-brand-red dark:focus:border-brand-red transition-colors rounded-sm"
+                className="w-full px-3 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-sm text-brand-black dark:text-white focus:outline-none focus:border-brand-red dark:focus:border-brand-red transition-colors rounded-xl"
               />
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <label className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-black dark:text-gray-300">
                 Kata Sandi
               </label>
@@ -146,23 +146,23 @@ function RegisterForm() {
                     if (displayError) { clearError(); setLocalError(null); }
                   }}
                   required
-                  placeholder="Minimal 8 karakter dengan huruf kapital, angka, & simbol"
-                  className="w-full px-4 py-3 pr-12 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-sm text-brand-black dark:text-white focus:outline-none focus:border-brand-red dark:focus:border-brand-red transition-colors rounded-sm"
+                  placeholder="Minimal 8 karakter"
+                  className="w-full px-3 py-2.5 pr-10 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-sm text-brand-black dark:text-white focus:outline-none focus:border-brand-red dark:focus:border-brand-red transition-colors rounded-xl"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-brand-black dark:hover:text-white transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-brand-black dark:hover:text-white transition-colors"
                 >
-                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
                 </button>
               </div>
-              <p className="text-[9px] text-gray-400 dark:text-gray-500 font-medium leading-normal mt-1">
-                * Minimal 8 karakter, harus mengandung huruf kapital, angka, dan karakter spesial (seperti @, #, $, !, %, dll.)
+              <p className="text-[9px] text-gray-400 dark:text-gray-500 font-medium leading-normal">
+                * Minimal 8 karakter dengan huruf kapital, angka, & simbol
               </p>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <label className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-black dark:text-gray-300">
                 Konfirmasi Kata Sandi
               </label>
@@ -176,14 +176,14 @@ function RegisterForm() {
                   }}
                   required
                   placeholder="Ulangi kata sandi"
-                  className="w-full px-4 py-3 pr-12 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-sm text-brand-black dark:text-white focus:outline-none focus:border-brand-red dark:focus:border-brand-red transition-colors rounded-sm"
+                  className="w-full px-3 py-2.5 pr-10 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-sm text-brand-black dark:text-white focus:outline-none focus:border-brand-red dark:focus:border-brand-red transition-colors rounded-xl"
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-brand-black dark:hover:text-white transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-brand-black dark:hover:text-white transition-colors"
                 >
-                  {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  {showConfirmPassword ? <EyeOff size={14} /> : <Eye size={14} />}
                 </button>
               </div>
             </div>
@@ -191,7 +191,7 @@ function RegisterForm() {
             <button
               type="submit"
               disabled={isLoading || !name || !email || !password || !confirmPassword}
-              className="w-full flex justify-center items-center gap-2 py-4 bg-brand-red text-white text-[11px] font-black uppercase tracking-[0.2em] hover:bg-brand-black transition-all disabled:opacity-50 disabled:cursor-not-allowed rounded-sm group shadow-lg shadow-brand-red/20"
+              className="w-full flex justify-center items-center gap-2 py-3 bg-brand-red text-white text-[11px] font-black uppercase tracking-[0.2em] hover:bg-brand-black transition-all disabled:opacity-50 disabled:cursor-not-allowed rounded-xl group shadow-lg shadow-brand-red/20"
             >
               {isLoading ? (
                 <>
@@ -207,7 +207,7 @@ function RegisterForm() {
             </button>
           </form>
           
-          <div className="mt-8 text-center border-t border-gray-100 dark:border-slate-800 pt-6">
+          <div className="mt-6 text-center border-t border-gray-100 dark:border-slate-800 pt-4">
             <p className="text-xs text-gray-500 font-bold uppercase tracking-widest">
               Sudah punya akun?{' '}
               <Link href="/login" className="text-brand-red hover:text-brand-black dark:hover:text-white transition-colors">
@@ -217,7 +217,7 @@ function RegisterForm() {
           </div>
         </div>
         
-        <p className="text-center text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-8">
+        <p className="text-center text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-6">
           &copy; {new Date().getFullYear()} BeritaKarya Nusantara
         </p>
       </div>
