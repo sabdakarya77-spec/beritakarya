@@ -26,7 +26,8 @@ import {
   Calendar,
   MessageSquare,
   Mail,
-  Lock
+  Lock,
+  User
 } from 'lucide-react'
 import { ROLE_LABELS } from '../../../lib/constants'
 import { useState, useEffect } from 'react'
@@ -104,6 +105,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             { name: 'Ringkasan', href: `/${site}/dashboard`, icon: LayoutDashboard, roles: ['superadmin', 'wapimred', 'reporter', 'kontributor'] },
             { name: 'Post', href: `/${site}/dashboard/articles`, icon: FileText, roles: ['superadmin', 'wapimred', 'reporter', 'kontributor'] },
             { name: 'Media', href: `/${site}/dashboard/media`, icon: ImageIcon, roles: ['superadmin', 'wapimred', 'reporter', 'kontributor'] },
+            { name: 'Profil Saya', href: `/${site}/dashboard/profile`, icon: User, roles: ['superadmin', 'wapimred', 'reporter', 'kontributor'] },
             ...(user && !user.isVerified ? [{ name: 'Verifikasi KYC', href: `/${site}/dashboard/kyc`, icon: ClipboardCheck, roles: ['superadmin', 'wapimred', 'reporter', 'kontributor'] }] : []),
           ]
         },
