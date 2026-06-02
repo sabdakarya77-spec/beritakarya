@@ -259,11 +259,10 @@ card: '(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33
 
 ## Priority 3: Nice to Have
 - [x] Add new context types (avatar, thumbnail) - ✅ DONE
-- [ ] Add image quality optimization
-- [ ] Add WebP format support
-```
+- [x] Add image quality optimization - ✅ DONE (QUALITY_MAP per context, commit `38622d8`)
+- [x] Add WebP format support - ✅ DONE (next.config formats: ['image/avif', 'image/webp'])
 
-**Progress: 4/9 items completed (44%)**
+**Progress: 6/9 items completed (67%)** — naik dari 44% setelah Fase 2.2 A_TIER
 
 ---
 

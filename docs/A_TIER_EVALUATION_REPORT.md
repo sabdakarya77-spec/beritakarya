@@ -396,10 +396,14 @@ TIDAK ADA DI PROJECT (perlu ditambahkan):
 □ Add install prompt
 
 ### 2.2 Image Optimization (2 days)
-□ Audit SmartImage usage
-□ Add WebP/AVIF formats
-□ Optimize placeholder strategy
-□ Add lazy loading untuk below-fold
+- [x] Audit SmartImage usage ✅ DONE (8 files, 35 usages, all use SIZES_MAP)
+- [x] Add WebP/AVIF formats ✅ DONE (next.config formats: ['image/avif', 'image/webp'])
+- [x] Optimize placeholder strategy ✅ DONE (blur_hash + dominantColor dari API, slow-network pakai thumb)
+- [x] Add lazy loading untuk below-fold ✅ DONE (explicit `loading` prop, priority=eager, default=lazy)
+- [x] Context-aware image quality ✅ DONE (QUALITY_MAP: hero 85-95, card 75, thumb 70)
+- [x] Cache TTL optimization ✅ DONE (minimumCacheTTL 30 hari, curated deviceSizes/imageSizes)
+
+**Commit:** `38622d8 perf(image): optimize image quality per context & cache TTL (Fase 2.2)`
 
 ### 2.3 Bundle Optimization (2 days)
 □ Run bundle analyzer
