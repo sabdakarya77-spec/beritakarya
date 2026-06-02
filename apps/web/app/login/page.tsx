@@ -17,16 +17,15 @@ export default function LoginPage() {
   // Redirect if already logged in
   useEffect(() => {
     if (user) {
-      // Get the site ID from cookies or default to 'pusat'
-      const siteId = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('siteId='))
-        ?.split('=')[1] || 'pusat';
+      // [MULTI-SITE] Gunakan user.siteId (bukan cookie subdomain)
+      // - Superadmin & user tanpa siteId: default ke 'pusat'
+      // - User dengan siteId: ke situsnya sendiri
+      const targetSite = user.siteId || 'pusat';
       
       if (user.role === 'reader') {
-        router.push(`/${siteId}`);
+        router.push(`/${targetSite}`);
       } else {
-        router.push(`/${siteId}/dashboard`);
+        router.push(`/${targetSite}/dashboard`);
       }
     }
   }, [user, router]);

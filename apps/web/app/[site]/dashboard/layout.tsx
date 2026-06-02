@@ -57,6 +57,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       // Jika user null setelah AuthInit selesai checkAuth, 
       // proxy.ts (Next.js) sudah handle redirect ke /login via cookie check
       if (user) {
+        // [MULTI-SITE] Cross-site guard: tolak akses dashboard situs lain
+        // - Superadmin: bebas lintas situs
+        // - User tanpa siteId (mis. advertiser global): bebas
+        // - User dengan siteId: HARUS akses dashboard situsnya sendiri
+        if (
+          user.role !== 'superadmin' &&
+          user.siteId &&
+          user.siteId !== site
+        ) {
+          router.replace(`/${user.siteId}/dashboard`)
+          return
+        }
+
         const allowedRoles = ['superadmin', 'wapimred', 'reporter', 'kontributor', 'advertiser']
         if (!allowedRoles.includes(user.role)) {
           router.push(`/${site}`)

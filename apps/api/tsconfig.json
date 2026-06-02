@@ -8,10 +8,11 @@
     "paths": {
       "@beritakarya/*": ["../../packages/*/src"]
     },
+    "rootDir": "../..",
     "skipLibCheck": true,
     "declaration": false,
     "declarationMap": false
   },
-  "include": ["src/**/*", "prisma/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["src/**/*", "prisma/**/*", "../../packages/types/src/**/*", "../../packages/config/src/**/*", "../../packages/utils/src/**/*"],
+  "exclude": ["node_modules", "dist", "**/dist"]
 }

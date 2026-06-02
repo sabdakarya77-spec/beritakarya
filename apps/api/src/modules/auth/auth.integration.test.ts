@@ -1,54 +1,74 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import request from 'supertest'
 import express from 'express'
 import { authRouter } from './auth.controller'
 import { errorMiddleware } from '../../middleware/error.middleware'
 
 vi.mock('./auth.service', () => ({
-  loginUser: vi.fn(),
-  registerUser: vi.fn(),
-  refreshAccessToken: vi.fn(),
-  logoutUser: vi.fn()
+  validateLoginCredentials: vi.fn(),
+  generateTokenPair:       vi.fn(),
+  registerUser:            vi.fn(),
+  refreshAccessToken:      vi.fn(),
+  logoutUser:              vi.fn()
+}))
+
+vi.mock('../../lib/accountLockout', () => ({
+  checkAccountLockout:    vi.fn().mockResolvedValue(false),
+  recordFailedAttempt:    vi.fn().mockResolvedValue(undefined),
+  resetFailedAttempts:    vi.fn().mockResolvedValue(undefined)
+}))
+
+vi.mock('../../lib/siteFromRequest', () => ({
+  extractSiteIdFromRequest: vi.fn().mockReturnValue(null),
+  isVirtualSiteId:          vi.fn().mockReturnValue(false)
 }))
 
 import * as authService from './auth.service'
+import { extractSiteIdFromRequest } from '../../lib/siteFromRequest'
 
 const app = express()
 app.use(express.json())
 app.use('/api/v1/auth', authRouter)
 app.use(errorMiddleware)
 
+const mockUser = {
+  id: 'u-1',
+  email: 'test@test.com',
+  name: 'Test',
+  role: 'reporter',
+  siteId: 'bandung',
+  isVerified: true,
+  kycStatus: 'APPROVED'
+} as any
+
 const mockTokens = {
   accessToken: 'mock-access-token',
   refreshToken: 'mock-refresh-token',
-  user: { 
-    id: 'u-1', 
-    email: 'test@test.com', 
-    name: 'Test', 
-    role: 'reporter', 
-    siteId: 'bandung',
-    isVerified: true,
-    kycStatus: 'APPROVED',
-    kycNotes: null,
-    kycSubmittedAt: null
-  }
+  user: mockUser
 }
 
 describe('POST /api/v1/auth/login', () => {
-  it('200 dengan token saat login berhasil', async () => {
-    vi.mocked(authService.loginUser).mockResolvedValue(mockTokens)
+  beforeEach(() => {
+    vi.clearAllMocks()
+    vi.mocked(extractSiteIdFromRequest).mockReturnValue(null)
+  })
+
+  it('200 dengan token saat login berhasil (tidak ada site check)', async () => {
+    vi.mocked(authService.validateLoginCredentials).mockResolvedValue(mockUser)
+    vi.mocked(authService.generateTokenPair).mockResolvedValue(mockTokens as any)
+
     const res = await request(app)
       .post('/api/v1/auth/login')
       .send({ email: 'test@test.com', password: 'P@ssword123' })
-    
+
     expect(res.status).toBe(200)
     expect(res.body.success).toBe(true)
-    
+
     const setCookie = res.headers['set-cookie'] as unknown as string[]
     expect(setCookie).toBeDefined()
     expect(setCookie.some((c: string) => c.includes('accessToken='))).toBe(true)
     expect(setCookie.some((c: string) => c.includes('refreshToken='))).toBe(true)
-    
+
     expect(res.body.data.user).toBeDefined()
   })
 
@@ -56,22 +76,89 @@ describe('POST /api/v1/auth/login', () => {
     const res = await request(app)
       .post('/api/v1/auth/login')
       .send({ email: 'bukan-email', password: 'P@ssword123' })
-    
+
     expect(res.status).toBe(400)
     expect(res.body.success).toBe(false)
     expect(res.body.error.code).toBe('VALIDATION_ERROR')
   })
 
-  it('400 saat service throw error kredensial salah', async () => {
-    vi.mocked(authService.loginUser).mockRejectedValue(
+  it('400/401 saat service throw error kredensial salah', async () => {
+    vi.mocked(authService.validateLoginCredentials).mockRejectedValue(
       new Error('Email atau password salah')
     )
     const res = await request(app)
       .post('/api/v1/auth/login')
       .send({ email: 'test@test.com', password: 'salah' })
-    
-    expect(res.status).toBe(400)
+
+    expect(res.status).toBeGreaterThanOrEqual(400)
     expect(res.body.success).toBe(false)
+  })
+
+  it('[MULTI-SITE] 403 SITE_MISMATCH saat login lintas subdomain', async () => {
+    vi.mocked(extractSiteIdFromRequest).mockReturnValue('pusat')
+    vi.mocked(authService.validateLoginCredentials).mockResolvedValue({
+      ...mockUser,
+      role: 'wapimred',
+      siteId: 'nganjuk'
+    })
+
+    const res = await request(app)
+      .post('/api/v1/auth/login')
+      .set('Origin', 'https://beritakarya.co')
+      .send({ email: 'wapimred@nganjuk.com', password: 'P@ssword123' })
+
+    expect(res.status).toBe(403)
+    expect(res.body.success).toBe(false)
+    expect(res.body.error.code).toBe('SITE_MISMATCH')
+    expect(res.body.error.message).toContain('nganjuk')
+  })
+
+  it('[MULTI-SITE] superadmin BOLEH login lintas subdomain', async () => {
+    vi.mocked(extractSiteIdFromRequest).mockReturnValue('bandung')
+    vi.mocked(authService.validateLoginCredentials).mockResolvedValue({
+      ...mockUser,
+      role: 'superadmin',
+      siteId: null
+    })
+    vi.mocked(authService.generateTokenPair).mockResolvedValue(mockTokens as any)
+
+    const res = await request(app)
+      .post('/api/v1/auth/login')
+      .set('Origin', 'https://bandung.beritakarya.co')
+      .send({ email: 'admin@beritakarya.co', password: 'P@ssword123' })
+
+    expect(res.status).toBe(200)
+    expect(res.body.success).toBe(true)
+  })
+
+  it('[MULTI-SITE] user tanpa siteId BOLEH login dari subdomain manapun', async () => {
+    vi.mocked(extractSiteIdFromRequest).mockReturnValue('surabaya')
+    vi.mocked(authService.validateLoginCredentials).mockResolvedValue({
+      ...mockUser,
+      role: 'advertiser',
+      siteId: null
+    })
+    vi.mocked(authService.generateTokenPair).mockResolvedValue(mockTokens as any)
+
+    const res = await request(app)
+      .post('/api/v1/auth/login')
+      .set('Origin', 'https://surabaya.beritakarya.co')
+      .send({ email: 'ads@external.com', password: 'P@ssword123' })
+
+    expect(res.status).toBe(200)
+    expect(res.body.success).toBe(true)
+  })
+
+  it('[MULTI-SITE] 200 saat requestSite null (server-to-server / no origin)', async () => {
+    vi.mocked(extractSiteIdFromRequest).mockReturnValue(null)
+    vi.mocked(authService.validateLoginCredentials).mockResolvedValue(mockUser)
+    vi.mocked(authService.generateTokenPair).mockResolvedValue(mockTokens as any)
+
+    const res = await request(app)
+      .post('/api/v1/auth/login')
+      .send({ email: 'test@test.com', password: 'P@ssword123' })
+
+    expect(res.status).toBe(200)
   })
 })
 

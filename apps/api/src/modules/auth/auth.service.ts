@@ -28,16 +28,21 @@ export function validatePassword(password: string): boolean {
 }
 
 export async function loginUser(email: string, password: string) {
+  const user = await validateLoginCredentials(email, password)
+  return generateTokenPair(user)
+}
+
+export async function validateLoginCredentials(email: string, password: string) {
   const normalizedEmail = email.toLowerCase().trim()
-  const user = await prisma.user.findFirst({ 
-    where: { email: normalizedEmail, deletedAt: null } 
+  const user = await prisma.user.findFirst({
+    where: { email: normalizedEmail, deletedAt: null }
   })
   if (!user) throw new AppError('Email atau password salah', 401, 'UNAUTHORIZED')
 
   const valid = await bcrypt.compare(password, user.passwordHash)
   if (!valid) throw new AppError('Email atau password salah', 401, 'UNAUTHORIZED')
 
-  return generateTokenPair(user)
+  return user
 }
 
 export async function registerUser(
@@ -161,7 +166,7 @@ export async function resetPassword(email: string, token: string, newPassword: s
   return { success: true, message: 'Password berhasil diubah' }
 }
 
-async function generateTokenPair(user: any) {
+export async function generateTokenPair(user: any) {
   const payload: Omit<JWTPayload, 'iat' | 'exp'> = {
     userId: user.id,
     role: user.role,

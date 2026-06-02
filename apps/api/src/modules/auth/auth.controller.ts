@@ -6,6 +6,9 @@ import { checkAccountLockout, recordFailedAttempt, resetFailedAttempts } from '.
 import { requireAuth } from '../../middleware/auth.middleware'
 import { prisma } from '../../db/client'
 import { env } from '../../lib/env'
+import { AppError } from '../../utils/AppError'
+import { logger } from '../../lib/logger'
+import { extractSiteIdFromRequest } from '../../lib/siteFromRequest'
 import bcrypt from 'bcryptjs'
 
 export const authRouter: Router = Router()
@@ -85,7 +88,32 @@ authRouter.post('/login', asyncHandler(async (req: Request, res: Response) => {
   }
   
   try {
-    const result = await authService.loginUser(email, password)
+    // [MULTI-SITE] Validasi kredensial dulu (return user, bukan token)
+    const user = await authService.validateLoginCredentials(email, password)
+
+    // [MULTI-SITE] Enforce site-scope: tolak login lintas subdomain
+    // - Superadmin: bebas lintas situs
+    // - User tanpa siteId (global user): bebas
+    // - User dengan siteId: HARUS login dari subdomain situsnya
+    const requestSite = extractSiteIdFromRequest(req)
+    if (
+      user.role !== 'superadmin' &&
+      user.siteId &&
+      requestSite &&
+      user.siteId !== requestSite
+    ) {
+      logger.warn(
+        `[AUTH] Cross-site login blocked: user ${user.email} (site:${user.siteId}, role:${user.role}) attempted login from site ${requestSite}`
+      )
+      throw new AppError(
+        `Akun ini terdaftar di situs "${user.siteId}". Silakan login melalui subdomain ${user.siteId}.beritakarya.co`,
+        403,
+        'SITE_MISMATCH'
+      )
+    }
+
+    // Site check passed, generate token pair
+    const result = await authService.generateTokenPair(user)
     await resetFailedAttempts(email)
     
     // Set httpOnly cookies
