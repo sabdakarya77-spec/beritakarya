@@ -1,6 +1,7 @@
 import { Request, Response } from 'express'
 import { siteService } from './site.service'
 import { siteCategoryService } from './site-category.service'
+import { logger } from '../../lib/logger'
 
 /**
  * Site Routes - Express Router
@@ -69,7 +70,7 @@ export async function updateSiteSettings(req: Request, res: Response) {
     // Role check: Only superadmin or wapimred of the site can update settings
     const userRole = (req as any).user?.role
     const userSiteId = (req as any).user?.siteId
-    
+
     if (userRole !== 'superadmin') {
       if (userRole !== 'wapimred' || userSiteId !== siteId) {
         return res.status(403).json({
@@ -79,8 +80,44 @@ export async function updateSiteSettings(req: Request, res: Response) {
       }
     }
 
+    // [MULTISITE] Field-field ini hanya boleh diedit superadmin.
+    // Wapimred boleh update identitas visual, kontak regional, dan topik
+    // hangat, tapi tidak boleh mengutak-atik sosmed pusat, footer copyright,
+    // Google Search API, atau halaman legal (compliance).
+    const SUPERADMIN_ONLY_FIELDS = [
+      'socialLinks',          // Saluran Media Sosial Resmi
+      'footerText',           // Teks Footer Hak Cipta
+      'googleIndexingConfig', // Google Search API
+      'aboutUs',              // Halaman Legal
+      'codeOfEthics',
+      'editorial',
+      'advertising',
+      'privacyPolicy',
+      'termsOfService',
+      'mediaSiber',
+    ]
+
+    let body = req.body
+    if (userRole !== 'superadmin') {
+      // Wapimred: strip field superadmin-only (silent drop agar UX tetap mulus,
+      // audit log akan otomatis mencatat hanya field yang benar-benar berubah)
+      const stripped: string[] = []
+      for (const field of SUPERADMIN_ONLY_FIELDS) {
+        if (body[field] !== undefined) {
+          delete body[field]
+          stripped.push(field)
+        }
+      }
+      if (stripped.length > 0) {
+        // Catat di audit log agar ada jejak kalau wapimred coba-coba kirim field terlarang
+        logger.warn(
+          `[SECURITY] wapimred userId=${(req as any).user?.userId} coba update field superadmin-only: ${stripped.join(', ')}`
+        )
+      }
+    }
+
     const actorUserId = (req as any).user?.userId
-    const settings = await siteService.updateSiteSettings(siteId, req.body, actorUserId)
+    const settings = await siteService.updateSiteSettings(siteId, body, actorUserId)
     res.json({ success: true, data: settings })
   } catch (error: any) {
     const statusCode = error.statusCode || 500

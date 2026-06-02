@@ -39,6 +39,7 @@ import {
   Underline
 } from 'lucide-react'
 import { api } from '../../../../lib/api'
+import { useAuthStore } from '../../../../store/authStore'
 import { ALL_LEGAL_PAGES } from '../../../../lib/legalPages'
 import { legalProseClassName } from '../../../../components/legal/legalStyles'
 
@@ -548,7 +549,8 @@ function LegalRichTextEditor({
 
 export default function SettingsPage() {
   const { site } = useParams() as { site: string }
-  
+  const { user } = useAuthStore()
+
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
@@ -786,13 +788,18 @@ export default function SettingsPage() {
     )
   }
 
-  const tabs = [
+  // [MULTISITE] Sembunyikan tab Google Search API & Halaman Legal untuk wapimred.
+  // Wapimred bukan admin/SEO/compliance officer — field-field ini berdampak
+  // sistemik (indexing Google, dokumen legal) dan bukan ranah editorial.
+  const isSuperadmin = user?.role === 'superadmin'
+  const allTabs = [
     { id: 'basic', label: 'Identitas & Visual', icon: Globe, desc: 'Nama portal, logo, favicon, OG image, & skema warna utama' },
     { id: 'contact', label: 'Kontak & Sosial', icon: Mail, desc: 'Alamat redaksi, hotline, & link media sosial resmi' },
     { id: 'google', label: 'Google Search API', icon: ShieldAlert, desc: 'Konfigurasi otomatis indeks artikel Google' },
     { id: 'info', label: 'Halaman Legal', icon: BookOpen, desc: 'Tentang Kami, Kode Etik, Redaksi, Iklan, Privasi, Syarat' },
     { id: 'trending', label: 'Topik Hangat', icon: Flame, desc: 'Manajemen kata kunci trending di navigasi depan' }
   ] as const
+  const tabs = allTabs.filter((t) => isSuperadmin || (t.id !== 'google' && t.id !== 'info'))
 
   const contrastAdvice = getContrastAdvice(settings.appearance.primaryColor)
 
@@ -1235,49 +1242,57 @@ export default function SettingsPage() {
                     </div>
                   </div>
 
-                  <hr className="border-gray-200 dark:border-gray-800" />
+                  {isSuperadmin && (
+                    <>
+                      <hr className="border-gray-200 dark:border-gray-800" />
 
-                  <div className="space-y-4">
-                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                      <Share2 size={14} className="text-brand-red" /> Saluran Media Sosial Resmi
-                    </label>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {Object.keys(settings.socialLinks).map((key) => (
-                        <div key={key} className="space-y-2">
-                          <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{key} URL</label>
-                          <input 
-                            type="text" 
-                            value={(settings.socialLinks as any)[key]}
-                            onChange={(e) => setSettings({
-                              ...settings, 
-                              socialLinks: { ...settings.socialLinks, [key]: e.target.value }
-                            })}
-                            placeholder={`https://${key}.com/profile-anda`}
-                            className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-2 text-sm text-gray-900 dark:text-white outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 transition-all"
-                          />
+                      <div className="space-y-4">
+                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                          <Share2 size={14} className="text-brand-red" /> Saluran Media Sosial Resmi
+                        </label>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {Object.keys(settings.socialLinks).map((key) => (
+                            <div key={key} className="space-y-2">
+                              <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{key} URL</label>
+                              <input
+                                type="text"
+                                value={(settings.socialLinks as any)[key]}
+                                onChange={(e) => setSettings({
+                                  ...settings,
+                                  socialLinks: { ...settings.socialLinks, [key]: e.target.value }
+                                })}
+                                placeholder={`https://${key}.com/profile-anda`}
+                                className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-2 text-sm text-gray-900 dark:text-white outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 transition-all"
+                              />
+                            </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
-                  </div>
+                      </div>
+                    </>
+                  )}
 
-                  <hr className="border-gray-200 dark:border-gray-800" />
+                  {isSuperadmin && (
+                    <>
+                      <hr className="border-gray-200 dark:border-gray-800" />
 
-                  <div className="space-y-3">
-                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Teks Footer Hak Cipta</label>
-                    <input 
-                      type="text" 
-                      value={settings.footerText}
-                      onChange={(e) => setSettings({...settings, footerText: e.target.value})}
-                      placeholder="© 2026 BeritaKarya Bandung. Hak cipta dilindungi undang-undang."
-                      className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-3 text-base text-gray-900 dark:text-white outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 transition-all"
-                    />
-                  </div>
+                      <div className="space-y-3">
+                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Teks Footer Hak Cipta</label>
+                        <input
+                          type="text"
+                          value={settings.footerText}
+                          onChange={(e) => setSettings({...settings, footerText: e.target.value})}
+                          placeholder="© 2026 BeritaKarya Bandung. Hak cipta dilindungi undang-undang."
+                          className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-3 text-base text-gray-900 dark:text-white outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 transition-all"
+                        />
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             )}
 
             {/* TAB 3: GOOGLE SEARCH INDEXING API */}
-            {activeTab === 'google' && (
+            {activeTab === 'google' && isSuperadmin && (
               <div className="space-y-8">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div>
@@ -1383,7 +1398,7 @@ export default function SettingsPage() {
             )}
 
             {/* TAB 4: HALAMAN INFORMASI PORTAL */}
-            {activeTab === 'info' && (
+            {activeTab === 'info' && isSuperadmin && (
               <div className="space-y-6">
                 <div>
                   <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
