@@ -14,7 +14,7 @@ import Paragraph from '@tiptap/extension-paragraph'
 export const DropCapParagraph = Paragraph.extend({
   addAttributes() {
     return {
-      ...Paragraph.config.addAttributes?.(),
+      ...this.parent?.(),
       dropCap: {
         default: false,
         parseHTML: (element: HTMLElement) => {
