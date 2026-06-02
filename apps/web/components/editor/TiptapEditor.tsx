@@ -63,7 +63,7 @@ export function TiptapEditor({
         link: false,
         underline: false,
         blockquote: false, // Nonaktifkan blockquote default untuk memakai QuoteExtension custom kita yang hebat
-        paragraph: false, // Disable default to use DropCapParagraph
+        paragraph: false, // Disable default so DropCapParagraph node is used
         heading: {
           levels: [1, 2, 3, 4, 5, 6],
         },
