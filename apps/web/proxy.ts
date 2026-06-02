@@ -27,17 +27,52 @@ export function proxy(req: NextRequest) {
 
   let siteId = subdomain
 
+  // [FIX-MULTISITE] Deteksi site dari URL path ketika tidak ada subdomain.
+  // Contoh: /nganjuk/dashboard → siteId = 'nganjuk'
+  // Path root yang BUKAN site prefix (login, register, dll) di-skip.
+  const RESERVED_ROOT_SEGMENTS = new Set([
+    'login', 'register', 'forgot-password', 'reset-password',
+    'sitemap.xml', 'robots.txt', 'dashboard',
+    'api', '_next', 'favicon.ico',
+  ])
+  const SITE_SUBPATHS = new Set([
+    'dashboard', 'artikel', 'penulis', 'p', 'kebijakan-privasi',
+  ])
+  const pathSegmentsForSite = url.pathname.split('/').filter(Boolean)
+  let siteFromPath: string | null = null
+  if (pathSegmentsForSite.length > 0) {
+    const firstSeg = pathSegmentsForSite[0]
+    if (firstSeg && /^[a-zA-Z0-9-]+$/.test(firstSeg)) {
+      const isMultiSegment = pathSegmentsForSite.length >= 2
+      const isSingleReserved = pathSegmentsForSite.length === 1 && RESERVED_ROOT_SEGMENTS.has(firstSeg)
+      if (isMultiSegment) {
+        // /[site]/[known_subpath]/...  → pasti site
+        if (SITE_SUBPATHS.has(pathSegmentsForSite[1])) {
+          siteFromPath = firstSeg
+        }
+      } else if (!isSingleReserved) {
+        // /[site] → home page sebuah site (mis. /nganjuk)
+        siteFromPath = firstSeg
+      }
+    }
+  }
+
   if (isLocalhost) {
     // Prioritaskan ?site= parameter untuk testing manual tanpa edit hosts
     const siteParam = req.nextUrl.searchParams.get('site')
     if (siteParam) {
       siteId = siteParam
+    } else if (siteFromPath) {
+      // [FIX] Pakai site dari path, BUKAN default 'pusat'
+      siteId = siteFromPath
     } else if (!subdomain || subdomain === 'www') {
       siteId = 'pusat'
     }
   } else {
-    // Di produksi, jika domain utama atau pakai www, arahkan ke pusat
-    if (!subdomain || subdomain === 'www') {
+    if (siteFromPath) {
+      // [FIX] Subdomain tidak ada tapi path punya site → pakai path
+      siteId = siteFromPath
+    } else if (!subdomain || subdomain === 'www') {
       siteId = 'pusat'
     }
   }

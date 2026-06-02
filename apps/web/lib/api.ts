@@ -10,10 +10,38 @@ export const api = axios.create({
 
 api.interceptors.request.use(async (config) => {
   if (typeof window !== 'undefined') {
-    const siteId = document.cookie
+    // [FIX-MULTISITE] Baca site dari cookie (dikelola proxy.ts)
+    let siteId = document.cookie
       .split('; ')
       .find(r => r.startsWith('siteId='))
       ?.split('=')[1]
+
+    // [FIX-MULTISITE] Fallback: ekstrak site dari URL path.
+    // Mis. /nganjuk/dashboard → 'nganjuk'. Ini safety net kalau
+    // cookie siteId di browser stale atau belum di-set (mis. test
+    // path-based routing di localhost tanpa subdomain).
+    if (!siteId) {
+      const pathSegments = window.location.pathname.split('/').filter(Boolean)
+      const RESERVED = new Set([
+        'login', 'register', 'forgot-password', 'reset-password',
+        'sitemap.xml', 'robots.txt', 'dashboard',
+        'api', '_next', 'favicon.ico',
+      ])
+      const SITE_SUBPATHS = new Set([
+        'dashboard', 'artikel', 'penulis', 'p', 'kebijakan-privasi',
+      ])
+      if (pathSegments.length > 0) {
+        const firstSeg = pathSegments[0]
+        if (firstSeg && /^[a-zA-Z0-9-]+$/.test(firstSeg)) {
+          if (pathSegments.length === 1 && !RESERVED.has(firstSeg)) {
+            siteId = firstSeg
+          } else if (pathSegments.length >= 2 && SITE_SUBPATHS.has(pathSegments[1])) {
+            siteId = firstSeg
+          }
+        }
+      }
+    }
+
     const isAuthRoute = config.url?.startsWith('/auth/') || config.url?.includes('/auth/')
     if (siteId && !isAuthRoute) {
       config.headers['X-Site-ID'] = siteId
