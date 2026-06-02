@@ -17,8 +17,8 @@ const nextConfig = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384, 600],
     // Cache optimized images for 30 days (immutable in production)
     minimumCacheTTL: 2592000,
-    // Default quality (overridden per-context in SmartImage)
-    quality: 75,
+    // Note: 'quality' is not a valid images config key.
+    // Default quality is 75 (per Next.js); we override per-context in SmartImage via QUALITY_MAP.
     remotePatterns: [
       {
         protocol: 'https',
