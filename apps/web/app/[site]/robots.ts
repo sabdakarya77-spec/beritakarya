@@ -5,11 +5,29 @@ export default function robots({ params }: { params: { site: string } }): Metada
   const siteUrl = `${baseUrl}/${params.site}`
 
   return {
-    rules: {
-      userAgent: '*',
-      allow: '/',
-      disallow: ['/dashboard/', '/login', '/register'],
-    },
+    rules: [
+      {
+        userAgent: '*',
+        allow: '/',
+        disallow: ['/dashboard/', '/login', '/register', '/api/', '/auth/'],
+      },
+      {
+        userAgent: 'Googlebot',
+        allow: '/',
+        disallow: ['/dashboard/', '/login', '/register', '/api/'],
+        crawlDelay: 0,
+      },
+      {
+        userAgent: 'Googlebot-Image',
+        allow: ['/uploads/', '/icons/', '/logos/'],
+        disallow: ['/dashboard/'],
+      },
+      {
+        userAgent: ['AhrefsBot', 'SemrushBot', 'MJ12bot', 'DotBot'],
+        disallow: '/',
+      },
+    ],
     sitemap: `${siteUrl}/sitemap.xml`,
+    host: siteUrl,
   }
 }
