@@ -1,5 +1,34 @@
 import { prisma } from '../../db/client'
 
+/**
+ * Field-field "aset korporat" yang diwariskan dari site 'pusat' ke
+ * site cabang. Ini adalah field yang:
+ * - Tidak boleh diedit wapimred (lihat SUPERADMIN_ONLY_FIELDS di controller)
+ * - Perlu tampil di homepage/site cabang meskipun field tsb kosong
+ *   (inheritance dari pusat saat read)
+ * - Auto-populate saat site baru dibuat (pakai nilai pusat sebagai default)
+ */
+const CORPORATE_ASSET_FIELDS = [
+  'socialLinks',          // Saluran Media Sosial Resmi
+  'footerText',           // Teks Footer Hak Cipta
+  'googleIndexingConfig', // Google Search API
+  'aboutUs',              // Halaman Legal
+  'codeOfEthics',
+  'editorial',
+  'advertising',
+  'privacyPolicy',
+  'termsOfService',
+  'mediaSiber',
+] as const
+
+/** True kalau value "kosong" (null/undefined/string kosong/object kosong) */
+function isEmptyValue(value: unknown): boolean {
+  if (value === null || value === undefined) return true
+  if (typeof value === 'string' && value.trim() === '') return true
+  if (typeof value === 'object' && Object.keys(value as object).length === 0) return true
+  return false
+}
+
 export class SiteService {
   async getAllSites(includeStats = false) {
     const sites = await prisma.site.findMany({
@@ -141,13 +170,29 @@ export class SiteService {
       )
     }
 
+    // [MULTISITE-OPSI-C] Auto-populate aset korporat dari pusat supaya
+    // site baru langsung punya nilai default (sosmed pusat, footer
+    // korporat, halaman legal). Superadmin tetap bisa override
+    // kemudian via PATCH /sites/settings. Jika pusat belum punya nilai
+    // untuk field tertentu, field tsb tetap null (tidak auto-generate).
+    const pusat = await prisma.site.findUnique({ where: { id: 'pusat' } })
+    const corporateDefaults: Record<string, unknown> = {}
+    if (pusat) {
+      for (const field of CORPORATE_ASSET_FIELDS) {
+        if (!isEmptyValue((pusat as any)[field])) {
+          corporateDefaults[field] = (pusat as any)[field]
+        }
+      }
+    }
+
     const site = await prisma.$transaction(async (tx) => {
       const newSite = await tx.site.create({
         data: {
           id,
           domain,
           name: name || id,
-          ...rest
+          ...rest,
+          ...corporateDefaults,
         }
       })
 
@@ -263,6 +308,24 @@ export class SiteService {
 
     if (!site) {
       throw Object.assign(new Error('Site not found'), { statusCode: 404 })
+    }
+
+    // [MULTISITE-OPSI-A] Site cabang mewarisi aset korporat (socialLinks,
+    // footerText, Google config, halaman legal) dari pusat JIKA nilai
+    // site tsb kosong. Pusat sendiri tetap pakai nilainya sendiri.
+    // Inheritance terjadi di READ, bukan WRITE — saat superadmin
+    // edit site, nilai raw yang disimpan, bukan yang di-inherit.
+    if (siteId !== 'pusat') {
+      const pusat = await prisma.site.findUnique({
+        where: { id: 'pusat' }
+      })
+      if (pusat) {
+        for (const field of CORPORATE_ASSET_FIELDS) {
+          if (isEmptyValue((site as any)[field]) && !isEmptyValue((pusat as any)[field])) {
+            ;(site as any)[field] = (pusat as any)[field]
+          }
+        }
+      }
     }
 
     return {
