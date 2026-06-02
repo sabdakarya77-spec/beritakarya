@@ -1,7 +1,7 @@
-import { Node, mergeAttributes } from '@tiptap/core'
+import Paragraph from '@tiptap/extension-paragraph'
 
 /**
- * Custom Paragraph node with dropCap support.
+ * Custom Paragraph extension with dropCap support.
  *
  * When `dropCap` is true, the first letter of the paragraph is rendered
  * as a large decorative initial (typographic drop cap). This is a common
@@ -11,14 +11,10 @@ import { Node, mergeAttributes } from '@tiptap/core'
  * - Persisted as `data-drop-cap` attribute on <p> elements
  * - Mirrored into the editor block model as `dropCap: boolean`
  */
-export const DropCapParagraph = Node.create({
-  name: 'paragraph',
-  group: 'block',
-  content: 'inline*',
-  defining: true,
-
+export const DropCapParagraph = Paragraph.extend({
   addAttributes() {
     return {
+      ...Paragraph.config.addAttributes?.(),
       dropCap: {
         default: false,
         parseHTML: (element: HTMLElement) => {
@@ -30,27 +26,12 @@ export const DropCapParagraph = Node.create({
           return { 'data-drop-cap': 'true' }
         },
       },
-      textAlign: {
-        default: null,
-        parseHTML: (element: HTMLElement) => element.getAttribute('text-align') || element.style.textAlign,
-        renderHTML: (attributes) => {
-          if (!attributes.textAlign) return {}
-          return { style: `text-align: ${attributes.textAlign}` }
-        },
-      },
     }
-  },
-
-  parseHTML() {
-    return [{ tag: 'p' }]
-  },
-
-  renderHTML({ HTMLAttributes }) {
-    return ['p', mergeAttributes(HTMLAttributes), 0]
   },
 
   addCommands() {
     return {
+      ...this.parent?.(),
       toggleDropCap:
         () =>
         ({ commands, editor }) => {
