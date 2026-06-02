@@ -3,6 +3,7 @@ import { prisma } from '../../db/client'
 export class SiteService {
   async getAllSites(includeStats = false) {
     const sites = await prisma.site.findMany({
+      where: { deletedAt: null },
       orderBy: { id: 'asc' }
     })
 
@@ -19,6 +20,9 @@ export class SiteService {
       }))
     }
 
+    // Tanggal threshold untuk penanda "sehat" (30 hari terakhir)
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+
     // Fetch stats for all sites in parallel
     const sitesWithStats = await Promise.all(
       sites.map(async (site) => {
@@ -34,6 +38,16 @@ export class SiteService {
         const categoryCount = await prisma.category.count({
           where: { siteId: site.id }
         })
+        // Aktivitas 30 hari terakhir: artikel baru + KYC submission
+        const recentActivity = await prisma.article.count({
+          where: {
+            siteId: site.id,
+            createdAt: { gte: thirtyDaysAgo }
+          }
+        })
+
+        // Heuristik isActive: punya tim DAN ada aktivitas 30 hari terakhir
+        const isActive = userCount > 0 && recentActivity > 0
 
         return {
           id: site.id,
@@ -44,10 +58,12 @@ export class SiteService {
           phone: site.phone,
           address: site.address,
           description: site.description,
+          isActive,
           stats: {
             users: userCount,
             articles: articleCount,
-            categories: categoryCount
+            categories: categoryCount,
+            recentActivity
           }
         }
       })

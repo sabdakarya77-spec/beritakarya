@@ -7,10 +7,12 @@ interface AuthState {
   user: AuthUser | null
   isLoading: boolean
   error: string | null
+  lastActiveSite: string | null
   login: (email: string, password: string) => Promise<void>
   register: (name: string, email: string, password: string, siteId?: string, role?: string) => Promise<void>
   logout: () => Promise<void>
   checkAuth: () => Promise<void>
+  setLastActiveSite: (siteId: string) => void
   clearError: () => void
 }
 
@@ -20,6 +22,7 @@ export const useAuthStore = create<AuthState>()(
   user: null,
   isLoading: false,
   error: null,
+  lastActiveSite: null,
 
   login: async (email, password) => {
     set({ isLoading: true, error: null })
@@ -91,11 +94,16 @@ export const useAuthStore = create<AuthState>()(
     }
   },
 
+  setLastActiveSite: (siteId: string) => set({ lastActiveSite: siteId }),
+
   clearError: () => set({ error: null })
     }),
     {
       name: 'auth-storage',
-      partialize: (state) => ({ user: state.user }),
+      partialize: (state) => ({
+        user: state.user,
+        lastActiveSite: state.lastActiveSite
+      }),
     }
   )
 )

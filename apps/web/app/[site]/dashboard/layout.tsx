@@ -22,7 +22,6 @@ import {
   ClipboardCheck,
   Shield,
   Activity,
-  ChevronDown,
   Calendar,
   MessageSquare,
   Mail,
@@ -35,11 +34,12 @@ import { cn } from '../../../lib/utils'
 import { useRouter } from 'next/navigation'
 import NotificationBell from '../../../components/dashboard/NotificationBell'
 import { AIConsentModal } from '../../../components/editor/AIConsentModal'
+import { SiteSwitcher } from '../../../components/dashboard/SiteSwitcher'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const { site } = useParams() as { site: string }
-  const { user, logout } = useAuthStore()
+  const { user, logout, lastActiveSite, setLastActiveSite } = useAuthStore()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const [theme, setTheme] = useState<'light' | 'dark'>('light')
@@ -70,6 +70,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           return
         }
 
+        // [SUPERADMIN] Inisialisasi situs aktif saat pertama kali mount
+        // - Jika belum pernah set lastActiveSite DAN bukan 'pusat' default,
+        //   simpan URL site saat ini sebagai last active.
+        // - Catatan: tidak ada auto-redirect, biarkan superadmin memilih.
+        if (user.role === 'superadmin' && !lastActiveSite) {
+          setLastActiveSite(site)
+        }
+
         const allowedRoles = ['superadmin', 'wapimred', 'reporter', 'kontributor', 'advertiser']
         if (!allowedRoles.includes(user.role)) {
           router.push(`/${site}`)
@@ -85,7 +93,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         }
       }
     }
-  }, [user, router, site, pathname])
+  }, [user, router, site, pathname, lastActiveSite, setLastActiveSite])
 
   // Menambahkan pemisah visual di console setiap kali pindah halaman
   // untuk memudahkan membedakan error antar halaman
@@ -305,21 +313,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </Link>
         </div>
 
-        {/* Site Indicator */}
-        <div className="mx-4 mt-4 mb-2 px-3 py-2.5 bg-white/5 rounded-lg border border-white/5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Activity size={12} className="text-emerald-400" />
-              <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Portal Aktif</span>
-            </div>
-            <ChevronDown size={12} className="text-gray-500" />
-          </div>
-          {!isSidebarCollapsed && (
-            <p className="text-xs font-black text-white uppercase tracking-tight mt-1">
-              {site === 'pusat' ? 'Pusat (Nasional)' : site.charAt(0).toUpperCase() + site.slice(1)}
-            </p>
-          )}
-        </div>
+        {/* Site Switcher (active portal indicator + dropdown) */}
+        <SiteSwitcher
+          activeSiteId={site}
+          isCollapsed={isSidebarCollapsed}
+        />
         
         {/* Navigation Sections */}
         <nav className="flex-1 px-3 pt-4 space-y-6 overflow-y-auto">
