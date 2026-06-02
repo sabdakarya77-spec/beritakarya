@@ -34,7 +34,7 @@ kycRouter.get('/',
   ...withSite,
   requireRole(['superadmin', 'wapimred']),
   asyncHandler(async (req: any, res: any) => {
-    const { siteId } = req
+    const siteId = req.site!
     const page = parseInt(req.query.page as string) || 1
     const limit = Math.min(parseInt(req.query.limit as string) || 20, 100)
     const search = req.query.search as string
@@ -97,7 +97,7 @@ kycRouter.get('/stats',
   ...withSite,
   requireRole(['superadmin', 'wapimred']),
   asyncHandler(async (req: any, res: any) => {
-    const { siteId } = req
+    const siteId = req.site!
     const now = new Date()
     const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
 
