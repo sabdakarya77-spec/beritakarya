@@ -77,17 +77,17 @@ export function MagazineBentoHero({ articles, site }: { articles: any[], site: s
               style={{ objectPosition: getHeroImagePosition(lead, 'lead') }}
               priority
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/55 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/70 to-transparent min-h-[40%] sm:min-h-[45%] md:min-h-[50%]" />
             
-            <div className="absolute bottom-0 left-0 w-full p-6 md:max-w-[78%] lg:max-w-[31rem] lg:p-8 xl:max-w-[34rem] xl:p-10">
+            <div className="absolute bottom-0 left-0 w-full p-5 sm:p-6 md:p-8 lg:p-10 xl:p-12">
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-                <div className="mb-4">
-                  <span className={cn("px-3 py-1 text-[10px] font-black uppercase tracking-[0.14em] rounded-sm shadow-sm", getCategoryColor(lead.category?.name))}>
+                <div className="mb-3 sm:mb-4">
+                  <span className={cn("px-2.5 sm:px-3 py-1 text-[9px] sm:text-[10px] font-black uppercase tracking-[0.14em] rounded-sm shadow-sm", getCategoryColor(lead.category?.name))}>
                     {lead.category?.name || 'Headline'}
                   </span>
                 </div>
                 
-                <h1 className="max-w-[18ch] text-balance font-serif text-[1.75rem] font-black leading-[1.05] tracking-[-0.04em] text-white sm:text-[2rem] md:text-[2.25rem] lg:text-[2.4rem] xl:text-[2.65rem]">
+                <h1 className="max-w-[16ch] sm:max-w-[18ch] md:max-w-[20ch] text-balance font-serif text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-black leading-[1.1] tracking-[-0.03em] sm:tracking-[-0.04em] text-white">
                   {lead.title}
                 </h1>
               </motion.div>
@@ -100,7 +100,7 @@ export function MagazineBentoHero({ articles, site }: { articles: any[], site: s
             <Link 
               key={article.id} 
               href={`/${site}/artikel/${article.slug}`}
-              className="group/side relative block min-h-[142px] flex-1 overflow-hidden rounded-2xl border border-black/5 dark:border-white/5"
+              className="group/side relative block min-h-[120px] sm:min-h-[142px] flex-1 overflow-hidden rounded-2xl border border-black/5 dark:border-white/5"
             >
               <SmartImage 
                 src={getImageUrl(article)} 
@@ -112,15 +112,15 @@ export function MagazineBentoHero({ articles, site }: { articles: any[], site: s
                 className="object-cover transition-transform duration-500 ease-out group-hover/side:scale-[1.02]"
                 style={{ objectPosition: getHeroImagePosition(article, 'side') }}
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/65 to-black/20 transition-colors" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/75 to-transparent transition-colors" />
               
-              <div className="absolute bottom-0 left-0 w-full p-4 lg:p-5">
-                <div className="mb-2">
-                  <span className={cn("text-[10px] font-black uppercase tracking-[0.14em] px-2 py-0.5 rounded-sm", getCategoryColor(article.category?.name))}>
+              <div className="absolute bottom-0 left-0 w-full p-3 sm:p-4 lg:p-5">
+                <div className="mb-1.5 sm:mb-2">
+                  <span className={cn("text-[9px] sm:text-[10px] font-black uppercase tracking-[0.14em] px-1.5 sm:px-2 py-0.5 rounded-sm", getCategoryColor(article.category?.name))}>
                     {article.category?.name || 'Terkini'}
                   </span>
                 </div>
-                <h3 className="line-clamp-2 font-serif text-[0.9rem] font-black leading-[1.15] tracking-tight text-white lg:text-[0.95rem]">
+                <h3 className="line-clamp-2 font-serif text-[0.8rem] sm:text-[0.9rem] lg:text-[0.95rem] font-black leading-[1.15] tracking-tight text-white">
                   {article.title}
                 </h3>
               </div>
