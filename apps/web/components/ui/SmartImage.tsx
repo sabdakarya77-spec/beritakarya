@@ -33,14 +33,35 @@ const SIZES_MAP = {
   // Gallery
   gallery_thumb: '(max-width: 640px) 80px, 56px',
   gallery_full: '100vw',
-  
+
   // Other
   media_text: '(max-width: 640px) 100vw, (max-width: 768px) 50vw, 380px',
   logo: '200px',
-  
+
   // New additions for consistency
   avatar: '(max-width: 640px) 48px, (max-width: 768px) 56px, 64px',
   thumbnail: '(max-width: 640px) 120px, (max-width: 768px) 160px, 200px',
+}
+
+/**
+ * Quality settings per context. Tuned for visual fidelity vs bandwidth:
+ * - Higher quality (85-95) for hero/cover/logo (largest visual impact)
+ * - Mid quality (75-80) for cards/article blocks (balanced)
+ * - Lower quality (65-75) for thumbs/small UI (bandwidth saver)
+ */
+const QUALITY_MAP: Record<SmartImageContext, number> = {
+  hero_lead: 85,
+  hero_side: 80,
+  card: 75,
+  card_horizontal: 75,
+  article_cover: 85,
+  article_block: 80,
+  gallery_thumb: 70,
+  gallery_full: 85,
+  media_text: 80,
+  logo: 95,
+  avatar: 80,
+  thumbnail: 75,
 }
 
 export type SmartImageContext = keyof typeof SIZES_MAP
@@ -100,6 +121,8 @@ export function SmartImage({
   wrapperClassName = '',
   priority = false,
   fill = true,
+  quality,
+  loading,
   ...props
 }: SmartImageProps) {
   const [errorLevel, setErrorLevel] = useState(0) // 0: src, 1: thumb, 2: static, 3: fail
@@ -181,7 +204,9 @@ export function SmartImage({
           alt={alt || 'Gambar BeritaKarya'}
           fill={fill}
           sizes={SIZES_MAP[context]}
+          quality={quality ?? QUALITY_MAP[context]}
           priority={priority}
+          loading={loading ?? (priority ? 'eager' : 'lazy')}
           placeholder={shouldBlur ? 'blur' : 'empty'}
           blurDataURL={shouldBlur ? blur! : undefined}
           onLoad={() => setIsLoaded(true)}

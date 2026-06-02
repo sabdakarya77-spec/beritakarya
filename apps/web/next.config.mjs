@@ -12,6 +12,13 @@ const nextConfig = {
   allowedDevOrigins: ['127.0.0.1', 'localhost'],
   images: {
     formats: ['image/avif', 'image/webp'],
+    // Curated breakpoints tuned for news content delivery
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384, 600],
+    // Cache optimized images for 30 days (immutable in production)
+    minimumCacheTTL: 2592000,
+    // Default quality (overridden per-context in SmartImage)
+    quality: 75,
     remotePatterns: [
       {
         protocol: 'https',
