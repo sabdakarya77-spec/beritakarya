@@ -305,7 +305,6 @@ export function SiteSwitcher({ activeSiteId, isCollapsed = false }: SiteSwitcher
                         )}
                       >
                         {s.logoUrl ? (
-                          // eslint-disable-next-line @next/next/no-img-element
                           <img
                             src={s.logoUrl}
                             alt={s.name}
