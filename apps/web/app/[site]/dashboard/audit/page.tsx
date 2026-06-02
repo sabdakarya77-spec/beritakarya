@@ -147,9 +147,9 @@ export default function AuditLogPage() {
   const [searchAction, setSearchAction] = useState('');
   const [filterEntityType, setFilterEntityType] = useState('');
 
-  // Auth guard
+  // Auth guard — audit log hanya untuk superadmin
   useEffect(() => {
-    if (user && !['superadmin', 'wapimred'].includes(user.role)) {
+    if (user && user.role !== 'superadmin') {
       router.replace(`/${site}/dashboard`);
     }
   }, [user, site, router]);

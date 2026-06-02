@@ -8,9 +8,9 @@ export const auditRouter: Router = Router()
 
 const withSite = [requireAuth, siteMiddleware, requireSiteAccess]
 
-// GET /api/v1/audit  — list audit logs (superadmin/wapimred only)
+// GET /api/v1/audit  — list audit logs (superadmin only)
 auditRouter.get('/', ...withSite, asyncHandler(async (req: Request, res: Response) => {
-  if (!['superadmin', 'wapimred'].includes(req.user!.role)) {
+  if (req.user!.role !== 'superadmin') {
     return res.status(403).json({ success: false, message: 'Akses ditolak' })
   }
 
@@ -26,9 +26,9 @@ auditRouter.get('/', ...withSite, asyncHandler(async (req: Request, res: Respons
   res.json({ success: true, data: result })
 }))
 
-// GET /api/v1/audit/stats  — summary stats
+// GET /api/v1/audit/stats  — summary stats (superadmin only)
 auditRouter.get('/stats', ...withSite, asyncHandler(async (req: Request, res: Response) => {
-  if (!['superadmin', 'wapimred'].includes(req.user!.role)) {
+  if (req.user!.role !== 'superadmin') {
     return res.status(403).json({ success: false, message: 'Akses ditolak' })
   }
 
@@ -36,9 +36,9 @@ auditRouter.get('/stats', ...withSite, asyncHandler(async (req: Request, res: Re
   res.json({ success: true, data: stats })
 }))
 
-// GET /api/v1/audit/export — download CSV
+// GET /api/v1/audit/export — download CSV (superadmin only)
 auditRouter.get('/export', ...withSite, asyncHandler(async (req: Request, res: Response) => {
-  if (!['superadmin', 'wapimred'].includes(req.user!.role)) {
+  if (req.user!.role !== 'superadmin') {
     return res.status(403).json({ success: false, message: 'Akses ditolak' })
   }
 

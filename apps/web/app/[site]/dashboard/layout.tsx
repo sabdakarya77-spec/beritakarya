@@ -147,7 +147,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         { name: 'Monitor Tim', href: `/${site}/dashboard/team`, icon: UsersIcon, roles: ['superadmin', 'wapimred'] },
         { name: 'Pengguna', href: `/${site}/dashboard/users`, icon: UsersIcon, roles: ['superadmin', 'wapimred'] },
         { name: 'Undangan', href: `/${site}/dashboard/invitations`, icon: Mail, roles: ['superadmin', 'wapimred'] },
-        { name: 'Audit Log', href: `/${site}/dashboard/audit`, icon: Shield, roles: ['superadmin', 'wapimred'] },
+        { name: 'Audit Log', href: `/${site}/dashboard/audit`, icon: Shield, roles: ['superadmin'] },
         { name: 'Pengaturan', href: `/${site}/dashboard/settings`, icon: Settings, roles: ['superadmin', 'wapimred'] },
       ]
     },
