@@ -27,6 +27,8 @@ export function proxy(req: NextRequest) {
 
   let siteId = subdomain
 
+  const url = req.nextUrl.clone()
+
   // [FIX-MULTISITE] Deteksi site dari URL path ketika tidak ada subdomain.
   // Contoh: /nganjuk/dashboard → siteId = 'nganjuk'
   // Path root yang BUKAN site prefix (login, register, dll) di-skip.
@@ -79,8 +81,6 @@ export function proxy(req: NextRequest) {
 
   // Sanitize siteId: only alphanumeric and hyphens allowed to prevent issues like 'pusat:1'
   siteId = siteId.replace(/[^a-zA-Z0-9-]/g, '') || 'pusat'
-
-  const url = req.nextUrl.clone()
 
   // Guard both `/dashboard` and `/{site}/dashboard` URLs before they reach the app.
   const token = req.cookies.get('accessToken')?.value
