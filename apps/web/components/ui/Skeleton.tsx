@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { cn } from '../../lib/utils';
 
 interface SkeletonProps {
-  variant?: 'hero' | 'card' | 'minimal' | 'trending' | 'text';
+  variant?: 'hero' | 'card' | 'minimal' | 'trending' | 'text' | 'stat' | 'list';
   className?: string;
 }
 

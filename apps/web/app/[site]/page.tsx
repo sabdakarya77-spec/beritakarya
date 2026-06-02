@@ -3,6 +3,8 @@ import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { constructMetadata } from '../../lib/metadata'
 import { SiteHomePage } from '../../components/pages/SiteHomePage'
+import { JsonLd } from '../../components/ui/JsonLd'
+import { buildOrganization, buildWebsite } from '../../lib/structuredData'
 
 export async function generateMetadata({ params }: { params: { site: string } }): Promise<Metadata> {
   const resolvedParams = await params;
@@ -49,6 +51,32 @@ export default async function SitePage({
   const siteParam = resolvedParams?.site || 'pusat';
   const resolvedSearchParams = await searchParams;
 
-  return <SiteHomePage siteParam={siteParam} searchParams={resolvedSearchParams} />
+  let siteName = siteParam.charAt(0).toUpperCase() + siteParam.slice(1);
+  let socialLinks: Record<string, string | null | undefined> = {};
+  try {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    const res = await fetch(`${apiUrl}/api/v1/sites/settings?site=${siteParam}`, { next: { revalidate: 3600 } });
+    if (res.ok) {
+      const json = await res.json();
+      if (json.data) {
+        siteName = json.data.name || siteName;
+        socialLinks = json.data.socialLinks || {};
+      }
+    }
+  } catch {}
+
+  return (
+    <>
+      <JsonLd
+        id="ld-site-organization"
+        data={buildOrganization({ name: siteName, socialLinks, siteParam })}
+      />
+      <JsonLd
+        id="ld-site-website"
+        data={buildWebsite({ siteParam, siteName })}
+      />
+      <SiteHomePage siteParam={siteParam} searchParams={resolvedSearchParams} />
+    </>
+  )
 }
 

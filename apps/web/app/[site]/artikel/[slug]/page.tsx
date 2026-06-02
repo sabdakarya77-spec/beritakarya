@@ -24,6 +24,8 @@ interface Props {
 
 import { constructMetadata } from '../../../../lib/metadata'
 import { cn } from '../../../../lib/utils'
+import { JsonLd } from '../../../../components/ui/JsonLd'
+import { buildArticle, buildBreadcrumb } from '../../../../lib/structuredData'
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const resolvedParams = await params;
@@ -146,28 +148,28 @@ export default async function ArticlePage({ params }: Props) {
   const authorProfilePath = article.author?.id ? `/${siteParam}/penulis/${article.author.id}` : null
   const sidebarRelatedArticles = relatedArticles.slice(0, 2)
 
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "NewsArticle",
-    "headline": article.title,
-    "image": [coverImage],
-    "datePublished": article.publishedAt,
-    "dateModified": article.updatedAt || article.publishedAt,
-    "author": [{
-      "@type": "Person",
-      "name": article.author?.name || 'Redaksi',
-      "url": authorProfileUrl
-    }],
-    "publisher": {
-      "@type": "Organization",
-      "name": siteConfig.name || "BeritaKarya",
-      "logo": {
-        "@type": "ImageObject",
-        "url": `${process.env.NEXT_PUBLIC_URL}/logo.png`
-      }
-    },
-    "description": excerpt
-  }
+  const articleSchema = buildArticle({
+    title: article.title,
+    description: excerpt,
+    image: coverImage,
+    datePublished: article.publishedAt,
+    dateModified: article.updatedAt || article.publishedAt,
+    authorName: article.author?.name || 'Redaksi',
+    authorUrl: authorProfileUrl,
+    siteName: siteConfig.name || 'BeritaKarya',
+    siteUrl: `${process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'}/${siteParam}`,
+    articleUrl,
+    category: article.category?.name,
+    keywords: article.tags,
+    wordCount: article.wordCount,
+  })
+  const breadcrumbSchema = buildBreadcrumb([
+    { name: 'Beranda', url: `${process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'}/${siteParam}` },
+    ...(article.category?.name
+      ? [{ name: article.category.name, url: `${process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'}/${siteParam}?cat=${encodeURIComponent(article.category.name)}` }]
+      : []),
+    { name: article.title, url: articleUrl },
+  ])
 
   const badgeVariant = resolveArticleBadge(article);
   const readingTime = article.readingTimeMin || Math.max(1, Math.ceil((article.wordCount || 0) / 200)) || 3;
@@ -177,10 +179,8 @@ export default async function ArticlePage({ params }: Props) {
 
   return (
     <PublicSiteLayout siteConfig={siteConfig}>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      <JsonLd id="ld-article" data={articleSchema} />
+      <JsonLd id="ld-breadcrumb" data={breadcrumbSchema} />
       <ReadingProgress />
       <ImageLightboxWrapper>
         <article className="min-h-screen bg-[var(--bg-main)] dark:bg-[#020617]">

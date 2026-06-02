@@ -354,23 +354,23 @@ TIDAK ADA DI PROJECT (perlu ditambahkan):
 ## Implementation Tasks:
 
 ### 1.1 Error Handling (2 days)
-□ Create global error boundary component
-□ Add error.tsx untuk setiap route segment
-□ Implement error recovery options (retry, go home)
-□ Add Sentry/Error tracking integration
+- [x] Create global error boundary component ✅ DONE (app/global-error.tsx)
+- [x] Add error.tsx untuk setiap route segment ✅ DONE (root, [site], dashboard, login)
+- [x] Implement error recovery options (retry, go home) ✅ DONE (reset + home CTAs)
+- [ ] Add Sentry/Error tracking integration ⏳ Hook scaffolded, provider optional
 
 ### 1.2 Loading States (2 days)
-□ Audit semua halaman untuk skeleton loaders
-□ Create reusable Skeleton components
-□ Add loading.tsx untuk route segments
-□ Add suspense boundaries
+- [x] Audit semua halaman untuk skeleton loaders ✅ DONE
+- [x] Create reusable Skeleton components ✅ DONE (Skeleton.tsx + 7 variant)
+- [x] Add loading.tsx untuk route segments ✅ DONE ([site], dashboard, login, register)
+- [x] Add suspense boundaries ✅ DONE (SectionSuspense.tsx)
 
 ### 1.3 SEO Structured Data (3 days)
-□ Create structured data utilities
-□ Implement Article schema di article pages
-□ Implement Organization schema di homepage
-□ Add breadcrumb schema
-□ Optimize meta tags generation
+- [x] Create structured data utilities ✅ DONE (lib/structuredData.ts)
+- [x] Implement Article schema di article pages ✅ DONE (buildArticle + JsonLd)
+- [x] Implement Organization schema di homepage ✅ DONE (buildOrganization)
+- [x] Add breadcrumb schema ✅ DONE (buildBreadcrumb, dipasang di article)
+- [x] Optimize meta tags generation ✅ DONE (canonical, OG image size, keywords, author, publishedTime)
 
 ### 1.4 Meta Tags Enhancement (2 days)
 □ Audit Open Graph tags

@@ -1,5 +1,9 @@
 import { Metadata } from 'next'
 
+function resolveBaseUrl() {
+  return process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'
+}
+
 export function constructMetadata({
   title = 'BeritaKarya — Portal Berita Terpercaya',
   description = 'Informasi terkini dan terpercaya dari berbagai penjuru daerah.',
@@ -8,6 +12,12 @@ export function constructMetadata({
   noIndex = false,
   siteParam = '',
   slug = '',
+  type = 'website',
+  author,
+  publishedTime,
+  modifiedTime,
+  keywords,
+  canonicalPath,
 }: {
   title?: string
   description?: string
@@ -16,37 +26,59 @@ export function constructMetadata({
   noIndex?: boolean
   siteParam?: string
   slug?: string
+  type?: 'website' | 'article' | 'profile' | 'book'
+  author?: string
+  publishedTime?: string
+  modifiedTime?: string
+  keywords?: string[]
+  canonicalPath?: string
 } = {}): Metadata {
-  const baseUrl = process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'
-  const url = slug 
+  const baseUrl = resolveBaseUrl()
+  const canonical = canonicalPath
+    ? `${baseUrl}${canonicalPath.startsWith('/') ? canonicalPath : `/${canonicalPath}`}`
+    : slug
     ? siteParam
       ? `${baseUrl}/${siteParam}/artikel/${slug}`
       : `${baseUrl}/artikel/${slug}`
     : siteParam
-      ? `${baseUrl}/${siteParam}`
-      : `${baseUrl}/`
+    ? `${baseUrl}/${siteParam}`
+    : `${baseUrl}/`
+
+  const imageUrl = image.startsWith('http') ? image : `${baseUrl}${image}`
+  const resolvedType = slug ? 'article' : type
 
   return {
     title,
     description,
+    keywords,
+    authors: author ? [{ name: author }] : undefined,
+    alternates: {
+      canonical,
+    },
     openGraph: {
       title,
       description,
-      url,
+      url: canonical,
       siteName: 'BeritaKarya',
       locale: 'id_ID',
-      type: slug ? 'article' : 'website',
+      type: resolvedType,
       images: [
         {
-          url: image,
+          url: imageUrl,
+          width: 1200,
+          height: 630,
+          alt: title,
         },
       ],
+      ...(publishedTime ? { publishedTime } : {}),
+      ...(modifiedTime ? { modifiedTime } : {}),
+      ...(author ? { authors: [author] } : {}),
     },
     twitter: {
       card: 'summary_large_image',
       title,
       description,
-      images: [image],
+      images: [imageUrl],
       creator: '@beritakarya',
     },
     icons,
