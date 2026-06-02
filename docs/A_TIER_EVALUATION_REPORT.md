@@ -373,12 +373,12 @@ TIDAK ADA DI PROJECT (perlu ditambahkan):
 - [x] Optimize meta tags generation ✅ DONE (canonical, OG image size, keywords, author, publishedTime)
 
 ### 1.4 Meta Tags Enhancement (2 days)
-□ Audit Open Graph tags
-□ Add Twitter Card support
-□ Optimize meta descriptions
-□ Add canonical URLs
-□ Create sitemap.xml
-□ Optimize robots.txt
+- [x] Audit Open Graph tags ✅ DONE (OG image 1200x630 + width/height/alt)
+- [x] Add Twitter Card support ✅ DONE (creator + site handle, env-overridable)
+- [x] Optimize meta descriptions ✅ DONE (default long-form ID description)
+- [x] Add canonical URLs ✅ DONE (alternates.canonical via constructMetadata)
+- [x] Create sitemap.xml ✅ DONE (sudah ada, di-upgrade dengan images + penulis)
+- [x] Optimize robots.txt ✅ DONE (multi-bot rules, host, sitemap ref)
 ```
 
 ### FASE 2: Performance (Week 2-3)

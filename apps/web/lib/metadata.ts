@@ -4,9 +4,13 @@ function resolveBaseUrl() {
   return process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'
 }
 
+function resolveTwitterHandle() {
+  return process.env.NEXT_PUBLIC_TWITTER_HANDLE || '@beritakarya'
+}
+
 export function constructMetadata({
   title = 'BeritaKarya — Portal Berita Terpercaya',
-  description = 'Informasi terkini dan terpercaya dari berbagai penjuru daerah.',
+  description = 'Informasi terkini dan terpercaya dari berbagai penjuru daerah. Liputan terkini, investigasi, dan analisis tajam.',
   image = '/logo.png',
   icons = '/favicon.ico',
   noIndex = false,
@@ -17,7 +21,9 @@ export function constructMetadata({
   publishedTime,
   modifiedTime,
   keywords,
+  category,
   canonicalPath,
+  twitterHandle,
 }: {
   title?: string
   description?: string
@@ -31,9 +37,13 @@ export function constructMetadata({
   publishedTime?: string
   modifiedTime?: string
   keywords?: string[]
+  category?: string
   canonicalPath?: string
+  twitterHandle?: string
 } = {}): Metadata {
   const baseUrl = resolveBaseUrl()
+  const twitter = twitterHandle || resolveTwitterHandle()
+
   const canonical = canonicalPath
     ? `${baseUrl}${canonicalPath.startsWith('/') ? canonicalPath : `/${canonicalPath}`}`
     : slug
@@ -52,6 +62,7 @@ export function constructMetadata({
     description,
     keywords,
     authors: author ? [{ name: author }] : undefined,
+    category,
     alternates: {
       canonical,
     },
@@ -79,7 +90,8 @@ export function constructMetadata({
       title,
       description,
       images: [imageUrl],
-      creator: '@beritakarya',
+      creator: twitter,
+      site: twitter,
     },
     icons,
     appleWebApp: {

@@ -1,23 +1,22 @@
 import { MetadataRoute } from 'next'
 
 const SITEMAP_MAX_PAGES = 50 // Safety cap
+const DEFAULT_IMAGE = '/logo.png'
 
 async function getArticles(site: string) {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
   const all: any[] = []
 
   try {
-    // Fetch all published articles by paginating with larger page size
     for (let page = 1; page <= SITEMAP_MAX_PAGES; page++) {
       const params = new URLSearchParams({
         site,
-        limit: '1000', // Use maximum allowed
-        page: String(page)
+        limit: '1000',
+        page: String(page),
       })
-      const res = await fetch(
-        `${apiUrl}/api/v1/articles/public?${params.toString()}`,
-        { cache: 'no-store' }
-      )
+      const res = await fetch(`${apiUrl}/api/v1/articles/public?${params.toString()}`, {
+        cache: 'no-store',
+      })
       if (!res.ok) break
 
       const json = await res.json()
@@ -47,38 +46,101 @@ async function getCategories(site: string) {
   }
 }
 
+async function getAuthors(site: string) {
+  try {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+    const res = await fetch(`${apiUrl}/api/v1/users/authors?site=${site}&limit=200`, {
+      cache: 'no-store',
+    })
+    if (!res.ok) return []
+    const json = await res.json()
+    return json.data || []
+  } catch {
+    return []
+  }
+}
+
+function toAbsolute(baseUrl: string, path: string) {
+  if (path.startsWith('http')) return path
+  return `${baseUrl}${path.startsWith('/') ? path : `/${path}`}`
+}
+
 export default async function sitemap({ params }: { params: { site: string } }): Promise<MetadataRoute.Sitemap> {
   const { site } = await params
   const baseUrl = process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'
   const siteUrl = `${baseUrl}/${site}`
 
-  const articles = await getArticles(site)
-  const categories = await getCategories(site)
+  const [articles, categories, authors] = await Promise.all([
+    getArticles(site),
+    getCategories(site),
+    getAuthors(site),
+  ])
+
+  const now = new Date()
 
   const entries: MetadataRoute.Sitemap = [
     {
       url: siteUrl,
-      lastModified: new Date(),
-      changeFrequency: 'always',
-      priority: 1
-    }
+      lastModified: now,
+      changeFrequency: 'hourly',
+      priority: 1.0,
+      images: [toAbsolute(baseUrl, DEFAULT_IMAGE)],
+    },
   ]
 
-  categories.forEach((cat: { name: string }) => {
+  // Legal page
+  entries.push({
+    url: `${siteUrl}/kebijakan-privasi`,
+    lastModified: now,
+    changeFrequency: 'monthly',
+    priority: 0.3,
+  })
+
+  // Authors index
+  entries.push({
+    url: `${siteUrl}/penulis`,
+    lastModified: now,
+    changeFrequency: 'weekly',
+    priority: 0.7,
+  })
+
+  // Categories
+  categories.forEach((cat: { name: string; updatedAt?: string }) => {
     entries.push({
       url: `${siteUrl}?cat=${encodeURIComponent(cat.name)}`,
-      lastModified: new Date(),
+      lastModified: cat.updatedAt ? new Date(cat.updatedAt) : now,
       changeFrequency: 'daily',
-      priority: 0.8
+      priority: 0.8,
     })
   })
 
-  articles.forEach((article: { slug: string; publishedAt?: string; updatedAt?: string }) => {
+  // Author profiles
+  authors.forEach((author: { id: string; updatedAt?: string }) => {
+    entries.push({
+      url: `${siteUrl}/penulis/${author.id}`,
+      lastModified: author.updatedAt ? new Date(author.updatedAt) : now,
+      changeFrequency: 'weekly',
+      priority: 0.5,
+    })
+  })
+
+  // Articles
+  articles.forEach((article: {
+    slug: string
+    publishedAt?: string
+    updatedAt?: string
+    featuredImage?: string | null
+    blocks?: Array<{ type?: string; url?: string }>
+  }) => {
+    const image = article.featuredImage ||
+      article.blocks?.find((b) => b.type === 'image')?.url ||
+      DEFAULT_IMAGE
     entries.push({
       url: `${siteUrl}/artikel/${article.slug}`,
-      lastModified: new Date(article.publishedAt || article.updatedAt || new Date()),
-      changeFrequency: 'monthly',
-      priority: 0.6
+      lastModified: new Date(article.updatedAt || article.publishedAt || now),
+      changeFrequency: 'weekly',
+      priority: 0.7,
+      images: [toAbsolute(baseUrl, image)],
     })
   })
 
