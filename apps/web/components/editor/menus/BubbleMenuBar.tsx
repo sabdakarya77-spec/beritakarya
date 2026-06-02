@@ -2,14 +2,15 @@
 
 import type { Editor } from '@tiptap/react'
 import { BubbleMenu } from '@tiptap/react/menus'
-import { 
-  Bold, 
-  Italic, 
-  Underline, 
-  Strikethrough, 
-  Code, 
+import {
+  Bold,
+  Italic,
+  Underline,
+  Strikethrough,
+  Code,
   Link,
-  Highlighter
+  Highlighter,
+  CaseUpper,
 } from 'lucide-react'
 import { cn } from '../../../lib/utils'
 
@@ -26,7 +27,7 @@ export function BubbleMenuBar({ editor }: BubbleMenuBarProps) {
     const url = window.prompt('Enter URL', previousUrl)
 
     if (url === null) return
-    
+
     if (url === '') {
       editor.chain().focus().extendMarkRange('link').unsetLink().run()
       return
@@ -97,6 +98,17 @@ export function BubbleMenuBar({ editor }: BubbleMenuBarProps) {
       >
         <Highlighter size={16} />
       </BubbleButton>
+
+      <div className="w-px h-5 bg-slate-600 mx-1" />
+
+      <BubbleButton
+        onClick={() => editor.chain().focus().toggleDropCap().run()}
+        isActive={Boolean(editor.getAttributes('paragraph').dropCap)}
+        disabled={!editor.isActive('paragraph')}
+        title="Drop Cap (huruf awal besar)"
+      >
+        <CaseUpper size={16} />
+      </BubbleButton>
     </BubbleMenu>
   )
 }
@@ -105,19 +117,22 @@ interface BubbleButtonProps {
   onClick: () => void
   isActive: boolean
   title: string
+  disabled?: boolean
   children: React.ReactNode
 }
 
-function BubbleButton({ onClick, isActive, title, children }: BubbleButtonProps) {
+function BubbleButton({ onClick, isActive, title, disabled, children }: BubbleButtonProps) {
   return (
     <button
       onClick={onClick}
       title={title}
+      disabled={disabled}
       className={cn(
         'p-2 rounded-lg transition-colors',
         isActive
           ? 'bg-brand-red text-white'
-          : 'text-slate-300 hover:bg-slate-700 hover:text-white'
+          : 'text-slate-300 hover:bg-slate-700 hover:text-white',
+        disabled && 'opacity-30 cursor-not-allowed'
       )}
     >
       {children}

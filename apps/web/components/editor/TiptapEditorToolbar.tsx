@@ -30,7 +30,9 @@ import {
   Columns,
   AlertCircle,
   Video,
-  ChevronDown
+  ChevronDown,
+  Pilcrow,
+  CaseUpper
 } from 'lucide-react'
 import { MediaLibraryModal } from './MediaLibraryModal'
 import { type MediaItem } from '../../hooks/useMediaLibrary'
@@ -289,6 +291,18 @@ export function TiptapEditorToolbar({ editor }: TiptapEditorToolbarProps) {
           title="Horizontal Rule"
         >
           <Minus className="w-4 h-4" />
+        </ToolbarButton>
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleDropCap().run()}
+          active={Boolean(editor.getAttributes('paragraph').dropCap)}
+          disabled={!editor.isActive('paragraph')}
+          title="Drop Cap (huruf awal besar)"
+          className="text-fuchsia-600 dark:text-fuchsia-400 hover:bg-fuchsia-100 dark:hover:bg-fuchsia-950/30"
+        >
+          <span className="flex items-baseline gap-0.5 leading-none">
+            <CaseUpper className="w-3.5 h-3.5" />
+            <Pilcrow className="w-3 h-3" />
+          </span>
         </ToolbarButton>
       </div>
 

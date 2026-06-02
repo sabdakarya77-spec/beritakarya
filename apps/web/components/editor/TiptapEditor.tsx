@@ -22,6 +22,7 @@ import { GalleryExtension } from './extensions/GalleryExtension'
 import { ImageGridExtension } from './extensions/ImageGridExtension'
 import { MediaTextExtension } from './extensions/MediaTextExtension'
 import { SlashMenuExtension } from './extensions/SlashMenuExtension'
+import { DropCapParagraph } from './extensions/DropCapExtension'
 
 interface TiptapEditorProps {
   initialContent?: string
@@ -62,10 +63,12 @@ export function TiptapEditor({
         link: false,
         underline: false,
         blockquote: false, // Nonaktifkan blockquote default untuk memakai QuoteExtension custom kita yang hebat
+        paragraph: false, // Disable default to use DropCapParagraph
         heading: {
           levels: [1, 2, 3, 4, 5, 6],
         },
       }),
+      DropCapParagraph,
       Placeholder.configure({
         placeholder: ({ node }) => {
           if (node.type.name === 'heading') {
@@ -261,6 +264,8 @@ function convertTiptapToBlocks(editor: any, oldBlocks: any[] = []): any[] {
           ...baseBlock,
           type: 'paragraph',
           content: extractTextContent(node),
+          dropCap: node.attrs?.dropCap === true,
+          textAlign: node.attrs?.textAlign,
         }
       case 'heading':
         return {
@@ -431,8 +436,11 @@ function convertBlocksToHTML(blocks: any[]): string {
       const content = block.content || ''
 
       switch (block.type) {
-        case 'paragraph':
-          return content ? `<p>${content}</p>` : '<p></p>'
+        case 'paragraph': {
+          const dropCap = block.dropCap === true
+          const dataAttr = dropCap ? ' data-drop-cap="true"' : ''
+          return content ? `<p${dataAttr}>${content}</p>` : `<p${dataAttr}></p>`
+        }
         case 'heading': {
           const level = block.level || 2
           return content ? `<h${level}>${content}</h${level}>` : `<h${level}></h${level}>`

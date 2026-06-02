@@ -402,3 +402,42 @@
     max-width: 100% !important;
   }
 }
+
+/* ------------------------------------------------------------------
+ * Drop Cap (initial letter)
+ * Digunakan oleh paragraph yang memiliki attribute dropCap=true
+ * Tampil di halaman artikel publik dan didukung editor Tiptap.
+ * ------------------------------------------------------------------ */
+.article-content p[data-drop-cap="true"],
+.article-body p[data-drop-cap="true"] {
+  position: relative;
+}
+
+.article-content p[data-drop-cap="true"]::first-letter,
+.article-body p[data-drop-cap="true"]::first-letter {
+  float: left;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-weight: 800;
+  font-size: 4.5em;
+  line-height: 0.85;
+  margin: 0.05em 0.12em 0 0;
+  padding: 0;
+  color: var(--brand-red, #dc2626);
+  text-transform: uppercase;
+  font-style: normal;
+}
+
+@media (max-width: 640px) {
+  .article-content p[data-drop-cap="true"]::first-letter,
+  .article-body p[data-drop-cap="true"]::first-letter {
+    font-size: 3.5em;
+    margin: 0.02em 0.1em 0 0;
+  }
+}
+
+@media print {
+  .article-content p[data-drop-cap="true"]::first-letter,
+  .article-body p[data-drop-cap="true"]::first-letter {
+    color: #000 !important;
+  }
+}
