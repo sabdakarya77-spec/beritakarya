@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import { PublicErrorView } from '../../../components/layout/PublicErrorView'
+import { PublicErrorView } from '../../components/layout/PublicErrorView'
 
 export default function SiteError({
   error,

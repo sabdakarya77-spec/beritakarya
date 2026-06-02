@@ -1,5 +1,5 @@
 import { Suspense } from 'react'
-import Skeleton from '../../ui/Skeleton'
+import Skeleton from './Skeleton'
 
 interface SectionSuspenseProps {
   children: React.ReactNode
