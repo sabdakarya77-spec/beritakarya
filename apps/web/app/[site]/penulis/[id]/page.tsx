@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
-import { ArrowLeft, CalendarDays, Eye, FileText, Sparkles, User2 } from 'lucide-react'
+import { ArrowLeft, CalendarDays, Eye, FileText, User2 } from 'lucide-react'
 import { SITE_MAP } from '@beritakarya/config'
 import PublicSiteLayout from '../../../../components/layout/PublicSiteLayout'
 import { Container } from '../../../../components/layout/Container'
@@ -63,6 +63,13 @@ function formatJoinDate(dateString: string) {
     month: 'long',
     year: 'numeric'
   })
+}
+
+function formatCompactNumber(value: number) {
+  return new Intl.NumberFormat('id-ID', {
+    notation: 'compact',
+    maximumFractionDigits: 1
+  }).format(value)
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -156,127 +163,182 @@ export default async function AuthorProfilePage({ params }: Props) {
 
   return (
     <PublicSiteLayout siteConfig={siteConfig}>
-      <main className="min-h-screen bg-white dark:bg-slate-950">
-        <section className="relative overflow-hidden border-b border-gray-100 bg-brand-surface pt-20 pb-16 dark:border-white/5 dark:bg-white/[0.02] md:pt-32 md:pb-24">
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-56 bg-[radial-gradient(circle_at_top_right,rgba(225,29,72,0.16),transparent_48%)]" />
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-[radial-gradient(circle_at_bottom_left,rgba(15,23,42,0.12),transparent_55%)] dark:bg-[radial-gradient(circle_at_bottom_left,rgba(255,255,255,0.05),transparent_55%)]" />
+      <main className="min-h-screen bg-[var(--bg-main)] dark:bg-[#020617]">
+        <section className="relative overflow-hidden border-b border-gray-100 bg-white pt-20 dark:border-white/5 dark:bg-slate-950 md:pt-28">
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-64 bg-[radial-gradient(circle_at_top_right,rgba(225,29,72,0.12),transparent_42%)]" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-[linear-gradient(180deg,transparent,rgba(15,23,42,0.04))] dark:bg-[linear-gradient(180deg,transparent,rgba(255,255,255,0.03))]" />
           <Container>
-            <Link
-              href={`/${siteParam}`}
-              className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.18em] text-gray-400 transition-colors hover:text-brand-red"
-            >
-              <ArrowLeft size={14} />
-              Kembali ke Beranda
-            </Link>
+            <div className="pb-14 md:pb-20">
+              <Link
+                href={`/${siteParam}/penulis`}
+                className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.18em] text-gray-400 transition-colors hover:text-brand-red"
+              >
+                <ArrowLeft size={14} />
+                Kembali ke Halaman Penulis
+              </Link>
 
-            <div className="relative mt-10 grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.35fr)_320px] xl:gap-8">
-              <div className="rounded-[2rem] border border-gray-100 bg-white p-6 shadow-[0_24px_80px_rgba(15,23,42,0.08)] dark:border-white/5 dark:bg-white/[0.02] dark:shadow-[0_24px_80px_rgba(0,0,0,0.35)] md:p-8 xl:p-10">
-                <div className="flex flex-col gap-6 md:flex-row md:items-start">
-                  <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-[1.6rem] bg-brand-red text-2xl font-serif font-black text-white shadow-[0_24px_60px_rgba(225,29,72,0.28)] md:h-24 md:w-24 md:text-3xl">
-                    {initials}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-3">
-                      <span className="inline-flex items-center rounded-full border border-brand-red/15 bg-brand-red/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.22em] text-brand-red">
-                        Profil Penulis
-                      </span>
-                      <span className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.18em] text-gray-400">
-                        <CalendarDays size={13} className="text-brand-red" />
-                        Bergabung sejak {joinedAt}
-                      </span>
-                    </div>
-
-                    <h1 className="mt-4 max-w-4xl text-3xl font-serif font-black tracking-tight text-brand-black dark:text-white sm:text-4xl lg:text-5xl xl:text-[3.75rem] xl:leading-[1.02]">
-                      {profile.name}
-                    </h1>
-                    <p className="mt-4 text-[11px] font-black uppercase tracking-[0.24em] text-gray-400">
-                      {roleLabel}
-                    </p>
-                    <p className="mt-5 max-w-4xl text-base leading-7 text-gray-600 dark:text-gray-300 md:text-lg md:leading-8">
-                      {bio}
-                    </p>
-                  </div>
-                </div>
+              <div className="mt-8 inline-flex items-center rounded-full border border-brand-red/15 bg-brand-red/5 px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.22em] text-brand-red">
+                Profil Editorial
               </div>
 
-              <aside className="space-y-4">
-                <div className="rounded-[2rem] border border-gray-100 bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.06)] dark:border-white/5 dark:bg-white/[0.02] dark:shadow-[0_20px_60px_rgba(0,0,0,0.28)]">
-                  <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.18em] text-gray-400">
-                    <Sparkles size={14} className="text-brand-red" />
-                    Ringkasan Kiprah
-                  </div>
-                  <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-1">
-                    <div className="rounded-2xl border border-gray-100 bg-gray-50 px-5 py-4 dark:border-white/5 dark:bg-white/[0.03]">
-                      <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.18em] text-gray-400">
-                        <FileText size={14} className="text-brand-red" />
-                        Artikel Terbit
+              <div className="relative mt-8 grid grid-cols-1 gap-10 xl:grid-cols-[minmax(0,1.35fr)_22rem] xl:items-start xl:gap-12">
+                <div className="min-w-0">
+                  <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
+                    <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-[1.75rem] border border-brand-red/10 bg-gradient-to-br from-brand-red to-red-700 text-2xl font-serif font-black text-white shadow-[0_24px_60px_rgba(225,29,72,0.18)] md:h-24 md:w-24 md:text-3xl">
+                      {initials}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-3 text-[10px] font-black uppercase tracking-[0.18em] text-gray-400">
+                        <span>{roleLabel}</span>
+                        <span className="h-1 w-1 rounded-full bg-gray-300 dark:bg-white/15" />
+                        <span className="inline-flex items-center gap-2">
+                          <CalendarDays size={13} className="text-brand-red" />
+                          Bergabung sejak {joinedAt}
+                        </span>
                       </div>
-                      <p className="mt-3 text-2xl font-black text-brand-black dark:text-white md:text-3xl">
-                        {stats.publishedCount}
+
+                      <h1 className="mt-4 max-w-4xl text-4xl font-serif font-black tracking-[-0.045em] text-brand-black dark:text-white sm:text-5xl lg:text-6xl xl:text-[4.25rem] xl:leading-[0.97]">
+                        {profile.name}
+                      </h1>
+
+                      <p className="mt-5 max-w-3xl text-base leading-7 text-slate-600 dark:text-slate-300 md:text-[1.05rem] md:leading-8">
+                        {bio}
                       </p>
                     </div>
-                    <div className="rounded-2xl border border-gray-100 bg-gray-50 px-5 py-4 dark:border-white/5 dark:bg-white/[0.03]">
+                  </div>
+
+                  <div className="mt-8 grid gap-3 sm:grid-cols-3">
+                    <div className="rounded-[1.5rem] border border-gray-100 bg-gray-50/80 px-5 py-4 dark:border-white/5 dark:bg-white/[0.03]">
                       <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.18em] text-gray-400">
-                        <Eye size={14} className="text-brand-red" />
+                        <FileText size={13} className="text-brand-red" />
+                        Artikel Terbit
+                      </div>
+                      <p className="mt-3 text-2xl font-black text-brand-black dark:text-white">
+                        {stats.publishedCount.toLocaleString('id-ID')}
+                      </p>
+                    </div>
+
+                    <div className="rounded-[1.5rem] border border-gray-100 bg-gray-50/80 px-5 py-4 dark:border-white/5 dark:bg-white/[0.03]">
+                      <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.18em] text-gray-400">
+                        <Eye size={13} className="text-brand-red" />
                         Total Dilihat
                       </div>
-                      <p className="mt-3 text-2xl font-black text-brand-black dark:text-white md:text-3xl">
-                        {stats.totalViews.toLocaleString('id-ID')}
+                      <p className="mt-3 text-2xl font-black text-brand-black dark:text-white">
+                        {formatCompactNumber(stats.totalViews)}
+                      </p>
+                    </div>
+
+                    <div className="rounded-[1.5rem] border border-gray-100 bg-gray-50/80 px-5 py-4 dark:border-white/5 dark:bg-white/[0.03]">
+                      <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.18em] text-gray-400">
+                        <CalendarDays size={13} className="text-brand-red" />
+                        Kanal
+                      </div>
+                      <p className="mt-3 text-lg font-black text-brand-black dark:text-white">
+                        {siteConfig.name}
                       </p>
                     </div>
                   </div>
                 </div>
 
-                <div className="rounded-[2rem] border border-gray-100 bg-brand-black p-6 text-white shadow-[0_20px_60px_rgba(15,23,42,0.18)] dark:border-white/5 dark:bg-slate-950">
-                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-red">
-                    Catatan Redaksi
-                  </p>
-                  <p className="mt-4 text-sm leading-7 text-gray-300">
-                    Seluruh artikel penulis ini telah tayang di kanal publik {siteConfig.name} dan tetap mengikuti proses kurasi serta standar editorial BeritaKarya.
-                  </p>
-                </div>
-              </aside>
+                <aside className="space-y-4">
+                  <div className="rounded-[1.75rem] border border-gray-100 bg-white p-6 shadow-[0_20px_50px_rgba(15,23,42,0.05)] dark:border-white/5 dark:bg-white/[0.03] dark:shadow-[0_20px_50px_rgba(0,0,0,0.2)]">
+                    <p className="text-[10px] font-black uppercase tracking-[0.22em] text-brand-red">
+                      Ringkasan Profil
+                    </p>
+                    <dl className="mt-5 space-y-4">
+                      <div className="border-b border-gray-100 pb-4 dark:border-white/5">
+                        <dt className="text-[10px] font-black uppercase tracking-[0.18em] text-gray-400">
+                          Peran
+                        </dt>
+                        <dd className="mt-2 text-sm font-bold text-brand-black dark:text-white">
+                          {roleLabel}
+                        </dd>
+                      </div>
+                      <div className="border-b border-gray-100 pb-4 dark:border-white/5">
+                        <dt className="text-[10px] font-black uppercase tracking-[0.18em] text-gray-400">
+                          Rekam Publikasi
+                        </dt>
+                        <dd className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                          {stats.publishedCount.toLocaleString('id-ID')} artikel dengan total {stats.totalViews.toLocaleString('id-ID')} pembacaan publik.
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-[10px] font-black uppercase tracking-[0.18em] text-gray-400">
+                          Status Editorial
+                        </dt>
+                        <dd className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                          Profil ini tampil sebagai bagian dari tim penulis resmi {siteConfig.name}.
+                        </dd>
+                      </div>
+                    </dl>
+                  </div>
+
+                  <div className="rounded-[1.75rem] border border-gray-100 bg-brand-black p-6 text-white shadow-[0_24px_60px_rgba(15,23,42,0.16)] dark:border-white/5 dark:bg-slate-900">
+                    <p className="text-[10px] font-black uppercase tracking-[0.22em] text-brand-red">
+                      Catatan Redaksi
+                    </p>
+                    <p className="mt-4 text-sm leading-7 text-gray-300">
+                      Seluruh artikel pada halaman ini telah tayang melalui proses kurasi, verifikasi, dan standar editorial yang berlaku di jaringan BeritaKarya.
+                    </p>
+                  </div>
+                </aside>
+              </div>
             </div>
           </Container>
         </section>
 
-        <section className="py-16 md:py-20">
+        <section className="py-14 md:py-20">
           <Container>
-            <div className="mb-10 flex items-center gap-3">
-              <div className="h-8 w-1 bg-brand-red" />
-              <div>
-                <h2 className="text-2xl font-black uppercase tracking-tight text-brand-black dark:text-white">
-                  Tulisan Terbaru
-                </h2>
-                <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.18em] text-gray-400">
-                  Artikel terbaru dari {profile.name}
-                </p>
-              </div>
+            <div className="max-w-3xl">
+              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-brand-red">
+                Arsip Penulis
+              </p>
+              <h2 className="mt-3 text-3xl font-serif font-black tracking-[-0.04em] text-brand-black dark:text-white md:text-4xl">
+                Tulisan terbaru dari {profile.name}
+              </h2>
+              <p className="mt-4 text-sm leading-7 text-slate-600 dark:text-slate-300 md:text-base">
+                Kumpulan artikel terbaru yang memperlihatkan fokus liputan, konsistensi publikasi, dan jejak editorial penulis di {siteConfig.name}.
+              </p>
             </div>
 
             {recentArticles.length > 0 ? (
-              <div className="grid grid-cols-1 gap-8 xl:grid-cols-[minmax(0,1fr)_minmax(320px,0.9fr)] xl:gap-10">
-                <div className="min-w-0">
+              <div className="mt-10 grid grid-cols-1 gap-8 xl:grid-cols-[minmax(0,1.2fr)_22rem] xl:items-start">
+                <div className="min-w-0 rounded-[2rem] border border-gray-100 bg-white p-4 shadow-[0_18px_50px_rgba(15,23,42,0.05)] dark:border-white/5 dark:bg-white/[0.03] dark:shadow-[0_18px_50px_rgba(0,0,0,0.22)] md:p-6">
                   {featuredArticle && (
                     <NewsCard article={featuredArticle} variant="medium" site={siteParam} priority />
                   )}
                 </div>
-                <div className="space-y-6">
-                  {remainingArticles.length > 0 ? (
-                    remainingArticles.map((article) => (
-                      <NewsCard key={article.id} article={article} variant="horizontal" site={siteParam} />
-                    ))
-                  ) : featuredArticle ? (
-                    <div className="rounded-[2rem] border border-gray-100 bg-gray-50 px-6 py-10 dark:border-white/5 dark:bg-white/[0.02]">
-                      <p className="text-[10px] font-black uppercase tracking-[0.18em] text-gray-400">
-                        Penulis ini baru memiliki satu artikel terbit saat ini.
-                      </p>
-                    </div>
-                  ) : null}
-                </div>
+
+                <aside className="rounded-[2rem] border border-gray-100 bg-white p-5 shadow-[0_18px_50px_rgba(15,23,42,0.05)] dark:border-white/5 dark:bg-white/[0.03] dark:shadow-[0_18px_50px_rgba(0,0,0,0.22)] md:p-6">
+                  <div className="border-b border-gray-100 pb-4 dark:border-white/5">
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-red">
+                      Arsip Terbaru
+                    </p>
+                    <h3 className="mt-2 text-xl font-black tracking-tight text-brand-black dark:text-white">
+                      Publikasi lain
+                    </h3>
+                    <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                      Daftar tulisan lain dari penulis ini dalam format yang lebih ringkas dan mudah dipindai.
+                    </p>
+                  </div>
+
+                  <div className="mt-2">
+                    {remainingArticles.length > 0 ? (
+                      remainingArticles.map((article) => (
+                        <NewsCard key={article.id} article={article} variant="minimal" site={siteParam} />
+                      ))
+                    ) : (
+                      <div className="py-8">
+                        <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-gray-400">
+                          Saat ini baru ada satu artikel terbit yang tampil pada profil penulis ini.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </aside>
               </div>
             ) : (
-              <div className="rounded-3xl border border-dashed border-gray-200 px-6 py-14 text-center dark:border-white/10">
+              <div className="mt-10 rounded-[2rem] border border-dashed border-gray-200 bg-white px-6 py-14 text-center dark:border-white/10 dark:bg-white/[0.02]">
                 <User2 size={34} className="mx-auto mb-4 text-gray-300 dark:text-gray-600" />
                 <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">
                   Belum ada artikel terbit dari penulis ini.
