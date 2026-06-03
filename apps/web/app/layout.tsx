@@ -11,6 +11,7 @@ export const metadata = constructMetadata()
 import { Toaster } from '../components/ui/Toaster'
 import { AuthInit } from '../components/AuthInit'
 import ScrollReset from '../components/layout/ScrollReset'
+import { SwRegister } from './SwRegister'
 
 export default function RootLayout({
   children,
@@ -20,6 +21,8 @@ export default function RootLayout({
   return (
     <html lang="id" className="scroll-smooth" suppressHydrationWarning>
       <head>
+        <link rel="manifest" href="/manifest.webmanifest" />
+        <meta name="theme-color" content="#B91C1C" />
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -37,17 +40,8 @@ export default function RootLayout({
                 } else {
                   document.documentElement.classList.remove('dark');
                 }
-
-                // Register Service Worker for PWA
-                if ('serviceWorker' in navigator) {
-                  window.addEventListener('load', function() {
-                    navigator.serviceWorker.register('/sw.js').catch(function(err) {
-                      console.error('ServiceWorker registration failed: ', err);
-                    });
-                  });
-                }
               } catch (e) {
-                console.error('Theme/SW initialization error:', e);
+                console.error('Theme initialization error:', e);
               }
             })();
             `,
@@ -59,6 +53,7 @@ export default function RootLayout({
         <ScrollReset />
         {children}
         <Toaster />
+        <SwRegister site="pusat" />
       </body>
     </html>
   )

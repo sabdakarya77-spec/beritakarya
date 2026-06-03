@@ -4,6 +4,13 @@ import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import { X, Download, Check } from 'lucide-react'
 
+interface PWAInstallPromptProps {
+  /** Identifier situs, mis. 'pusat' | 'bandung' | 'surabaya' */
+  site?: string
+  /** Nama tampilan situs, mis. 'BeritaKarya Bandung' */
+  siteName?: string
+}
+
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[]
   readonly userChoice: Promise<{
@@ -13,7 +20,10 @@ interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>
 }
 
-export function PWAInstallPrompt() {
+export function PWAInstallPrompt({
+  site = 'pusat',
+  siteName = 'BeritaKarya',
+}: PWAInstallPromptProps) {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
   const [isVisible, setIsVisible] = useState(false)
   const [mounted, setMounted] = useState(false)
@@ -28,8 +38,9 @@ export function PWAInstallPrompt() {
       return
     }
 
-    // 2. Cek apakah ada batasan dismiss 24 jam di localStorage
-    const lastDismissed = localStorage.getItem('pwa-prompt-dismissed')
+    // 2. Cek apakah ada batasan dismiss 24 jam di localStorage (per-situs)
+    const dismissKey = `pwa-prompt-dismissed:${site}`
+    const lastDismissed = localStorage.getItem(dismissKey)
     if (lastDismissed) {
       const parsedTime = parseInt(lastDismissed, 10)
       const oneDayInMs = 24 * 60 * 60 * 1000
@@ -53,7 +64,7 @@ export function PWAInstallPrompt() {
     const handleAppInstalled = () => {
       setIsVisible(false)
       setDeferredPrompt(null)
-      console.log('PWA BeritaKarya berhasil diinstal!')
+      console.log(`PWA ${siteName} berhasil diinstal!`)
     }
 
     window.addEventListener('appinstalled', handleAppInstalled)
@@ -62,12 +73,12 @@ export function PWAInstallPrompt() {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
       window.removeEventListener('appinstalled', handleAppInstalled)
     }
-  }, [])
+  }, [site, siteName])
 
   const handleDismiss = () => {
     setIsVisible(false)
-    // Simpan timestamp saat ini untuk batasan 24 jam
-    localStorage.setItem('pwa-prompt-dismissed', Date.now().toString())
+    // Simpan timestamp per-situs untuk batasan 24 jam
+    localStorage.setItem(`pwa-prompt-dismissed:${site}`, Date.now().toString())
   }
 
   const handleInstall = async () => {
@@ -115,7 +126,7 @@ export function PWAInstallPrompt() {
           </div>
           <div className="space-y-1 pr-6">
             <h4 className="text-sm sm:text-base font-black text-gray-900 dark:text-white leading-tight">
-              Instal BeritaKarya
+              Instal {siteName}
             </h4>
             <p className="text-xs text-gray-500 dark:text-gray-400 leading-snug">
               Tambahkan ke layar utama untuk akses portal berita lebih cepat dan lancar.

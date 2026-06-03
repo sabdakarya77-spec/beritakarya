@@ -383,7 +383,7 @@ export class SiteService {
       'socialLinks', 'appearance', 'trendingTopics',
       'googleIndexingConfig'
     ]
-    
+
     for (const field of allowedFields) {
       if (data[field] !== undefined) {
         if (['socialLinks', 'appearance', 'trendingTopics', 'googleIndexingConfig'].includes(field) && typeof data[field] === 'object') {

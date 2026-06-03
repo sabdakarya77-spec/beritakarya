@@ -66,6 +66,20 @@ const nextConfig = {
       },
     ]
   },
+  async headers() {
+    return [
+      {
+        // Service Worker butuh header Service-Worker-Allowed agar /sw.js
+        // bisa di-scope ke path yang lebih dalam (mis. /bandung/, /surabaya/).
+        source: '/sw.js',
+        headers: [
+          { key: 'Service-Worker-Allowed', value: '/' },
+          { key: 'Cache-Control', value: 'no-cache, no-store, must-revalidate' },
+          { key: 'Content-Type', value: 'application/javascript; charset=utf-8' },
+        ],
+      },
+    ]
+  },
 }
 
 export default withBundleAnalyzer(nextConfig)
