@@ -43,9 +43,9 @@ function buildWhatsAppUrl(phone?: string | null, siteName?: string) {
   return `https://wa.me/${normalizedNumber}?text=${intro}`
 }
 
-const sectionEyebrowClass = 'text-[11px] font-black uppercase tracking-[0.18em]'
+const sectionEyebrowClass = 'font-display text-xxs font-black uppercase tracking-eyebrow'
 const sectionEyebrowMutedClass = `${sectionEyebrowClass} text-gray-500 dark:text-gray-400`
-const sectionMetaClass = 'text-[10px] font-semibold text-gray-500 dark:text-gray-400'
+const sectionMetaClass = 'text-xs font-semibold text-gray-500 dark:text-gray-400'
 const sectionTitleClass = 'text-[1.9rem] md:text-[2.2rem] font-serif font-black tracking-[-0.04em] text-brand-black dark:text-white'
 const sectionDeckClass = 'max-w-2xl text-sm md:text-[15px] leading-relaxed text-brand-text-muted dark:text-gray-400'
 
@@ -193,7 +193,7 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
     <PublicSiteLayout siteConfig={siteConfig} initialCategory={categoryFilter}>
       <main id="main-content" className="pb-28 md:pb-8">
         <Container className="py-6 md:py-8">
-          <div className="flex justify-center rounded-3xl border border-black/5 bg-white p-4 shadow-[0_18px_40px_rgba(15,23,42,0.04)] dark:border-white/5 dark:bg-white/[0.02] md:p-6">
+          <div className="flex justify-center rounded-card border border-black/5 bg-white p-4 shadow-card dark:border-white/5 dark:bg-white/[0.02] md:p-6">
             <AdSpace type="leaderboard" />
           </div>
         </Container>
@@ -204,14 +204,16 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
               <MagazineBentoHero articles={topBentoStories} site={siteParam} />
 
               {showEditorFocus && (
-                <div className="mt-10 md:mt-12">
+                <div className="space-block">
                   <div className="mb-6 flex items-center gap-2">
                     <Zap size={16} className="text-brand-red" />
                     <h3 className={`${sectionEyebrowClass} text-brand-black dark:text-white`}>Fokus Redaksi</h3>
                   </div>
                   <div className="grid grid-cols-1 gap-8 md:grid-cols-2 xl:grid-cols-4">
-                    {minimalStories.map((article: any) => (
-                      <NewsCard key={article.id} article={article} variant="medium" site={siteParam} />
+                    {minimalStories.map((article: any, index: number) => (
+                      <ScrollAnimate key={article.id} delay={index * 0.08}>
+                        <NewsCard article={article} variant="medium" site={siteParam} />
+                      </ScrollAnimate>
                     ))}
                   </div>
                 </div>
@@ -222,7 +224,7 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
 
         <Container className="py-10 md:py-12">
           {showTrending && (
-            <section className="mb-12 flex flex-col gap-4 md:flex-row md:items-center md:justify-between md:gap-6">
+            <section className="mb-10 md:mb-12 flex flex-col gap-4 md:flex-row md:items-center md:justify-between md:gap-6">
               <div className="flex shrink-0 items-center gap-2">
                 <TrendingUp size={16} className="text-brand-red" />
                 <span className={`${sectionEyebrowClass} text-brand-black dark:text-white`}>Trending</span>
@@ -232,7 +234,7 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
                   <Link
                     key={tag}
                     href={`/${siteParam}?q=${encodeURIComponent(tag)}`}
-                    className="inline-flex items-center rounded-full border border-black/5 bg-white px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.12em] text-gray-500 transition-colors hover:border-brand-red/40 hover:text-brand-red dark:border-white/5 dark:bg-white/[0.03] dark:text-gray-400"
+                    className="inline-flex items-center rounded-full border border-black/5 bg-white px-2.5 py-1 font-display text-xs font-black uppercase tracking-eyebrow text-gray-500 transition-colors hover:border-brand-red/40 hover:text-brand-red dark:border-white/5 dark:bg-white/[0.03] dark:text-gray-400"
                   >
                     #{tag}
                   </Link>
@@ -245,7 +247,7 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
             <div className="lg:col-span-8">
               <div className="mb-8 flex flex-col gap-5 border-b border-black/10 pb-6 dark:border-white/5 md:flex-row md:items-end md:justify-between">
                 <h3 className={`${sectionTitleClass} flex items-center gap-4 !text-3xl uppercase`}>
-                  <span className="h-6 w-6 bg-brand-red shadow-lg shadow-brand-red/20" />
+                  <span className="h-6 w-[3px] rounded-full bg-brand-red shadow-sm shadow-brand-red/20" />
                   {searchQuery ? `Hasil Pencarian: ${searchQuery}` : `Berita ${resolveCategoryName(categoryFilter, categoriesTree)}`}
                 </h3>
                 <div className="hidden items-center gap-3 text-[11px] font-black uppercase tracking-[0.18em] text-gray-400 md:flex">
@@ -262,17 +264,19 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
                 <div className="space-y-10 md:space-y-12">
                   {featuredFeed.length > 0 && (
                     <div className="grid grid-cols-1 gap-8 md:grid-cols-2 md:gap-8">
-                      {featuredFeed.map((article: any) => (
-                        <NewsCard key={article.id} article={article} site={siteParam} priority={true} />
+                      {featuredFeed.map((article: any, index: number) => (
+                        <ScrollAnimate key={article.id} delay={index * 0.08}>
+                          <NewsCard article={article} site={siteParam} priority={true} />
+                        </ScrollAnimate>
                       ))}
                     </div>
                   )}
 
                   {showInlineSponsor && (
-                    <div className="rounded-3xl border border-black/5 bg-brand-surface/80 p-7 dark:border-white/5 dark:bg-white/[0.03]">
+                    <div className="rounded-card border border-black/5 bg-brand-surface/80 p-7 dark:border-white/5 dark:bg-white/[0.03]">
                       <div className="mb-6 flex items-center justify-between">
                         <span className={sectionEyebrowMutedClass}>Sponsorship</span>
-                        <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-gray-400">Advertisement</span>
+                        <span className="font-display text-xs font-semibold uppercase tracking-eyebrow text-gray-400">Advertisement</span>
                       </div>
                       <AdSpace type="in-feed" className="mx-auto" />
                     </div>
@@ -284,22 +288,24 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
                         <span className={`${sectionEyebrowClass} text-brand-red`}>Berita Lanjutan</span>
                         <Link
                           href={`/${siteParam}`}
-                          className="hidden items-center gap-2 text-[11px] font-black uppercase tracking-[0.14em] text-brand-black transition-colors hover:text-brand-red dark:text-white md:inline-flex"
+                          className="hidden items-center gap-2 font-display text-xxs font-black uppercase tracking-eyebrow text-brand-black transition-colors hover:text-brand-red dark:text-white md:inline-flex"
                         >
                           Lihat Arsip
                           <ArrowRight size={14} />
                         </Link>
                       </div>
                       <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-                        {streamFeed.map((article: any) => (
-                          <NewsCard key={article.id} article={article} variant="medium" site={siteParam} />
+                        {streamFeed.map((article: any, index: number) => (
+                          <ScrollAnimate key={article.id} delay={(index % 2) * 0.08}>
+                            <NewsCard article={article} variant="medium" site={siteParam} />
+                          </ScrollAnimate>
                         ))}
                       </div>
                     </div>
                   )}
                 </div>
               ) : (
-                <div className="mb-16 rounded-3xl border border-dashed border-gray-200 bg-gray-50/70 p-10 text-center dark:border-white/10 dark:bg-white/[0.02]">
+                <div className="mb-16 rounded-card border border-dashed border-gray-200 bg-gray-50/70 p-10 text-center dark:border-white/10 dark:bg-white/[0.02]">
                   <p className="text-lg font-serif font-black text-brand-black dark:text-white">Belum ada berita untuk konteks ini.</p>
                   <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">
                     Coba kembali ke topik terbaru atau gunakan kata kunci yang lebih umum.
@@ -307,7 +313,7 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
                   <div className="mt-6">
                     <Link
                       href={`/${siteParam}`}
-                      className="inline-flex items-center justify-center rounded-full bg-brand-red px-5 py-2.5 text-[11px] font-black uppercase tracking-[0.12em] text-white transition-opacity hover:opacity-90"
+                      className="inline-flex items-center justify-center rounded-full bg-brand-red px-5 py-2.5 font-display text-xxs font-black uppercase tracking-eyebrow text-white transition-opacity hover:opacity-90"
                     >
                       Kembali Ke Berita Terbaru
                     </Link>
@@ -316,14 +322,53 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
               )}
 
               {!showSavedFeed && (
-                <div className="mt-12 border-t border-black/5 pt-12 dark:border-white/5">
+                <div className="space-block border-t border-black/5 pt-10 md:pt-12 dark:border-white/5">
                   <LoadMoreArticles siteId={siteConfig.id} category={categoryFilter} search={searchQuery} initialPage={1} />
                 </div>
               )}
+
+              {/* Mobile Fallback for Akses Redaksi */}
+              <div className="mt-12 rounded-card border border-white/5 bg-slate-950 p-5 text-white shadow-floating lg:hidden">
+                <div className="mb-4">
+                  <span className="font-display text-xxs font-black uppercase tracking-eyebrow text-brand-red">Akses Redaksi</span>
+                  <h4 className="mt-1.5 text-lg font-serif font-black leading-tight text-white">Hubungi Redaksi Kami</h4>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  {whatsappUrl && (
+                    <a
+                      href={whatsappUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex flex-1 items-center justify-center gap-2.5 rounded-button border border-emerald-500/20 bg-emerald-500/10 py-3 text-emerald-300 transition-colors hover:bg-emerald-500/15"
+                    >
+                      <SiWhatsapp size={16} />
+                      <span className="text-xs font-bold">WhatsApp</span>
+                    </a>
+                  )}
+                  {telegramUrl && (
+                    <a
+                      href={telegramUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex flex-1 items-center justify-center gap-2.5 rounded-button border border-sky-400/20 bg-sky-400/10 py-3 text-sky-200 transition-colors hover:bg-sky-400/15"
+                    >
+                      <SiTelegram size={16} />
+                      <span className="text-xs font-bold">Telegram</span>
+                    </a>
+                  )}
+                  <a
+                    href={reportUrl}
+                    className="flex flex-1 items-center justify-center gap-2.5 rounded-button border border-white/10 bg-white/5 py-3 text-white transition-colors hover:bg-white/10"
+                  >
+                    <Mail size={16} />
+                    <span className="text-xs font-bold">Email</span>
+                  </a>
+                </div>
+              </div>
             </div>
 
             <aside className="space-y-6 lg:col-span-4">
-              <div className="rounded-3xl border border-white/5 bg-slate-950 p-5 text-white shadow-[0_28px_56px_rgba(2,6,23,0.26)] md:p-6">
+              <div className="rounded-card border border-white/5 bg-slate-950 p-5 text-white shadow-floating md:p-6">
                 <div className="pb-2">
                   <span className={`${sectionEyebrowClass} text-brand-red`}>Akses Redaksi</span>
                   <h4 className="mt-3 text-2xl font-serif font-black leading-tight text-white">
@@ -337,14 +382,14 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
                       href={whatsappUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="group flex items-center justify-between rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-4 transition-colors hover:bg-emerald-500/15"
+                      className="group flex items-center justify-between rounded-card border border-emerald-500/20 bg-emerald-500/10 px-4 py-4 transition-colors hover:bg-emerald-500/15"
                     >
                       <span className="flex items-center gap-3">
-                        <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-emerald-400/20 bg-emerald-400/10 text-emerald-300">
+                        <span className="flex h-11 w-11 items-center justify-center rounded-card border border-emerald-400/20 bg-emerald-400/10 text-emerald-300">
                           <SiWhatsapp size={18} />
                         </span>
                         <span>
-                          <span className="block text-[10px] font-black uppercase tracking-[0.18em] text-emerald-300/90">WhatsApp</span>
+                          <span className="block font-display text-xs font-black uppercase tracking-eyebrow text-emerald-300/90">WhatsApp</span>
                           <span className="mt-1 block text-sm font-bold text-white">Gabung Channel</span>
                         </span>
                       </span>
@@ -357,14 +402,14 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
                       href={telegramUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="group flex items-center justify-between rounded-2xl border border-sky-400/20 bg-sky-400/10 px-4 py-4 transition-colors hover:bg-sky-400/15"
+                      className="group flex items-center justify-between rounded-card border border-sky-400/20 bg-sky-400/10 px-4 py-4 transition-colors hover:bg-sky-400/15"
                     >
                       <span className="flex items-center gap-3">
-                        <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-sky-300/20 bg-sky-300/10 text-sky-200">
+                        <span className="flex h-11 w-11 items-center justify-center rounded-card border border-sky-300/20 bg-sky-300/10 text-sky-200">
                           <SiTelegram size={18} />
                         </span>
                         <span>
-                          <span className="block text-[10px] font-black uppercase tracking-[0.18em] text-sky-200/90">Telegram</span>
+                          <span className="block font-display text-xs font-black uppercase tracking-eyebrow text-sky-200/90">Telegram</span>
                           <span className="mt-1 block text-sm font-bold text-white">Ikuti Kanal</span>
                         </span>
                       </span>
@@ -374,14 +419,14 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
 
                   <a
                     href={reportUrl}
-                    className="group flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-4 transition-colors hover:bg-white/10"
+                    className="group flex items-center justify-between rounded-card border border-white/10 bg-white/5 px-4 py-4 transition-colors hover:bg-white/10"
                   >
                     <span className="flex items-center gap-3">
-                      <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/10 text-white">
+                      <span className="flex h-11 w-11 items-center justify-center rounded-card border border-white/10 bg-white/10 text-white">
                         <Mail size={18} />
                       </span>
                       <span>
-                        <span className="block text-[10px] font-black uppercase tracking-[0.18em] text-white/75">Email</span>
+                        <span className="block font-display text-xs font-black uppercase tracking-eyebrow text-white/75">Email</span>
                         <span className="mt-1 block text-sm font-bold text-white">Kirim Email</span>
                       </span>
                     </span>
@@ -391,7 +436,7 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
               </div>
 
               {showPopularSidebar && (
-                <div className="rounded-3xl border border-black/5 bg-white p-5 shadow-[0_18px_42px_rgba(15,23,42,0.05)] dark:border-white/5 dark:bg-white/[0.02] md:p-6">
+                <div className="rounded-card border border-black/5 bg-white p-5 shadow-card dark:border-white/5 dark:bg-white/[0.02] md:p-6">
                   <div className="mb-5 flex items-center gap-3">
                     <Star size={18} className="fill-brand-red text-brand-red" />
                     <h4 className={`${sectionEyebrowClass} text-brand-black dark:text-white`}>Paling Populer</h4>
@@ -408,7 +453,7 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
                         </span>
                         <div className="min-w-0 flex-1">
                           <div className="mb-2 flex items-center gap-2">
-                            <span className="rounded-full bg-brand-red/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-brand-red">
+                            <span className="rounded-full bg-brand-red/10 px-2.5 py-1 font-display text-xs font-black uppercase tracking-eyebrow text-brand-red">
                               {index === 0 ? 'Top Story' : 'Trending'}
                             </span>
                             <span className={sectionMetaClass}>
@@ -418,9 +463,9 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
                           <h5 className="line-clamp-2 font-serif text-[1.08rem] font-black leading-[1.16] tracking-[-0.03em] text-brand-black transition-colors group-hover:text-brand-red dark:text-white">
                             {article.title}
                           </h5>
-                          <div className="mt-2 flex items-center justify-between gap-3 text-[11px] text-brand-text-muted dark:text-gray-400">
+                          <div className="mt-2 flex items-center justify-between gap-3 text-xxs text-brand-text-muted dark:text-gray-400">
                             <span className="truncate">{article.author?.name || 'Redaksi'}</span>
-                            <span className="font-black uppercase tracking-[0.12em] text-brand-black transition-colors group-hover:text-brand-red dark:text-white">
+                            <span className="font-display text-xs font-black uppercase tracking-eyebrow text-brand-black transition-colors group-hover:text-brand-red dark:text-white">
                               Baca
                             </span>
                           </div>
@@ -431,54 +476,54 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
                 </div>
               )}
 
-              <div className="rounded-3xl border border-black/5 bg-white p-5 shadow-[0_18px_42px_rgba(15,23,42,0.05)] dark:border-white/5 dark:bg-white/[0.02] md:p-6">
+              <div className="rounded-card border border-black/5 bg-white p-5 shadow-card dark:border-white/5 dark:bg-white/[0.02] md:p-6">
                 <div className="mb-5">
                   <span className={`${sectionEyebrowClass} text-brand-red`}>Info Pasar</span>
                 </div>
                 <div className="space-y-4">
                   <div className="flex items-center justify-between border-b border-black/5 pb-3 last:border-b-0 last:pb-0 dark:border-white/5">
                     <div>
-                      <div className="text-[11px] font-bold uppercase tracking-[0.12em] text-gray-400">IHSG</div>
+                      <div className="font-display text-xxs font-bold uppercase tracking-eyebrow text-gray-400">IHSG</div>
                       <div className="text-[1.1rem] font-black text-brand-black dark:text-white">7,452.80</div>
                     </div>
                     <div className="text-right">
-                      <div className="flex items-center gap-1 text-[10px] font-bold text-green-600 dark:text-green-500">
+                      <div className="flex items-center gap-1 text-xs font-bold text-green-600 dark:text-green-500">
                         <span>↑</span>
                         <span>+1.25%</span>
                       </div>
-                      <div className="text-[10px] text-gray-400">+92.30</div>
+                      <div className="text-xs text-gray-400">+92.30</div>
                     </div>
                   </div>
                   <div className="flex items-center justify-between border-b border-black/5 pb-3 last:border-b-0 last:pb-0 dark:border-white/5">
                     <div>
-                      <div className="text-[11px] font-bold uppercase tracking-[0.12em] text-gray-400">USD/IDR</div>
+                      <div className="font-display text-xxs font-bold uppercase tracking-eyebrow text-gray-400">USD/IDR</div>
                       <div className="text-[1.1rem] font-black text-brand-black dark:text-white">15,890</div>
                     </div>
                     <div className="text-right">
-                      <div className="flex items-center gap-1 text-[10px] font-bold text-red-600 dark:text-red-500">
+                      <div className="flex items-center gap-1 text-xs font-bold text-red-600 dark:text-red-500">
                         <span>↓</span>
                         <span>-0.45%</span>
                       </div>
-                      <div className="text-[10px] text-gray-400">-71.50</div>
+                      <div className="text-xs text-gray-400">-71.50</div>
                     </div>
                   </div>
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="text-[11px] font-bold uppercase tracking-[0.12em] text-gray-400">Emas (gram)</div>
+                      <div className="font-display text-xxs font-bold uppercase tracking-eyebrow text-gray-400">Emas (gram)</div>
                       <div className="text-[1.1rem] font-black text-brand-black dark:text-white">Rp 1,125,000</div>
                     </div>
                     <div className="text-right">
-                      <div className="flex items-center gap-1 text-[10px] font-bold text-green-600 dark:text-green-500">
+                      <div className="flex items-center gap-1 text-xs font-bold text-green-600 dark:text-green-500">
                         <span>↑</span>
                         <span>+0.18%</span>
                       </div>
-                      <div className="text-[10px] text-gray-400">+2,000</div>
+                      <div className="text-xs text-gray-400">+2,000</div>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="rounded-3xl border border-black/5 bg-white p-5 shadow-[0_18px_42px_rgba(15,23,42,0.05)] dark:border-white/5 dark:bg-white/[0.02] md:p-6">
+              <div className="rounded-card border border-black/5 bg-white p-5 shadow-card dark:border-white/5 dark:bg-white/[0.02] md:p-6">
                 {siteSettings?.featuredVideo ? (
                   <div>
                     <div className="mb-5">
@@ -503,9 +548,9 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
           </div>
 
           {showEditorialExtras && (
-            <div className="mt-16 space-y-16 border-t border-black/5 pt-16 dark:border-white/5 md:mt-24 md:space-y-20">
+            <div className="space-section space-y-14 md:space-y-20 border-t border-black/5 pt-14 md:pt-20 dark:border-white/5">
               {showEditorChoice && (
-                <ScrollAnimate>
+                <ScrollAnimate delay={0.05}>
                   <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
                     <div className="flex items-center gap-2">
                       <Star size={16} className="fill-amber-500 text-amber-500" />
@@ -523,7 +568,7 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
               )}
 
               {showOpinionSection && (
-                <ScrollAnimate>
+                <ScrollAnimate delay={0.2}>
                   <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
                     <div className="flex items-center gap-2">
                       <span className="h-2 w-2 rounded-full bg-brand-red"></span>
@@ -534,7 +579,7 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
                     {opinionAnalisis.map((article: any, idx: number) => (
                       <div key={article.id} className="flex h-full flex-col justify-between gap-4">
                         <div>
-                          <span className={`${sectionMetaClass} mb-2 block uppercase tracking-[0.12em]`}>Kolom Analisis</span>
+                          <span className={`${sectionMetaClass} mb-2 block font-display uppercase tracking-eyebrow`}>Kolom Analisis</span>
                           <Link href={`/${siteParam}/artikel/${article.slug}`}>
                             <h4 className="mb-2 line-clamp-3 text-xl font-serif font-black leading-tight text-brand-black transition-colors hover:text-brand-red dark:text-white">
                               &ldquo;{article.title}&rdquo;
@@ -545,10 +590,10 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
                           </p>
                         </div>
                         <div className="mt-4 flex items-center gap-2 border-t border-black/5 pt-4 dark:border-white/5">
-                          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-brand-red/10 text-[10px] font-black text-brand-red">
+                          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-brand-red/10 text-xs font-black text-brand-red">
                             {article.author?.name?.charAt(0) || 'S'}
                           </div>
-                          <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-brand-black dark:text-white">
+                          <span className="font-display text-xxs font-semibold uppercase tracking-eyebrow text-brand-black dark:text-white">
                             {article.author?.name || 'Redaksi'}
                           </span>
                         </div>
@@ -559,7 +604,7 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
               )}
 
               {showPhotoSection && (
-                <ScrollAnimate>
+                <ScrollAnimate delay={0.35}>
                   <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
                     <div className="flex items-center gap-2">
                       <span className="h-2 w-2 rounded-full bg-brand-red"></span>
@@ -568,13 +613,13 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
                   </div>
                   <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                     {photojournalism.map((article: any) => (
-                      <div key={article.id} className="group relative aspect-[4/5] overflow-hidden rounded-3xl shadow-lg">
+                      <div key={article.id} className="group relative aspect-[4/5] overflow-hidden rounded-card shadow-card">
                         {article.featuredImage && (
                           <img src={article.featuredImage} alt={article.title} className="h-full w-full object-cover transition-transform duration-[5s] group-hover:scale-110" />
                         )}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent" />
                         <div className="absolute bottom-0 left-0 z-10 w-full p-6">
-                          <span className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.12em] text-brand-red">Jurnal Foto</span>
+                          <span className="mb-2 block font-display text-xs font-semibold uppercase tracking-eyebrow text-brand-red">Jurnal Foto</span>
                           <h4 className="line-clamp-3 text-base font-serif font-black leading-snug text-white">{article.title}</h4>
                         </div>
                       </div>
@@ -584,7 +629,7 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
               )}
 
               {showVideoSection && (
-                <ScrollAnimate className="rounded-3xl bg-slate-950 px-6 py-8 text-white md:px-8 md:py-12">
+                <ScrollAnimate delay={0.5} className="rounded-card bg-slate-950 px-6 py-8 text-white md:px-8 md:py-12">
                   <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
                     <div className="flex items-center gap-2">
                       <Zap size={16} className="fill-red-500 text-red-500" />
@@ -593,7 +638,7 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
                   </div>
                   <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
                     {videoStories.map((article: any) => (
-                      <div key={article.id} className="group relative aspect-video overflow-hidden rounded-2xl bg-black shadow-lg">
+                      <div key={article.id} className="group relative aspect-video overflow-hidden rounded-card bg-black shadow-card">
                         <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/40 transition-colors group-hover:bg-black/60">
                           <div className="flex h-14 w-14 items-center justify-center rounded-full border border-white/40 bg-white/20 backdrop-blur-md transition-transform group-hover:scale-110 group-hover:border-transparent group-hover:bg-brand-red">
                             <span className="ml-1 text-lg text-white">▶</span>
@@ -603,7 +648,7 @@ export async function SiteHomePage({ siteParam, searchParams }: SiteHomePageProp
                           <img src={article.featuredImage} alt={article.title} className="h-full w-full object-cover transition-transform duration-[4s] group-hover:scale-105" />
                         )}
                         <div className="absolute bottom-0 left-0 z-20 w-full bg-gradient-to-t from-black via-black/80 to-transparent p-5">
-                          <span className="mb-1 block text-[10px] font-semibold uppercase tracking-[0.12em] text-brand-red">Video Report</span>
+                          <span className="mb-1 block font-display text-xs font-semibold uppercase tracking-eyebrow text-brand-red">Video Report</span>
                           <h4 className="line-clamp-2 text-sm font-bold text-white">{article.title}</h4>
                         </div>
                       </div>

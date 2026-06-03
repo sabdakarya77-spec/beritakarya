@@ -54,7 +54,7 @@ export default async function manifest({
     display: 'standalone',
     orientation: 'portrait',
     background_color: '#020617', // Brand dark color
-    theme_color: '#B91C1C',      // Brand red
+    theme_color: '#DC2626',      // Brand red
     lang: 'id-ID',
     categories: ['news', 'magazines', 'lifestyle'],
     icons: [

@@ -7,6 +7,7 @@ import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '../../store/authStore';
 import { useSavedArticles } from '../../hooks/useSavedArticles';
+import { cn } from '../../lib/utils';
 
 interface MobileBottomNavProps {
   site?: string;
@@ -98,13 +99,12 @@ export default function MobileBottomNav({ site = 'pusat', onSearchClick, onMenuC
               whileTap={{ scale: 0.9 }}
               className="relative flex cursor-pointer flex-col items-center justify-center gap-0.5 rounded-xl px-2.5 py-1"
             >
-              {isActive && (
-                <motion.div
-                  layoutId="activeTabGlow"
-                  transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                  className="absolute inset-0 bg-brand-red/10 dark:bg-brand-red/20 rounded-xl -z-10"
-                />
-              )}
+              <div
+                className={cn(
+                  "absolute inset-0 bg-brand-red/10 dark:bg-brand-red/20 rounded-xl -z-10 transition-all duration-200",
+                  isActive ? "opacity-100 scale-100" : "opacity-0 scale-95 pointer-events-none"
+                )}
+              />
               <Icon
                 size={18}
                 className={isActive ? 'text-brand-red stroke-[2.5]' : 'text-gray-400 dark:text-gray-500 hover:text-brand-red transition-colors'}

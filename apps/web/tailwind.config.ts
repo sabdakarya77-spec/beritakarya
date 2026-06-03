@@ -11,8 +11,21 @@ const config: Config = {
     extend: {
       fontFamily: {
         sans: ['var(--font-outfit)', 'var(--font-inter)', 'system-ui', 'sans-serif'],
+        display: ['var(--font-outfit)', 'system-ui', 'sans-serif'],
         outfit: ['var(--font-outfit)', 'system-ui', 'sans-serif'],
         serif: ['var(--font-playfair)', 'Georgia', 'serif'],
+      },
+      fontSize: {
+        'xxs': ['0.6875rem', { lineHeight: '1rem' }],  // 11px
+        'xs':  ['0.625rem',  { lineHeight: '1rem' }],  // 10px
+      },
+      letterSpacing: {
+        'eyebrow': 'var(--tracking-eyebrow)',
+      },
+      boxShadow: {
+        'card': '0 4px 20px rgba(15,23,42,0.05)',
+        'modal': '0 20px 48px rgba(15,23,42,0.12)',
+        'floating': '0 28px 56px rgba(2,6,23,0.20)',
       },
       colors: {
         primary: {
@@ -76,6 +89,9 @@ const config: Config = {
         'card': 'var(--radius-card)',
         'button': 'var(--radius-button)',
         'input': 'var(--radius-input)',
+      },
+      transitionTimingFunction: {
+        'fluent': 'var(--ease-fluent)',
       }
     },
   },

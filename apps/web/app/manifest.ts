@@ -10,7 +10,7 @@ export default function manifest(): MetadataRoute.Manifest {
     display: 'standalone',
     orientation: 'portrait',
     background_color: '#020617', // Sesuai warna dark brand-dark
-    theme_color: '#B91C1C',      // Sesuai warna utama brand-red
+    theme_color: '#DC2626',      // Sesuai warna utama brand-red
     lang: 'id-ID',
     categories: ['news', 'magazines', 'lifestyle'],
     icons: [

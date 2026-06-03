@@ -1,4 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,700;0,800;0,900;1,400;1,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,700;0,800;0,900;1,400;1,700&display=swap');
+
 
 @tailwind base;
 @tailwind components;
@@ -7,8 +8,8 @@
 @layer base {
   :root {
     /* Core Brand */
-    --brand-red: #B91C1C;
-    --brand-red-rgb: 185 28 28;
+    --brand-red: #DC2626;
+    --brand-red-rgb: 220 38 38;
     --brand-black: #0F172A;
     --brand-black-rgb: 15 23 42;
     --brand-dark: #020617;
@@ -83,11 +84,15 @@
     --radius-card: 1.5rem;              /* rounded-3xl */
     --radius-button: 0.75rem;           /* rounded-xl */
     --radius-input: 0.5rem;             /* rounded-lg */
+
+    /* Typography */
+    --tracking-eyebrow: 0.14em;
+    --ease-fluent: cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .dark {
-    --brand-red: #EF4444;
-    --brand-red-rgb: 239 68 68;
+    --brand-red: #DC2626;
+    --brand-red-rgb: 220 38 38;
     --brand-black: #F8FAFC;
     --brand-black-rgb: 248 250 252;
     --brand-dark: #F1F5F9;
@@ -134,6 +139,7 @@
   h1, h2, h3, h4, h5, h6 {
     @apply tracking-tight transition-colors duration-500;
     color: var(--brand-text);
+    text-wrap: balance;
   }
 
   /* Fix native select dropdown options visibility in light/dark modes */
@@ -155,16 +161,23 @@
     @apply max-w-container mx-auto px-4;
   }
 
+  /* Vertical Rhythm Spacing Tokens */
+  .space-section {
+    @apply mt-14 md:mt-20;
+  }
+  .space-block {
+    @apply mt-10 md:mt-12;
+  }
+  .space-tight {
+    @apply mt-6 md:mt-8;
+  }
+
   /* Premium Article Typography (Magazine Feel) */
   .article-content p {
     @apply leading-[1.8] md:leading-[1.9] text-brand-text/90 antialiased;
   }
 
-  .article-content p:first-of-type::first-letter {
-    font-family: 'Playfair Display', var(--font-playfair), Georgia, serif;
-    @apply float-left text-brand-red mr-3 text-7xl md:text-8xl font-black leading-[0.7] mt-3;
-    initial-letter: 3; /* Modern CSS property for better drop caps */
-  }
+
 
   .article-content h2, .article-content h3 {
     @apply mt-16 mb-6 font-serif font-black tracking-tighter text-brand-black dark:text-white;
@@ -362,6 +375,15 @@
   background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.05) 50%, transparent 100%);
   background-size: 200% 100%;
   animation: shimmer 2s infinite;
+}
+
+@keyframes marquee-ticker {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
+}
+
+.animate-marquee-ticker {
+  animation: marquee-ticker 40s linear infinite;
 }
 
 .no-scrollbar::-webkit-scrollbar {

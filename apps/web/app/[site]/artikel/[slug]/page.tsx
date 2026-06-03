@@ -106,6 +106,29 @@ async function getSiteSettings(siteId: string) {
   }
 }
 
+function getHeroImagePosition(coverImageBlock: any) {
+  const width = coverImageBlock?.width;
+  const height = coverImageBlock?.height;
+
+  if (typeof width === 'number' && typeof height === 'number' && width > 0 && height > 0) {
+    const ratio = width / height;
+
+    if (ratio < 0.9) {
+      return '50% 20%';
+    }
+
+    if (ratio < 1.2) {
+      return '50% 23%';
+    }
+
+    if (ratio > 1.8) {
+      return '50% 30%';
+    }
+  }
+
+  return '50% 26%';
+}
+
 export default async function ArticlePage({ params }: Props) {
   const resolvedParams = await params;
   const siteParam = resolvedParams?.site || 'pusat';
@@ -174,8 +197,8 @@ export default async function ArticlePage({ params }: Props) {
   const badgeVariant = resolveArticleBadge(article);
   const readingTime = article.readingTimeMin || Math.max(1, Math.ceil((article.wordCount || 0) / 200)) || 3;
   const articleRailClassName = 'xl:grid xl:grid-cols-[minmax(0,1.75fr)_20rem] 2xl:grid-cols-[minmax(0,1.75fr)_22.5rem] xl:justify-between xl:gap-12 2xl:gap-16'
-  const sidebarCardClass = 'rounded-[1.75rem] border border-gray-100 bg-white p-5 shadow-[0_20px_60px_rgba(15,23,42,0.06)] dark:border-white/5 dark:bg-white/[0.02] dark:shadow-[0_20px_60px_rgba(0,0,0,0.28)]'
-  const sidebarLabelClass = 'flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.18em] text-gray-400'
+  const sidebarCardClass = 'rounded-card border border-gray-100 bg-white p-5 shadow-card dark:border-white/5 dark:bg-white/[0.02] dark:shadow-floating'
+  const sidebarLabelClass = 'flex items-center gap-2 font-display text-xs font-black uppercase tracking-eyebrow text-gray-400'
 
   return (
     <PublicSiteLayout siteConfig={siteConfig}>
@@ -197,7 +220,7 @@ export default async function ArticlePage({ params }: Props) {
                         className="rounded-full px-3 py-1 shadow-sm shadow-black/5"
                       />
                     )}
-                    <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-wide">
+                    <div className="flex items-center gap-3 text-xxs font-semibold uppercase tracking-wide">
                       <span className="text-brand-red">
                         {article.category?.name || 'NASIONAL'}
                       </span>
@@ -223,12 +246,12 @@ export default async function ArticlePage({ params }: Props) {
                         {article.author?.name?.[0] || 'R'}
                         </div>
                         <div className="min-w-0 text-left">
-                          <div className="text-[11px] font-bold text-brand-black dark:text-white">{article.author?.name || 'Redaksi'}</div>
-                          <div className="mt-0.5 text-[10px] font-medium text-brand-text-muted">Staf Redaksi BeritaKarya</div>
+                          <div className="text-xxs font-bold text-brand-black dark:text-white">{article.author?.name || 'Redaksi'}</div>
+                          <div className="mt-0.5 text-xs font-medium text-brand-text-muted">Staf Redaksi BeritaKarya</div>
                           {article.author?.id && (
                             <Link
                               href={`/${siteParam}/penulis/${article.author.id}`}
-                              className="mt-2.5 inline-flex text-[10px] font-black uppercase tracking-[0.18em] text-brand-red transition-colors hover:text-brand-black dark:hover:text-white"
+                              className="mt-2.5 inline-flex font-display text-xs font-black uppercase tracking-eyebrow text-brand-red transition-colors hover:text-brand-black dark:hover:text-white"
                             >
                               Lihat Profil
                             </Link>
@@ -236,13 +259,13 @@ export default async function ArticlePage({ params }: Props) {
                         </div>
                       </div>
                       <div className="flex flex-wrap items-center gap-3 md:gap-4 xl:ml-auto xl:flex-nowrap xl:justify-end">
-                        <div className="inline-flex h-11 items-center gap-2.5 rounded-full border border-black/[0.06] bg-white/80 px-4.5 py-2 text-[10px] font-bold uppercase tracking-[0.16em] text-brand-text-muted shadow-[0_10px_30px_rgba(15,23,42,0.06)] backdrop-blur-sm dark:border-white/10 dark:bg-white/[0.04] dark:text-gray-300 dark:shadow-none">
+                        <div className="inline-flex h-11 items-center gap-2.5 rounded-full border border-black/[0.06] bg-white/80 px-4.5 py-2 font-display text-xs font-bold uppercase tracking-eyebrow text-brand-text-muted shadow-[0_10px_30px_rgba(15,23,42,0.06)] backdrop-blur-sm dark:border-white/10 dark:bg-white/[0.04] dark:text-gray-300 dark:shadow-none">
                           <span className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-red/10 text-brand-red dark:bg-brand-red/15">
                             <BookOpen size={13} />
                           </span>
                           <span>{readingTime} Menit Baca</span>
                         </div>
-                        <div className="inline-flex h-11 items-center gap-2.5 rounded-full border border-black/[0.06] bg-white/80 px-4.5 py-2 text-[10px] font-bold uppercase tracking-[0.16em] text-brand-text-muted shadow-[0_10px_30px_rgba(15,23,42,0.06)] backdrop-blur-sm dark:border-white/10 dark:bg-white/[0.04] dark:text-gray-300 dark:shadow-none">
+                        <div className="inline-flex h-11 items-center gap-2.5 rounded-full border border-black/[0.06] bg-white/80 px-4.5 py-2 font-display text-xs font-bold uppercase tracking-eyebrow text-brand-text-muted shadow-[0_10px_30px_rgba(15,23,42,0.06)] backdrop-blur-sm dark:border-white/10 dark:bg-white/[0.04] dark:text-gray-300 dark:shadow-none">
                           <span className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-red/10 text-brand-red dark:bg-brand-red/15">
                             <Printer size={13} />
                           </span>
@@ -269,18 +292,17 @@ export default async function ArticlePage({ params }: Props) {
           <div className="mb-16 md:mb-20">
             <Container>
               <figure className="mx-auto max-w-3xl space-y-4 md:space-y-5">
-                <div className="rounded-2xl border border-black/[0.06] bg-white/95 p-3 shadow-[0_28px_90px_rgba(15,23,42,0.08)] dark:border-white/[0.08] dark:bg-white/[0.03] dark:shadow-[0_28px_90px_rgba(0,0,0,0.45)] md:p-4">
-                  <div className="relative w-full overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-900">
+                <div className="rounded-card border border-black/[0.06] bg-white/95 p-3 shadow-floating dark:border-white/[0.08] dark:bg-white/[0.03] dark:shadow-floating md:p-4">
+                  <div className="relative w-full aspect-[16/9] md:aspect-[3/2] overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-900">
                     <SmartImage 
                       src={coverImage} 
                       blur={article.featuredImageBlur}
                       dominantColor={article.featuredImageColor}
                       context="article_cover"
                       alt={article.title}
-                      fill={false}
-                      width={900}
-                      height={600}
-                      className="w-full h-auto object-contain"
+                      fill
+                      className="object-cover"
+                      style={{ objectPosition: getHeroImagePosition(coverImageBlock) }}
                       priority
                     />
                     <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-black/[0.04] dark:ring-white/[0.08]" />
@@ -292,7 +314,7 @@ export default async function ArticlePage({ params }: Props) {
                   <p className="text-sm italic leading-relaxed">
                     {coverImageCaption || ''}
                   </p>
-                  <span className="text-[9px] font-black uppercase tracking-[0.22em] text-gray-400 dark:text-gray-500 md:justify-self-end">
+                  <span className="font-display text-xs font-black uppercase tracking-eyebrow text-gray-400 dark:text-gray-500 md:justify-self-end">
                     Foto / Dokumentasi Redaksi
                   </span>
                 </figcaption>
@@ -322,15 +344,15 @@ export default async function ArticlePage({ params }: Props) {
                   {/* Share & Save Section (Inline at the end of article) */}
                   <div className="mt-12 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-y border-gray-100 py-6 dark:border-white/5">
                     <div className="flex flex-wrap items-center gap-3">
-                      <span className="text-[10px] font-black uppercase tracking-[0.18em] text-gray-400">Bagikan:</span>
+                      <span className="font-display text-xs font-black uppercase tracking-eyebrow text-gray-400">Bagikan:</span>
                       <ArticleShareActions title={article.title} url={articleUrl} variant="inline" />
                     </div>
                     <div className="flex items-center gap-3">
-                      <span className="text-[10px] font-black uppercase tracking-[0.18em] text-gray-400">Simpan:</span>
+                      <span className="font-display text-xs font-black uppercase tracking-eyebrow text-gray-400">Simpan:</span>
                       <ArticleBookmarkButton
                         article={article}
                         site={siteParam}
-                        className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-black/[0.06] bg-white shadow-[0_10px_30px_rgba(15,23,42,0.04)] transition-all hover:scale-105 active:scale-95 dark:border-white/10 dark:bg-white/[0.04] dark:shadow-none"
+                        className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-black/[0.06] bg-white shadow-card transition-all hover:scale-105 active:scale-95 dark:border-white/10 dark:bg-white/[0.04] dark:shadow-none"
                         activeClassName="border-brand-red/40 bg-brand-red/10 text-brand-red"
                         idleClassName="text-brand-text-muted hover:text-brand-red hover:border-brand-red/30"
                         iconSize={16}
@@ -344,7 +366,7 @@ export default async function ArticlePage({ params }: Props) {
                       <Link 
                         key={tag} 
                         href={`/${siteParam}?q=${encodeURIComponent(tag)}`}
-                        className="px-5 py-2.5 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 text-[10px] font-black text-brand-text-muted dark:text-gray-400 uppercase tracking-[0.2em] hover:bg-brand-red hover:text-white hover:border-brand-red transition-all rounded-full"
+                        className="px-5 py-2.5 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 font-display text-xs font-black text-brand-text-muted dark:text-gray-400 uppercase tracking-eyebrow hover:bg-brand-red hover:text-white hover:border-brand-red transition-all rounded-full"
                       >
                         #{tag}
                       </Link>
@@ -364,7 +386,7 @@ export default async function ArticlePage({ params }: Props) {
                         <h3 className="text-xl font-black uppercase tracking-tight text-brand-black dark:text-white">
                           Rekomendasi Artikel
                         </h3>
-                        <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.18em] text-gray-400">
+                        <p className="mt-1 font-display text-xs font-bold uppercase tracking-eyebrow text-gray-400">
                           Lanjutkan bacaan terkait topik ini
                         </p>
                       </div>
@@ -377,7 +399,7 @@ export default async function ArticlePage({ params }: Props) {
                         ))
                       ) : (
                         <div className="col-span-full rounded-3xl border border-dashed border-gray-200 px-6 py-12 text-center dark:border-white/10">
-                          <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                          <p className="font-display text-xs font-black uppercase tracking-eyebrow text-gray-400">
                             Belum ada rekomendasi artikel terkait.
                           </p>
                         </div>
@@ -391,7 +413,7 @@ export default async function ArticlePage({ params }: Props) {
               <aside className="hidden xl:block">
                 <div className="sticky top-32 space-y-6">
                   <div className={cn(sidebarCardClass, 'space-y-4')}>
-                    <p className="text-[10px] font-black uppercase tracking-[0.18em] text-gray-400">
+                    <p className="font-display text-xs font-black uppercase tracking-eyebrow text-gray-400">
                       Bagikan & Simpan
                     </p>
                     <div className="flex flex-wrap items-center gap-3">
@@ -412,13 +434,13 @@ export default async function ArticlePage({ params }: Props) {
                       <Sparkles size={14} className="text-brand-red" />
                       Info Artikel
                     </div>
-                    <div className="rounded-[1.35rem] border border-gray-100 bg-gray-50/80 p-4 dark:border-white/5 dark:bg-white/[0.03]">
+                    <div className="rounded-card border border-gray-100 bg-gray-50/80 p-4 dark:border-white/5 dark:bg-white/[0.03]">
                       <div className="flex items-start gap-3.5">
                         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-brand-red text-sm font-serif font-black text-white shadow-lg shadow-brand-red/20">
                           {article.author?.name?.[0] || 'R'}
                         </div>
                         <div className="min-w-0">
-                          <p className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400">
+                          <p className="font-display text-xs font-black uppercase tracking-eyebrow text-gray-400">
                             Penulis
                           </p>
                           <p className="mt-1.5 text-sm font-black leading-snug text-brand-black dark:text-white">
@@ -427,7 +449,7 @@ export default async function ArticlePage({ params }: Props) {
                           {authorProfilePath && (
                             <Link
                               href={authorProfilePath}
-                              className="mt-2 inline-flex items-center rounded-full bg-brand-red/8 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-brand-red transition-colors hover:bg-brand-red hover:text-white dark:bg-brand-red/12"
+                              className="mt-2 inline-flex items-center rounded-full bg-brand-red/8 px-2.5 py-1 font-display text-xs font-black uppercase tracking-eyebrow text-brand-red transition-colors hover:bg-brand-red hover:text-white dark:bg-brand-red/12"
                             >
                               Lihat Profil
                             </Link>
@@ -437,7 +459,7 @@ export default async function ArticlePage({ params }: Props) {
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div className="rounded-2xl border border-gray-100 bg-gray-50 px-4 py-3.5 dark:border-white/5 dark:bg-white/[0.03]">
-                        <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.18em] text-gray-400">
+                        <div className="flex items-center gap-2 font-display text-xs font-black uppercase tracking-eyebrow text-gray-400">
                           <BookOpen size={12} className="text-brand-red" />
                           Baca
                         </div>
@@ -446,7 +468,7 @@ export default async function ArticlePage({ params }: Props) {
                         </p>
                       </div>
                       <div className="rounded-2xl border border-gray-100 bg-gray-50 px-4 py-3.5 dark:border-white/5 dark:bg-white/[0.03]">
-                        <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.18em] text-gray-400">
+                        <div className="flex items-center gap-2 font-display text-xs font-black uppercase tracking-eyebrow text-gray-400">
                           <Printer size={12} className="text-brand-red" />
                           Kata
                         </div>
@@ -455,7 +477,7 @@ export default async function ArticlePage({ params }: Props) {
                         </p>
                       </div>
                       <div className="rounded-2xl border border-gray-100 bg-gray-50 px-4 py-3.5 dark:border-white/5 dark:bg-white/[0.03]">
-                        <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.18em] text-gray-400">
+                        <div className="flex items-center gap-2 font-display text-xs font-black uppercase tracking-eyebrow text-gray-400">
                           <CalendarDays size={12} className="text-brand-red" />
                           Terbit
                         </div>
@@ -468,7 +490,7 @@ export default async function ArticlePage({ params }: Props) {
                         </p>
                       </div>
                       <div className="rounded-2xl border border-gray-100 bg-gray-50 px-4 py-3.5 dark:border-white/5 dark:bg-white/[0.03]">
-                        <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.18em] text-gray-400">
+                        <div className="flex items-center gap-2 font-display text-xs font-black uppercase tracking-eyebrow text-gray-400">
                           <User2 size={12} className="text-brand-red" />
                           Kanal
                         </div>
@@ -480,7 +502,7 @@ export default async function ArticlePage({ params }: Props) {
                   </div>
 
                   <div className={cn(sidebarCardClass, 'space-y-5')}>
-                    <p className="text-[10px] font-black uppercase tracking-[0.18em] text-gray-400">
+                    <p className="font-display text-xs font-black uppercase tracking-eyebrow text-gray-400">
                       Kategori Terkait
                     </p>
                     <div className="space-y-5">
@@ -489,11 +511,11 @@ export default async function ArticlePage({ params }: Props) {
                           <NewsCard key={rel.id} article={rel} variant="minimal" site={siteParam} />
                         ))
                       ) : (
-                        <div className="rounded-[1.35rem] border border-dashed border-gray-200 bg-gray-50/70 px-5 py-7 text-center dark:border-white/10 dark:bg-white/[0.03]">
+                        <div className="rounded-card border border-dashed border-gray-200 bg-gray-50/70 px-5 py-7 text-center dark:border-white/10 dark:bg-white/[0.03]">
                           <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-2xl bg-brand-red/8 text-brand-red dark:bg-brand-red/12">
                             <BookOpen size={16} />
                           </div>
-                          <p className="mt-4 text-[10px] font-black uppercase tracking-[0.18em] text-gray-400">
+                          <p className="mt-4 font-display text-xs font-black uppercase tracking-eyebrow text-gray-400">
                             Belum Ada Artikel Lain
                           </p>
                           <p className="mt-2 text-xs leading-relaxed text-brand-text-muted dark:text-gray-400">
