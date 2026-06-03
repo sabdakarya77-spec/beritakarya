@@ -49,7 +49,7 @@
 ### Brand Colors
 
 ```
-brand-red:        #B91C1C  (atau appearance.primaryColor)
+brand-red:        #DC2626  (atau appearance.primaryColor)
 brand-black:      hsl black
 brand-text-muted: gray
 bg-main:          #f8fafc  (slate-50)
@@ -63,6 +63,17 @@ dark bg:          #020617  (slate-950)
 | `font-serif` | Playfair Display | Heading, magazine feel |
 | `font-sans` | Inter | Body, UI |
 | `font-display` | Outfit | Eyebrow/labels |
+
+### Layout Shell & Breaking News Ticker
+
+Breaking News Ticker diintegrasikan di bagian teratas `PublicSiteLayout` (sebelum Navbar) dengan spesifikasi dimensi dan layout berikut:
+
+| Komponen / Element | Dimensi / Kelas | Keterangan |
+|---|---|---|
+| **Ticker Wrapper** | `h-8 sm:h-9 lg:h-10 border-b` | Background `bg-brand-black` / `dark:bg-[#020617]`, membungkus kontainer ticker |
+| **Breaking Badge** | `h-[calc(100%-4px)] sm:h-[calc(100%-8px)] rounded-r-md px-1.5 sm:px-2 bg-brand-red` | Penanda berlatar merah dengan ikon `Zap` berdenyut (`animate-pulse`) |
+| **Marquee Container**| `relative flex h-full min-w-0 flex-1 overflow-hidden` | Dilengkapi efek fade gradient kiri-kanan (`bg-gradient-to-r` / `bg-gradient-to-l`) untuk melembutkan transisi teks masuk/keluar viewport |
+| **Marquee Track** | `absolute flex h-full min-w-max items-center` | Menggunakan GPU-accelerated CSS animation `animate-marquee-ticker` (translasi `translate3d(0, 0, 0)` ke `translate3d(-50%, 0, 0)`) untuk kinerja yang mulus di perangkat low-end |
 
 ---
 

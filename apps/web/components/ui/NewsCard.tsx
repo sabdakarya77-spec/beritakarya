@@ -31,12 +31,12 @@ export default function NewsCard({ article, variant = 'medium', site = 'pusat', 
   const badgeVariant = resolveArticleBadge(article);
   const authorName = article.author?.name || 'Redaksi';
   const categoryLabelClass = cn(
-    "rounded-sm px-2.5 py-0.5 text-[10px] font-black uppercase tracking-[0.14em]",
+    "rounded-full px-2.5 py-0.5 font-display text-xs font-black uppercase tracking-eyebrow",
     getCategoryColor(article.category?.name)
   );
   const calmMetaClass = "flex flex-wrap items-center gap-x-3 gap-y-2 text-[11px] font-medium text-brand-text-muted dark:text-gray-400";
-  const defaultImageClass = 'object-cover object-[center_30%] transition-transform duration-500 ease-out group-hover:scale-[1.03]';
-  const horizontalImageClass = 'object-cover object-[center_30%] transition-transform duration-500 ease-out group-hover:scale-[1.04]';
+  const defaultImageClass = 'object-cover object-[center_30%] transition-transform duration-700 ease-out group-hover:scale-[1.03]';
+  const horizontalImageClass = 'object-cover object-[center_30%] transition-transform duration-700 ease-out group-hover:scale-[1.04]';
   const heroImageClass = 'object-cover object-[center_26%] opacity-75 transition-all duration-700 ease-out group-hover:scale-[1.03]';
 
   if (variant === 'large') {
@@ -53,7 +53,7 @@ export default function NewsCard({ article, variant = 'medium', site = 'pusat', 
         <Link href={articleHref} onMouseEnter={() => prefetchImage(imageUrl)}>
           <motion.article 
             whileHover={{ y: -2 }}
-            className="group relative h-[550px] min-h-[450px] w-full cursor-pointer overflow-hidden rounded-3xl bg-slate-900 shadow-2xl lg:h-[700px]"
+            className="group relative h-[550px] md:h-[620px] lg:h-[700px] min-h-[450px] w-full cursor-pointer overflow-hidden rounded-card bg-slate-900 shadow-floating"
           >
             <SmartImage 
               src={imageUrl} 
@@ -70,7 +70,7 @@ export default function NewsCard({ article, variant = 'medium', site = 'pusat', 
             <div className="absolute bottom-0 left-0 w-full max-w-4xl p-8 pb-32 md:p-12 md:pb-16 lg:p-14">
               <div className="mb-5 flex items-center gap-3">
                 {badgeVariant && <EditorialBadge variant={badgeVariant} size="md" />}
-                <span className="inline-block rounded-sm bg-brand-red px-3 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-white shadow-sm">
+                <span className="inline-block rounded-full bg-brand-red px-3 py-1 font-display text-xs font-black uppercase tracking-eyebrow text-white shadow-sm">
                   {article.category?.name || 'UMUM'}
                 </span>
               </div>
@@ -144,11 +144,10 @@ export default function NewsCard({ article, variant = 'medium', site = 'pusat', 
           iconSize={15}
         />
         <Link href={articleHref} onMouseEnter={() => prefetchImage(imageUrl)}>
-          <motion.article 
-            whileHover={{ x: 2 }}
-            className="group flex cursor-pointer gap-5 border-b border-gray-100 pb-6 pr-14 dark:border-white/5 md:gap-6 last:border-0"
+          <article 
+            className="group flex cursor-pointer gap-5 border-b border-gray-100 pb-6 pr-14 dark:border-white/5 md:gap-6 last:border-0 transition-transform duration-200 hover:translate-x-0.5"
           >
-            <div className="relative aspect-[4/3] w-32 flex-shrink-0 overflow-hidden rounded-2xl bg-gray-100 shadow-sm dark:bg-white/5 md:w-44">
+            <div className="relative aspect-[4/3] w-32 flex-shrink-0 overflow-hidden rounded-card bg-gray-100 shadow-card dark:bg-white/5 md:w-44">
               <SmartImage 
                 src={imageUrl} 
                 blur={article.featuredImageBlur}
@@ -178,7 +177,7 @@ export default function NewsCard({ article, variant = 'medium', site = 'pusat', 
                  <span>{date}</span>
               </div>
             </div>
-          </motion.article>
+          </article>
         </Link>
       </div>
     );
@@ -195,11 +194,10 @@ export default function NewsCard({ article, variant = 'medium', site = 'pusat', 
         iconSize={15}
       />
       <Link href={articleHref} onMouseEnter={() => prefetchImage(imageUrl)}>
-        <motion.article 
-          whileHover={{ y: -4 }}
-          className="group relative flex cursor-pointer flex-col gap-4 md:gap-5"
+        <article 
+          className="group relative flex cursor-pointer flex-col gap-4 md:gap-5 transition-transform duration-200 hover:-translate-y-0.5"
         >
-          <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-gray-100 shadow-sm dark:bg-white/5">
+          <div className="relative aspect-[4/3] overflow-hidden rounded-card bg-gray-100 shadow-card dark:bg-white/5">
             <SmartImage 
               src={imageUrl} 
               blur={article.featuredImageBlur}
@@ -228,7 +226,7 @@ export default function NewsCard({ article, variant = 'medium', site = 'pusat', 
             </p>
             <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-2 text-[11px] text-brand-text-muted dark:text-gray-400">
                <div className="flex min-w-0 items-center gap-1.5">
-                  <div className="flex h-5 w-5 items-center justify-center rounded-full bg-gray-100 text-[10px] font-semibold dark:bg-white/10">
+                  <div className="flex h-5 w-5 items-center justify-center rounded-full bg-gray-100 text-xs font-semibold dark:bg-white/10">
                     {authorName[0] || 'R'}
                   </div>
                  <span className="truncate">{authorName}</span>
@@ -239,7 +237,7 @@ export default function NewsCard({ article, variant = 'medium', site = 'pusat', 
                <span className="flex items-center gap-1"><BookOpen size={12}/> {readTime}</span>
             </div>
           </div>
-        </motion.article>
+        </article>
       </Link>
     </div>
   );

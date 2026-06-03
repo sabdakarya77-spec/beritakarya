@@ -1,6 +1,5 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import { Zap } from 'lucide-react';
 
 interface BreakingNewsTickerProps {
@@ -26,14 +25,8 @@ export default function BreakingNewsTicker({
         <div className="pointer-events-none absolute bottom-0 left-0 top-0 z-10 w-6 bg-gradient-to-r from-brand-black to-transparent sm:w-10 lg:w-14 dark:from-[#020617]" />
         <div className="pointer-events-none absolute bottom-0 right-0 top-0 z-10 w-6 bg-gradient-to-l from-brand-black to-transparent sm:w-10 lg:w-14 dark:from-[#020617]" />
 
-        <motion.div 
-          animate={{ x: ["0%", "-50%"] }}
-          transition={{ 
-            duration: 40, 
-            repeat: Infinity, 
-            ease: "linear" 
-          }}
-          className="absolute inset-y-0 left-0 flex h-full min-w-max items-center gap-5 whitespace-nowrap pl-6 pr-3 will-change-transform sm:gap-7 sm:pl-10 sm:pr-4 lg:gap-10 lg:pl-14 lg:pr-5"
+        <div 
+          className="absolute inset-y-0 left-0 flex h-full min-w-max items-center gap-5 whitespace-nowrap pl-6 pr-3 will-change-transform sm:gap-7 sm:pl-10 sm:pr-4 lg:gap-10 lg:pl-14 lg:pr-5 animate-marquee-ticker"
         >
           {news.map((item, i) => (
             <div key={i} className="flex items-center gap-5 sm:gap-7 lg:gap-10">
@@ -51,7 +44,7 @@ export default function BreakingNewsTicker({
               <span className="h-1 w-1 rounded-full bg-brand-red sm:h-1 sm:w-1 lg:h-1.5 lg:w-1.5" />
             </div>
           ))}
-        </motion.div>
+        </div>
       </div>
     </div>
   );

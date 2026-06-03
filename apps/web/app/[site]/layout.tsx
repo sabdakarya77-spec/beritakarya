@@ -25,7 +25,7 @@ export async function generateMetadata({
       title: displayName,
     },
     other: {
-      'theme-color': '#B91C1C',
+      'theme-color': '#DC2626',
     },
   }
 }

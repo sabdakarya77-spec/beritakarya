@@ -59,13 +59,13 @@ export function MagazineBentoHero({ articles, site }: { articles: any[], site: s
   const sideArticles = articles.slice(1, 4);
 
   return (
-    <section className="relative mb-14 w-full md:mb-16 overflow-hidden">
+    <section className="relative mb-8 w-full md:mb-14 overflow-hidden">
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85%] h-[85%] bg-brand-red/5 dark:bg-brand-red/10 blur-[80px] -z-10 rounded-full" />
       
       <div className="grid h-auto grid-cols-1 gap-4 lg:h-[450px] lg:grid-cols-12 lg:gap-5 xl:h-[470px]">
         
         {lead && (
-          <Link href={`/${site}/artikel/${lead.slug}`} className="group/lead relative block h-[300px] overflow-hidden rounded-2xl lg:col-span-8 lg:h-full">
+          <Link href={`/${site}/artikel/${lead.slug}`} className="group/lead relative block h-[300px] overflow-hidden rounded-card lg:col-span-8 lg:h-full">
             <SmartImage 
               src={getImageUrl(lead)} 
               blur={lead.featuredImageBlur}
@@ -82,7 +82,7 @@ export function MagazineBentoHero({ articles, site }: { articles: any[], site: s
             <div className="absolute bottom-0 left-0 w-full p-5 sm:p-6 md:p-8 lg:p-10 xl:p-12">
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
                 <div className="mb-3 sm:mb-4">
-                  <span className={cn("px-2.5 sm:px-3 py-1 text-[9px] sm:text-[10px] font-black uppercase tracking-[0.14em] rounded-sm shadow-sm", getCategoryColor(lead.category?.name))}>
+                  <span className={cn("px-2.5 sm:px-3 py-1 font-display text-xs font-black uppercase tracking-eyebrow rounded-full shadow-sm", getCategoryColor(lead.category?.name))}>
                     {lead.category?.name || 'Headline'}
                   </span>
                 </div>
@@ -100,7 +100,7 @@ export function MagazineBentoHero({ articles, site }: { articles: any[], site: s
             <Link 
               key={article.id} 
               href={`/${site}/artikel/${article.slug}`}
-              className="group/side relative block min-h-[120px] sm:min-h-[142px] flex-1 overflow-hidden rounded-2xl border border-black/5 dark:border-white/5"
+              className="group/side relative block aspect-[3/2] sm:aspect-auto sm:flex-1 overflow-hidden rounded-card border border-black/5 dark:border-white/5"
             >
               <SmartImage 
                 src={getImageUrl(article)} 
@@ -109,14 +109,14 @@ export function MagazineBentoHero({ articles, site }: { articles: any[], site: s
                 context="hero_side"
                 alt={article.title}
                 fill
-                className="object-cover transition-transform duration-500 ease-out group-hover/side:scale-[1.02]"
+                className="object-cover transition-transform duration-700 ease-out group-hover/side:scale-[1.02]"
                 style={{ objectPosition: getHeroImagePosition(article, 'side') }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/75 to-transparent transition-colors" />
               
               <div className="absolute bottom-0 left-0 w-full p-3 sm:p-4 lg:p-5">
                 <div className="mb-1.5 sm:mb-2">
-                  <span className={cn("text-[9px] sm:text-[10px] font-black uppercase tracking-[0.14em] px-1.5 sm:px-2 py-0.5 rounded-sm", getCategoryColor(article.category?.name))}>
+                  <span className={cn("font-display text-xs font-black uppercase tracking-eyebrow px-1.5 sm:px-2 py-0.5 rounded-full", getCategoryColor(article.category?.name))}>
                     {article.category?.name || 'Terkini'}
                   </span>
                 </div>

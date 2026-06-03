@@ -106,9 +106,9 @@ export default function SiteFooter({ siteConfig, categories }: SiteFooterProps) 
                   rel="noopener noreferrer"
                   aria-label={label}
                   title={label}
-                  className="group flex h-[1.875rem] w-[1.875rem] items-center justify-center rounded-xl bg-gray-100 transition-colors hover:bg-brand-red dark:bg-white/5"
+                  className="group flex h-8 w-8 items-center justify-center rounded-button bg-gray-100 transition-colors hover:bg-brand-red dark:bg-white/5"
                 >
-                  <Icon size={13} className="text-brand-text-muted group-hover:text-white" />
+                  <Icon size={14} className="text-brand-text-muted group-hover:text-white" />
                 </a>
               ))}
             </div>
@@ -129,7 +129,7 @@ export default function SiteFooter({ siteConfig, categories }: SiteFooterProps) 
           </div>
 
           <div className="md:col-span-1">
-            <h5 className="mb-4 text-[10px] font-medium tracking-[0.06em] text-brand-red/90">Kategori Utama</h5>
+            <h5 className="mb-4 font-display text-xs font-medium tracking-eyebrow text-brand-red/90">Kategori Utama</h5>
             <div className="grid grid-cols-2 gap-x-6 gap-y-2.5">
               {mainCategories.map((cat) => (
                 <Link
@@ -144,7 +144,7 @@ export default function SiteFooter({ siteConfig, categories }: SiteFooterProps) 
           </div>
 
           <div>
-            <h5 className="mb-4 text-[10px] font-medium tracking-[0.06em] text-brand-red/90">Kerja Sama</h5>
+            <h5 className="mb-4 font-display text-xs font-medium tracking-eyebrow text-brand-red/90">Kerja Sama</h5>
             <ul className="space-y-2.5 text-[13px] text-brand-text-muted">
               {partnershipLinks.map((item, index) => (
                 <li key={`${item.href}-${index}`}>
@@ -166,7 +166,7 @@ export default function SiteFooter({ siteConfig, categories }: SiteFooterProps) 
         </div>
 
         <div className="text-center">
-          <span suppressHydrationWarning className="text-[10px] font-normal tracking-[0.04em] text-brand-text-muted opacity-60">
+          <span suppressHydrationWarning className="text-xs font-normal tracking-[0.04em] text-brand-text-muted opacity-60">
             {siteConfig?.footerText || `© ${new Date().getFullYear()} PT SABDA KARYA NUSANTARA (BERITA KARYA DIGITAL GROUP). ALL RIGHTS RESERVED.`}
           </span>
         </div>
