@@ -521,9 +521,46 @@ export async function processDueScheduledArticles(): Promise<{
 export async function deleteArticle(id: string, siteId: string, user: JWTPayload) {
   const article = await repo.findArticleById(id, siteId)
   if (!article) throw Object.assign(new Error('Post tidak ditemukan'), { statusCode: 404 })
-  
-  if (!['superadmin', 'wapimred'].includes(user.role) && article.authorId !== user.userId) {
-    throw Object.assign(new Error('Akses ditolak'), { statusCode: 403 })
+
+  // [DELETE-PERMISSION] Aturan hapus per-role:
+  // - superadmin         : boleh hapus semua status (termasuk published)
+  // - wapimred           : boleh hapus semua status KECUALI published
+  // - reporter/kontributor: hanya boleh hapus DRAFT MILIK SENDIRI
+  // - lainnya            : tidak boleh hapus
+  // siteMiddleware + requireSiteAccess sudah memastikan user berada di situs
+  // yang sesuai; di sini kita hanya mengatur per-status & ownership.
+  const isSuperadmin = user.role === 'superadmin'
+  const isWapimred = user.role === 'wapimred'
+  const isReporterOrKontributor = user.role === 'reporter' || user.role === 'kontributor'
+  const isAuthor = article.authorId === user.userId
+  const isPublished = article.status === 'published'
+  const isDraft = article.status === 'draft'
+
+  let allowed = false
+  let denyReason = 'Akses ditolak'
+
+  if (isSuperadmin) {
+    allowed = true
+  } else if (isWapimred) {
+    if (isPublished) {
+      denyReason = 'Wapimred tidak dapat menghapus post yang sudah diterbitkan. Hubungi Superadmin.'
+    } else {
+      allowed = true
+    }
+  } else if (isReporterOrKontributor) {
+    if (!isAuthor) {
+      denyReason = 'Anda hanya dapat menghapus post milik sendiri.'
+    } else if (!isDraft) {
+      denyReason = 'Reporter/Kontributor hanya dapat menghapus post berstatus draft.'
+    } else {
+      allowed = true
+    }
+  } else {
+    denyReason = 'Peran Anda tidak memiliki izin untuk menghapus post.'
+  }
+
+  if (!allowed) {
+    throw Object.assign(new Error(denyReason), { statusCode: 403 })
   }
 
   await repo.createAuditLog({
@@ -532,7 +569,13 @@ export async function deleteArticle(id: string, siteId: string, user: JWTPayload
     action: 'post.delete',
     entityType: 'post',
     entityId: id,
-    oldValue: article
+    oldValue: {
+      title: article.title,
+      slug: article.slug,
+      status: article.status,
+      authorId: article.authorId,
+      actorRole: user.role,
+    }
   })
 
   // Remove from search index and public cache

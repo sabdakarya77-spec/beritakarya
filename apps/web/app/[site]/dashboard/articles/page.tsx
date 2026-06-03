@@ -46,7 +46,8 @@ interface Article {
 }
 
 const CAN_SUBMIT_ROLES = ['reporter', 'kontributor', 'wapimred', 'superadmin'];
-const CAN_DELETE_ROLES = ['superadmin', 'wapimred'];
+const CAN_DELETE_ROLES = ['superadmin', 'wapimred', 'reporter', 'kontributor'];
+const CAN_GOOGLE_INDEX_ROLES = ['superadmin'];
 const getStatusFromQuery = (value: string | null) =>
   value && value in STATUS_LABELS ? value : '';
 const getViewModeFromQuery = (value: string | null): 'list' | 'kanban' =>
@@ -146,16 +147,44 @@ export default function ArticlesPage() {
     }
   };
 
-  const handleDelete = async (articleId: string) => {
-    if (!confirm('Yakin ingin menghapus post ini? Tindakan ini tidak dapat dibatalkan.')) return;
-    setActionLoading(articleId + 'del');
+  const handleDelete = async (article: Article) => {
+    const perm = canDeleteArticleFor(article)
+    if (!perm.allowed) {
+      alert(perm.reason || 'Anda tidak memiliki izin untuk menghapus post ini.')
+      return
+    }
+
+    // Konfirmasi bertahap: post published butuh alasan & peringatan ekstra
+    const isPublished = article.status === 'published'
+    if (!window.confirm(
+      isPublished
+        ? `PERINGATAN: Post "${article.title}" sudah TERBIT dan kemungkinan terindeks Google.\n\nHapus permanen? Tindakan ini tidak dapat dibatalkan.`
+        : `Yakin ingin menghapus post "${article.title}"? Tindakan ini tidak dapat dibatalkan.`
+    )) {
+      return
+    }
+
+    // Untuk superadmin menghapus post published, minta alasan (audit trail)
+    let reason: string | undefined
+    if (isPublished && user?.role === 'superadmin') {
+      const input = window.prompt('Alasan penghapusan (wajib, min. 5 karakter):')
+      if (!input || input.trim().length < 5) {
+        alert('Alasan penghapusan wajib diisi (minimal 5 karakter) untuk post terpublikasi.')
+        return
+      }
+      reason = input.trim()
+    }
+
+    setActionLoading(article.id + 'del')
     try {
-      await api.delete(`/articles/${articleId}`);
-      await load();
+      await api.delete(`/articles/${article.id}`, {
+        params: reason ? { reason } : undefined
+      })
+      await load()
     } catch (e: any) {
-      alert(e.response?.data?.error?.message || 'Gagal menghapus post');
+      alert(e.response?.data?.error?.message || 'Gagal menghapus post')
     } finally {
-      setActionLoading(null);
+      setActionLoading(null)
     }
   };
 
@@ -193,7 +222,41 @@ export default function ArticlesPage() {
   const canSubmitArticle = (article: Article) =>
     article.status === 'draft' && CAN_SUBMIT_ROLES.includes(user?.role || '');
 
-  const canDeleteArticle = () => CAN_DELETE_ROLES.includes(user?.role || '');
+  // Eye (Lihat): untuk published → URL publik; selain itu → halaman detail
+  const canViewArticle = (article: Article) => article.status === 'published';
+
+  // Globe (Google Index): hanya superadmin DAN post published
+  const canGoogleIndex = (article: Article) =>
+    CAN_GOOGLE_INDEX_ROLES.includes(user?.role || '') && article.status === 'published';
+
+  // Trash (Hapus): bertingkat per-role & status
+  // - superadmin: semua status
+  // - wapimred: semua status KECUALI published
+  // - reporter/kontributor: hanya DRAFT MILIK SENDIRI
+  const canDeleteArticleFor = (article: Article) => {
+    const role = user?.role
+    if (!role || !CAN_DELETE_ROLES.includes(role)) {
+      return { allowed: false, reason: 'Peran Anda tidak memiliki izin menghapus post.' }
+    }
+    if (role === 'superadmin') {
+      return { allowed: true, reason: '' }
+    }
+    if (role === 'wapimred') {
+      if (article.status === 'published') {
+        return { allowed: false, reason: 'Wapimred tidak dapat menghapus post yang sudah diterbitkan. Hubungi Superadmin.' }
+      }
+      return { allowed: true, reason: '' }
+    }
+    // reporter / kontributor
+    if (article.author?.name && user?.name && article.author.name !== user.name) {
+      return { allowed: false, reason: 'Anda hanya dapat menghapus post milik sendiri.' }
+    }
+    if (article.status !== 'draft') {
+      return { allowed: false, reason: 'Reporter/Kontributor hanya dapat menghapus post berstatus draft.' }
+    }
+    return { allowed: true, reason: '' }
+  }
+
   const getPrimaryActionLabel = (article: Article) => {
     if (canSubmitArticle(article)) return 'Kirim ke Editor';
     if (article.status === 'revision') return 'Perbaiki';
@@ -413,89 +476,120 @@ export default function ArticlesPage() {
                     <StatusBadge status={article.status} />
                   </td>
 
-                  {/* Actions */}
+                  {/* Actions — 4 ikon seragam: Eye, Pencil, Globe, Trash */}
                   <td className="px-4 py-4">
                     <div className="flex justify-end items-center gap-1.5 flex-wrap">
-                      {canSubmitArticle(article) ? (
-                        <>
-                          <button
-                            onClick={() => handleSubmitToReview(article.id)}
-                            disabled={actionLoading === article.id}
-                            title="Kirim ke Editor"
-                            className="p-2.5 bg-brand-red/10 text-brand-red rounded-lg hover:bg-brand-red hover:text-white transition-all disabled:opacity-50"
-                          >
-                            {actionLoading === article.id
-                              ? <Loader2 size={14} className="animate-spin" />
-                              : <Send size={14} />
-                            }
-                          </button>
-                          <Link
-                            href={`/${site}/dashboard/articles/${article.id}`}
-                            className="p-2.5 bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:hover:bg-white/10 transition-all"
-                            title="Edit Post"
-                          >
-                            <Edit3 size={14} />
-                          </Link>
-                        </>
-                      ) : article.status === 'published' ? (
-                        <>
-                          <Link
-                            href={`/${site}/artikel/${article.slug}`}
-                            target="_blank"
-                            className="p-2.5 bg-emerald-600/10 text-emerald-600 rounded-lg hover:bg-emerald-600 hover:text-white transition-all"
-                            title="Lihat Terbit"
-                          >
-                            <Eye size={14} />
-                          </Link>
-                          <Link
-                            href={`/${site}/dashboard/articles/${article.id}`}
-                            className="p-2.5 bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:hover:bg-white/10 transition-all"
-                            title="Edit Post"
-                          >
-                            <Edit3 size={14} />
-                          </Link>
-                          <button
-                            onClick={() => handleGoogleIndex(article.id)}
-                            disabled={actionLoading === article.id + 'index'}
-                            className="p-2.5 bg-gray-100 dark:bg-white/5 text-gray-400 hover:text-emerald-500 hover:bg-emerald-500/10 rounded-lg transition-all disabled:opacity-50"
-                            title="Kirim sinyal indeks Google"
-                          >
-                            {actionLoading === article.id + 'index' ? (
-                              <Loader2 size={14} className="animate-spin text-emerald-500" />
-                            ) : (
-                              <Globe size={14} />
-                            )}
-                          </button>
-                        </>
+                      {/* 1) EYE — Lihat (publik untuk published, detail untuk non-published) */}
+                      {canViewArticle(article) ? (
+                        <Link
+                          href={`/${site}/artikel/${article.slug}`}
+                          target="_blank"
+                          className="p-2.5 bg-emerald-600/10 text-emerald-600 rounded-lg hover:bg-emerald-600 hover:text-white transition-all"
+                          title="Lihat Post di Portal Publik"
+                        >
+                          <Eye size={14} />
+                        </Link>
                       ) : (
                         <Link
                           href={`/${site}/dashboard/articles/${article.id}`}
-                          className={cn(
-                            'p-2.5 rounded-lg transition-all',
-                            article.status === 'revision'
-                              ? 'bg-amber-500/10 text-amber-500 hover:bg-amber-500 hover:text-white'
-                              : article.status === 'approved'
-                                ? 'bg-emerald-600/10 text-emerald-600 hover:bg-emerald-600 hover:text-white'
-                                : 'bg-brand-black/10 dark:bg-white/10 text-brand-black dark:text-white hover:bg-brand-black dark:hover:bg-white hover:text-white dark:hover:text-slate-900'
-                          )}
-                          title={getPrimaryActionLabel(article)}
+                          className="p-2.5 bg-emerald-600/10 text-emerald-600 rounded-lg hover:bg-emerald-600 hover:text-white transition-all"
+                          title="Lihat Detail Post"
                         >
-                          <Edit3 size={14} />
+                          <Eye size={14} />
                         </Link>
                       )}
-                      {canDeleteArticle() && (
-                        <button 
-                          onClick={() => handleDelete(article.id)}
-                          disabled={actionLoading === article.id + 'del'}
-                          className="p-2.5 bg-gray-100 dark:bg-white/5 text-gray-400 hover:text-red-600 hover:bg-red-500/10 rounded-lg transition-all disabled:opacity-50"
-                          title="Hapus Post"
+
+                      {/* 2) PENCIL — Edit (selalu tersedia untuk author sendiri atau editor) */}
+                      {(() => {
+                        const isOwn = !user?.name || !article.author?.name || article.author.name === user.name
+                        const canEdit = user?.role === 'superadmin'
+                          || user?.role === 'wapimred'
+                          || isOwn
+                        if (!canEdit) {
+                          return (
+                            <button
+                              type="button"
+                              disabled
+                              title="Anda hanya dapat mengedit post milik sendiri"
+                              className="p-2.5 bg-gray-100 dark:bg-white/5 text-gray-300 dark:text-white/20 rounded-lg cursor-not-allowed opacity-50"
+                            >
+                              <Edit3 size={14} />
+                            </button>
+                          )
+                        }
+                        return (
+                          <Link
+                            href={`/${site}/dashboard/articles/${article.id}`}
+                            className="p-2.5 bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:hover:bg-white/10 transition-all"
+                            title={getPrimaryActionLabel(article)}
+                          >
+                            <Edit3 size={14} />
+                          </Link>
+                        )
+                      })()}
+
+                      {/* Tombol Submit-To-Editor (khusus draft) — ekstra di samping Edit */}
+                      {canSubmitArticle(article) && (
+                        <button
+                          onClick={() => handleSubmitToReview(article.id)}
+                          disabled={actionLoading === article.id}
+                          title="Kirim ke Editor"
+                          className="p-2.5 bg-brand-red/10 text-brand-red rounded-lg hover:bg-brand-red hover:text-white transition-all disabled:opacity-50"
                         >
-                          {actionLoading === article.id + 'del'
+                          {actionLoading === article.id
                             ? <Loader2 size={14} className="animate-spin" />
-                            : <Trash2 size={14} />
+                            : <Send size={14} />
                           }
                         </button>
                       )}
+
+                      {/* 3) GLOBE — Google Index (hanya superadmin & post published) */}
+                      <button
+                        onClick={() => canGoogleIndex(article) && handleGoogleIndex(article.id)}
+                        disabled={!canGoogleIndex(article) || actionLoading === article.id + 'index'}
+                        title={
+                          canGoogleIndex(article)
+                            ? 'Kirim sinyal indeks Google'
+                            : user?.role !== 'superadmin'
+                              ? 'Pengindeksan Google hanya dapat dilakukan oleh Superadmin'
+                              : 'Post belum terbit — tidak dapat diindeks'
+                        }
+                        className={`p-2.5 rounded-lg transition-all ${
+                          canGoogleIndex(article)
+                            ? 'bg-gray-100 dark:bg-white/5 text-gray-400 hover:text-emerald-500 hover:bg-emerald-500/10 cursor-pointer'
+                            : 'bg-gray-100 dark:bg-white/5 text-gray-300 dark:text-white/20 cursor-not-allowed opacity-50'
+                        } disabled:opacity-50`}
+                      >
+                        {actionLoading === article.id + 'index' ? (
+                          <Loader2 size={14} className="animate-spin text-emerald-500" />
+                        ) : (
+                          <Globe size={14} />
+                        )}
+                      </button>
+
+                      {/* 4) TRASH — Hapus (bertingkat per-role & status) */}
+                      {(() => {
+                        const perm = canDeleteArticleFor(article)
+                        const isDeleting = actionLoading === article.id + 'del'
+                        return (
+                          <button
+                            onClick={() => perm.allowed && handleDelete(article)}
+                            disabled={!perm.allowed || isDeleting}
+                            title={perm.allowed ? 'Hapus Post' : perm.reason}
+                            className={`p-2.5 rounded-lg transition-all ${
+                              perm.allowed
+                                ? 'bg-gray-100 dark:bg-white/5 text-gray-400 hover:text-red-600 hover:bg-red-500/10 cursor-pointer'
+                                : 'bg-gray-100 dark:bg-white/5 text-gray-300 dark:text-white/20 cursor-not-allowed opacity-50'
+                            } disabled:opacity-50`}
+                          >
+                            {isDeleting ? (
+                              <Loader2 size={14} className="animate-spin" />
+                            ) : (
+                              <Trash2 size={14} />
+                            )}
+                          </button>
+                        )
+                      })()}
                     </div>
                   </td>
                 </motion.tr>
