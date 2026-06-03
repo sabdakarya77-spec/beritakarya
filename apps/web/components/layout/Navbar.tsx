@@ -155,7 +155,7 @@ export default function Navbar({
               </h1>
             )}
             <span className="mt-1 max-w-[8rem] text-center text-[9px] font-medium tracking-[0.05em] text-brand-text-muted transition-all sm:max-w-[240px] sm:text-[10px] sm:tracking-[0.08em]">
-              Jernih Melihat Nusantara
+              Nusantara Berbicara 
             </span>
           </Link>
         </motion.div>
